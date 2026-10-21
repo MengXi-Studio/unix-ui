@@ -98,7 +98,7 @@
 
 	/**
 	 * 点击事件处理
-	 * 禁用或加载中不触发（对齐 Vant 行为）
+	 * 禁用或加载中不触发
 	 */
 	function handleClick(event: MouseEvent) {
 		if (props.disabled || props.loading) return

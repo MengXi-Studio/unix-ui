@@ -1,6 +1,7 @@
 /**
  * playground 全局样式变量
- * 引入组件库主题变量（演示用户侧主题接入方式）：
- * 组件库组件样式直接使用 $mxi-* 变量，在此预先定义同名变量可覆盖默认值
+ * 演示用户侧主题覆盖方式：直接定义 $mxi-* 变量即可覆盖组件库默认值
+ * （无需也不可 @import 组件库的 vars.scss——uni.scss 会注入每个组件样式，
+ * 与组件内部引入同一文件会触发循环导入）
  */
-@import '@/uni_modules/mxi-ui/theme/vars.scss';
+// $mxi-color-primary: #007aff; // 取消注释即可全局覆盖主色

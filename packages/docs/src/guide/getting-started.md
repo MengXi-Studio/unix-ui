@@ -6,27 +6,18 @@
 npm install @meng-xi/unix-ui
 ```
 
-## 引入主题变量（可选）
+## 主题定制（可选）
 
-在项目根 `uni.scss` 中引入组件库主题变量：
-
-```scss
-@import '@meng-xi/unix-ui/theme/vars.scss';
-```
-
-组件样式直接使用 `$mxi-*` 变量（uni-app x 编译器会将项目根 `uni.scss` 自动注入每个组件的样式）。变量文件全部使用 `!default` 定义，因此：
-
-- 在引入语句**之前**预先定义同名变量即可覆盖默认值
-- 不引入该文件时，组件内部已内置默认值，可正常编译
-
-主题定制示例：
+组件**内置默认主题，零配置即可使用**。如需定制，在项目根 `uni.scss` 中直接定义同名变量：
 
 ```scss
-// 自定义主题色（需在 @import 之前定义）
+// 自定义主题色（对全部组件全局生效）
 $mxi-color-primary: #10b981;
-
-@import '@meng-xi/unix-ui/theme/vars.scss';
 ```
+
+变量文件全部使用 `!default` 定义，用户定义值始终优先于组件默认值，与定义书写位置无关。完整变量见包内 `theme/vars.scss`。
+
+> 注意：不要在 `uni.scss` 中 `@import` 组件库的 `vars.scss`——uni-app x 编译器会将项目根 `uni.scss` 注入每个组件样式，与组件内部的引入形成循环导入，导致编译报错 `This file is already being loaded`。
 
 ## easycom 自动导入
 

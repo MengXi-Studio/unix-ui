@@ -20,10 +20,16 @@
 - 原因：uni.scss 会被注入到**每个组件**的 style 中编译，相对路径按各组件所在目录解析而非 uni.scss 所在目录
 - 结论：uni.scss 中引用任何文件一律 `@import '@/xxx.scss'`
 
-### 4. 组件 style 内 @import 主题变量文件会与 uni.scss 注入形成循环
-- 现象：组件 style 顶部 `@import '../../theme/vars.scss'` + uni.scss 同时 import 该文件 → vite 报 `[sass] This file is already being loaded.`
-- 原因：uni-app x 编译器对 uni_modules 内的 .scss 依赖同样注入 uni.scss，两次 import 相互成环
-- 结论（与 uni-ui 官方 uni-scss 模式一致）：**主题变量只能通过项目根 uni.scss 注入**，组件样式内直接使用变量、不再 import；未配置时编译报变量未定义属预期，文档需写明接入步骤
+### 4. 组件 style 顶层 @import 主题变量 + 用户侧禁止引入（Vant 式默认主题，2026-10-21 实验修订）
+- ~~旧结论「主题变量只能通过 uni.scss 注入」已被实验推翻~~
+- 正确机制：组件 style **顶层无条件** `@import '../../theme/vars.scss'`（全 `!default`）→ 用户零配置即有默认主题
+- 覆盖方式：用户在根 uni.scss **直接定义** `$mxi-*` 变量（**禁止**在 uni.scss 中 @import vars.scss——注入 + 组件内 import 同一文件会报循环 `[sass] This file is already being loaded.`）
+- `!default` 语义与注入先后顺序无关：先定义后注入 → !default 跳过；先注入后定义 → 用户值覆盖
+- 实验证据：零接入场景默认主题色渲染全部 PASS（rgb 精确比对）；覆盖场景编译产物中 5 处 `$mxi-color-primary` 全部穿透为覆盖值
+
+### 7. @import 不能嵌套在 @if/@else 内（条件导入方案不可行）
+- 现象：`@if variable-exists('x') { } @else { @import 'vars.scss'; }` 报 `This at-rule is not allowed here`（HBuilderX 5.26 web 编译链）
+- 结论：uni-app x 的 sass 处理不支持 @import 位于控制指令内，也不要指望 variable-exists 做双保险；需要"默认值 + 可覆盖"直接用组件顶层无条件 @import（见第 4 条）
 
 ### 5. 本机多项目 dev server 端口冲突的隐蔽表现
 - 现象：5173 被另一项目的 vitepress 占用后，本项目的 vite 仍日志输出 5173 且 lsof 显示两个进程都绑 5173（IPv6 双栈语义），但 localhost 实际响应被抢占，页面内容是另一个项目

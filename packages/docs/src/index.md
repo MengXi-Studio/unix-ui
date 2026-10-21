@@ -19,5 +19,5 @@ features:
   - title: easycom 自动导入
     details: 遵循 uni_modules 组件插件规范，组件免注册直接使用
   - title: 主题可定制
-    details: 主题变量通过全局 uni.scss 注入，编译期定制与运行时覆盖双重机制
+    details: 默认主题开箱即用，在 uni.scss 定义变量即可编译期全局覆盖
 ---

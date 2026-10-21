@@ -5,9 +5,9 @@
 	"description": "@meng-xi/unix-ui 使用文档",
 	"type": "module",
 	"scripts": {
-		"dev": "vitepress dev src",
-		"build": "vitepress build src",
-		"preview": "vitepress preview src"
+		"dev": "vitepress dev",
+		"build": "vitepress build",
+		"preview": "vitepress preview"
 	},
 	"devDependencies": {
 		"@types/node": "^20.0.0",

@@ -130,4 +130,4 @@
 | $mxi-button-mini-height | 迷你按钮高度 | 24px |
 | $mxi-button-radius | 按钮圆角 | 8px |
 
-完整变量见包内 `theme/vars.scss`。
+完整变量与覆盖方式见[主题定制](/guide/theming)。

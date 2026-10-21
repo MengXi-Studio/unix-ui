@@ -26,9 +26,5 @@ dist
 # uni-app x 编译产物
 packages/playground/unpackage
 
-# VitePress 缓存与构建产物
-packages/docs/src/.vitepress/cache
-packages/docs/src/.vitepress/dist
-
 # HBuilderX CLI 运行日志
 cli-*.log

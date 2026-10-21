@@ -1,23 +1,44 @@
 ---
 layout: home
 
+title: '@meng-xi/unix-ui'
+titleTemplate: unix-ui 组件库
+
 hero:
-  name: unix-ui
-  text: uni-app x 组件库
-  tagline: 为 uni-app x 提供功能完善的 UI 组件库，多端兼容、easycom 自动导入、主题可定制
+  name: '@meng-xi/unix-ui'
+  text: uni-app x UI 组件库
+  tagline: 为 uni-app x 提供功能完善的 UI 组件库，默认主题开箱即用，easycom 免注册使用
+  image:
+    src: /logo.svg
+    alt: unix-ui
   actions:
     - theme: brand
       text: 快速上手
       link: /guide/getting-started
     - theme: alt
-      text: 组件
-      link: /components/button
+      text: 学习路径
+      link: /guide/introduction
+    - theme: alt
+      text: GitHub
+      link: https://github.com/MengXi-Studio/unix-ui
 
 features:
-  - title: 多端兼容
-    details: 基于 uni-app x（UTS + uvue）开发，支持 App（Android / iOS / HarmonyOS）、Web、小程序，兼容蒸汽模式（vapor）
-  - title: easycom 自动导入
-    details: 遵循 uni_modules 组件插件规范，组件免注册直接使用
-  - title: 主题可定制
-    details: 默认主题开箱即用，在 uni.scss 定义变量即可编译期全局覆盖
+  - icon: 🧩
+    title: easycom 自动导入
+    details: 遵循 uni_modules 组件插件规范，组件免 import、免注册，模板中直接使用；npm 安装方式提供 easycom custom 规则
+  - icon: 🎨
+    title: 主题可定制
+    details: 默认主题开箱即用，零配置可用；在项目根 uni.scss 中直接定义 $mxi-* 变量即可编译期全局覆盖，!default 语义保证用户值优先
+  - icon: 📱
+    title: 多端兼容
+    details: 支持 App（Android / iOS / HarmonyOS）、Web、小程序，兼容蒸汽模式（vapor + bytecode）；条件编译隔离平台差异
+  - icon: ⚡
+    title: 原生渲染
+    details: UTS + uvue 编译为原生代码；0.5px 细边框用 scale(0.5) 实现，加载动画走 UniElement.animate，不依赖任何 Web 专属能力
+  - icon: 💪
+    title: UTS 强类型
+    details: Props 用 type 定义 + withDefaults 默认值，Events 用具名元组声明，严格类型无隐式转换，编译期拦截错误
+  - icon: 📐
+    title: API 对标 Vant
+    details: 组件 Props / Events / 视觉规格对齐 Vant，迁移零心智成本；默认主题色与 Vant 同源
 ---

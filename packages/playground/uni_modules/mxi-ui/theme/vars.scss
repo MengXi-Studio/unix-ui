@@ -1,0 +1,41 @@
+/**
+ * unix-ui 主题变量
+ *
+ * 使用方式（二选一）：
+ * 1. 项目根 uni.scss 中引入本文件：@import './uni_modules/mxi-ui/theme/vars.scss';
+ *    在引入前预先定义同名变量即可覆盖默认值（本文件全部使用 !default，不会覆盖已有值）
+ * 2. 不引入：组件内部已 @import 本文件，直接使用默认主题
+ */
+/* ========== 主题色 ========== */
+$mxi-color-primary: #1989fa !default;
+$mxi-color-success: #07c160 !default;
+$mxi-color-warning: #ff976a !default;
+$mxi-color-danger: #ee0a24 !default;
+$mxi-white: #ffffff !default;
+$mxi-text-color: #323233 !default;
+$mxi-disabled-opacity: 0.5 !default;
+
+/* ========== 基础规格 ========== */
+$mxi-border-width: 1px !default;
+$mxi-radius-md: 8px !default;
+$mxi-radius-max: 999px !default;
+
+/* ========== Button 按钮 ========== */
+$mxi-button-mini-height: 24px !default;
+$mxi-button-small-height: 32px !default;
+$mxi-button-normal-height: 44px !default;
+$mxi-button-large-height: 50px !default;
+$mxi-button-mini-padding: 0 8px !default;
+$mxi-button-small-padding: 0 11px !default;
+$mxi-button-normal-padding: 0 15px !default;
+$mxi-button-large-padding: 0 24px !default;
+$mxi-button-mini-font-size: 12px !default;
+$mxi-button-small-font-size: 14px !default;
+$mxi-button-normal-font-size: 16px !default;
+$mxi-button-large-font-size: 18px !default;
+$mxi-button-radius: $mxi-radius-md !default;
+$mxi-button-icon-size: 20px !default;
+
+/* ========== 通用类型背景色（default 类型使用） ========== */
+$mxi-color-default-bg: $mxi-white !default;
+$mxi-color-default-border: #ebedf0 !default;

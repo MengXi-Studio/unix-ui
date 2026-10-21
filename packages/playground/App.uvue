@@ -1,0 +1,84 @@
+<script setup lang="uts">
+	onLaunch(() => {
+		// 组件库 playground 无全局初始化逻辑，预留 onLaunch 供后续扩展
+	})
+</script>
+
+<style>
+	/* 全局样式（App.uvue style 对所有页面生效） */
+	.page {
+		flex: 1;
+		background-color: #f8f8f8;
+	}
+
+	.container {
+		flex-direction: column;
+		padding: 24rpx;
+	}
+
+	.section {
+		font-size: 28rpx;
+		font-weight: bold;
+		color: #1a1a1a;
+		margin: 24rpx 0 12rpx 0;
+	}
+
+	.card {
+		flex-direction: column;
+		background-color: #ffffff;
+		border-radius: 16rpx;
+		padding: 24rpx;
+		margin-bottom: 16rpx;
+	}
+
+	.card-title {
+		font-size: 28rpx;
+		font-weight: bold;
+		color: #1a1a1a;
+		margin-bottom: 8rpx;
+	}
+
+	.card-desc {
+		font-size: 24rpx;
+		color: #666666;
+	}
+
+	.row {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.row-gap {
+		margin-right: 16rpx;
+		margin-bottom: 16rpx;
+	}
+
+	.logs {
+		flex-direction: column;
+		align-self: stretch;
+		margin-top: 16rpx;
+		background-color: #ffffff;
+		border-radius: 16rpx;
+		padding: 20rpx;
+	}
+
+	.logs-head {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 12rpx;
+	}
+
+	.logs-title {
+		font-size: 26rpx;
+		font-weight: bold;
+		color: #1a1a1a;
+	}
+
+	.log {
+		font-size: 22rpx;
+		color: #333333;
+		margin-bottom: 6rpx;
+	}
+</style>

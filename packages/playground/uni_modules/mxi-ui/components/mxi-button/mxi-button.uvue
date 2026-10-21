@@ -1,0 +1,380 @@
+<template>
+	<view :class="buttonClass" :style="rootStyle" @click="handleClick">
+		<!-- 0.5px 细边框层：ucss 无伪元素，用绝对定位 view 承载 1px 边框后 scale(0.5) 实现 -->
+		<view v-if="props.hairline" :class="hairlineClass" :style="hairlineStyle"></view>
+		<!-- 加载图标：圆环 + UniElement.animate 旋转（ucss 不支持 @keyframes） -->
+		<view v-if="props.loading" ref="loadingIcon" :class="loadingClass" :style="loadingStyle"></view>
+		<!-- 按钮内容：加载中显示 loadingText，否则渲染默认插槽 -->
+		<text v-if="props.loading && props.loadingText != ''" :class="textClass">{{ props.loadingText }}</text>
+		<text v-else-if="!props.loading" :class="textClass"><slot></slot></text>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/** 按钮类型：default 默认 / primary 主要 / success 成功 / warning 警告 / danger 危险 */
+	type ButtonType = 'default' | 'primary' | 'success' | 'warning' | 'danger'
+	/** 按钮尺寸：large 大 / normal 常规 / small 小 / mini 迷你 */
+	type ButtonSize = 'large' | 'normal' | 'small' | 'mini'
+
+	type Props = {
+		/** 按钮类型 */
+		type?: ButtonType
+		/** 按钮尺寸 */
+		size?: ButtonSize
+		/** 朴素按钮：文字与边框使用主题色，背景为白色 */
+		plain?: boolean
+		/** 圆形按钮（全圆角） */
+		round?: boolean
+		/** 方形按钮（无圆角） */
+		square?: boolean
+		/** 是否禁用：禁用时不触发 click 事件 */
+		disabled?: boolean
+		/** 是否使用 0.5px 细边框 */
+		hairline?: boolean
+		/** 是否为块级元素（宽度撑满父容器） */
+		block?: boolean
+		/** 是否处于加载状态：加载中不触发 click 事件并隐藏插槽内容 */
+		loading?: boolean
+		/** 加载状态提示文字，为空时仅显示加载图标 */
+		loadingText?: string
+		/** 自定义颜色，支持 #hex 与 linear-gradient 渐变 */
+		color?: string
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		type: 'default',
+		size: 'normal',
+		plain: false,
+		round: false,
+		square: false,
+		disabled: false,
+		hairline: false,
+		block: false,
+		loading: false,
+		loadingText: '',
+		color: '',
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{ click: [event: MouseEvent] }>()
+
+	/** 加载图标元素引用（用于启动旋转动画） */
+	const loadingIcon = ref<UniElement | null>(null)
+
+	/**
+	 * 启动加载图标旋转动画
+	 * 通过 UniElement.animate 实现（ucss 禁用 @keyframes，规则要求改用 animate API）
+	 */
+	function startLoadingAnimation() {
+		const el = loadingIcon.value
+		if (el == null) return
+		el.animate(
+			[
+				{ transform: 'rotate(0deg)' },
+				{ transform: 'rotate(360deg)' }
+			],
+			{ duration: 800, iterations: Infinity, easing: 'linear' }
+		)
+	}
+
+	// 初始即为加载状态时启动动画（onMounted 时元素已完成挂载）
+	onMounted(() => {
+		if (props.loading) startLoadingAnimation()
+	})
+
+	// 动态开启加载状态时启动动画（flush: post 确保元素已挂载后再取 ref）
+	watch(
+		() => props.loading,
+		(value: boolean) => {
+			if (value) startLoadingAnimation()
+		},
+		{ flush: 'post' }
+	)
+
+	/**
+	 * 点击事件处理
+	 * 禁用或加载中不触发（对齐 Vant 行为）
+	 */
+	function handleClick(event: MouseEvent) {
+		if (props.disabled || props.loading) return
+		emit('click', event)
+	}
+
+	/** 根节点类名：BEM 变体类按 props 状态组合 */
+	const buttonClass = computed<string>(() => {
+		let cls = 'mxi-button mxi-button--' + props.type
+		if (props.size != 'normal') cls += ' mxi-button--' + props.size
+		if (props.plain) cls += ' mxi-button--plain'
+		if (props.square) cls += ' mxi-button--square'
+		if (props.round) cls += ' mxi-button--round'
+		if (props.block) cls += ' mxi-button--block'
+		if (props.disabled) cls += ' mxi-button--disabled'
+		if (props.loading) cls += ' mxi-button--loading'
+		if (props.color != '') cls += ' mxi-button--colored'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 根节点动态样式：customStyle + 自定义颜色时的背景与边框 */
+	const rootStyle = computed<string>(() => {
+		// 自定义样式补分号，避免与动态样式拼接粘连
+		let style = props.customStyle
+		if (style != '' && !style.endsWith(';')) style += ';'
+		if (props.color == '') return style
+		if (props.plain) {
+			// 朴素按钮：仅边框使用自定义颜色，背景保持白色
+			style += 'border-color: ' + props.color + ';'
+		} else if (props.color.indexOf('linear-gradient') == 0) {
+			// 渐变色只能作为背景图渲染，边框透明
+			style += 'background-image: ' + props.color + '; border-color: transparent;'
+		} else {
+			style += 'background-color: ' + props.color + '; border-color: ' + props.color + ';'
+		}
+		return style
+	})
+
+	/** 文字类名：字号随尺寸、颜色随类型 / 朴素 / 自定义色切换 */
+	const textClass = computed<string>(() => {
+		let cls = 'mxi-button__text mxi-button__text--' + props.size
+		if (props.color != '') {
+			// 自定义颜色：实色为白字，朴素由 textStyle 动态控制颜色
+			cls += props.plain ? ' mxi-button__text--colored-plain' : ' mxi-button__text--white'
+		} else if (!props.plain && props.type != 'default') {
+			// 实色主题按钮为白字
+			cls += ' mxi-button__text--white'
+		} else {
+			// default 类型与朴素按钮使用类型主题色
+			cls += ' mxi-button__text--' + props.type
+		}
+		return cls
+	})
+
+	/** 文字动态样式：自定义颜色 + 朴素时文字使用自定义颜色 */
+	const textStyle = computed<string>(() => {
+		if (props.color != '' && props.plain) return 'color: ' + props.color + ';'
+		return ''
+	})
+
+	/** 加载图标类名：颜色与文字保持一致 */
+	const loadingClass = computed<string>(() => {
+		let cls = 'mxi-button__loading'
+		if (props.color != '') {
+			cls += props.plain ? ' mxi-button__loading--colored-plain' : ' mxi-button__loading--white'
+		} else if (!props.plain && props.type != 'default') {
+			cls += ' mxi-button__loading--white'
+		} else {
+			cls += ' mxi-button__loading--' + props.type
+		}
+		return cls
+	})
+
+	/** 加载图标动态样式：自定义颜色 + 朴素时边框使用自定义颜色 */
+	const loadingStyle = computed<string>(() => {
+		if (props.color != '' && props.plain) return 'border-color: ' + props.color + ';'
+		return ''
+	})
+
+	/** 细边框层类名：圆角随 square / round、颜色随类型切换 */
+	const hairlineClass = computed<string>(() => {
+		let cls = 'mxi-button__hairline'
+		if (props.square) cls += ' mxi-button__hairline--square'
+		else if (props.round) cls += ' mxi-button__hairline--round'
+		if (props.color != '') return cls + ' mxi-button__hairline--colored'
+		return cls + ' mxi-button__hairline--' + props.type
+	})
+
+	/** 细边框层动态样式：自定义颜色时边框使用自定义颜色 */
+	const hairlineStyle = computed<string>(() => {
+		if (props.color == '') return ''
+		return 'border-color: ' + props.color + ';'
+	})
+</script>
+
+<style>
+	/*
+	 * 主题变量说明：
+	 * 组件样式使用 $mxi-* 变量，由 uni-app x 编译器将项目根 uni.scss 注入本样式
+	 * （需在 uni.scss 中 @import '@/uni_modules/mxi-ui/theme/vars.scss'，
+	 * 与 uni-ui 官方 uni-scss 的接入方式一致）
+	 */
+
+	/* ========== 根节点 ========== */
+	.mxi-button {
+		position: relative;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		align-self: flex-start;
+		height: $mxi-button-normal-height;
+		padding: $mxi-button-normal-padding;
+		border-width: $mxi-border-width;
+		border-style: solid;
+		border-radius: $mxi-button-radius;
+		overflow: hidden;
+		/* #ifdef WEB */
+		cursor: pointer;
+		/* #endif */
+	}
+
+	/* ========== 尺寸 ========== */
+	.mxi-button--mini {
+		height: $mxi-button-mini-height;
+		padding: $mxi-button-mini-padding;
+	}
+	.mxi-button--small {
+		height: $mxi-button-small-height;
+		padding: $mxi-button-small-padding;
+	}
+	.mxi-button--large {
+		height: $mxi-button-large-height;
+		padding: $mxi-button-large-padding;
+	}
+
+	/* ========== 类型（背景与边框同色，视觉上无边框） ========== */
+	.mxi-button--default {
+		background-color: $mxi-color-default-bg;
+		border-color: $mxi-color-default-border;
+	}
+	.mxi-button--primary {
+		background-color: $mxi-color-primary;
+		border-color: $mxi-color-primary;
+	}
+	.mxi-button--success {
+		background-color: $mxi-color-success;
+		border-color: $mxi-color-success;
+	}
+	.mxi-button--warning {
+		background-color: $mxi-color-warning;
+		border-color: $mxi-color-warning;
+	}
+	.mxi-button--danger {
+		background-color: $mxi-color-danger;
+		border-color: $mxi-color-danger;
+	}
+
+	/* ========== 形态变体 ========== */
+	.mxi-button--plain {
+		background-color: $mxi-white;
+	}
+	.mxi-button--square {
+		border-radius: 0;
+	}
+	.mxi-button--round {
+		border-radius: $mxi-radius-max;
+	}
+	.mxi-button--block {
+		align-self: stretch;
+	}
+	.mxi-button--disabled {
+		opacity: $mxi-disabled-opacity;
+	}
+
+	/* ========== 文字 ========== */
+	.mxi-button__text {
+		font-weight: 500;
+		line-height: 1.2;
+	}
+	.mxi-button__text--mini {
+		font-size: $mxi-button-mini-font-size;
+	}
+	.mxi-button__text--small {
+		font-size: $mxi-button-small-font-size;
+	}
+	.mxi-button__text--normal {
+		font-size: $mxi-button-normal-font-size;
+	}
+	.mxi-button__text--large {
+		font-size: $mxi-button-large-font-size;
+	}
+	.mxi-button__text--white {
+		color: $mxi-white;
+	}
+	.mxi-button__text--default {
+		color: $mxi-color-default-text;
+	}
+	.mxi-button__text--primary {
+		color: $mxi-color-primary;
+	}
+	.mxi-button__text--success {
+		color: $mxi-color-success;
+	}
+	.mxi-button__text--warning {
+		color: $mxi-color-warning;
+	}
+	.mxi-button__text--danger {
+		color: $mxi-color-danger;
+	}
+
+	/* ========== 加载图标 ========== */
+	.mxi-button__loading {
+		width: $mxi-button-icon-size;
+		height: $mxi-button-icon-size;
+		border-width: 2px;
+		border-style: solid;
+		border-radius: $mxi-radius-max;
+		margin-right: 6px;
+	}
+	.mxi-button__loading--white {
+		border-color: rgba(255, 255, 255, 0.35);
+		border-top-color: $mxi-white;
+	}
+	.mxi-button__loading--default {
+		border-color: rgba(50, 50, 50, 0.25);
+		border-top-color: $mxi-color-default-text;
+	}
+	.mxi-button__loading--primary {
+		border-color: rgba(25, 137, 250, 0.25);
+		border-top-color: $mxi-color-primary;
+	}
+	.mxi-button__loading--success {
+		border-color: rgba(7, 193, 96, 0.25);
+		border-top-color: $mxi-color-success;
+	}
+	.mxi-button__loading--warning {
+		border-color: rgba(255, 151, 106, 0.25);
+		border-top-color: $mxi-color-warning;
+	}
+	.mxi-button__loading--danger {
+		border-color: rgba(238, 10, 36, 0.25);
+		border-top-color: $mxi-color-danger;
+	}
+
+	/* ========== 0.5px 细边框层 ========== */
+	.mxi-button__hairline {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		border-width: $mxi-border-width;
+		border-style: solid;
+		border-radius: $mxi-button-radius;
+		transform: scale(0.5);
+	}
+	.mxi-button__hairline--square {
+		border-radius: 0;
+	}
+	.mxi-button__hairline--round {
+		border-radius: $mxi-radius-max;
+	}
+	.mxi-button__hairline--default {
+		border-color: $mxi-color-default-border;
+	}
+	.mxi-button__hairline--primary {
+		border-color: $mxi-color-primary;
+	}
+	.mxi-button__hairline--success {
+		border-color: $mxi-color-success;
+	}
+	.mxi-button__hairline--warning {
+		border-color: $mxi-color-warning;
+	}
+	.mxi-button__hairline--danger {
+		border-color: $mxi-color-danger;
+	}
+</style>

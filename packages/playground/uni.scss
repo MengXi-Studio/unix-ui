@@ -1,0 +1,6 @@
+/**
+ * playground 全局样式变量
+ * 引入组件库主题变量（演示用户侧主题接入方式）：
+ * 组件库组件样式直接使用 $mxi-* 变量，在此预先定义同名变量可覆盖默认值
+ */
+@import '@/uni_modules/mxi-ui/theme/vars.scss';

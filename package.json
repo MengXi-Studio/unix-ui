@@ -1,0 +1,33 @@
+{
+	"name": "unix-ui",
+	"type": "module",
+	"version": "0.1.0",
+	"private": true,
+	"description": "为 uni-app x 提供功能完善的 UI 组件库",
+	"packageManager": "pnpm@10.31.0",
+	"workspaces": [
+		"packages/*"
+	],
+	"scripts": {
+		"dev:docs": "pnpm --filter @meng-xi/unix-ui-docs dev",
+		"build:docs": "pnpm --filter @meng-xi/unix-ui-docs build",
+		"sync:uni-modules": "node scripts/sync-uni-modules.mjs",
+		"sync:uni-modules:check": "node scripts/sync-uni-modules.mjs --check",
+		"release": "bumpp"
+	},
+	"devDependencies": {
+		"bumpp": "^12.3.0",
+		"prettier": "^3.8.1"
+	},
+	"author": {
+		"name": "PedroQue99",
+		"email": "ksmengfang@163.com"
+	},
+	"license": "MIT",
+	"homepage": "https://github.com/MengXi-Studio/unix-ui#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MengXi-Studio/unix-ui.git"
+	},
+	"bugs": "https://github.com/MengXi-Studio/unix-ui/issues"
+}

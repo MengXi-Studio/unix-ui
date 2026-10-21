@@ -16,7 +16,7 @@
 - App 云打包仍需在 dev.dcloud.net.cn 正式获取 appid
 
 ### 3. uni.scss 的 @import 必须用 @/ 别名，不能用相对路径
-- 现象：`@import './uni_modules/mxi-ui/theme/vars.scss'` 报 Can't find stylesheet
+- 现象：`@import './uni_modules/mxi-ui-x/theme/vars.scss'` 报 Can't find stylesheet
 - 原因：uni.scss 会被注入到**每个组件**的 style 中编译，相对路径按各组件所在目录解析而非 uni.scss 所在目录
 - 结论：uni.scss 中引用任何文件一律 `@import '@/xxx.scss'`
 

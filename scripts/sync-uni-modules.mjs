@@ -6,12 +6,12 @@
  *   node scripts/sync-uni-components.mjs --check   # 仅校验一致性（CI / precommit）
  *
  * 原理：packages/core 本身就是标准 uni_modules 组件插件目录（components/ 结构），
- * 直接复制为 playground/uni_modules/mxi-ui；HBuilderX 编译只扫描
+ * 直接复制为 playground/uni_modules/mxi-ui-x；HBuilderX 编译只扫描
  * 工程 uni_modules/ 目录，node_modules 内的组件不被 easycom 识别。
  *
- * 注意：插件目录名必须为 mxi-ui（npm 包名 @meng-xi/unix-ui 的
- * uni_modules id 约定），因此 dest/package.json 为 playground 侧
- * 手工维护（id: mxi-ui），同步时保留、不参与复制与校验。
+ * 注意：插件目录名必须为 mxi-ui-x（DCloud 插件市场 id，x 后缀
+ * 呼应 uni-app x 生态命名），因此 dest/package.json 为 playground 侧
+ * 手工维护（id: mxi-ui-x），同步时保留、不参与复制与校验。
  */
 import { cpSync, existsSync, rmSync, readdirSync, statSync, readFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
@@ -20,13 +20,13 @@ import { createHash } from 'node:crypto'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const src = join(root, 'packages/core')
-const dest = join(root, 'packages/playground/uni_modules/mxi-ui')
+const dest = join(root, 'packages/playground/uni_modules/mxi-ui-x')
 
 /** 插件目录只需要这些内容（组件源码 + 主题变量 + 文档说明） */
 const INCLUDE = ['components', 'theme', 'readme.md', 'license.md']
 
 /** 同步时需在目标目录保留的手工维护文件（不复制、不删除、校验豁免）：
- *  - package.json：HBuilderX 插件发布要求 id 为 mxi-ui，与 core（npm 包）元数据不同
+ *  - package.json：HBuilderX 插件发布要求 id 为 mxi-ui-x，与 core（npm 包）元数据不同
  *  - changelog.md：core 无此文件，仅 playground 侧维护 */
 const KEEP = ['package.json', 'changelog.md']
 
@@ -85,4 +85,4 @@ cpSync(src, dest, {
 		return INCLUDE.includes(rel.split(/[\\/]/)[0])
 	}
 })
-console.log('[sync] 已同步 packages/core → packages/playground/uni_modules/mxi-ui（package.json 保留手工版本）')
+console.log('[sync] 已同步 packages/core → packages/playground/uni_modules/mxi-ui-x（package.json 保留手工版本）')

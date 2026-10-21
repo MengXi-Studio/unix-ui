@@ -1,11 +1,11 @@
 {
-	"id": "mxi-ui",
-	"displayName": "mxi-ui 为 uni-app x 提供功能完善的 UI 组件库",
+	"id": "mxi-ui-x",
+	"displayName": "mxi-ui-x 为 uni-app x 提供功能完善的 UI 组件库",
 	"version": "0.1.0",
 	"description": "为 uni-app x 提供功能完善的 UI 组件库",
 	"keywords": [
 		"unix-ui",
-		"mxi-ui",
+		"mxi-ui-x",
 		"ui",
 		"button",
 		"组件库"

@@ -31,7 +31,7 @@ npm install @meng-xi/unix-ui
 </template>
 ```
 
-npm 安装方式需在 `pages.json` 中配置 easycom 规则；或直接将包内容复制 / 同步至项目 `uni_modules/mxi-ui` 目录实现零配置导入。
+npm 安装方式需在 `pages.json` 中配置 easycom 规则；或直接将包内容复制 / 同步至项目 `uni_modules/mxi-ui-x` 目录实现零配置导入。
 
 ## 文档
 

@@ -7,7 +7,7 @@
 ### 新增
 
 - **mxi-button 按钮**：API 对标 [Vant Button](https://vant-ui.github.io/vant/#/zh-CN/button)——五种类型（default / primary / success / warning / danger）、四种尺寸（large / normal / small / mini）、朴素（plain）、圆形（round）、方形（square）、块级（block）、禁用（disabled）、加载状态（loading / loading-text）、自定义颜色（color，支持 `linear-gradient` 渐变）、细边框（hairline）
-- **easycom 自动导入**：uni_modules 规范目录结构（`uni_modules/mxi-ui/components/组件名/组件名.uvue`），免 import 免注册；npm 方式提供 pages.json `easycom.custom` 规则
+- **easycom 自动导入**：uni_modules 规范目录结构（`uni_modules/mxi-ui-x/components/组件名/组件名.uvue`），免 import 免注册；npm 方式提供 pages.json `easycom.custom` 规则
 - **主题机制**：默认主题零配置内置（组件内顶层引入 `theme/vars.scss`，全 `!default`）；在项目根 uni.scss 直接定义 `$mxi-*` 变量即可编译期全局覆盖，详见[主题定制](/guide/theming)
 - **0.5px 细边框**：ucss 无伪元素，采用绝对定位 view + `scale(0.5)` 方案，Web 与原生端表现一致
 - **加载动画**：`UniElement.animate` 实现 loading 圆环旋转（ucss 禁用 `@keyframes` 的约束下）
@@ -16,7 +16,7 @@
 ### 工程化
 
 - **pnpm monorepo**：packages/core（组件源码）/ packages/docs（VitePress 文档站）/ packages/playground（uni-app x 演示工程）
-- **uni_modules 同步脚本**：`sync-uni-modules.mjs` 将 core 同步至 playground `uni_modules/mxi-ui`，含 sha256 一致性校验（`--check`）
+- **uni_modules 同步脚本**：`sync-uni-modules.mjs` 将 core 同步至 playground `uni_modules/mxi-ui-x`，含 sha256 一致性校验（`--check`）
 - **蒸汽模式**：playground 已启用 `vapor: true` + `vapor-render-target: bytecode`，组件在蒸汽模式编译验证通过
 - **VitePress 文档站**：本地搜索（中文翻译）、UTS 语法高亮、暗色代码主题、首页徽章
 

@@ -7,10 +7,10 @@
 
 ## Option 1: uni_modules (recommended)
 
-Place the library into your project's `uni_modules/mxi-ui` directory (via the plugin marketplace or manual copy), following the [uni_modules component plugin spec](https://doc.dcloud.net.cn/uni-app-x/plugin/uni_modules.html#dir):
+Place the library into your project's `uni_modules/mxi-ui-x` directory (via the plugin marketplace or manual copy), following the [uni_modules component plugin spec](https://doc.dcloud.net.cn/uni-app-x/plugin/uni_modules.html#dir):
 
 ```
-uni_modules/mxi-ui/
+uni_modules/mxi-ui-x/
 ├── components/
 │   └── mxi-button/
 │       └── mxi-button.uvue

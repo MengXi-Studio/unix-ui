@@ -7,10 +7,10 @@
 
 ## 方式一：uni_modules（推荐）
 
-将组件库放入项目的 `uni_modules/mxi-ui` 目录（可通过插件市场导入或手动拷贝），目录结构遵循 [uni_modules 组件插件规范](https://doc.dcloud.net.cn/uni-app-x/plugin/uni_modules.html#dir)：
+将组件库放入项目的 `uni_modules/mxi-ui-x` 目录（可通过插件市场导入或手动拷贝），目录结构遵循 [uni_modules 组件插件规范](https://doc.dcloud.net.cn/uni-app-x/plugin/uni_modules.html#dir)：
 
 ```
-uni_modules/mxi-ui/
+uni_modules/mxi-ui-x/
 ├── components/
 │   └── mxi-button/
 │       └── mxi-button.uvue

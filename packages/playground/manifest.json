@@ -1,6 +1,6 @@
 {
 	"name": "unix-ui-playground",
-	"appid": "",
+	"appid": "__UNI__1927897",
 	"description": "@meng-xi/unix-ui 示例项目",
 	"versionName": "0.1.0",
 	"versionCode": "001",
@@ -61,7 +61,11 @@
 					"xxxhdpi": ""
 				}
 			},
-			"abiFilters": ["armeabi-v7a", "arm64-v8a", "x86_64"]
+			"abiFilters": [
+				"armeabi-v7a",
+				"arm64-v8a",
+				"x86_64"
+			]
 		}
 	},
 	"app-ios": {

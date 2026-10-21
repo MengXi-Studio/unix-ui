@@ -53,8 +53,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				text: '相关链接',
 				items: [
 					{ text: 'Discussions', link: 'https://github.com/MengXi-Studio/unix-ui/discussions' },
-					{ text: 'Releases', link: 'https://github.com/MengXi-Studio/unix-ui/releases' },
-					{ text: 'Vant', link: 'https://vant-ui.github.io/vant/' }
+					{ text: 'Releases', link: 'https://github.com/MengXi-Studio/unix-ui/releases' }
 				]
 			}
 		],

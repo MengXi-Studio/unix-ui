@@ -110,6 +110,7 @@
 		let cls = 'mxi-button mxi-button--' + props.type
 		if (props.size != 'normal') cls += ' mxi-button--' + props.size
 		if (props.plain) cls += ' mxi-button--plain'
+		if (props.hairline) cls += ' mxi-button--hairline'
 		if (props.square) cls += ' mxi-button--square'
 		if (props.round) cls += ' mxi-button--round'
 		if (props.block) cls += ' mxi-button--block'
@@ -263,6 +264,10 @@
 	.mxi-button--plain {
 		background-color: $mxi-white;
 	}
+	.mxi-button--hairline {
+		/* 0.5px 边框由 __hairline 层承载，根节点 1px 边框清零，避免叠加出双线 */
+		border-width: 0;
+	}
 	.mxi-button--square {
 		border-radius: 0;
 	}
@@ -352,12 +357,16 @@
 		position: absolute;
 		top: 0;
 		left: 0;
-		width: 100%;
-		height: 100%;
+		/* 尺寸取父容器 200%，以左上角为原点 scale(0.5) 后恰好铺满父容器，1px 边框视觉减半 */
+		width: 200%;
+		height: 200%;
 		border-width: $mxi-border-width;
 		border-style: solid;
-		border-radius: $mxi-button-radius;
+		/* 元素为父容器两倍大，圆角需同步两倍（缩放后与根节点圆角对齐） */
+		border-radius: $mxi-button-radius * 2;
 		transform: scale(0.5);
+		/* 默认中心原点缩放会偏移半个按钮，必须以左上角为原点 */
+		transform-origin: 0 0;
 	}
 	.mxi-button__hairline--square {
 		border-radius: 0;

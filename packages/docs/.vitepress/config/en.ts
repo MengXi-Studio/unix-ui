@@ -40,8 +40,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				text: 'Links',
 				items: [
 					{ text: 'Discussions', link: 'https://github.com/MengXi-Studio/unix-ui/discussions' },
-					{ text: 'Releases', link: 'https://github.com/MengXi-Studio/unix-ui/releases' },
-					{ text: 'Vant', link: 'https://vant-ui.github.io/vant/' }
+					{ text: 'Releases', link: 'https://github.com/MengXi-Studio/unix-ui/releases' }
 				]
 			}
 		],

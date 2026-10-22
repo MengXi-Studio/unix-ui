@@ -46,3 +46,8 @@
 - **根节点 border-width 必须清零**：hairline 按钮若保留根节点 1px 实色边框，会与 0.5px 细边框层叠加出双线；用 `--hairline` 变体类 `border-width: 0` 只保留缩放层
 - **hairline 层圆角要 ×2**：元素是父容器两倍大，`border-radius` 不同步两倍的话缩放后视觉圆角只有根节点一半
 - 排查手法：临时把 border-width 改粗（如 10px）截图，偏移一目了然；getBoundingClientRect 对比 root 与 hairline 层的视觉 box 是决定性数据
+
+### 9. Vant spinner 对齐三要素（2026-10-22 运行实测）
+- UniElement.animate 的 easing 支持 `'steps(12)'`（官方 animation-timing-function 文档收录 steps()；Web 端走 WAAPI 原生解析），运行时 `getAnimations()[0].effect.getTiming().easing` 可实测确认返回 `"steps(12)"`
+- Vant 花瓣加载的真实观感来自三件事叠加：容器 steps(12) 离散旋转（滴答感）+ 辐条 opacity 按 `1 - 0.0625 × (i-1)` 递减（彗尾拖影，首条 1.0 → 末条 0.3125）+ 2px 固定宽 / 40% 圆角辐条（细花瓣）；缺任何一步就是"风扇花"
+- 30° 均布 + steps(12) 是自相似设计：每跳一格亮部前移一瓣而拖尾图案不变，这是离散旋转与亮度梯度必须配合使用的原因，亮度梯度单独存在只是静止渐变图案

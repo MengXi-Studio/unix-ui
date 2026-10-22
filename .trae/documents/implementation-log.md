@@ -6,3 +6,5 @@
 | --- | --- | --- |
 | 2026-10-21 | [unix-ui-monorepo-mxi-button](新增/2026-10-21/unix-ui-monorepo-mxi-button.md) | monorepo 搭建 + 首个组件 mxi-button，验证零配置默认主题与覆盖机制 |
 | 2026-10-22 | [mxi-button-按压状态](新增/2026-10-22/mxi-button-按压状态.md) | mxi-button 新增按压反馈（hover-class + opacity 0.8 可主题覆盖），运行实测与双语文档完成 |
+| 2026-10-22 | [mxi-button-loadingType](新增/2026-10-22/mxi-button-loadingType.md) | mxi-button 新增 loading-type（circular 默认 / spinner 花瓣对齐 Vant / clock 时钟指针三形态），动画句柄管理、运行实测与双语文档完成 |
+| 2026-10-22 | [mxi-button-loadingType](新增/2026-10-22/mxi-button-loadingType.md) | spinner 对齐 Vant 修复（对照官方源码）：steps(12) 离散旋转 + 辐条亮度拖尾 + 2px/40% 几何，运行实测通过 |

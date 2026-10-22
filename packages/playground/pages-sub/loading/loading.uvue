@@ -1,0 +1,145 @@
+<template>
+	<!-- #ifdef APP -->
+	<scroll-view class="page" :scroll-y="true">
+	<!-- #endif -->
+	<!-- #ifndef APP -->
+	<view class="page">
+	<!-- #endif -->
+		<view class="container">
+			<text class="section">加载类型</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-loading />
+						<text class="caption">circular</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading type="spinner" />
+						<text class="caption">spinner</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">自定义颜色</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-loading color="#1989fa" />
+						<text class="caption">primary</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading color="#07c160" />
+						<text class="caption">success</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading type="spinner" color="#ee0a24" />
+						<text class="caption">danger</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading type="spinner" color="#7232dd" />
+						<text class="caption">purple</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">自定义大小</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-loading type="spinner" size="16" />
+						<text class="caption">16</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading type="spinner" size="24" />
+						<text class="caption">24</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading type="spinner" size="30" />
+						<text class="caption">30</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading size="36" />
+						<text class="caption">36</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">加载文案</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-loading>加载中...</mxi-loading>
+						<text class="caption">default</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading :vertical="true">加载中...</mxi-loading>
+						<text class="caption">vertical</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading type="spinner" :vertical="true">加载中...</mxi-loading>
+						<text class="caption">vertical+spinner</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">自定义文字样式</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-loading text-size="16" text-color="#1989fa">加载中...</mxi-loading>
+						<text class="caption">text-size/color</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading type="spinner" :vertical="true" text-size="12" text-color="#ee0a24">加载中...</mxi-loading>
+						<text class="caption">vertical+text</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">自定义图标</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-loading color="#1989fa">
+							<template #icon>
+								<text class="icon-demo">❀</text>
+							</template>
+						</mxi-loading>
+						<text class="caption">icon 插槽</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading type="spinner" :vertical="true">
+							<template #icon>
+								<text class="icon-demo">✿</text>
+							</template>
+							加载中...
+						</mxi-loading>
+						<text class="caption">icon+文案</text>
+					</view>
+				</view>
+			</view>
+		</view>
+	<!-- #ifdef APP -->
+	</scroll-view>
+	<!-- #endif -->
+	<!-- #ifndef APP -->
+	</view>
+	<!-- #endif -->
+</template>
+
+<style>
+	.col-gap {
+		flex-direction: column;
+		align-items: center;
+		margin-right: 24px;
+	}
+	.caption {
+		margin-top: 8px;
+		font-size: 12px;
+		color: #969799;
+	}
+	.icon-demo {
+		font-size: 24px;
+		color: #1989fa;
+	}
+</style>

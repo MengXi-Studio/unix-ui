@@ -43,3 +43,10 @@ $mxi-button-active-opacity: 0.8 !default;
 /* ========== 通用类型背景色（default 类型使用） ========== */
 $mxi-color-default-bg: $mxi-white !default;
 $mxi-color-default-border: #ebedf0 !default;
+
+/* ========== Loading 加载 ========== */
+$mxi-loading-spinner-size: 30px !default;
+$mxi-loading-spinner-color: #c8c9cc !default;
+$mxi-loading-text-color: #646566 !default;
+$mxi-loading-text-font-size: 14px !default;
+$mxi-loading-text-gap: 4px !default;

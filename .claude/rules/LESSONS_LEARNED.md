@@ -51,3 +51,8 @@
 - UniElement.animate 的 easing 支持 `'steps(12)'`（官方 animation-timing-function 文档收录 steps()；Web 端走 WAAPI 原生解析），运行时 `getAnimations()[0].effect.getTiming().easing` 可实测确认返回 `"steps(12)"`
 - Vant 花瓣加载的真实观感来自三件事叠加：容器 steps(12) 离散旋转（滴答感）+ 辐条 opacity 按 `1 - 0.0625 × (i-1)` 递减（彗尾拖影，首条 1.0 → 末条 0.3125）+ 2px 固定宽 / 40% 圆角辐条（细花瓣）；缺任何一步就是"风扇花"
 - 30° 均布 + steps(12) 是自相似设计：每跳一格亮部前移一瓣而拖尾图案不变，这是离散旋转与亮度梯度必须配合使用的原因，亮度梯度单独存在只是静止渐变图案
+
+### 10. 插槽能力边界（mxi-loading 运行实测，2026-10-22）
+- `useSlots()` 在组件内可用，`slots.default != null` 能正确检测默认插槽是否传内容（17 实例实测：11 无文案不渲染 text 节点、6 有文案渲染）——这是避免空插槽节点产生多余 margin 的唯一手段
+- 具名插槽 fallback 可用：`<slot name="icon">默认图标</slot>` 未传插槽时渲染 fallback，传入时整体替换；fallback 内的 v-if/v-for 与 ref 工作正常（ref 仍属组件自身作用域）
+- 组件根节点用 `align-self: flex-start` 收缩宽度贴内容，否则块级 view 默认撑满父容器导致图标与文案布局失控

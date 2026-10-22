@@ -70,7 +70,10 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			'/en/components/': [
 				{
 					text: 'Basic Components',
-					items: [{ text: 'Button', link: '/en/components/button' }]
+					items: [
+						{ text: 'Button', link: '/en/components/button' },
+						{ text: 'Loading', link: '/en/components/loading' }
+					]
 				}
 			]
 		}

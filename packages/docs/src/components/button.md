@@ -46,7 +46,7 @@
 
 ### 加载状态
 
-通过 `loading` 属性设置按钮为加载状态，加载状态下按钮不可点击；`loading-text` 可自定义加载文字；`loading-type` 可切换加载图标形态（`circular` 圆环旋转 / `clock` 时钟指针旋转 / `spinner` 花瓣旋转）。
+通过 `loading` 属性设置按钮为加载状态，加载状态下按钮不可点击；`loading-text` 可自定义加载文字；`loading-type` 可切换加载图标形态（`circular` 圆环旋转 / `spinner` 花瓣旋转），图标由 [Loading](/components/loading) 组件承载。
 
 ```html
 <mxi-button type="primary" loading />
@@ -107,7 +107,7 @@
 | block | 是否为块级元素 | boolean | `false` |
 | loading | 是否显示为加载状态 | boolean | `false` |
 | loading-text | 加载状态提示文字 | string | - |
-| loading-type | 加载图标类型，可选值为 `circular` `clock` `spinner` | LoadingType | `circular` |
+| loading-type | 加载图标类型，可选值为 `circular` `spinner` | LoadingType | `circular` |
 | color | 自定义按钮颜色，支持 `linear-gradient` 渐变 | string | - |
 | custom-class | 自定义根节点类名 | string.ClassString | - |
 | custom-style | 自定义根节点内联样式 | string | - |

@@ -46,7 +46,7 @@ Disable a button with the `disabled` attribute; disabled buttons cannot be click
 
 ### Loading
 
-Set a button to the loading state with the `loading` attribute; loading buttons cannot be clicked. Use `loading-text` to customize the loading label. Use `loading-type` to switch the loading icon style (`circular` spinning ring / `clock` spinning hand / `spinner` spinning petals).
+Set a button to the loading state with the `loading` attribute; loading buttons cannot be clicked. Use `loading-text` to customize the loading label. Use `loading-type` to switch the loading icon style (`circular` spinning ring / `spinner` spinning petals); the icon is powered by the [Loading](/en/components/loading) component.
 
 ```html
 <mxi-button type="primary" loading />
@@ -107,7 +107,7 @@ Customize the button color with the `color` attribute; `linear-gradient` is supp
 | block | Whether to be a block element | boolean | `false` |
 | loading | Whether to show the loading state | boolean | `false` |
 | loading-text | Loading state label | string | - |
-| loading-type | Loading icon type, can be set to `circular` `clock` `spinner` | LoadingType | `circular` |
+| loading-type | Loading icon type, can be set to `circular` `spinner` | LoadingType | `circular` |
 | color | Custom button color, supports `linear-gradient` | string | - |
 | custom-class | Custom root node class name | string.ClassString | - |
 | custom-style | Custom root node inline style | string | - |

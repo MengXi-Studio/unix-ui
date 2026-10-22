@@ -4,9 +4,9 @@
 		<view ref="spinnerRef" class="mxi-loading__spinner" :style="spinnerStyle">
 			<slot name="icon">
 				<!-- circular：弧段圆环（顶部单色弧 + 透明轨道），随容器匀速旋转 -->
-				<view v-if="props.type == 'circular'" class="mxi-loading__ring" :style="ringStyle"></view>
+				<view v-if="props.type == 'circular'" :class="ringClass" :style="ringStyle"></view>
 				<!-- spinner：12 条辐条亮度递减成拖尾，随容器 12 步离散旋转 -->
-				<view v-for="i in spokeCount" :key="i" class="mxi-loading__spoke" :style="spokeStyle(i)"></view>
+				<view v-for="i in spokeCount" :key="i" :class="spokeClass" :style="spokeStyle(i)"></view>
 			</slot>
 		</view>
 		<!-- 加载文案：传入默认插槽内容时渲染，避免空文案节点产生多余间距 -->
@@ -15,15 +15,14 @@
 </template>
 
 <script setup lang="uts">
-	/** 加载类型：circular 弧段圆环（匀速旋转）/ spinner 花瓣（12 条辐条亮度拖尾，离散旋转） */
-	type LoadingType = 'circular' | 'spinner'
+	import { LoadingType } from './loading.uts'
 
 	type Props = {
 		/** 加载类型 */
 		type?: LoadingType
-		/** 加载图标颜色 */
+		/** 加载图标颜色：支持语义色名（default / primary / success / warning / danger / white）与 CSS 色值（#hex 等） */
 		color?: string
-		/** 加载图标大小，支持纯数字（自动补 px）或带单位字符串 */
+		/** 加载图标大小，支持纯数字（自动补 px）、带单位字符串或 '100%'（撑满外部定尺寸容器） */
 		size?: string
 		/** 是否垂直排列图标与文字 */
 		vertical?: boolean
@@ -70,34 +69,57 @@
 		return cls
 	})
 
-	/** 根节点动态样式：customStyle 补分号后拼接 */
+	/** 根节点动态样式：customStyle 补分号后拼接；size 传 '100%' 时根节点同步撑满（配合外部定尺寸框复用） */
 	const rootStyle = computed<string>(() => {
 		let style = props.customStyle
 		if (style != '' && !style.endsWith(';')) style += ';'
+		if (props.size == '100%') style += 'width: 100%; height: 100%;'
 		return style
 	})
 
-	/** 图标容器动态样式：size 非空时定宽高（纯数字自动补 px），为空时走主题默认尺寸 */
+	/** 语义色名单：命中走编译期变体类（绑定 $mxi-color-* 主题变量，覆盖仍生效），否则视为 CSS 色值走 inline */
+	const semanticColors: string[] = ['default', 'primary', 'success', 'warning', 'danger', 'white']
+
+	/** 语义色变体名：color 为语义色名时返回该名，否则空串 */
+	const colorVariant = computed<string>(() => {
+		return semanticColors.indexOf(props.color) >= 0 ? props.color : ''
+	})
+
+	/** 弧段圆环类名：语义色时追加变体类（主题色编译期绑定） */
+	const ringClass = computed<string>(() => {
+		let cls = 'mxi-loading__ring'
+		if (colorVariant.value != '') cls += ' mxi-loading__ring--' + colorVariant.value
+		return cls
+	})
+
+	/** 花瓣辐条类名：语义色时追加变体类（主题色编译期绑定） */
+	const spokeClass = computed<string>(() => {
+		let cls = 'mxi-loading__spoke'
+		if (colorVariant.value != '') cls += ' mxi-loading__spoke--' + colorVariant.value
+		return cls
+	})
+
+	/** 图标容器动态样式：size 非空时定宽高（纯数字自动补 px、'100%' 原样撑满），为空时走主题默认尺寸 */
 	const spinnerStyle = computed<string>(() => {
 		if (props.size == '') return ''
 		const side = addUnit(props.size)
 		return 'width: ' + side + '; height: ' + side + ';'
 	})
 
-	/** 弧段圆环动态样式：自定义颜色时弧段（顶部边框）使用自定义颜色 */
+	/** 弧段圆环动态样式：自定义 CSS 色值时弧段（顶部边框）使用自定义颜色（语义色走变体类） */
 	const ringStyle = computed<string>(() => {
-		if (props.color == '') return ''
+		if (props.color == '' || colorVariant.value != '') return ''
 		return 'border-top-color: ' + props.color + ';'
 	})
 
 	/**
 	 * spinner 型辐条动态样式：每 30° 一条绕圆心均匀分布，亮度按序号递减形成拖尾
-	 * （第 i 条 opacity = 1 - 0.0625 × (i - 1)，首条 1.0 递减至末条 0.3125）；自定义颜色时颜色走 inline
+	 * （第 i 条 opacity = 1 - 0.0625 × (i - 1)，首条 1.0 递减至末条 0.3125）；自定义 CSS 色值时颜色走 inline（语义色走变体类）
 	 */
 	function spokeStyle(index: number): string {
 		let style = 'transform: rotate(' + ((index - 1) * 30) + 'deg);'
 		style += ' opacity: ' + (1 - 0.0625 * (index - 1)) + ';'
-		if (props.color != '') style += ' background-color: ' + props.color + ';'
+		if (props.color != '' && colorVariant.value == '') style += ' background-color: ' + props.color + ';'
 		return style
 	}
 
@@ -236,6 +258,44 @@
 		border-radius: 40%;
 		background-color: $mxi-loading-spinner-color;
 		transform-origin: 50% 200%;
+	}
+
+	/* ========== 语义色变体（color 传语义色名时启用，编译期绑定主题变量，用户覆盖 uni.scss 变量即生效） ========== */
+	.mxi-loading__ring--default {
+		border-top-color: $mxi-text-color;
+	}
+	.mxi-loading__ring--primary {
+		border-top-color: $mxi-color-primary;
+	}
+	.mxi-loading__ring--success {
+		border-top-color: $mxi-color-success;
+	}
+	.mxi-loading__ring--warning {
+		border-top-color: $mxi-color-warning;
+	}
+	.mxi-loading__ring--danger {
+		border-top-color: $mxi-color-danger;
+	}
+	.mxi-loading__ring--white {
+		border-top-color: $mxi-white;
+	}
+	.mxi-loading__spoke--default {
+		background-color: $mxi-text-color;
+	}
+	.mxi-loading__spoke--primary {
+		background-color: $mxi-color-primary;
+	}
+	.mxi-loading__spoke--success {
+		background-color: $mxi-color-success;
+	}
+	.mxi-loading__spoke--warning {
+		background-color: $mxi-color-warning;
+	}
+	.mxi-loading__spoke--danger {
+		background-color: $mxi-color-danger;
+	}
+	.mxi-loading__spoke--white {
+		background-color: $mxi-white;
 	}
 
 	/* ========== 文案 ========== */

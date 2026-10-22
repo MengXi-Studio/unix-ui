@@ -96,6 +96,28 @@
 				</view>
 			</view>
 
+			<text class="section">语义色名</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-loading color="primary" />
+						<text class="caption">primary</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading color="success" />
+						<text class="caption">success</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading type="spinner" color="danger" />
+						<text class="caption">danger</text>
+					</view>
+					<view class="col-gap">
+						<mxi-loading type="spinner" color="white" custom-style="background-color: #1989fa; border-radius: 4px; padding: 4px;" />
+						<text class="caption">white</text>
+					</view>
+				</view>
+			</view>
+
 			<text class="section">自定义图标</text>
 			<view class="card">
 				<view class="row">

@@ -4,9 +4,9 @@
 
 ### 新增
 
-- **mxi-loading 加载**：API 对标 [Vant Loading](https://vant-ui.github.io/vant/#/zh-CN/loading)——两种加载类型（circular 弧段圆环 / spinner 花瓣）、自定义颜色（color）、自定义大小（size）、垂直排列（vertical）、自定义文案样式（text-size / text-color）、默认文案插槽与 icon 自定义图标插槽；spinner 型采用 1.2s 12 步离散旋转 + 亮度拖尾，circular 型为弧段圆环匀速旋转
+- **mxi-loading 加载**：API 对标 [Vant Loading](https://vant-ui.github.io/vant/#/zh-CN/loading)——两种加载类型（circular 弧段圆环 / spinner 花瓣）、自定义颜色（color，支持 CSS 色值与语义色名 `default` `primary` `success` `warning` `danger` `white`）、自定义大小（size，支持 `100%` 撑满外部定尺寸容器）、垂直排列（vertical）、自定义文案样式（text-size / text-color）、默认文案插槽与 icon 自定义图标插槽；spinner 型采用 1.2s 12 步离散旋转 + 亮度拖尾，circular 型为弧段圆环匀速旋转
 - **mxi-button 按压反馈**：基于 `hover-class` 实现按压态（opacity 0.8，可主题覆盖），禁用与加载状态不出现按压反馈
-- **mxi-button 加载类型**：`loading-type` 新增 `clock`（时钟指针）与 `spinner`（花瓣，亮度拖尾 + 离散旋转）形态
+- **mxi-button 加载重构**：加载图标改为复用 [mxi-loading](/components/loading)（形态与动画实现单处维护）；`loading-type` 移除 `clock` 类型，收敛为 `circular` / `spinner` 两种（破坏性变更）
 
 ## [0.1.0] - 2026-10-21
 

@@ -25,16 +25,17 @@
 
 ### 自定义颜色
 
-通过 `color` 属性自定义加载图标的颜色。
+通过 `color` 属性自定义加载图标的颜色，支持 CSS 色值与语义色名（`default` / `primary` / `success` / `warning` / `danger` / `white`）；语义色名编译期绑定主题变量，在 `uni.scss` 中覆盖对应 `$mxi-color-*` 变量即可生效。
 
 ```html
 <mxi-loading color="#1989fa" />
 <mxi-loading type="spinner" color="#07c160" />
+<mxi-loading type="spinner" color="primary" />
 ```
 
 ### 自定义大小
 
-通过 `size` 属性自定义加载图标的大小，支持纯数字（自动补 `px`）或带单位字符串，默认为 `30px`。
+通过 `size` 属性自定义加载图标的大小，支持纯数字（自动补 `px`）、带单位字符串或 `100%`（撑满外部定尺寸容器），默认为 `30px`。
 
 ```html
 <mxi-loading size="16" />
@@ -77,8 +78,8 @@
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | type | 加载类型，可选值为 `circular` `spinner` | LoadingType | `circular` |
-| color | 加载图标颜色 | string | - |
-| size | 加载图标大小，支持纯数字或带单位字符串 | string | - |
+| color | 加载图标颜色，支持 CSS 色值与语义色名（`default` `primary` `success` `warning` `danger` `white`） | string | - |
+| size | 加载图标大小，支持纯数字、带单位字符串或 `100%`（撑满外部定尺寸容器） | string | - |
 | vertical | 是否垂直排列图标与文字 | boolean | `false` |
 | text-size | 文字字号，支持纯数字或带单位字符串 | string | - |
 | text-color | 文字颜色 | string | - |

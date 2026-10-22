@@ -11,3 +11,5 @@
 | 2026-10-22 | [mxi-loading](新增/2026-10-22/mxi-loading.md) | 新增独立加载组件 mxi-loading（circular 弧段圆环 / spinner 花瓣拖尾，color/size/vertical/文案/图标插槽全量 API），运行实测与双语文档完成 |
 | 2026-10-22 | [mxi-loading](新增/2026-10-22/mxi-loading.md) | easing 类型修复：UniAnimationOptionEasing 不支持 steps()（App 端不识别），spinner 改 linear + 25 帧阶梯关键帧等效离散旋转，mxi-button / mxi-loading 双组件落地，运行实测通过 |
 | 2026-10-22 | [mxi-loading](新增/2026-10-22/mxi-loading.md) | 动画观感修复：spinner 容器 flex 居中（自定义图标公转→自转）、spinner 节奏 800ms→1200ms 跳格（用户拍板，mxi-button 同步），运行实测通过 |
+| 2026-10-22 | [mxi-button-loading-refactor](新增/2026-10-22/mxi-button-loading-refactor.md) | mxi-button 加载图标重构为复用 mxi-loading（动画单处维护）；loading-type 移除 clock（breaking），mxi-loading 新增语义色名与 size 100%，运行实测通过 |
+| 2026-10-22 | [mxi-button-loading-refactor](新增/2026-10-22/mxi-button-loading-refactor.md) | LoadingType 外置到 mxi-loading 同级 loading.uts（跨组件共享），mxi-button 相对路径导入消除双份定义，运行实测通过 |

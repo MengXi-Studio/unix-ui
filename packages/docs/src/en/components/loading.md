@@ -25,16 +25,17 @@ Two types are supported: `circular` (arc ring, default) and `spinner` (petals).
 
 ### Custom Color
 
-Use the `color` prop to customize the icon color.
+Use the `color` prop to customize the icon color. Both CSS color values and semantic color names (`default` / `primary` / `success` / `warning` / `danger` / `white`) are supported; semantic names are bound to theme variables at compile time, so overriding the corresponding `$mxi-color-*` variables in `uni.scss` takes effect.
 
 ```html
 <mxi-loading color="#1989fa" />
 <mxi-loading type="spinner" color="#07c160" />
+<mxi-loading type="spinner" color="primary" />
 ```
 
 ### Custom Size
 
-Use the `size` prop to customize the icon size. Pure numbers (with `px` appended automatically) or strings with units are supported; the default is `30px`.
+Use the `size` prop to customize the icon size. Pure numbers (with `px` appended automatically), strings with units, or `100%` (filling an externally sized container) are supported; the default is `30px`.
 
 ```html
 <mxi-loading size="16" />
@@ -77,8 +78,8 @@ Use the `icon` slot to replace the default icon; the replaced icon still rotates
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
 | type | Loading type, can be set to `circular` `spinner` | LoadingType | `circular` |
-| color | Loading icon color | string | - |
-| size | Loading icon size, pure numbers or strings with units | string | - |
+| color | Loading icon color, CSS color values or semantic names (`default` `primary` `success` `warning` `danger` `white`) | string | - |
+| size | Loading icon size, pure numbers, strings with units, or `100%` (fill an externally sized container) | string | - |
 | vertical | Whether to arrange icon and text vertically | boolean | `false` |
 | text-size | Text font size, pure numbers or strings with units | string | - |
 | text-color | Text color | string | - |

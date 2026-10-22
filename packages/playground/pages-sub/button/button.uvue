@@ -101,9 +101,6 @@
 						<mxi-button type="primary" :loading="true" loading-text="加载中..." @click="onButtonClick('loading-text')">加载文字</mxi-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" :loading="true" loading-type="clock" @click="onButtonClick('loading-clock')">时钟加载</mxi-button>
-					</view>
-					<view class="row-gap">
 						<mxi-button type="primary" :loading="true" loading-type="circular" @click="onButtonClick('loading-circular')">圆环加载</mxi-button>
 					</view>
 					<view class="row-gap">

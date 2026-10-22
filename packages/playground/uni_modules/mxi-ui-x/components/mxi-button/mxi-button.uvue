@@ -2,12 +2,9 @@
 	<view :class="buttonClass" :style="rootStyle" :hover-class="hoverClass" @click="handleClick">
 		<!-- 0.5px 细边框层：ucss 无伪元素，用绝对定位 view 承载 1px 边框后 scale(0.5) 实现 -->
 		<view v-if="props.hairline" :class="hairlineClass" :style="hairlineStyle"></view>
-		<!-- 加载图标：UniElement.animate 旋转（ucss 不支持 @keyframes） -->
-		<view v-if="props.loading" ref="loadingIcon" :class="loadingClass" :style="loadingStyle">
-			<!-- clock 型：圆环静止，指针子节点绕圆心旋转（circular 型为圆环整体旋转，无子节点） -->
-			<view v-if="props.loadingType == 'clock'" ref="loadingHand" :class="loadingHandClass" :style="loadingHandStyle"></view>
-			<!-- spinner 型：12 条辐条亮度递减成拖尾，随容器 12 步离散旋转 -->
-			<view v-for="i in spokeCount" :key="i" :class="loadingSpokeClass" :style="loadingSpokeStyle(i)"></view>
+		<!-- 加载图标：复用 mxi-loading 组件（形态与动画实现收敛于该组件），size 100% 撑满定尺寸外框 -->
+		<view v-if="props.loading" class="mxi-button__loading-box">
+			<mxi-loading :type="props.loadingType" :color="loadingColor" size="100%" />
 		</view>
 		<!-- 按钮内容：加载中显示 loadingText，否则渲染默认插槽 -->
 		<text v-if="props.loading && props.loadingText != ''" :class="textClass">{{ props.loadingText }}</text>
@@ -16,12 +13,12 @@
 </template>
 
 <script setup lang="uts">
+	import { LoadingType } from '../mxi-loading/loading.uts'
+
 	/** 按钮类型：default 默认 / primary 主要 / success 成功 / warning 警告 / danger 危险 */
 	type ButtonType = 'default' | 'primary' | 'success' | 'warning' | 'danger'
 	/** 按钮尺寸：large 大 / normal 常规 / small 小 / mini 迷你 */
 	type ButtonSize = 'large' | 'normal' | 'small' | 'mini'
-	/** 加载图标类型：circular 圆环（整体匀速旋转）/ clock 时钟指针（圆环静止 + 指针旋转）/ spinner 花瓣（12 条辐条亮度递减拖尾，容器 12 步离散旋转） */
-	type LoadingType = 'circular' | 'clock' | 'spinner'
 
 	type Props = {
 		/** 按钮类型 */
@@ -73,76 +70,15 @@
 
 	const emit = defineEmits<{ click: [event: MouseEvent] }>()
 
-	/** 加载图标元素引用（用于启动旋转动画） */
-	const loadingIcon = ref<UniElement | null>(null)
-
-	/** clock 型指针元素引用（用于启动指针旋转动画） */
-	const loadingHand = ref<UniElement | null>(null)
-
-	/** 当前加载动画句柄（切换 loadingType 时取消旧动画，避免旧目标元素永续旋转） */
-	let loadingAnimation: Animation | null = null
-
 	/**
-	 * spinner 型阶梯关键帧：每 1/12 周期角位移 30°，段内恒值、段末约 2% 时长完成过渡
-	 * （UniAnimationOptionEasing 类型不支持 steps() 缓动，App 端原生不识别；
-	 * 用 linear easing + 双帧夹逼实现等效的 12 步离散旋转，跨端行为一致）
+	 * 加载图标颜色：实色按钮为白图标、朴素 + 自定义色用色值（inline 传递）、其余随按钮类型走语义色名
+	 * （语义色名由 mxi-loading 编译期绑定 $mxi-color-* 主题变量，用户覆盖 uni.scss 变量即生效）
 	 */
-	function buildTickKeyframes(): UniAnimationKeyframe[] {
-		const frames: UniAnimationKeyframe[] = []
-		for (let i = 0; i < 12; i++) {
-			frames.push({ transform: 'rotate(' + (i * 30) + 'deg)', offset: i / 12 })
-			frames.push({ transform: 'rotate(' + (i * 30) + 'deg)', offset: (i + 0.98) / 12 })
-		}
-		frames.push({ transform: 'rotate(360deg)', offset: 1 })
-		return frames
-	}
-
-	/**
-	 * 启动加载动画
-	 * circular：圆环整体旋转；clock：仅指针旋转、圆环静止；spinner：辐条随容器离散旋转
-	 * 通过 UniElement.animate 实现（ucss 禁用 @keyframes，规则要求改用 animate API）
-	 */
-	function startLoadingAnimation() {
-		// 切换动画目标前先取消旧动画（如 loading 期间动态切换 loadingType）
-		loadingAnimation?.cancel()
-		// clock 型动画目标是子指针，circular / spinner 型是图标容器本身（圆环 / 辐条随容器旋转）
-		const el = props.loadingType == 'clock' ? loadingHand.value : loadingIcon.value
-		if (el == null) return
-		// spinner 型换 12 步阶梯关键帧（滴答式拖尾），其余类型两帧匀速旋转
-		let keyframes: UniAnimationKeyframe[] = [
-			{ transform: 'rotate(0deg)', offset: 0 },
-			{ transform: 'rotate(360deg)', offset: 1 }
-		]
-		if (props.loadingType == 'spinner') keyframes = buildTickKeyframes()
-		loadingAnimation = el.animate(
-			keyframes,
-			// spinner 型 1.2s 跳格（花瓣节奏放缓），其余类型 0.8s 匀速
-			{ duration: props.loadingType == 'spinner' ? 1200 : 800, iterations: Infinity, easing: 'linear' }
-		)
-	}
-
-	// 初始即为加载状态时启动动画（onMounted 时元素已完成挂载）
-	onMounted(() => {
-		if (props.loading) startLoadingAnimation()
+	const loadingColor = computed<string>(() => {
+		if (props.color != '') return props.plain ? props.color : 'white'
+		if (!props.plain && props.type != 'default') return 'white'
+		return props.type
 	})
-
-	// 动态开启加载状态时启动动画（flush: post 确保元素已挂载后再取 ref）
-	watch(
-		() => props.loading,
-		(value: boolean) => {
-			if (value) startLoadingAnimation()
-		},
-		{ flush: 'post' }
-	)
-
-	// loading 期间动态切换加载图标类型时重启动画（flush: post 确保指针元素已挂载）
-	watch(
-		() => props.loadingType,
-		(_: LoadingType) => {
-			if (props.loading) startLoadingAnimation()
-		},
-		{ flush: 'post' }
-	)
 
 	/**
 	 * 点击事件处理
@@ -187,7 +123,7 @@
 		return style
 	})
 
-	/** 文字类名：字号随尺寸、颜色随类型 / 朴素 / 自定义色切换 */
+	/** 文字类名：字号随尺寸、颜色随类型 / 朴素 / 自定义色切换；加载文案追加与图标的间距类 */
 	const textClass = computed<string>(() => {
 		let cls = 'mxi-button__text mxi-button__text--' + props.size
 		if (props.color != '') {
@@ -200,6 +136,8 @@
 			// default 类型与朴素按钮使用类型主题色
 			cls += ' mxi-button__text--' + props.type
 		}
+		// 加载文案与图标的间距收在文字侧（margin-left），无文案时图标单独居中不受 margin 偏移
+		if (props.loading && props.loadingText != '') cls += ' mxi-button__text--loading'
 		return cls
 	})
 
@@ -208,56 +146,6 @@
 		if (props.color != '' && props.plain) return 'color: ' + props.color + ';'
 		return ''
 	})
-
-	/** 加载图标颜色变体名：与文字颜色逻辑一致（colored-plain 变体颜色走 inline style） */
-	const loadingVariant = computed<string>(() => {
-		if (props.color != '') return props.plain ? 'colored-plain' : 'white'
-		if (!props.plain && props.type != 'default') return 'white'
-		return props.type
-	})
-
-	/** 加载图标类名：circular 为带顶部高亮的旋转圆环；clock 为均匀轨道的静止圆环；spinner 无圆环轨道（颜色由辐条承载） */
-	const loadingClass = computed<string>(() => {
-		if (props.loadingType == 'clock') return 'mxi-button__loading mxi-button__loading-clock--' + loadingVariant.value
-		if (props.loadingType == 'spinner') return 'mxi-button__loading mxi-button__loading-spinner'
-		return 'mxi-button__loading mxi-button__loading--' + loadingVariant.value
-	})
-
-	/** clock 型指针类名：颜色与圆环变体保持一致 */
-	const loadingHandClass = computed<string>(() => {
-		return 'mxi-button__loading-hand mxi-button__loading-hand--' + loadingVariant.value
-	})
-
-	/** 加载图标动态样式：自定义颜色 + 朴素时边框使用自定义颜色 */
-	const loadingStyle = computed<string>(() => {
-		if (props.color != '' && props.plain) return 'border-color: ' + props.color + ';'
-		return ''
-	})
-
-	/** clock 型指针动态样式：自定义颜色 + 朴素时指针使用自定义颜色 */
-	const loadingHandStyle = computed<string>(() => {
-		if (props.color != '' && props.plain) return 'background-color: ' + props.color + ';'
-		return ''
-	})
-
-	/** spinner 型辐条渲染数量：仅 spinner 型渲染 12 条，其余类型为 0（不产生节点） */
-	const spokeCount = computed<number>(() => props.loadingType == 'spinner' ? 12 : 0)
-
-	/** spinner 型辐条类名：颜色与圆环变体保持一致（colored-plain 变体颜色走 inline style） */
-	const loadingSpokeClass = computed<string>(() => {
-		return 'mxi-button__loading-spoke mxi-button__loading-spoke--' + loadingVariant.value
-	})
-
-	/**
-	 * spinner 型辐条动态样式：每 30° 一条绕圆心均匀分布，亮度按 Vant 规则递减形成拖尾
-	 * （第 i 条 opacity = 1 - 0.0625 × (i - 1)，首条 1.0 递减至末条 0.3125）；自定义颜色 + 朴素时颜色走 inline
-	 */
-	function loadingSpokeStyle(index: number): string {
-		let style = 'transform: rotate(' + ((index - 1) * 30) + 'deg);'
-		style += ' opacity: ' + (1 - 0.0625 * (index - 1)) + ';'
-		if (props.color != '' && props.plain) style += ' background-color: ' + props.color + ';'
-		return style
-	}
 
 	/** 细边框层类名：圆角随 square / round、颜色随类型切换 */
 	const hairlineClass = computed<string>(() => {
@@ -407,124 +295,14 @@
 		color: $mxi-color-danger;
 	}
 
-	/* ========== 加载图标 ========== */
-	.mxi-button__loading {
+	/* ========== 加载图标外框（尺寸承载主题变量，图标由 mxi-loading 100% 撑满） ========== */
+	.mxi-button__loading-box {
 		width: $mxi-button-icon-size;
 		height: $mxi-button-icon-size;
-		border-width: 2px;
-		border-style: solid;
-		border-radius: $mxi-radius-max;
-		margin-right: 6px;
 	}
-	/* 半透明描边用 rgba($var, alpha) 从主题色派生，保证主题覆盖后加载图标跟随变化 */
-	.mxi-button__loading--white {
-		border-color: rgba($mxi-white, 0.35);
-		border-top-color: $mxi-white;
-	}
-	.mxi-button__loading--default {
-		border-color: rgba($mxi-text-color, 0.25);
-		border-top-color: $mxi-text-color;
-	}
-	.mxi-button__loading--primary {
-		border-color: rgba($mxi-color-primary, 0.25);
-		border-top-color: $mxi-color-primary;
-	}
-	.mxi-button__loading--success {
-		border-color: rgba($mxi-color-success, 0.25);
-		border-top-color: $mxi-color-success;
-	}
-	.mxi-button__loading--warning {
-		border-color: rgba($mxi-color-warning, 0.25);
-		border-top-color: $mxi-color-warning;
-	}
-	.mxi-button__loading--danger {
-		border-color: rgba($mxi-color-danger, 0.25);
-		border-top-color: $mxi-color-danger;
-	}
-
-	/* ========== clock 型加载（圆环静止 + 指针旋转） ========== */
-	/* clock 圆环为均匀半透明轨道（无顶部高亮），颜色变体与 circular 一一对应 */
-	.mxi-button__loading-clock--white {
-		border-color: rgba($mxi-white, 0.35);
-	}
-	.mxi-button__loading-clock--default {
-		border-color: rgba($mxi-text-color, 0.25);
-	}
-	.mxi-button__loading-clock--primary {
-		border-color: rgba($mxi-color-primary, 0.25);
-	}
-	.mxi-button__loading-clock--success {
-		border-color: rgba($mxi-color-success, 0.25);
-	}
-	.mxi-button__loading-clock--warning {
-		border-color: rgba($mxi-color-warning, 0.25);
-	}
-	.mxi-button__loading-clock--danger {
-		border-color: rgba($mxi-color-danger, 0.25);
-	}
-	/* 指针：absolute 定位从圆心指向内缘，尺寸取百分比随图标尺寸等比缩放，绕自身底部（圆心）旋转 */
-	.mxi-button__loading-hand {
-		position: absolute;
-		top: 5%;
-		left: 45%;
-		width: 10%;
-		height: 45%;
-		border-radius: 2px;
-		transform-origin: 50% 100%;
-	}
-	.mxi-button__loading-hand--white {
-		background-color: $mxi-white;
-	}
-	.mxi-button__loading-hand--default {
-		background-color: $mxi-text-color;
-	}
-	.mxi-button__loading-hand--primary {
-		background-color: $mxi-color-primary;
-	}
-	.mxi-button__loading-hand--success {
-		background-color: $mxi-color-success;
-	}
-	.mxi-button__loading-hand--warning {
-		background-color: $mxi-color-warning;
-	}
-	.mxi-button__loading-hand--danger {
-		background-color: $mxi-color-danger;
-	}
-
-	/* ========== spinner 型加载（12 条花瓣辐条亮度拖尾，容器 12 步离散旋转） ========== */
-	/* 容器无圆环轨道（清零基础类边框），颜色由辐条承载 */
-	.mxi-button__loading-spinner {
-		border-width: 0;
-	}
-	/* 辐条：2px 固定宽（Vant 同款不随图标缩放）、40% 百分比圆角，水平居中于圆心正上方，
-	   绕自身高度 200% 处（恰为容器中心）旋转分布；亮度拖尾 opacity 由运行时 inline style 按序号递减 */
-	.mxi-button__loading-spoke {
-		position: absolute;
-		top: 0;
-		left: 50%;
-		width: 2px;
-		height: 25%;
-		margin-left: -1px;
-		border-radius: 40%;
-		transform-origin: 50% 200%;
-	}
-	.mxi-button__loading-spoke--white {
-		background-color: $mxi-white;
-	}
-	.mxi-button__loading-spoke--default {
-		background-color: $mxi-text-color;
-	}
-	.mxi-button__loading-spoke--primary {
-		background-color: $mxi-color-primary;
-	}
-	.mxi-button__loading-spoke--success {
-		background-color: $mxi-color-success;
-	}
-	.mxi-button__loading-spoke--warning {
-		background-color: $mxi-color-warning;
-	}
-	.mxi-button__loading-spoke--danger {
-		background-color: $mxi-color-danger;
+	/* 加载文案与图标的间距（收在文字侧，避免无文案时图标因 margin 偏离中心） */
+	.mxi-button__text--loading {
+		margin-left: 6px;
 	}
 
 	/* ========== 0.5px 细边框层 ========== */

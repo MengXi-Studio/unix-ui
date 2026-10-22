@@ -1,3 +1,7 @@
+# 未发布
+
+- `mxi-button` 新增按压反馈：按下时按钮透明度降为 0.8、松开后恢复（基于 `hover-class` 实现），可通过 `$mxi-button-active-opacity` 自定义；disabled / loading 状态不出现按压态
+
 # 0.1.0 (2026-10-21)
 
 - 首个版本发布

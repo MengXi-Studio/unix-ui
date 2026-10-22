@@ -1,5 +1,5 @@
 <template>
-	<view :class="buttonClass" :style="rootStyle" @click="handleClick">
+	<view :class="buttonClass" :style="rootStyle" :hover-class="hoverClass" @click="handleClick">
 		<!-- 0.5px 细边框层：ucss 无伪元素，用绝对定位 view 承载 1px 边框后 scale(0.5) 实现 -->
 		<view v-if="props.hairline" :class="hairlineClass" :style="hairlineStyle"></view>
 		<!-- 加载图标：圆环 + UniElement.animate 旋转（ucss 不支持 @keyframes） -->
@@ -194,6 +194,12 @@
 		if (props.color == '') return ''
 		return 'border-color: ' + props.color + ';'
 	})
+
+	/** 按压态类名：由 view 的 hover-class 在按压期间挂载；禁用或加载中不出现点击态（"none" 为官方约定的无点击态值） */
+	const hoverClass = computed<string>(() => {
+		if (props.disabled || props.loading) return 'none'
+		return 'mxi-button--active'
+	})
 </script>
 
 <style lang="scss">
@@ -279,6 +285,11 @@
 	}
 	.mxi-button--disabled {
 		opacity: $mxi-disabled-opacity;
+	}
+
+	/* ========== 按压态（hover-class 按压期间挂载） ========== */
+	.mxi-button--active {
+		opacity: $mxi-button-active-opacity;
 	}
 
 	/* ========== 文字 ========== */

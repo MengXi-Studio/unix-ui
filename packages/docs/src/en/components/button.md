@@ -53,6 +53,14 @@ Set a button to the loading state with the `loading` attribute; loading buttons 
 <mxi-button type="primary" loading loading-text="Loading..." />
 ```
 
+### Press Feedback
+
+The button's overall opacity drops to 0.8 while pressed and restores on release; no press feedback is shown in `disabled` or `loading` state (implemented via `hover-class`).
+
+```html
+<mxi-button type="primary">Press to see feedback</mxi-button>
+```
+
 ### Button Size
 
 Four sizes are supported: `large`, `normal`, `small` and `mini`. The default is `normal`.
@@ -129,5 +137,6 @@ Button styles can be customized with the following SCSS variables (define them d
 | $mxi-button-small-height | Small button height | 32px |
 | $mxi-button-mini-height | Mini button height | 24px |
 | $mxi-button-radius | Button border radius | 8px |
+| $mxi-button-active-opacity | Opacity while pressed | 0.8 |
 
 See [Theming](/en/guide/theming) for the full variable list and override instructions.

@@ -53,6 +53,14 @@
 <mxi-button type="primary" loading loading-text="加载中..." />
 ```
 
+### 按压反馈
+
+按钮按下时整体透明度降为 0.8，松开后恢复；`disabled` 与 `loading` 状态不出现按压反馈（基于 `hover-class` 实现）。
+
+```html
+<mxi-button type="primary">按下查看按压反馈</mxi-button>
+```
+
 ### 按钮尺寸
 
 支持 `large`、`normal`、`small`、`mini` 四种尺寸，默认为 `normal`。
@@ -129,5 +137,6 @@
 | $mxi-button-small-height | 小型按钮高度 | 32px |
 | $mxi-button-mini-height | 迷你按钮高度 | 24px |
 | $mxi-button-radius | 按钮圆角 | 8px |
+| $mxi-button-active-opacity | 按压时透明度 | 0.8 |
 
 完整变量与覆盖方式见[主题定制](/guide/theming)。

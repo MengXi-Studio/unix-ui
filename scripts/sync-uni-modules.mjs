@@ -22,8 +22,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const src = join(root, 'packages/core')
 const dest = join(root, 'packages/playground/uni_modules/mxi-ui-x')
 
-/** 插件目录只需要这些内容（组件源码 + 主题变量 + 文档说明） */
-const INCLUDE = ['components', 'theme', 'readme.md', 'license.md']
+/** 插件目录只需要这些内容（组件源码 + 主题变量 + 字体等静态资源 + 文档说明） */
+const INCLUDE = ['components', 'theme', 'static', 'readme.md', 'license.md']
 
 /** 同步时需在目标目录保留的手工维护文件（不复制、不删除、校验豁免）：
  *  - package.json：HBuilderX 插件发布要求 id 为 mxi-ui-x，与 core（npm 包）元数据不同

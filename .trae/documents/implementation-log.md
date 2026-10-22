@@ -13,3 +13,4 @@
 | 2026-10-22 | [mxi-loading](新增/2026-10-22/mxi-loading.md) | 动画观感修复：spinner 容器 flex 居中（自定义图标公转→自转）、spinner 节奏 800ms→1200ms 跳格（用户拍板，mxi-button 同步），运行实测通过 |
 | 2026-10-22 | [mxi-button-loading-refactor](新增/2026-10-22/mxi-button-loading-refactor.md) | mxi-button 加载图标重构为复用 mxi-loading（动画单处维护）；loading-type 移除 clock（breaking），mxi-loading 新增语义色名与 size 100%，运行实测通过 |
 | 2026-10-22 | [mxi-button-loading-refactor](新增/2026-10-22/mxi-button-loading-refactor.md) | LoadingType 外置到 mxi-loading 同级 loading.uts（跨组件共享），mxi-button 相对路径导入消除双份定义，运行实测通过 |
+| 2026-10-22 | [mxi-icon](新增/2026-10-22/mxi-icon.md) | 新增 mxi-icon 图标组件（257 个 Vant 对齐图标，IconName 联合类型 + ttf 随包 @font-face + icon 插槽 + click），sync 脚本 INCLUDE 扩展 static，浏览器实测与双语文档完成 |

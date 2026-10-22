@@ -1,0 +1,172 @@
+<template>
+	<!-- #ifdef APP -->
+	<scroll-view class="page" :scroll-y="true">
+	<!-- #endif -->
+	<!-- #ifndef APP -->
+	<view class="page">
+	<!-- #endif -->
+		<view class="container">
+			<text class="section">基础图标（{{ iconBasicNames.length }}）</text>
+			<view class="card">
+				<text class="tip">最近点击：{{ lastTapped == '' ? '－' : lastTapped }}</text>
+				<view class="grid">
+					<view v-for="name in iconBasicNames" :key="name" class="grid-item">
+						<mxi-icon :name="name" @click="onIconTap(name)" />
+						<text class="grid-caption">{{ name }}</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">线性图标（{{ iconOutlineNames.length }}）</text>
+			<view class="card">
+				<view class="grid">
+					<view v-for="name in iconOutlineNames" :key="name" class="grid-item">
+						<mxi-icon :name="name" @click="onIconTap(name)" />
+						<text class="grid-caption">{{ name }}</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">填充图标（{{ iconFilledNames.length }}）</text>
+			<view class="card">
+				<view class="grid">
+					<view v-for="name in iconFilledNames" :key="name" class="grid-item">
+						<mxi-icon :name="name" @click="onIconTap(name)" />
+						<text class="grid-caption">{{ name }}</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">自定义颜色</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-icon name="star" size="24" />
+						<text class="caption">默认（黑）</text>
+					</view>
+					<view class="col-gap">
+						<mxi-icon name="star" size="24" color="#1989fa" />
+						<text class="caption">#1989fa</text>
+					</view>
+					<view class="col-gap">
+						<mxi-icon name="star" size="24" color="#07c160" />
+						<text class="caption">#07c160</text>
+					</view>
+					<view class="col-gap">
+						<mxi-icon name="star" size="24" color="#ee0a24" />
+						<text class="caption">#ee0a24</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">自定义大小</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-icon name="chat-o" size="16" />
+						<text class="caption">16</text>
+					</view>
+					<view class="col-gap">
+						<mxi-icon name="chat-o" size="24" />
+						<text class="caption">24</text>
+					</view>
+					<view class="col-gap">
+						<mxi-icon name="chat-o" size="32" />
+						<text class="caption">32</text>
+					</view>
+					<view class="col-gap">
+						<mxi-icon name="chat-o" size="32px" />
+						<text class="caption">32px</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">custom-class（标签样式直达）</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-icon name="fire-o" size="24" custom-class="icon-red" />
+						<text class="caption">红色类</text>
+					</view>
+					<view class="col-gap">
+						<mxi-icon name="fire-o" size="24" custom-style="color: #1989fa;" />
+						<text class="caption">custom-style</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">icon 插槽</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-icon name="like" size="24">
+							<template #icon>
+								<text class="slot-demo">✿</text>
+							</template>
+						</mxi-icon>
+						<text class="caption">插槽替换</text>
+					</view>
+				</view>
+			</view>
+		</view>
+	<!-- #ifdef APP -->
+	</scroll-view>
+	<!-- #endif -->
+	<!-- #ifndef APP -->
+	</view>
+	<!-- #endif -->
+</template>
+
+<script setup lang="uts">
+	import { iconBasicNames, iconOutlineNames, iconFilledNames } from '@/uni_modules/mxi-ui-x/components/mxi-icon/icons.uts'
+
+	/** 最近点击的图标名（click 事件演示状态） */
+	const lastTapped = ref<string>('')
+
+	/**
+	 * 网格图标点击回调：记录最近点击的图标名
+	 */
+	function onIconTap(name: string) {
+		lastTapped.value = name
+	}
+</script>
+
+<style>
+	.tip {
+		margin-bottom: 12px;
+		font-size: 13px;
+		color: #323233;
+	}
+	.grid {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+	.grid-item {
+		width: 72px;
+		flex-direction: column;
+		align-items: center;
+		margin-bottom: 16px;
+	}
+	.grid-caption {
+		margin-top: 6px;
+		font-size: 11px;
+		color: #969799;
+	}
+	.col-gap {
+		flex-direction: column;
+		align-items: center;
+		margin-right: 24px;
+	}
+	.caption {
+		margin-top: 8px;
+		font-size: 12px;
+		color: #969799;
+	}
+	.icon-red {
+		color: #ee0a24;
+	}
+	.slot-demo {
+		font-size: 24px;
+		color: #1989fa;
+	}
+</style>

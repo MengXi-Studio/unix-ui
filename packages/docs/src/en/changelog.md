@@ -4,7 +4,7 @@
 
 ### Added
 
-- **mxi-loading**: API aligned with the [Vant Loading](https://vant-ui.github.io/vant/#/zh-CN/loading) — two loading types (circular arc ring / spinner petals), custom color (`color`), custom size (`size`), vertical layout (`vertical`), custom text styling (`text-size` / `text-color`), default text slot and custom icon slot; the spinner type uses `steps(12)` discrete rotation with a fading tail, and the circular type is an arc ring rotating at a constant speed
+- **mxi-loading**: API aligned with the [Vant Loading](https://vant-ui.github.io/vant/#/zh-CN/loading) — two loading types (circular arc ring / spinner petals), custom color (`color`), custom size (`size`), vertical layout (`vertical`), custom text styling (`text-size` / `text-color`), default text slot and custom icon slot; the spinner type uses 1.2s 12-step discrete rotation with a fading tail, and the circular type is an arc ring rotating at a constant speed
 - **mxi-button press feedback**: hover-class-based pressed state (opacity 0.8, theme-overridable); disabled and loading states show no press feedback
 - **mxi-button loading types**: `loading-type` adds `clock` (clock hand) and `spinner` (petals with fading tail and discrete rotation) variants
 

@@ -5,7 +5,7 @@
 			<slot name="icon">
 				<!-- circular：弧段圆环（顶部单色弧 + 透明轨道），随容器匀速旋转 -->
 				<view v-if="props.type == 'circular'" class="mxi-loading__ring" :style="ringStyle"></view>
-				<!-- spinner：12 条辐条亮度递减成拖尾，随容器 steps(12) 离散旋转 -->
+				<!-- spinner：12 条辐条亮度递减成拖尾，随容器 12 步离散旋转 -->
 				<view v-for="i in spokeCount" :key="i" class="mxi-loading__spoke" :style="spokeStyle(i)"></view>
 			</slot>
 		</view>
@@ -126,22 +126,38 @@
 	}
 
 	/**
+	 * spinner 型阶梯关键帧：每 1/12 周期角位移 30°，段内恒值、段末约 2% 时长完成过渡
+	 * （UniAnimationOptionEasing 类型不支持 steps() 缓动，App 端原生不识别；
+	 * 用 linear easing + 双帧夹逼实现等效的 12 步离散旋转，跨端行为一致）
+	 */
+	function buildTickKeyframes(): UniAnimationKeyframe[] {
+		const frames: UniAnimationKeyframe[] = []
+		for (let i = 0; i < 12; i++) {
+			frames.push({ transform: 'rotate(' + (i * 30) + 'deg)', offset: i / 12 })
+			frames.push({ transform: 'rotate(' + (i * 30) + 'deg)', offset: (i + 0.98) / 12 })
+		}
+		frames.push({ transform: 'rotate(360deg)', offset: 1 })
+		return frames
+	}
+
+	/**
 	 * 启动旋转动画
-	 * circular：2s 匀速（弧段追逐感）；spinner：0.8s steps(12) 离散旋转（滴答式拖尾）
+	 * spinner：1.2s 12 步阶梯离散旋转（滴答式拖尾）；circular：2s 匀速（弧段追逐感）
 	 * 通过 UniElement.animate 实现（ucss 禁用 @keyframes，动画一律走 animate API）
 	 */
 	function startAnimation() {
 		// 切换动画前先取消旧动画（如动态切换 type）
 		animation?.cancel()
 		if (spinnerRef.value == null) return
-		const easing = props.type == 'spinner' ? 'steps(12)' : 'linear'
-		const duration = props.type == 'spinner' ? 800 : 2000
+		// spinner 型换 12 步阶梯关键帧，circular 型两帧匀速旋转
+		let keyframes: UniAnimationKeyframe[] = [
+			{ transform: 'rotate(0deg)', offset: 0 },
+			{ transform: 'rotate(360deg)', offset: 1 }
+		]
+		if (props.type == 'spinner') keyframes = buildTickKeyframes()
 		animation = spinnerRef.value.animate(
-			[
-				{ transform: 'rotate(0deg)' },
-				{ transform: 'rotate(360deg)' }
-			],
-			{ duration: duration, iterations: Infinity, easing: easing }
+			keyframes,
+			{ duration: props.type == 'spinner' ? 1200 : 2000, iterations: Infinity, easing: 'linear' }
 		)
 	}
 
@@ -183,10 +199,13 @@
 	}
 
 	/* ========== 图标容器（尺寸与动画承载） ========== */
+	/* flex 居中：自定义插槽图标默认按起始对齐，偏离容器中心会使旋转呈公转轨迹，居中后视觉等效自转 */
 	.mxi-loading__spinner {
 		position: relative;
 		width: $mxi-loading-spinner-size;
 		height: $mxi-loading-spinner-size;
+		justify-content: center;
+		align-items: center;
 	}
 
 	/* ========== circular 弧段圆环 ========== */

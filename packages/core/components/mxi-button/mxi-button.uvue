@@ -6,7 +6,7 @@
 		<view v-if="props.loading" ref="loadingIcon" :class="loadingClass" :style="loadingStyle">
 			<!-- clock 型：圆环静止，指针子节点绕圆心旋转（circular 型为圆环整体旋转，无子节点） -->
 			<view v-if="props.loadingType == 'clock'" ref="loadingHand" :class="loadingHandClass" :style="loadingHandStyle"></view>
-			<!-- spinner 型：12 条辐条亮度递减成拖尾，随容器 steps(12) 离散旋转（对齐 Vant 花瓣加载） -->
+			<!-- spinner 型：12 条辐条亮度递减成拖尾，随容器 12 步离散旋转 -->
 			<view v-for="i in spokeCount" :key="i" :class="loadingSpokeClass" :style="loadingSpokeStyle(i)"></view>
 		</view>
 		<!-- 按钮内容：加载中显示 loadingText，否则渲染默认插槽 -->
@@ -20,7 +20,7 @@
 	type ButtonType = 'default' | 'primary' | 'success' | 'warning' | 'danger'
 	/** 按钮尺寸：large 大 / normal 常规 / small 小 / mini 迷你 */
 	type ButtonSize = 'large' | 'normal' | 'small' | 'mini'
-	/** 加载图标类型：circular 圆环（整体旋转）/ clock 时钟指针（圆环静止 + 指针旋转）/ spinner 花瓣（12 条辐条亮度递减拖尾，容器 steps(12) 离散旋转，对齐 Vant Loading） */
+	/** 加载图标类型：circular 圆环（整体匀速旋转）/ clock 时钟指针（圆环静止 + 指针旋转）/ spinner 花瓣（12 条辐条亮度递减拖尾，容器 12 步离散旋转） */
 	type LoadingType = 'circular' | 'clock' | 'spinner'
 
 	type Props = {
@@ -83,6 +83,21 @@
 	let loadingAnimation: Animation | null = null
 
 	/**
+	 * spinner 型阶梯关键帧：每 1/12 周期角位移 30°，段内恒值、段末约 2% 时长完成过渡
+	 * （UniAnimationOptionEasing 类型不支持 steps() 缓动，App 端原生不识别；
+	 * 用 linear easing + 双帧夹逼实现等效的 12 步离散旋转，跨端行为一致）
+	 */
+	function buildTickKeyframes(): UniAnimationKeyframe[] {
+		const frames: UniAnimationKeyframe[] = []
+		for (let i = 0; i < 12; i++) {
+			frames.push({ transform: 'rotate(' + (i * 30) + 'deg)', offset: i / 12 })
+			frames.push({ transform: 'rotate(' + (i * 30) + 'deg)', offset: (i + 0.98) / 12 })
+		}
+		frames.push({ transform: 'rotate(360deg)', offset: 1 })
+		return frames
+	}
+
+	/**
 	 * 启动加载动画
 	 * circular：圆环整体旋转；clock：仅指针旋转、圆环静止；spinner：辐条随容器离散旋转
 	 * 通过 UniElement.animate 实现（ucss 禁用 @keyframes，规则要求改用 animate API）
@@ -93,14 +108,16 @@
 		// clock 型动画目标是子指针，circular / spinner 型是图标容器本身（圆环 / 辐条随容器旋转）
 		const el = props.loadingType == 'clock' ? loadingHand.value : loadingIcon.value
 		if (el == null) return
-		// spinner 型用 steps(12) 离散旋转：配合辐条 30° 均布与亮度拖尾，呈现 Vant 的滴答式彗尾效果（其余类型匀速）
-		const easing = props.loadingType == 'spinner' ? 'steps(12)' : 'linear'
+		// spinner 型换 12 步阶梯关键帧（滴答式拖尾），其余类型两帧匀速旋转
+		let keyframes: UniAnimationKeyframe[] = [
+			{ transform: 'rotate(0deg)', offset: 0 },
+			{ transform: 'rotate(360deg)', offset: 1 }
+		]
+		if (props.loadingType == 'spinner') keyframes = buildTickKeyframes()
 		loadingAnimation = el.animate(
-			[
-				{ transform: 'rotate(0deg)' },
-				{ transform: 'rotate(360deg)' }
-			],
-			{ duration: 800, iterations: Infinity, easing: easing }
+			keyframes,
+			// spinner 型 1.2s 跳格（花瓣节奏放缓），其余类型 0.8s 匀速
+			{ duration: props.loadingType == 'spinner' ? 1200 : 800, iterations: Infinity, easing: 'linear' }
 		)
 	}
 
@@ -474,7 +491,7 @@
 		background-color: $mxi-color-danger;
 	}
 
-	/* ========== spinner 型加载（12 条花瓣辐条亮度拖尾，容器 steps(12) 离散旋转，对齐 Vant） ========== */
+	/* ========== spinner 型加载（12 条花瓣辐条亮度拖尾，容器 12 步离散旋转） ========== */
 	/* 容器无圆环轨道（清零基础类边框），颜色由辐条承载 */
 	.mxi-button__loading-spinner {
 		border-width: 0;

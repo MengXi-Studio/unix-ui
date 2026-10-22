@@ -9,3 +9,5 @@
 | 2026-10-22 | [mxi-button-loadingType](新增/2026-10-22/mxi-button-loadingType.md) | mxi-button 新增 loading-type（circular 默认 / spinner 花瓣对齐 Vant / clock 时钟指针三形态），动画句柄管理、运行实测与双语文档完成 |
 | 2026-10-22 | [mxi-button-loadingType](新增/2026-10-22/mxi-button-loadingType.md) | spinner 对齐 Vant 修复（对照官方源码）：steps(12) 离散旋转 + 辐条亮度拖尾 + 2px/40% 几何，运行实测通过 |
 | 2026-10-22 | [mxi-loading](新增/2026-10-22/mxi-loading.md) | 新增独立加载组件 mxi-loading（circular 弧段圆环 / spinner 花瓣拖尾，color/size/vertical/文案/图标插槽全量 API），运行实测与双语文档完成 |
+| 2026-10-22 | [mxi-loading](新增/2026-10-22/mxi-loading.md) | easing 类型修复：UniAnimationOptionEasing 不支持 steps()（App 端不识别），spinner 改 linear + 25 帧阶梯关键帧等效离散旋转，mxi-button / mxi-loading 双组件落地，运行实测通过 |
+| 2026-10-22 | [mxi-loading](新增/2026-10-22/mxi-loading.md) | 动画观感修复：spinner 容器 flex 居中（自定义图标公转→自转）、spinner 节奏 800ms→1200ms 跳格（用户拍板，mxi-button 同步），运行实测通过 |

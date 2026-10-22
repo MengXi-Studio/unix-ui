@@ -82,3 +82,15 @@ Q2 取值集合是否对齐 Vant（`circular | spinner`）？（影响：是否�
 - 浏览器实测（5174/pages-sub/button/button）：`getAnimations()[0].effect.getTiming()` 返回 `{easing: 'steps(12)', duration: 800, iterations: Infinity}`；辐条 12 条、inline transform/opacity 逐条正确；截图可见彗尾拖影；控制台无报错
 - `pnpm sync:uni-modules` → `sync:uni-modules:check` 一致
 - 文档无需改动（「花瓣旋转」描述仍准确）
+
+### easing 类型修复（2026-10-22 第三轮）
+
+spinner 的 steps(12) easing 触发 HBuilderX 类型 warning（`UniAnimationOptionEasing` 不含 steps()，App 端原生不识别，Web 端生效仅是 WAAPI 透传）。修复：`startLoadingAnimation` 中 spinner 型改用 `buildTickKeyframes()` 生成 25 个阶梯关键帧（12 段 × 双帧同值夹逼 `offset: i/12` 与 `(i+0.98)/12`）+ linear easing，等效 12 步离散旋转；circular / clock 保持两帧匀速。完整分析见 [mxi-loading 任务文档](mxi-loading.md) 同名修复轮次。
+
+验证：dev server 产物 easing 仅剩 `'linear'`；浏览器实测 spinner 型 `linear/800/25 帧` 结构正确（帧 0/1 为 0°，帧 2 为 30°，末帧 360°@1）；注释中 steps(12) 表述与「对齐 Vant」字样已同步清理；HBuilderX 终端 warning 由用户侧确认消除。
+
+### spinner 节奏调整（2026-10-22 第四轮）
+
+用户对 loading 组件花瓣动画拍板「放慢到 1.2s 跳格」（保留滴答感、缓解与 circular 的速度差），mxi-button 同款 spinner 花瓣同步节奏：`startLoadingAnimation` 的 duration 由共用 800ms 改为按类型区分（spinner 1200 / circular 与 clock 保持 800），两组件花瓣转速统一。根因分析见 [mxi-loading 任务文档](mxi-loading.md) 第三轮（图标公转问题已在该轮修复）。
+
+验证：button 演示页 spinner 型 `duration=1200`、circular 型 `duration=800`；控制台无报错；`pnpm sync:uni-modules:check` 一致。

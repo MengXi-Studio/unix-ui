@@ -10,6 +10,10 @@
 				<text class="card-title">Button 按钮</text>
 				<text class="card-desc">按钮用于触发一个操作，如提交表单。支持类型、尺寸、朴素、圆角、细边框、加载状态等特性。</text>
 			</view>
+			<view class="card" @click="goLoadingDemo">
+				<text class="card-title">Loading 加载</text>
+				<text class="card-desc">加载中状态提示。支持弧段圆环与花瓣两种类型、自定义颜色大小、加载文案与自定义图标插槽。</text>
+			</view>
 		</view>
 	<!-- #ifdef APP -->
 	</scroll-view>
@@ -24,6 +28,13 @@
 	function goButtonDemo() {
 		uni.navigateTo({
 			url: '/pages-sub/button/button'
+		})
+	}
+
+	/** 跳转到 Loading 组件演示页 */
+	function goLoadingDemo() {
+		uni.navigateTo({
+			url: '/pages-sub/loading/loading'
 		})
 	}
 </script>

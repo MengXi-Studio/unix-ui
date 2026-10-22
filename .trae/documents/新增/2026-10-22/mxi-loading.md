@@ -62,3 +62,30 @@ Q2 circular 旋转时长取 Vant 的 2s 还是沿用 mxi-button 现有加载图�
 
 - 演示页初版漏了演示项之间的水平间距（复用全局 `.row` 无 gap），首个 demo 项需自带 margin-right——演示页全局样式只有 page / container / card / section / row 基础类，间距类各页自理
 - browser_evaluate 查询动画参数必须用极简单表达式逐条执行，组合脚本（数组方法链 + 嵌套函数）易返回空对象造成「无动画」误判；且 DOM 序与页面分区顺序一致，按序取前 N 个实例时先确认分区顺序再下期望值
+
+### easing 类型修复（2026-10-22 第二轮）
+
+HBuilderX 编译 warning：`Type '"steps(12)"' is not assignable to type 'UniAnimationOptionEasing'`。查官方类型定义（IUniElement.d.ts:2989）确认 `UniAnimationOptionEasing = "ease"|"ease-in"|"ease-out"|"ease-in-out"|"linear"|"cubic-bezier"`，**不含 steps()**——此前 Web 端 `getAnimations()` 返回 `steps(12)` 是 WAAPI 透传的假象，App 端原生 animate 不识别该值。用类型断言绕过会让 App 端行为不可预期，改为结构性修复：
+
+- `startAnimation`：spinner 型改用 `buildTickKeyframes()` 生成 25 个阶梯关键帧（12 段 × 每段两帧同值夹逼 `offset: i/12` 与 `(i+0.98)/12`，末帧 360°@1）+ linear easing，段末约 2% 时长（约 1.6ms）完成过渡，视觉等效 steps(12)；circular 型保持两帧匀速
+- 关键帧 `offset` 全端支持（App-Android 4.51 / App-iOS 4.53 / Web √），此方案跨端行为一致且类型合法
+- 注释同步清理：steps(12) 表述改为「12 步离散旋转」，并移除「对齐 Vant」字样（mxi-button 同步处理）
+
+验证记录（2026-10-22）：dev server 产物 easing 仅剩 `'linear'`；浏览器实测 spinner 型 `easing=linear duration=800 frames=25`（帧 0/1 为 0°@0 与 0°@0.0817，帧 2 为 30°@0.0833，末帧 360°@1），circular 型 `linear/2000/2 帧`；控制台无报错；HBuilderX 终端 warning 由用户侧确认消除。
+
+### 动画观感修复（2026-10-22 第三轮）
+
+用户反馈两个现象：① spinner 花瓣「卡顿 + 相对 circular 过快」；② 自定义图标不是自转而是「绕容器中心公转」。
+
+分析（对照 Vant 源码 `Loading.tsx` + `index.less`）：
+
+- **现象②是实现缺陷**：动画加在方形旋转容器上（Vant 同为容器转），对中心对称的默认图标（花瓣 / 弧环）公转 ≈ 自转看不出差别；但 uni-app x 的 view 默认主轴 column、交叉轴起始对齐，插槽内容（❀ 字符）渲染在容器左上角，图标中心偏离容器中心约 4px，旋转时公转轨迹肉眼可见。Vant（Web CSS inline 布局）图标基本居中故无此现象
+- **现象①是 Vant 特性**：跳格感即 `steps(12)` 滴答式设计（非 bug），0.8s vs circular 2s 的 2.5 倍速差也是官方参数
+
+改动：
+
+- `.mxi-loading__spinner` 容器加 `justify-content: center; align-items: center`（插槽图标居中，公转 → 自转；默认图标全部绝对定位不受影响）
+- spinner 型 duration 800 → **1200ms**（用户拍板「放慢到 1.2s 跳格」，保留滴答感、缓解速度差）；circular 保持 2s
+- mxi-button 同款 spinner 花瓣同步 1200ms（`loadingType == 'spinner' ? 1200 : 800`），保持两组件花瓣节奏统一
+
+验证记录（2026-10-22）：loading 演示页 spinner 型 `duration=1200`、circular 型 `duration=2000`；❀ 图标与容器中心偏差 ≈0px（computed justify-content / align-items 均为 center）；button 演示页 spinner 型 `duration=1200`、circular 型 `duration=800`；两页控制台无报错；`pnpm sync:uni-modules:check` 一致。

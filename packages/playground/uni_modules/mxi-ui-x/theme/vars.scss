@@ -92,3 +92,7 @@ $mxi-cell-group-title-font-size: 14px !default;
 $mxi-cell-group-title-line-height: 16px !default;
 $mxi-cell-group-inset-radius: $mxi-radius-md !default;
 $mxi-cell-group-inset-padding: 0 16px !default;
+
+/* ========== Image 图片 ========== */
+$mxi-image-background: #f7f8fa !default;   /* 加载 / 失败占位背景（Vant 占位背景同值，Sard 为 fill-color-tertiary 同观感） */
+$mxi-image-icon-color: #dcdee0 !default;   /* 占位图标色（对齐 Vant gray-4） */

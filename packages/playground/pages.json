@@ -40,6 +40,12 @@
 				"style": {
 					"navigationBarTitleText": "单元格 Cell"
 				}
+			},
+			{
+				"path": "image/image",
+				"style": {
+					"navigationBarTitleText": "图片 Image"
+				}
 			}
 		]
 		}

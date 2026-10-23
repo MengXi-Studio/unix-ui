@@ -1,0 +1,276 @@
+<template>
+	<view class="page">
+		<demo-navbar title="图片" subtitle="Image" />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+			<text class="section">基础用法</text>
+			<view class="card">
+				<view class="row-gap">
+					<mxi-image :src="demoBase + 'demo-cat.jpg'" width="160px" height="160px" />
+					<mxi-image :src="demoBase + 'demo-fruit.jpg'" :width="120" :height="120" />
+				</view>
+				<text class="caption">width / height 支持 '160px' 字符串与 120 数字（自动补 px）</text>
+				<mxi-image :src="demoBase + 'demo-mountain.jpg'" />
+				<text class="caption">未传尺寸默认 width 100% / height 240px</text>
+			</view>
+
+			<text class="section">图片模式 mode</text>
+			<view class="card">
+				<view class="mode-grid">
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="scaleToFill" />
+						<text class="caption">scaleToFill</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="aspectFit" />
+						<text class="caption">aspectFit</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="aspectFill" />
+						<text class="caption">aspectFill</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="widthFix" />
+						<text class="caption">widthFix</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="heightFix" />
+						<text class="caption">heightFix</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="top" />
+						<text class="caption">top</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="bottom" />
+						<text class="caption">bottom</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="center" />
+						<text class="caption">center</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="left" />
+						<text class="caption">left</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="right" />
+						<text class="caption">right</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="top left" />
+						<text class="caption">top left</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="top right" />
+						<text class="caption">top right</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="bottom left" />
+						<text class="caption">bottom left</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'demo-forest.jpg'" width="110px" height="110px" mode="bottom right" />
+						<text class="caption">bottom right</text>
+					</view>
+				</view>
+				<text class="caption">mode 与原生 image 同名直通；widthFix / heightFix 在定高容器下的表现以平台实现为准</text>
+			</view>
+
+			<text class="section">圆角与圆形</text>
+			<view class="card">
+				<view class="row-gap">
+					<mxi-image :src="demoBase + 'demo-cat.jpg'" width="80px" height="80px" round />
+					<mxi-image :src="demoBase + 'demo-cat.jpg'" width="80px" height="80px" radius="8" />
+					<mxi-image :src="demoBase + 'demo-cat.jpg'" width="80px" height="80px" radius="16" />
+				</view>
+				<text class="caption">round 圆形（优先于 radius）/ radius 8 / radius 16</text>
+			</view>
+
+			<text class="section">懒加载</text>
+			<view class="card">
+				<view class="mode-grid">
+					<view class="mode-item" v-for="(item, index) in lazySrcs" :key="index">
+						<mxi-image :src="item" width="110px" height="110px" lazy-load />
+						<text class="caption">第 {{ index + 1 }} 张</text>
+					</view>
+				</view>
+				<text class="caption">lazy-load 透传原生属性，限 page 与 scroll-view 下生效；加载时机以 network 面板为准</text>
+			</view>
+
+			<text class="section">加载中提示</text>
+			<view class="card">
+				<view class="mode-grid">
+					<view class="mode-item">
+						<mxi-image :src="loadingSrc" width="110px" height="110px" />
+						<text class="caption">默认图标</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="loadingSrc" width="110px" height="110px" loading-icon="photo-o" />
+						<text class="caption">自定义图标</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="loadingSrc" width="110px" height="110px">
+							<template #loading>
+								<text class="slot-text">加载中...</text>
+							</template>
+						</mxi-image>
+						<text class="caption">loading 插槽</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="loadingSrc" width="110px" height="110px" :show-loading="false" />
+						<text class="caption">show-loading false</text>
+					</view>
+				</view>
+				<view class="reload-btn" @click="reloadLoading">
+					<text class="reload-btn-text">重新加载（破缓存观察占位）</text>
+				</view>
+			</view>
+
+			<text class="section">加载失败提示</text>
+			<view class="card">
+				<view class="mode-grid">
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'nonexistent.jpg'" width="110px" height="110px" />
+						<text class="caption">默认图标</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'nonexistent.jpg'" width="110px" height="110px" error-icon="photo-o" />
+						<text class="caption">自定义图标</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'nonexistent.jpg'" width="110px" height="110px">
+							<template #error>
+								<text class="slot-text">加载失败</text>
+							</template>
+						</mxi-image>
+						<text class="caption">error 插槽</text>
+					</view>
+					<view class="mode-item">
+						<mxi-image :src="demoBase + 'nonexistent.jpg'" width="110px" height="110px" :show-error="false" />
+						<text class="caption">show-error false</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">淡入动画</text>
+			<view class="card">
+				<view class="row-gap">
+					<mxi-image :src="fadeSrc" width="130px" height="130px" />
+					<mxi-image :src="fadeSrc" width="130px" height="130px" :fade="false" />
+				</view>
+				<text class="caption">左 fade 默认（加载完成 300ms 淡入）/ 右 fade false（直接显示）</text>
+				<view class="reload-btn" @click="reloadFade">
+					<text class="reload-btn-text">重新加载（对比淡入差异）</text>
+				</view>
+			</view>
+
+			<text class="section">点击事件</text>
+			<view class="card">
+				<mxi-image :src="demoBase + 'demo-forest.jpg'" width="160px" height="120px" @click="onImageClick" />
+				<text class="caption">点击图片查看 console 输出</text>
+			</view>
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * 演示图基址：仓库 packages/playground/static/demo 目录的 GitHub raw 地址
+	 * （图片随仓库维护，分支为 master；更换分支或目录时需同步修改）
+	 */
+	const demoBase = 'https://raw.githubusercontent.com/MengXi-Studio/unix-ui/master/packages/playground/static/demo/'
+
+	/** 懒加载轮换图名（与 static/demo 下文件名一一对应） */
+	const demoNames = ['cat', 'fruit', 'mountain', 'forest']
+
+	/**
+	 * 懒加载演示图列表：4 张演示图循环取 10 张
+	 */
+	const lazySrcs = ref<string[]>([])
+	for (let i = 1; i <= 10; i++) {
+		lazySrcs.value.push(demoBase + 'demo-' + demoNames[(i - 1) % 4] + '.jpg')
+	}
+
+	/** 加载中演示图时间戳（破缓存，点击重新加载后必然重新请求触发 loading 态） */
+	const loadingTs = ref<number>(0)
+
+	/** 加载中演示图地址（带时间戳 query） */
+	const loadingSrc = computed<string>(() => {
+		return demoBase + 'demo-fruit.jpg?v=' + loadingTs.value.toString()
+	})
+
+	/**
+	 * 重新加载加载中演示图：时间戳更新使 src 变化，组件 watch 重置 loading 后重新请求
+	 */
+	function reloadLoading() {
+		loadingTs.value = Date.now()
+	}
+
+	/** 淡入演示图时间戳 */
+	const fadeTs = ref<number>(0)
+
+	/** 淡入演示图地址（带时间戳 query） */
+	const fadeSrc = computed<string>(() => {
+		return demoBase + 'demo-mountain.jpg?v=' + fadeTs.value.toString()
+	})
+
+	/**
+	 * 重新加载淡入演示图
+	 */
+	function reloadFade() {
+		fadeTs.value = Date.now()
+	}
+
+	/**
+	 * 点击事件演示：真实点击触发组件 click 透传
+	 */
+	function onImageClick(e: MouseEvent) {
+		console.log('[image demo] image clicked')
+	}
+</script>
+
+<style lang="scss">
+	/* mode 全值对照网格：两列等宽换行 */
+	.mode-grid {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+	.mode-item {
+		width: 50%;
+		align-items: center;
+		margin-bottom: 12px;
+	}
+	/* 插槽文字（加载中 / 失败自定义内容） */
+	.slot-text {
+		font-size: 12px;
+		color: #969799;
+	}
+	/* 演示页重载按钮 */
+	.reload-btn {
+		align-self: flex-start;
+		margin-top: 4px;
+		padding: 7px 14px;
+		background-color: #1989fa;
+		border-radius: 4px;
+	}
+	.reload-btn-text {
+		font-size: 13px;
+		color: #ffffff;
+	}
+	/* 图组间距 */
+	.row-gap {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 12px;
+		margin-bottom: 8px;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 4px;
+	}
+</style>

@@ -34,6 +34,12 @@
 				"style": {
 					"navigationBarTitleText": "徽标 Badge"
 				}
+			},
+			{
+				"path": "cell/cell",
+				"style": {
+					"navigationBarTitleText": "单元格 Cell"
+				}
 			}
 		]
 		}

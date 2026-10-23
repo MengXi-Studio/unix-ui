@@ -1,0 +1,145 @@
+<template>
+	<view class="page">
+		<demo-navbar title="单元格" subtitle="Cell" />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+			<text class="section">基础用法</text>
+			<view class="cell-wrap">
+				<mxi-cell-group>
+					<mxi-cell title="单元格" value="内容" />
+					<mxi-cell title="单元格" value="内容" label="描述信息" />
+				</mxi-cell-group>
+			</view>
+
+			<text class="section">圆角卡片（inset）</text>
+			<view class="cell-wrap">
+				<mxi-cell-group inset>
+					<mxi-cell title="单元格" value="内容" />
+					<mxi-cell title="单元格" value="内容" label="描述信息" />
+				</mxi-cell-group>
+			</view>
+
+			<text class="section">大尺寸</text>
+			<view class="cell-wrap">
+				<mxi-cell-group>
+					<mxi-cell title="单元格" value="内容" size="large" />
+					<mxi-cell title="单元格" value="内容" size="large" label="描述信息" />
+				</mxi-cell-group>
+			</view>
+
+			<text class="section">左侧图标</text>
+			<view class="cell-wrap">
+				<mxi-cell-group>
+					<mxi-cell title="位置" icon="location-o" />
+					<mxi-cell title="商店" icon="shop-o" />
+				</mxi-cell-group>
+			</view>
+
+			<text class="section">展示箭头（arrow-direction 四向）</text>
+			<view class="cell-wrap">
+				<mxi-cell-group>
+					<mxi-cell title="默认右箭头" is-link />
+					<mxi-cell title="向左箭头" is-link arrow-direction="left" />
+					<mxi-cell title="向上箭头" is-link arrow-direction="up" value="内容" />
+					<mxi-cell title="向下箭头" is-link arrow-direction="down" value="内容" />
+				</mxi-cell-group>
+			</view>
+
+			<text class="section">分组标题</text>
+			<view class="cell-wrap">
+				<mxi-cell-group title="分组 1">
+					<mxi-cell title="单元格" value="内容" />
+				</mxi-cell-group>
+			</view>
+			<view class="cell-wrap">
+				<mxi-cell-group title="分组 2">
+					<mxi-cell title="单元格" value="内容" />
+				</mxi-cell-group>
+			</view>
+
+			<text class="section">插槽自定义</text>
+			<view class="cell-wrap">
+				<mxi-cell-group>
+					<mxi-cell value="内容" is-link>
+						<template #title>
+							<text class="slot-title">标题</text>
+							<mxi-badge content="新" />
+						</template>
+					</mxi-cell>
+					<mxi-cell title="标题" icon="shop-o">
+						<template #right-icon>
+							<mxi-icon name="search" size="16" />
+						</template>
+					</mxi-cell>
+				</mxi-cell-group>
+			</view>
+
+			<text class="section">垂直居中</text>
+			<view class="cell-wrap">
+				<mxi-cell-group>
+					<mxi-cell title="单元格" value="内容" label="描述信息" center />
+				</mxi-cell-group>
+			</view>
+
+			<text class="section">点击事件与按压反馈</text>
+			<view class="cell-wrap">
+				<mxi-cell-group>
+					<mxi-cell title="点击我" value="控制台输出" is-link @click="onCellClick" />
+					<mxi-cell title="无按压反馈" :clickable="false" is-link @click="onCellClick" />
+					<mxi-cell title="仅按压反馈" clickable @click="onCellClick" />
+				</mxi-cell-group>
+			</view>
+
+			<text class="section">组内末线自动隐藏（动态增删）</text>
+			<view class="cell-wrap">
+				<mxi-cell-group>
+					<mxi-cell v-for="item in dynamicCells" :key="item" :title="item" />
+				</mxi-cell-group>
+			</view>
+			<view class="card">
+				<view class="row">
+					<mxi-button size="small" @click="addCell">添加</mxi-button>
+					<mxi-button size="small" custom-style="margin-left: 12px;" @click="removeCell">移除</mxi-button>
+				</view>
+			</view>
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/** 动态增删的 cell 标题列表（验证组内末线随增删自动重算） */
+	const dynamicCells = ref<string[]>(['单元格 1', '单元格 2', '单元格 3'])
+	let cellCounter = 3
+
+	/** 添加一个单元格（末线应自动移至新末位） */
+	function addCell() {
+		cellCounter++
+		dynamicCells.value.push('单元格 ' + cellCounter)
+	}
+
+	/** 移除最后一个单元格（移除后新末位的分隔线应自动隐藏） */
+	function removeCell() {
+		if (dynamicCells.value.length == 0) return
+		dynamicCells.value.pop()
+	}
+
+	/** cell 点击回调（验证 click 事件透传） */
+	function onCellClick() {
+		console.log('[cell demo] cell clicked')
+	}
+</script>
+
+<style>
+	/* 单元格组容器（白色列表卡直接铺在灰色页面底上） */
+	.cell-wrap {
+		margin-bottom: 16rpx;
+	}
+	/* 标题插槽文字（与徽标并排） */
+	.slot-title {
+		margin-right: 8px;
+		font-size: 28rpx;
+		color: #323233;
+		font-weight: bold;
+	}
+</style>

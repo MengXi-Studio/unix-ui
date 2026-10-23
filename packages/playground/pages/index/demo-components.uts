@@ -44,6 +44,12 @@ export const demoGroups: DemoGroup[] = [
 				desc: '用于触发一个操作，支持类型、尺寸、朴素、圆角、细边框、加载状态等特性。'
 			},
 			{
+				name: 'cell',
+				zhName: '单元格',
+				enName: 'Cell',
+				desc: '列表单项展示，支持标题、值、描述、左侧图标、四向箭头、必填星号、圆角卡片分组与组内末线自动隐藏。'
+			},
+			{
 				name: 'icon',
 				zhName: '图标',
 				enName: 'Icon',

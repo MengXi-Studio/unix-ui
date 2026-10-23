@@ -12,5 +12,6 @@ export const routes: RouteConfig[] = [
 	{ path: 'pages-sub/button/button', name: 'button', meta: { title: '按钮 Button' } },
 	{ path: 'pages-sub/loading/loading', name: 'loading', meta: { title: '加载 Loading' } },
 	{ path: 'pages-sub/icon/icon', name: 'icon', meta: { title: '图标 Icon' } },
-	{ path: 'pages-sub/badge/badge', name: 'badge', meta: { title: '徽标 Badge' } }
+	{ path: 'pages-sub/badge/badge', name: 'badge', meta: { title: '徽标 Badge' } },
+	{ path: 'pages-sub/cell/cell', name: 'cell', meta: { title: '单元格 Cell' } }
 ]

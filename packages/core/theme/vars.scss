@@ -61,3 +61,34 @@ $mxi-badge-padding: 0 3px !default;
 $mxi-badge-min-width: 16px !default;
 $mxi-badge-dot-size: 8px !default;
 $mxi-badge-dot-bg: $mxi-color-danger !default;
+
+/* ========== Cell 单元格 ========== */
+$mxi-cell-font-size: 14px !default;
+$mxi-cell-line-height: 24px !default;
+$mxi-cell-vertical-padding: 10px !default;
+$mxi-cell-horizontal-padding: 16px !default;
+$mxi-cell-text-color: $mxi-text-color !default;
+$mxi-cell-background: $mxi-white !default;
+$mxi-cell-border-color: #ebedf0 !default;
+$mxi-cell-active-color: #f2f3f5 !default;
+$mxi-cell-required-color: $mxi-color-danger !default;
+$mxi-cell-label-color: #969799 !default;
+$mxi-cell-label-font-size: 12px !default;
+$mxi-cell-label-line-height: 18px !default;
+$mxi-cell-label-margin-top: 4px !default;
+$mxi-cell-value-color: #969799 !default;
+$mxi-cell-icon-margin: 8px !default;
+$mxi-cell-arrow-margin: 4px !default;
+$mxi-cell-right-icon-color: #c8c9cc !default;
+$mxi-cell-large-vertical-padding: 12px !default;
+$mxi-cell-large-title-font-size: 16px !default;
+$mxi-cell-large-label-font-size: 14px !default;
+
+/* ========== CellGroup 单元格组 ========== */
+$mxi-cell-group-background: $mxi-white !default;
+$mxi-cell-group-title-color: #969799 !default;
+$mxi-cell-group-title-padding: 16px 16px 8px !default;
+$mxi-cell-group-title-font-size: 14px !default;
+$mxi-cell-group-title-line-height: 16px !default;
+$mxi-cell-group-inset-radius: $mxi-radius-md !default;
+$mxi-cell-group-inset-padding: 0 16px !default;

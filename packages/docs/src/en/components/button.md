@@ -1,6 +1,6 @@
 # Button
 
-Buttons are used to trigger an action, such as submitting a form. The API follows [Vant Button](https://vant-ui.github.io/vant/#/en-US/button).
+Buttons are used to trigger an action, such as submitting a form. Supports types, sizes, plain, round, square, block, disabled and loading states.
 
 ## Usage
 

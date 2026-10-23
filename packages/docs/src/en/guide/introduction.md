@@ -9,18 +9,17 @@
 - **Multi-platform**: App (Android / iOS / HarmonyOS), Web and Mini Programs, compatible with [vapor mode](/en/guide/compatibility#vapor-mode)
 - **Native rendering**: details like 0.5px hairline borders and loading animations are built on native capabilities for consistent visuals across platforms
 - **Strongly typed UTS**: fully static Props / Events, errors caught at compile time
-- **Vant-aligned API**: component naming, props and interaction semantics match [Vant](https://vant-ui.github.io/vant/) for a zero-cost migration
+- **Consistent component API**: component naming, props and interaction semantics follow one unified convention — zero learning cost
 
-## Relationship with uni-ui and Vant
+## Design Positioning
 
-|  | unix-ui | uni-ui | Vant |
-| --- | --- | --- | --- |
-| Target framework | uni-app x (UTS/uvue) | uni-app (Vue) | Web (Vue) |
-| Rendering | Native | Hybrid | DOM |
-| Interaction & API style | Vant-aligned | Its own style | — |
-| Theming | Compile-time SCSS variables | SCSS variables | CSS variables |
+| | unix-ui |
+| --- | --- |
+| Target framework | uni-app x (UTS / uvue) |
+| Rendering | Native |
+| Theming | Compile-time SCSS variables |
 
-unix-ui borrows Vant's component design and interaction conventions, but re-implements them for uni-app x's native rendering and strict UTS typing (text must live in `<text>`, no pseudo-elements, no `@keyframes`).
+unix-ui is implemented natively for uni-app x's native rendering and strict UTS typing (text must live in `<text>`, no pseudo-elements, no `@keyframes`), with no Web DOM runtime dependency.
 
 ## Learning Path
 

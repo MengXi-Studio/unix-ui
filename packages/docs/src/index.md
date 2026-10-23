@@ -39,6 +39,6 @@ features:
     title: UTS 强类型
     details: Props 用 type 定义 + withDefaults 默认值，Events 用具名元组声明，严格类型无隐式转换，编译期拦截错误
   - icon: 📐
-    title: API 对标 Vant
-    details: 组件 Props / Events / 视觉规格对齐 Vant，迁移零心智成本；默认主题色与 Vant 同源
+    title: 统一的组件 API
+    details: 组件命名、Props / Events、视觉规格遵循统一的交互规范，上手零心智成本
 ---

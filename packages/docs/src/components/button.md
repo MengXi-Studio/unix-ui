@@ -1,6 +1,6 @@
 # Button 按钮
 
-按钮用于触发一个操作，如提交表单。API 对标 [Vant Button](https://vant-ui.github.io/vant/#/zh-CN/button)。
+按钮用于触发一个操作，如提交表单。支持类型、尺寸、朴素、圆形、方形、块级、禁用与加载状态等特性。
 
 ## 引入
 

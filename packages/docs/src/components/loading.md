@@ -1,6 +1,6 @@
 # Loading 加载
 
-加载图标用于表示页面或操作的加载状态。API 对标 [Vant Loading](https://vant-ui.github.io/vant/#/zh-CN/loading)。
+加载图标用于表示页面或操作的加载状态。支持弧段圆环与花瓣两种类型。
 
 ## 引入
 

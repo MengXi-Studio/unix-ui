@@ -42,7 +42,7 @@ export type RouterOptions = {
 
 /**
  * 路由器实例接口
- * 提供 vue-router 风格的路由导航、守卫注册与状态查询能力（适配 uni-app x）
+ * 提供路由导航、守卫注册与状态查询能力（适配 uni-app x）
  */
 export interface Router {
 	/** 当前路由位置 */

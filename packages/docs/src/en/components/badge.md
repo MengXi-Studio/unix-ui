@@ -1,6 +1,6 @@
 # Badge
 
-Display a badge number or a red dot at the top-right corner of an icon or text, or standalone. The API mirrors [Vant Badge](https://vant-ui.github.io/vant/#/en-US/badge).
+Display a badge number or a red dot at the top-right corner of an icon or text, or standalone.
 
 ## Import
 
@@ -57,7 +57,7 @@ Use the `color` prop to set the badge background. Semantic color names (`primary
 
 ### Custom Position
 
-Use the `position` prop to set the badge position, defaulting to `top-right`. The badge center sits on the corner, matching Vant's look.
+Use the `position` prop to set the badge position, defaulting to `top-right`. The badge center sits on the corner.
 
 ```html
 <mxi-badge content="10" position="top-left">
@@ -73,7 +73,7 @@ Use the `position` prop to set the badge position, defaulting to `top-right`. Th
 
 ### Offset
 
-Use the `offset-x` / `offset-y` props to set the offset (semantically equivalent to Vant's `offset` array, split into two props for the most solid UTS type constraints): positive values point right / down respectively, negative values reverse, pure numbers are treated as `px`.
+Use the `offset-x` / `offset-y` props to set the offset (split into two props for the most solid UTS type constraints): positive values point right / down respectively, negative values reverse, pure numbers are treated as `px`.
 
 ```html
 <mxi-badge content="10" offset-x="4" offset-y="4">

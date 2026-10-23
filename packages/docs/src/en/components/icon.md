@@ -1,6 +1,6 @@
 # Icon
 
-A font-based icon set with 257 built-in icons (names fully aligned with [Vant](https://vant-ui.github.io/vant/#/en-US/icon)), supporting custom color & size and click events. The API mirrors Vant Icon.
+A font-based icon set with 257 built-in icons, supporting custom color & size and click events.
 
 ## Import
 

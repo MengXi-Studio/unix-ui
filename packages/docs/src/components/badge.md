@@ -1,6 +1,6 @@
 # Badge 徽标
 
-在图标或文字的右上角展示徽标数字或小红点，也支持独立展示。API 对标 [Vant Badge](https://vant-ui.github.io/vant/#/zh-CN/badge)。
+在图标或文字的右上角展示徽标数字或小红点，也支持独立展示。
 
 ## 引入
 
@@ -57,7 +57,7 @@
 
 ### 自定义位置
 
-通过 `position` 属性设置徽标位置，默认 `top-right`。徽标中心压角展示，观感与 Vant 一致。
+通过 `position` 属性设置徽标位置，默认 `top-right`。徽标中心压角展示。
 
 ```html
 <mxi-badge content="10" position="top-left">
@@ -73,7 +73,7 @@
 
 ### 偏移量
 
-通过 `offset-x` / `offset-y` 两个属性设置偏移量（与 Vant 的 `offset` 数组语义等价，拆分为双属性以获得最稳的 UTS 类型约束）：正值分别向右、向下，负值反向，纯数字自动补 `px`。
+通过 `offset-x` / `offset-y` 两个属性设置偏移量（拆分为双属性以获得最稳的 UTS 类型约束）：正值分别向右、向下，负值反向，纯数字自动补 `px`。
 
 ```html
 <mxi-badge content="10" offset-x="4" offset-y="4">

@@ -1,6 +1,6 @@
 # Loading
 
-The loading icon indicates a loading state of a page or operation. API aligned with [Vant Loading](https://vant-ui.github.io/vant/#/zh-CN/loading).
+The loading icon indicates a loading state of a page or operation. Two types are supported: circular arc ring and spinner petals.
 
 ## Import
 

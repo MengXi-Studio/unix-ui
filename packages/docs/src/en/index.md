@@ -39,6 +39,6 @@ features:
     title: Strongly Typed UTS
     details: Props defined with type + withDefaults, Events declared as named tuples, strict typing with no implicit conversion — errors are caught at compile time
   - icon: 📐
-    title: Vant-Aligned API
-    details: Component names, props and interaction semantics align with Vant for a zero-cost migration; the default theme colors share the same origin as Vant
+    title: Consistent Component API
+    details: Component naming, props / events and visual specs follow one unified interaction convention — zero learning cost
 ---

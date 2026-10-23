@@ -1,9 +1,9 @@
 /**
  * 路由器主类与 createRouter
  *
- * 提供 vue-router 风格的导航、守卫注册、状态查询与插件扩展能力，适配 uni-app x 静态页面模型。
+ * 提供导航、守卫注册、状态查询与插件扩展能力，适配 uni-app x 静态页面模型。
  * 底层基于 uni.* 原生导航 API 与原生页面栈（getCurrentPages）实现；
- * 扩展能力通过插件（plugins）提供，对齐 uni-router 的核心 + 插件架构。
+ * 扩展能力通过插件（plugins）提供，采用核心 + 插件架构。
  */
 import type { App } from 'vue'
 import type {

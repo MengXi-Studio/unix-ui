@@ -9,18 +9,17 @@
 - **多端兼容**：App（Android / iOS / HarmonyOS）、Web、小程序，兼容[蒸汽模式](/guide/compatibility#蒸汽模式)（vapor）
 - **原生渲染**：0.5px 细边框、加载动画等细节全部基于原生能力实现，各端视觉一致
 - **UTS 强类型**：Props / Events 全部静态类型，编译期拦截错误
-- **API 对标 Vant**：组件命名、Props、交互语义与 [Vant](https://vant-ui.github.io/vant/) 保持一致，迁移零心智成本
+- **统一的组件 API**：组件命名、Props、交互语义遵循统一的规范，上手零心智成本
 
-## 与 uni-ui / Vant 的关系
+## 设计定位
 
-| | unix-ui | uni-ui | Vant |
-| --- | --- | --- | --- |
-| 目标框架 | uni-app x（UTS/uvue） | uni-app（Vue） | Web（Vue） |
-| 渲染方式 | 原生渲染 | 混合渲染 | DOM |
-| 交互与 API 风格 | 对齐 Vant | 自成一派 | — |
-| 主题机制 | 编译期 SCSS 变量 | SCSS 变量 | CSS 变量 |
+| | unix-ui |
+| --- | --- |
+| 目标框架 | uni-app x（UTS / uvue） |
+| 渲染方式 | 原生渲染 |
+| 主题机制 | 编译期 SCSS 变量 |
 
-unix-ui 借鉴 Vant 的组件设计与交互规范，但针对 uni-app x 的原生渲染与 UTS 强类型约束重新实现（例如文字必须置于 `<text>`、无伪元素、无 `@keyframes`）。
+unix-ui 针对原生渲染与 UTS 强类型约束原生实现（例如文字必须置于 `<text>`、无伪元素、无 `@keyframes`），不依赖 Web DOM 运行时。
 
 ## 学习路径
 

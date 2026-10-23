@@ -4,7 +4,7 @@
 
 ### 新增
 
-- **mxi-loading 加载**：API 对标 [Vant Loading](https://vant-ui.github.io/vant/#/zh-CN/loading)——两种加载类型（circular 弧段圆环 / spinner 花瓣）、自定义颜色（color，支持 CSS 色值与语义色名 `default` `primary` `success` `warning` `danger` `white`）、自定义大小（size，支持 `100%` 撑满外部定尺寸容器）、垂直排列（vertical）、自定义文案样式（text-size / text-color）、默认文案插槽与 icon 自定义图标插槽；spinner 型采用 1.2s 12 步离散旋转 + 亮度拖尾，circular 型为弧段圆环匀速旋转
+- **mxi-loading 加载**：两种加载类型（circular 弧段圆环 / spinner 花瓣）、自定义颜色（color，支持 CSS 色值与语义色名 `default` `primary` `success` `warning` `danger` `white`）、自定义大小（size，支持 `100%` 撑满外部定尺寸容器）、垂直排列（vertical）、自定义文案样式（text-size / text-color）、默认文案插槽与 icon 自定义图标插槽；spinner 型采用 1.2s 12 步离散旋转 + 亮度拖尾，circular 型为弧段圆环匀速旋转
 - **mxi-button 按压反馈**：基于 `hover-class` 实现按压态（opacity 0.8，可主题覆盖），禁用与加载状态不出现按压反馈
 - **mxi-button 加载重构**：加载图标改为复用 [mxi-loading](/components/loading)（形态与动画实现单处维护）；`loading-type` 移除 `clock` 类型，收敛为 `circular` / `spinner` 两种（破坏性变更）
 
@@ -14,12 +14,12 @@
 
 ### 新增
 
-- **mxi-button 按钮**：API 对标 [Vant Button](https://vant-ui.github.io/vant/#/zh-CN/button)——五种类型（default / primary / success / warning / danger）、四种尺寸（large / normal / small / mini）、朴素（plain）、圆形（round）、方形（square）、块级（block）、禁用（disabled）、加载状态（loading / loading-text）、自定义颜色（color，支持 `linear-gradient` 渐变）、细边框（hairline）
+- **mxi-button 按钮**：五种类型（default / primary / success / warning / danger）、四种尺寸（large / normal / small / mini）、朴素（plain）、圆形（round）、方形（square）、块级（block）、禁用（disabled）、加载状态（loading / loading-text）、自定义颜色（color，支持 `linear-gradient` 渐变）、细边框（hairline）
 - **easycom 自动导入**：uni_modules 规范目录结构（`uni_modules/mxi-ui-x/components/组件名/组件名.uvue`），免 import 免注册；npm 方式提供 pages.json `easycom.custom` 规则
 - **主题机制**：默认主题零配置内置（组件内顶层引入 `theme/vars.scss`，全 `!default`）；在项目根 uni.scss 直接定义 `$mxi-*` 变量即可编译期全局覆盖，详见[主题定制](/guide/theming)
 - **0.5px 细边框**：ucss 无伪元素，采用绝对定位 view + `scale(0.5)` 方案，Web 与原生端表现一致
 - **加载动画**：`UniElement.animate` 实现 loading 圆环旋转（ucss 禁用 `@keyframes` 的约束下）
-- **事件语义**：禁用与加载状态下 click 不触发，与 Vant 行为一致
+- **事件语义**：禁用与加载状态下 click 不触发
 
 ### 工程化
 

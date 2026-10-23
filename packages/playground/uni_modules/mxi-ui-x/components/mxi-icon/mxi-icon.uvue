@@ -62,7 +62,7 @@
 	}
 
 	/**
-	 * 点击事件透传：与 Vant Icon 对齐，向父组件派发原生 click 事件
+	 * 点击事件透传：向父组件派发原生 click 事件
 	 */
 	function onClick(e: MouseEvent) {
 		emit('click', e)
@@ -90,14 +90,14 @@
 	@import '../../theme/vars.scss';
 
 	/*
-	 * 字体声明：ttf 随包内置（packages/core/static/vant-icon.ttf → sync 后位于
+	 * 字体声明：ttf 随包内置（packages/core/static/mxi-icon.ttf → sync 后位于
 	 * uni_modules/mxi-ui-x/static/，官方支持的本地字体路径），零配置、离线可用。
 	 * 自定义图标出口：custom-class 覆盖根节点 font-family（配合自有字体与码点），
 	 * 或 icon 插槽放置任意内容。
 	 */
 	@font-face {
 		font-family: mxi-icon;
-		src: url('/uni_modules/mxi-ui-x/static/vant-icon.ttf');
+		src: url('/uni_modules/mxi-ui-x/static/mxi-icon.ttf');
 	}
 
 	/* ========== 根节点（text，行内收缩） ========== */

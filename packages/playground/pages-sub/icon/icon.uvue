@@ -1,10 +1,7 @@
 <template>
-	<!-- #ifdef APP -->
-	<scroll-view class="page" :scroll-y="true">
-	<!-- #endif -->
-	<!-- #ifndef APP -->
 	<view class="page">
-	<!-- #endif -->
+		<demo-navbar title="图标" subtitle="Icon" />
+		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
 			<text class="section">基础图标（{{ iconBasicNames.length }}）</text>
 			<view class="card">
@@ -109,12 +106,8 @@
 				</view>
 			</view>
 		</view>
-	<!-- #ifdef APP -->
-	</scroll-view>
-	<!-- #endif -->
-	<!-- #ifndef APP -->
+		</scroll-view>
 	</view>
-	<!-- #endif -->
 </template>
 
 <script setup lang="uts">

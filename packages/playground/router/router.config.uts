@@ -1,0 +1,16 @@
+import type { RouteConfig } from '@/uni_modules/ux-router/utssdk/index.uts'
+
+/**
+ * 应用路由表（playground 示例工程）
+ *
+ * path 须与 pages.json 注册的页面路径保持一致；
+ * meta.title 供 afterEach 守卫更新 Web 端 document.title。
+ * 新增组件演示页时在此登记一条，并同步 pages.json 注册与首页分组数据表。
+ */
+export const routes: RouteConfig[] = [
+	{ path: 'pages/index/index', name: 'home', meta: { title: 'unix-ui 组件演示' } },
+	{ path: 'pages-sub/button/button', name: 'button', meta: { title: '按钮 Button' } },
+	{ path: 'pages-sub/loading/loading', name: 'loading', meta: { title: '加载 Loading' } },
+	{ path: 'pages-sub/icon/icon', name: 'icon', meta: { title: '图标 Icon' } },
+	{ path: 'pages-sub/badge/badge', name: 'badge', meta: { title: '徽标 Badge' } }
+]

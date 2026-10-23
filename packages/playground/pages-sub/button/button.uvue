@@ -1,10 +1,7 @@
 <template>
-	<!-- #ifdef APP -->
-	<scroll-view class="page" :scroll-y="true">
-	<!-- #endif -->
-	<!-- #ifndef APP -->
 	<view class="page">
-	<!-- #endif -->
+		<demo-navbar title="按钮" subtitle="Button" />
+		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
 			<text class="section">按钮类型</text>
 			<view class="card">
@@ -134,12 +131,8 @@
 				<text v-for="(log, index) in logs" :key="index" class="log">{{ log }}</text>
 			</view>
 		</view>
-	<!-- #ifdef APP -->
-	</scroll-view>
-	<!-- #endif -->
-	<!-- #ifndef APP -->
+		</scroll-view>
 	</view>
-	<!-- #endif -->
 </template>
 
 <script setup lang="uts">

@@ -1,10 +1,7 @@
 <template>
-	<!-- #ifdef APP -->
-	<scroll-view class="page" :scroll-y="true">
-	<!-- #endif -->
-	<!-- #ifndef APP -->
 	<view class="page">
-	<!-- #endif -->
+		<demo-navbar title="加载" subtitle="Loading" />
+		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
 			<text class="section">加载类型</text>
 			<view class="card">
@@ -141,12 +138,8 @@
 				</view>
 			</view>
 		</view>
-	<!-- #ifdef APP -->
-	</scroll-view>
-	<!-- #endif -->
-	<!-- #ifndef APP -->
+		</scroll-view>
 	</view>
-	<!-- #endif -->
 </template>
 
 <style>

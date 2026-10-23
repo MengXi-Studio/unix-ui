@@ -1,0 +1,76 @@
+/**
+ * 组件演示条目数据表（首页分组导航的唯一数据源）
+ *
+ * 新增组件时在对应分组的 components 中登记一条即可，
+ * 首页分组列表与搜索过滤自动生效；演示页路由需另行在
+ * router/router.config.uts 与 pages.json 中登记。
+ */
+
+/** 组件演示条目 */
+export type DemoComponent = {
+	/** 路由名（router.push 按名导航，须与 router.config.uts 的 name 一致） */
+	name: string
+	/** 中文名 */
+	zhName: string
+	/** 英文标识（与组件目录名一致） */
+	enName: string
+	/** 一句话简介 */
+	desc: string
+}
+
+/** 演示分组 */
+export type DemoGroup = {
+	/** 分组标题 */
+	title: string
+	/** 组内组件条目 */
+	components: DemoComponent[]
+}
+
+/**
+ * 组件演示分组表（分类对齐 Vant 官方 demo：基础 / 表单 / 反馈 / 展示 / 导航）
+ *
+ * 新增组件时在对应分组的 components 中登记一条即可，
+ * 首页分组列表与搜索过滤自动生效；演示页路由需另行在
+ * router/router.config.uts 与 pages.json 中登记。
+ */
+export const demoGroups: DemoGroup[] = [
+	{
+		title: '基础组件',
+		components: [
+			{
+				name: 'button',
+				zhName: '按钮',
+				enName: 'Button',
+				desc: '用于触发一个操作，支持类型、尺寸、朴素、圆角、细边框、加载状态等特性。'
+			},
+			{
+				name: 'icon',
+				zhName: '图标',
+				enName: 'Icon',
+				desc: '字体图标组件，内置 257 个图标，支持自定义颜色、大小、标签样式直达与自定义图标插槽。'
+			}
+		]
+	},
+	{
+		title: '反馈组件',
+		components: [
+			{
+				name: 'loading',
+				zhName: '加载',
+				enName: 'Loading',
+				desc: '加载中状态提示，支持弧段圆环与花瓣两种类型、自定义颜色大小、加载文案与自定义图标插槽。'
+			}
+		]
+	},
+	{
+		title: '展示组件',
+		components: [
+			{
+				name: 'badge',
+				zhName: '徽标',
+				enName: 'Badge',
+				desc: '出现在图标或文字右上角，支持数字、文案、红点、最大值截断、四角位置、偏移量与自定义内容插槽。'
+			}
+		]
+	}
+]

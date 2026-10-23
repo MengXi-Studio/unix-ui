@@ -16,6 +16,11 @@
 		padding: 24rpx;
 	}
 
+	/* 演示页内容滚动区（配合自绘导航骨架，固定头 + 独立滚动体） */
+	.page-body {
+		flex: 1;
+	}
+
 	.section {
 		font-size: 28rpx;
 		font-weight: bold;

@@ -15,3 +15,4 @@
 | 2026-10-22 | [mxi-button-loading-refactor](新增/2026-10-22/mxi-button-loading-refactor.md) | LoadingType 外置到 mxi-loading 同级 loading.uts（跨组件共享），mxi-button 相对路径导入消除双份定义，运行实测通过 |
 | 2026-10-22 | [mxi-icon](新增/2026-10-22/mxi-icon.md) | 新增 mxi-icon 图标组件（257 个 Vant 对齐图标，IconName 联合类型 + ttf 随包 @font-face + icon 插槽 + click），sync 脚本 INCLUDE 扩展 static，浏览器实测与双语文档完成 |
 | 2026-10-22 | [mxi-badge](新增/2026-10-22/mxi-badge.md) | 新增 mxi-badge 徽标组件（包裹/独立双形态，content/dot/max 截断/语义色+色值/四角 position/offset-x·y/show-zero/content 插槽），9 变量主题段，浏览器 8 项实测与双语文档完成 |
+| 2026-10-23 | [playground-ux-router](改造/2026-10-23/playground-ux-router.md) | playground 接入 ux-router（路由表 + app.use + afterEach 守卫 + 按名导航），首页重构为品牌区/搜索/分组列表（Vant demo 风），新增 demo-navbar 自绘导航骨架全端统一滚动结构，浏览器实测与文档回填完成 |

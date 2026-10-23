@@ -1,0 +1,273 @@
+<template>
+	<!-- #ifdef APP -->
+	<scroll-view class="page" :scroll-y="true">
+	<!-- #endif -->
+	<!-- #ifndef APP -->
+	<view class="page">
+	<!-- #endif -->
+		<view class="container">
+			<text class="section">基础用法</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-badge content="5">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">数字 5</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="10">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">数字 10</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="Hot">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">文案 Hot</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge dot>
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">红点</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">最大值</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-badge content="20" max="9">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">20 / max 9</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="50" max="20">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">50 / max 20</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="200" max="99">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">200 / max 99</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">自定义颜色（语义色名 + CSS 色值）</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-badge content="5" color="primary">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">primary</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="5" color="success">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">success</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="5" color="warning">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">warning</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="5" color="#7c3aed">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">#7c3aed</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge dot color="primary">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">蓝点</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">自定义位置</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-badge content="10" position="top-left">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">top-left</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="10" position="top-right">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">top-right</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="10" position="bottom-left">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">bottom-left</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="10" position="bottom-right">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">bottom-right</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">偏移量（offsetX 向右 / offsetY 向下，负值反向）</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-badge content="10" offset-x="4" offset-y="4">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">右下 4px</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="10" offset-x="-4" offset-y="-4">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">左上 4px</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">独立展示（无子元素）</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-badge content="20" />
+						<text class="caption">数字 20</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="200" max="99" />
+						<text class="caption">200 / max 99</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge dot />
+						<text class="caption">红点</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">content 插槽（徽标内嵌图标）</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-badge>
+							<view class="child"></view>
+							<template #content>
+								<view class="badge-icon-box">
+									<mxi-icon name="success" custom-style="font-size: 10px;" />
+								</view>
+							</template>
+						</mxi-badge>
+						<text class="caption">success 图标</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge>
+							<view class="child"></view>
+							<template #content>
+								<view class="badge-icon-box">
+									<mxi-icon name="cross" custom-style="font-size: 10px;" />
+								</view>
+							</template>
+						</mxi-badge>
+						<text class="caption">cross 图标</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">与 mxi-icon 组合</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-badge content="5">
+							<mxi-icon name="chat-o" size="28" />
+						</mxi-badge>
+						<text class="caption">图标 + 数字</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge dot>
+							<mxi-icon name="bell" size="28" />
+						</mxi-badge>
+						<text class="caption">图标 + 红点</text>
+					</view>
+				</view>
+			</view>
+
+			<text class="section">边界：content 为 0 与 show-zero</text>
+			<view class="card">
+				<view class="row">
+					<view class="col-gap">
+						<mxi-badge content="0">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">0 默认展示</text>
+					</view>
+					<view class="col-gap">
+						<mxi-badge content="0" :show-zero="false">
+							<view class="child"></view>
+						</mxi-badge>
+						<text class="caption">0 隐藏</text>
+					</view>
+				</view>
+			</view>
+		</view>
+	<!-- #ifdef APP -->
+	</scroll-view>
+	<!-- #endif -->
+	<!-- #ifndef APP -->
+	</view>
+	<!-- #endif -->
+</template>
+
+<script setup lang="uts">
+</script>
+
+<style>
+	/* 徽标子元素占位块（对齐 Vant 演示的 40×40 灰底圆角块） */
+	.child {
+		width: 40px;
+		height: 40px;
+		background-color: #f2f3f5;
+		border-radius: 4px;
+	}
+	.row {
+		flex-direction: row;
+		align-items: center;
+		flex-wrap: wrap;
+		/* uvue 中 view 默认 overflow: hidden（官方 CSS 默认值表），徽标压角超出
+		   收缩贴合的父容器会被裁剪，演示页容器链需显式放开 */
+		overflow: visible;
+	}
+	.col-gap {
+		flex-direction: column;
+		align-items: center;
+		margin-right: 24px;
+		margin-bottom: 8px;
+		overflow: visible;
+	}
+	.caption {
+		margin-top: 8px;
+		font-size: 12px;
+		color: #969799;
+	}
+	/* content 插槽内嵌图标的承载块（徽标 16px 高内居中） */
+	.badge-icon-box {
+		justify-content: center;
+		align-items: center;
+	}
+</style>

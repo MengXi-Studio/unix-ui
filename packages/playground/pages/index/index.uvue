@@ -18,6 +18,10 @@
 				<text class="card-title">Icon 图标</text>
 				<text class="card-desc">字体图标组件，内置 257 个图标，支持自定义颜色、大小、标签样式直达、图标。支持自定义图标插槽与点击事件。</text>
 			</view>
+			<view class="card" @click="goBadgeDemo">
+				<text class="card-title">Badge 徽标</text>
+				<text class="card-desc">徽标出现在图标或文字的右上角，支持数字、文案、红点、最大值截断、四角位置、偏移量与自定义内容插槽。</text>
+			</view>
 		</view>
 	<!-- #ifdef APP -->
 	</scroll-view>
@@ -46,6 +50,13 @@
 	function goIconDemo() {
 		uni.navigateTo({
 			url: '/pages-sub/icon/icon'
+		})
+	}
+
+	/** 跳转到 Badge 组件演示页 */
+	function goBadgeDemo() {
+		uni.navigateTo({
+			url: '/pages-sub/badge/badge'
 		})
 	}
 </script>

@@ -28,6 +28,12 @@
 				"style": {
 					"navigationBarTitleText": "Icon 图标"
 				}
+			},
+			{
+				"path": "badge/badge",
+				"style": {
+					"navigationBarTitleText": "Badge 徽标"
+				}
 			}
 		]
 		}

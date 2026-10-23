@@ -50,3 +50,14 @@ $mxi-loading-spinner-color: #c8c9cc !default;
 $mxi-loading-text-color: #646566 !default;
 $mxi-loading-text-font-size: 14px !default;
 $mxi-loading-text-gap: 4px !default;
+
+/* ========== Badge 徽标 ========== */
+$mxi-badge-height: 16px !default;
+$mxi-badge-color: $mxi-white !default;
+$mxi-badge-bg: $mxi-color-danger !default;
+$mxi-badge-font-size: 12px !default;
+$mxi-badge-font-weight: bold !default;
+$mxi-badge-padding: 0 3px !default;
+$mxi-badge-min-width: 16px !default;
+$mxi-badge-dot-size: 8px !default;
+$mxi-badge-dot-bg: $mxi-color-danger !default;

@@ -18,3 +18,4 @@
 | 2026-10-23 | [playground-ux-router](改造/2026-10-23/playground-ux-router.md) | playground 接入 ux-router（路由表 + app.use + afterEach 守卫 + 按名导航），首页重构为品牌区/搜索/分组列表（Vant demo 风），新增 demo-navbar 自绘导航骨架全端统一滚动结构，浏览器实测与文档回填完成 |
 | 2026-10-23 | [mxi-cell](新增/2026-10-23/mxi-cell.md) | 新增 mxi-cell + mxi-cell-group（单元格与分组，title/value/label、四向箭头、inset 圆角卡片、provide/inject 注册自动隐藏组内末线），浏览器十二项实测与文档回填完成（双语文档按用户要求暂缓） |
 | 2026-10-23 | [mxi-image](新增/2026-10-23/mxi-image.md) | 新增 mxi-image（原生 image 增强封装，参考 Sard 结合 Vant：mode 直通、加载/失败占位、ucss transition 淡入、round 圆形、lazyLoad 透传），浏览器六项实测与文档回填完成（双语文档按用户要求暂缓） |
+| 2026-10-25 | [mxi-text](新增/2026-10-25/mxi-text.md) | 新增 mxi-text（文本样式快捷封装，参考 Sard：8 语义色 + CSS 色值双模式、三档字号、truncated 单行省略、line-clamp 直通原生 max-lines、user-select 透传），浏览器实测含 max-lines=0 回归确认与文档回填完成（双语文档按用户要求暂缓） |

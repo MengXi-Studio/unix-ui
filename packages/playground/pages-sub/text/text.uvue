@@ -1,0 +1,85 @@
+<template>
+	<view class="page">
+		<demo-navbar title="文本" subtitle="Text" />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+			<text class="section">基础用法</text>
+			<view class="card">
+				<mxi-text>这是一段默认样式的文本。</mxi-text>
+			</view>
+
+			<text class="section">文本颜色</text>
+			<view class="card">
+				<view class="col-list">
+					<mxi-text color="default">default 默认文本颜色</mxi-text>
+					<mxi-text color="secondary">secondary 次要文本颜色</mxi-text>
+					<mxi-text color="tertiary">tertiary 三级文本颜色</mxi-text>
+					<mxi-text color="fourth">fourth 四级文本颜色</mxi-text>
+					<mxi-text color="primary">primary 主题文本颜色</mxi-text>
+					<mxi-text color="success">success 成功文本颜色</mxi-text>
+					<mxi-text color="warning">warning 警告文本颜色</mxi-text>
+					<mxi-text color="danger">danger 危险文本颜色</mxi-text>
+					<mxi-text color="#7232dd">自定义色值 #7232dd（兼容 CSS 色值）</mxi-text>
+				</view>
+			</view>
+
+			<text class="section">文本大小</text>
+			<view class="card">
+				<view class="col-list">
+					<mxi-text size="small">small 小号文本</mxi-text>
+					<mxi-text size="medium">medium 中号文本（默认）</mxi-text>
+					<mxi-text size="large">large 大号文本</mxi-text>
+				</view>
+			</view>
+
+			<text class="section">单行省略</text>
+			<view class="card">
+				<mxi-text truncated :custom-style="'max-width: 200px;'">
+					这是一段很长很长很长很长很长很长很长很长很长很长的文本，设置 truncated 后会显示省略号。
+				</mxi-text>
+				<text class="caption">max-width 200px 约束 + truncated，超出显示省略号</text>
+			</view>
+
+			<text class="section">多行省略</text>
+			<view class="card">
+				<mxi-text :line-clamp="2" :custom-style="'max-width: 300px;'">{{ clampText }}</mxi-text>
+				<text class="caption">line-clamp 2，超出两行显示省略号</text>
+				<mxi-text :line-clamp="3" :custom-style="'max-width: 300px; margin-top: 12px;'">{{ clampText }}</mxi-text>
+				<text class="caption">line-clamp 3，超出三行显示省略号</text>
+			</view>
+
+			<text class="section">文本可选</text>
+			<view class="card">
+				<mxi-text :user-select="true">这段文本设置了 user-select，可以选中复制（web 端拖选 / App 端长按）。</mxi-text>
+			</view>
+
+			<text class="section">组合</text>
+			<view class="card">
+				<mxi-text size="small" color="danger" truncated :custom-style="'max-width: 240px;'">
+					组合演示：small + danger + truncated，超出容器宽度显示省略号。
+				</mxi-text>
+				<text class="caption">size + color + truncated 组合（max-width 240px）</text>
+			</view>
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/** 多行省略演示长文本 */
+	const clampText = 'uni-app x 是 uni-app 的下一代版本，基于 Vue 3.0 与 uts 语言开发，可编译为高性能原生代码执行。它保留了 uni-app 的跨端能力，同时提供更强的性能与更原生的体验，是全新一代的跨端开发框架。'
+</script>
+
+<style lang="scss">
+	/* 颜色 / 大小列表纵向排列间距 */
+	.col-list {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

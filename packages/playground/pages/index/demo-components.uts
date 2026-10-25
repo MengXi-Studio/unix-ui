@@ -60,6 +60,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '图片',
 				enName: 'Image',
 				desc: '原生 image 增强封装，mode 直通，扩展加载/失败占位、淡入动画、圆角圆形与懒加载。'
+			},
+			{
+				name: 'text',
+				zhName: '文本',
+				enName: 'Text',
+				desc: '文本样式快捷封装，支持语义色、三档字号、单行与多行省略、文本可选。'
 			}
 		]
 	},

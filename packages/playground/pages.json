@@ -58,6 +58,12 @@
 				"style": {
 					"navigationBarTitleText": "间距 Space"
 				}
+			},
+			{
+				"path": "layout/layout",
+				"style": {
+					"navigationBarTitleText": "布局 Layout"
+				}
 			}
 		]
 		}

@@ -16,5 +16,6 @@ export const routes: RouteConfig[] = [
 	{ path: 'pages-sub/cell/cell', name: 'cell', meta: { title: '单元格 Cell' } },
 	{ path: 'pages-sub/image/image', name: 'image', meta: { title: '图片 Image' } },
 	{ path: 'pages-sub/text/text', name: 'text', meta: { title: '文本 Text' } },
-	{ path: 'pages-sub/space/space', name: 'space', meta: { title: '间距 Space' } }
+	{ path: 'pages-sub/space/space', name: 'space', meta: { title: '间距 Space' } },
+	{ path: 'pages-sub/layout/layout', name: 'layout', meta: { title: '布局 Layout' } }
 ]

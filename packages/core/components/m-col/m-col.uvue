@@ -138,11 +138,12 @@
 	 * ========== 24 档 span / offset 百分比矩阵 ==========
 	 * 变体矩阵膨胀，@for 生成；展开产物为扁平类（ucss 仅 class 选择器）。
 	 * 常数 4.16666666667 = 100/24（scss 乘法生成百分比，24 档合计误差在亚像素容差内）。
+	 * 仅设 width 定宽：App 端 max-width 不支持百分比（打包 ERROR 且样式被忽略），
+	 * 而 width 百分比已确定主轴尺寸，无可防御的超宽场景，不设 max-width。
 	 */
 	@for $i from 1 through 24 {
 		.m-col--#{$i} {
 			width: $i * 4.16666666667%;
-			max-width: $i * 4.16666666667%;
 		}
 		.m-col--offset-#{$i} {
 			margin-left: $i * 4.16666666667%;

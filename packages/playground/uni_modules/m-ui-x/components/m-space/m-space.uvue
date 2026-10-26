@@ -142,6 +142,10 @@
 		align-items: flex-end;
 	}
 	.m-space--align-baseline {
+		/* App 端 align-items 不支持 baseline，降级为首行起点对齐；Web 端保持 baseline 语义 */
+		align-items: flex-start;
+		/* #ifdef WEB */
 		align-items: baseline;
+		/* #endif */
 	}
 </style>

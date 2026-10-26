@@ -211,9 +211,9 @@
 		right: 0;
 		transform: translateY(50%) translateX(50%);
 	}
-	/* 独立模式：脱离四角定位，常规流展示 */
+	/* 独立模式：脱离四角定位，常规流展示（App 端不支持 static，relative 无偏移与其视觉等效） */
 	.m-badge__mark--static {
-		position: static;
+		position: relative;
 	}
 	/* 红点：固定尺寸圆点，清除内边距与最小宽度 */
 	.m-badge__mark--dot {

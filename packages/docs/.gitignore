@@ -1,2 +1,0 @@
-# 演示构建产物（由 pnpm build:demo 生成，不入库）
-src/public/playground

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useData } from 'vitepress'
 import { setupCodeCollapse } from '../code-collapse'
 
@@ -65,8 +65,8 @@ const navTitle = computed(() => {
 const MIN_SCALE = 50
 /** 缩放上限（百分比） */
 const MAX_SCALE = 150
-/** 缩放步进（百分比） */
-const STEP = 10
+/** 缩放步进（百分比）：5 保证 85% 起步可达 100% 与上下限 */
+const STEP = 5
 
 /** 当前缩放百分比：默认 85%，保证 1440px 视口下三栏不溢出 */
 const scale = ref(85)
@@ -79,6 +79,40 @@ const zoomOut = () => {
 /** 放大一档 */
 const zoomIn = () => {
 	scale.value = Math.min(MAX_SCALE, scale.value + STEP)
+}
+
+/** 是否处于缩放值编辑态（双击百分比数字触发） */
+const editing = ref(false)
+
+/** 编辑中的草稿文本（纯数字，不含 %） */
+const draft = ref('')
+
+/** 缩放输入框引用：进入编辑态后聚焦并全选 */
+const scaleInputRef = ref<HTMLInputElement | null>(null)
+
+watch(editing, value => {
+	if (value) {
+		draft.value = String(scale.value)
+		nextTick(() => {
+			scaleInputRef.value?.focus()
+			scaleInputRef.value?.select()
+		})
+	}
+})
+
+/** 提交编辑：取整数并钳制在上下限内，非法输入回退当前值 */
+const commitScale = () => {
+	if (!editing.value) return
+	const parsed = Number.parseInt(draft.value, 10)
+	if (Number.isFinite(parsed)) {
+		scale.value = Math.min(MAX_SCALE, Math.max(MIN_SCALE, parsed))
+	}
+	editing.value = false
+}
+
+/** 取消编辑（Esc），不改动当前缩放值 */
+const cancelScale = () => {
+	editing.value = false
 }
 
 /** 手机设计宽度（390px iPhone 逻辑分辨率） */
@@ -173,7 +207,26 @@ const linkTitle = computed(() => props.title || props.path)
 			>
 				−
 			</button>
-			<span class="demo-phone__scale">{{ scale }}%</span>
+			<input
+				v-if="editing"
+				ref="scaleInputRef"
+				v-model="draft"
+				class="demo-phone__scale-input"
+				type="text"
+				inputmode="numeric"
+				:aria-label="isZh ? '缩放百分比' : 'Zoom percentage'"
+				@keydown.enter.prevent="commitScale"
+				@keydown.esc.prevent="cancelScale"
+				@blur="commitScale"
+			/>
+			<span
+				v-else
+				class="demo-phone__scale"
+				:title="isZh ? '双击输入缩放百分比' : 'Double-click to edit zoom'"
+				@dblclick="editing = true"
+			>
+				{{ scale }}%
+			</span>
 			<button
 				class="demo-phone__btn"
 				type="button"
@@ -251,6 +304,23 @@ const linkTitle = computed(() => props.title || props.path)
 	min-width: 34px;
 	text-align: center;
 	font-variant-numeric: tabular-nums;
+	cursor: text;
+}
+
+.demo-phone__scale-input {
+	box-sizing: border-box;
+	width: 36px;
+	padding: 0 2px;
+	border: 1px solid var(--vp-c-divider);
+	border-radius: 4px;
+	background: #fff;
+	color: #111318;
+	font-size: 12px;
+	font-family: inherit;
+	line-height: 16px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	outline: none;
 }
 
 .demo-phone__open {

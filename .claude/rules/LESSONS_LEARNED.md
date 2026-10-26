@@ -147,8 +147,28 @@
 ### 27. 本机运行环境的两个拦截：沙箱临时目录与 Device Guard
 - HBuilderX CLI 编译需在 `E:\_tmp_*` 等工作区外路径写临时文件，沙箱内直接失败（TRAE Sandbox Error: hit restricted），须沙箱外执行
 - Windows Device Guard 拦截 pnpm 自管理 exe（`AppData\Local\pnpm\package-manager-store\**\@pnpm\exe\pnpm.exe`），`pnpm` 命令无法启动；替代：`npx -y pnpm@10.31.0 <script>`（node 入口不受限）或对 vitepress 等直接 `node <bin>.js`
+- 永久修复（2026-10-26 实测通过）：exe 形态全局 pnpm（`@pnpm/exe`，shim 直接跑 pnpm.exe）是拦截根因——`npm rm -g pnpm` 后 `npm i -g pnpm@10.31.0` 换成 JS 形态（shim 走 node + pnpm.cjs），并 `pnpm config set -g manage-package-manager-versions false` 防止自切换回 store exe；残留被锁临时目录无害
 
 ### 28. 绝对定位操作条 + 容器高度塌缩 = 按钮"消失"（折叠代码块实测）
 - 现象：代码块收起后「展开代码」按钮不可见不可点，看似功能丢失只能刷新
 - 根因链：折叠按钮绝对定位不占流式高度 → pre 隐藏后容器无流式内容高度塌缩为 0 → 容器 `overflow-x: auto` 使 overflow-y 计算为 auto，绝对定位子元素被裁剪
 - 修复：collapsed 态补 `min-height: 36px`（按钮 top 8px + 行高 20px + 下留 8px）；同类"绝对定位工具条"组件必须核查宿主塌缩场景
+
+## 2026-10-26 云打包 Android Kotlin 编译失败（运行实测）
+
+### 29. UTS→Kotlin 局部函数按源码顺序生成，"先用后声明"在 App 端编译失败
+- 现象：云打包报 `Unresolved reference 'addUnit' / 'sizeValue'`，Web 端编译运行完全正常
+- 根因：script setup 内的 `function` 声明生成 Kotlin 局部函数（`fun gen_xxx_fn` + `val xxx = ::gen_xxx_fn`），Kotlin 局部函数不允许前向引用；JS 函数提升掩盖了声明顺序问题
+- 判别法：本地生成的 `.kt`（unpackage/resources/app-android）中声明行号 > 使用行号即中招；m-badge 的 addUnit 先声明后使用故未报错，m-icon / m-loading / m-image 均先用后声明全报
+- 修复：helper 函数声明移到首次使用之前（仅调整顺序，Web 行为不变）
+- 关联：本地 `.kt` 与云端报错行号逐行吻合（m-badge.kt:35、demo-navbar.kt:30 精确命中），可把云端错误直接映射回本地生成产物定位
+
+### 30. UTS 接口方法参数不支持默认值，可选参数生成必填 Kotlin 参数
+- 现象：`router.back()` 报 `No value passed for parameter 'delta'`（ux-router 接口声明 `back(delta?: number | null)`，实现 `back(delta: number | null)` 无默认值）
+- 实测约束：UTS 接口方法签名不支持初始值（`delta?: T = 1` 报 "Parameter cannot have question mark and initializer"，`delta: T = 1` 报 "Expected '{', got ')'")；实现带默认值则生成 `override fun back(delta: Number? = 1)`，违反 Kotlin「override 不允许自带默认值」
+- 修复：调用端显式传参（`router.back(1)`）——跨版本唯一可靠写法；第三方 UTS 插件的可省略参数一律显式传值
+
+### 31. 云打包/基座 SDK 版本必须与生成端 HBuilderX 版本配套
+- 现象：本地 5.26 生成的 Kotlin 在云端 kotlinc 报 Unresolved reference（`slots.default`、`Animation`、`watch` 泛型 getter、`_uA` 空数组推断）——代码生成一致而运行时 SDK 旧
+- 依据：HBuilderX 导出日志明示「wgt 文件由 HBuilderX 5.26 版本生成，运行的基座 sdk 也需配套相同版本」（ask.dcloud.net.cn/article/35627）
+- 处置：确认本地 HBuilderX 渠道（alpha / 正式），云打包与离线打包基座用同版本；本地源码侧不做旧 SDK 兼容改写（slots 检测、Animation 句柄、watch getter 均为官方新 API，改写即失配）

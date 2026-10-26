@@ -99,6 +99,15 @@
 		return cls
 	})
 
+	/**
+	 * 数字或纯数字字符串补 px 单位（如 "24" → "24px"），带单位字符串原样返回
+	 */
+	function addUnit(value: string): string {
+		if (value == '') return ''
+		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
+		return pattern.test(value) ? value + 'px' : value
+	}
+
 	/** 图标容器动态样式：size 非空时定宽高（纯数字自动补 px、'100%' 原样撑满），为空时走主题默认尺寸 */
 	const spinnerStyle = computed<string>(() => {
 		if (props.size == '') return ''
@@ -137,15 +146,6 @@
 		if (props.textColor != '') style += ' color: ' + props.textColor + ';'
 		return style
 	})
-
-	/**
-	 * 数字或纯数字字符串补 px 单位（如 "24" → "24px"），带单位字符串原样返回
-	 */
-	function addUnit(value: string): string {
-		if (value == '') return ''
-		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
-		return pattern.test(value) ? value + 'px' : value
-	}
 
 	/**
 	 * spinner 型阶梯关键帧：每 1/12 周期角位移 30°，段内恒值、段末约 2% 时长完成过渡

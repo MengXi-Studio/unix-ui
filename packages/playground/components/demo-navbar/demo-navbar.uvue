@@ -42,9 +42,9 @@
 
 	const router = useRouter()
 
-	/** 返回上一页（统一走 ux-router 导航出口） */
+	/** 返回上一页（统一走 ux-router 导航出口；显式传 delta=1，App 端 Kotlin 可选参数默认值不保证跨版本生效） */
 	const onBack = () => {
-		router.back()
+		router.back(1)
 	}
 </script>
 

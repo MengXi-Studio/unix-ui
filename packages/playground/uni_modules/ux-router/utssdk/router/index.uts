@@ -91,7 +91,7 @@ class UniRouter implements Router {
 		return this.performNavigation(location, 'relaunch')
 	}
 
-	/** 返回上一页或多级页面（uni.navigateBack） */
+	/** 返回上一页或多级页面（uni.navigateBack）；调用端需显式传 delta（UTS 接口默认值不受支持，App 端可选参数会生成必填 Kotlin 参数） */
 	async back(delta: number | null): Promise<NavigationResult> {
 		if (this.pendingNavigation != null) {
 			await this.pendingNavigation.catch(() => {})

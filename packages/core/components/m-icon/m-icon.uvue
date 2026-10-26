@@ -43,15 +43,6 @@
 		return cls
 	})
 
-	/** 根节点动态样式：customStyle 补分号后拼接；color / size 非空时写 inline（为空则继承父级样式） */
-	const rootStyle = computed<string>(() => {
-		let style = props.customStyle
-		if (style != '' && !style.endsWith(';')) style += ';'
-		if (props.color != '') style += 'color: ' + props.color + ';'
-		if (props.size != '') style += 'font-size: ' + addUnit(props.size) + ';'
-		return style
-	})
-
 	/**
 	 * 数字或纯数字字符串补 px 单位（如 "24" → "24px"），带单位字符串原样返回
 	 */
@@ -60,6 +51,15 @@
 		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
 		return pattern.test(value) ? value + 'px' : value
 	}
+
+	/** 根节点动态样式：customStyle 补分号后拼接；color / size 非空时写 inline（为空则继承父级样式） */
+	const rootStyle = computed<string>(() => {
+		let style = props.customStyle
+		if (style != '' && !style.endsWith(';')) style += ';'
+		if (props.color != '') style += 'color: ' + props.color + ';'
+		if (props.size != '') style += 'font-size: ' + addUnit(props.size) + ';'
+		return style
+	})
 
 	/**
 	 * 点击事件透传：向父组件派发原生 click 事件

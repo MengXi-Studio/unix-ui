@@ -114,6 +114,14 @@
 		return ''
 	})
 
+	/**
+	 * 尺寸值规范化：number 自动补 px 单位，string 原样返回（支持 % / vw 等单位）
+	 */
+	function sizeValue(value: string | number): string {
+		if (typeof value == 'number') return value.toString() + 'px'
+		return value
+	}
+
 	/** 根节点动态样式：尺寸 / 圆角 / 圆形按 props 拼接（inline 优先级高于根节点默认尺寸），customStyle 补分号后拼接 */
 	const rootStyle = computed<string>(() => {
 		let style = props.customStyle
@@ -130,14 +138,6 @@
 		}
 		return style
 	})
-
-	/**
-	 * 尺寸值规范化：number 自动补 px 单位，string 原样返回（支持 % / vw 等单位）
-	 */
-	function sizeValue(value: string | number): string {
-		if (typeof value == 'number') return value.toString() + 'px'
-		return value
-	}
 
 	/**
 	 * 点击事件透传：向父组件派发原生 click 事件

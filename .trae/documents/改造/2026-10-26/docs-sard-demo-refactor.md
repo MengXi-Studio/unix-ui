@@ -196,3 +196,18 @@ src = computed(() =>
 - 项目仓库公开后截图/图片外链可恢复（此前 404）。
 - App 端真机验证（组件层既有遗留，与本次改造无关）。
 - dev-only 的 Invalid vnode 警告为上游噪音，若后续升级 VitePress/Vue 版本可复测是否消除。
+
+### 6.5 验收期增量：三轮视觉优化（2026-10-26 补充）
+
+**问题**（用户三轮截图反馈）：轮 1 手机壳内缺仿真状态栏/导航标题栏且工具栏浅色异常；轮 2 机身顶部白条与双导航栏；轮 3 大屏三栏左右空白列、导航栏 logo 与菜单之间缺搜索框。
+
+**修复**：
+
+- 轮 1：重写 DemoPhone——工具栏改深色胶囊 `bottom: calc(100% + 8px)` 悬空分离于机身；壳内新增仿真状态栏（时间 + 灵动岛 + 信号/wifi/电池内联 SVG）与导航标题栏（返回箭头 + `page.title` 居中标题，badge 等无 frontmatter 标题页面回退 path）。
+- 轮 2：白条源于旧工具栏叠压机身露出下方白色状态栏，随轮 1 悬空化消除；双导航栏真身为演示页自绘 demo-navbar 组件——组件加 WEB 端 `location.search.indexOf('navbar=0')` 自隐藏分支，文档站 iframe src 携带 `?navbar=0`，新窗口链接不带参数保留独立浏览页头。
+- 轮 3：
+  1. **左右空白列**：根因为默认主题 ≥1440px 居中钳制——`VPSidebar`、`VPNavBar.has-sidebar .title/.content/.divider`、`VPContent.has-sidebar` 五处 padding/width 按 `(100vw - --vp-layout-max-width)/2` 公式放大，且组件样式带 scoped 属性选择器。demo.css 以 `!important` 按 960–1440px 中屏基准值逐一还原；选择器形态必须与主题一致（`has-sidebar` 挂在 `.VPNavBar` 根节点而非 `.content` 上），且 `.VPSidebar` 的 width 钳制必须与 padding 一并覆盖（只改 padding 会出现 500px+ 宽侧栏压住内容）——首版两次未生效即败于选择器写错与漏项。
+  2. **搜索框不渲染**：VitePress 构建期旗标 `__VP_LOCAL_SEARCH__` 只读顶层 `themeConfig`（`resolveSiteData` 不做 locale 合并），search 配置写在 zh locale 内导致编译期 `provider === ''`、`.VPNavBarSearch` 壳内无任何内容（height=0、无 console 报错）。修复：config/index.ts 顶层 themeConfig 补 `search.provider: 'local'`（仅喂构建旗标），各 locale 保留 translations 供运行时 useData 合并出中文文案；按钮渲染后天然位于 logo 与菜单之间（flex-grow:1 撑开），无需额外移位。
+  3. 排查教训：`curl` 直取 `/@fs/` 模块产物不能作为 define 是否生效的判据（其替换结果与浏览器实际加载路径不一致，后者经优化/模块图转换）；旗标类问题必须以页面运行时表现（组件是否渲染、行为是否正确）判定。
+
+**验证**：dev（5173）与生产 preview（4173）双环境、1910×1000 宽视口实测——搜索按钮 40px 高（「搜索文档」+ ⌘K 角标）位于 logo 右缘（272px）与菜单左缘（788px）之间；`.VPSidebar` padding-left 32px / width 272px，`.VPContent.has-sidebar` padding-left 272px / padding-right 0，导航 content padding-right 32px——三处全部命中预期，控制台无报错。`pnpm build:docs` 通过（无死链）；preview 重启后文档页与演示页深链均 200。

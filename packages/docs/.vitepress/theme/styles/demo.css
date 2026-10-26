@@ -38,6 +38,37 @@
 	display: none;
 }
 
+/**
+ * 文档页大屏全宽化（≥1440px）：取消默认主题的居中钳制，恢复与 960–1440px 区间一致的三栏基准值。
+ * 覆盖对象为 VPSidebar / VPNavBar / VPContent 组件内样式（scoped，特异度更高），需 !important 提权；
+ * 选择器形态与主题规则一致（has-sidebar 挂在 VPNavBar 根节点，而非 .content 上）。
+ */
+@media (min-width: 1440px) {
+	.VPSidebar {
+		padding-left: 32px !important;
+		width: var(--vp-sidebar-width) !important;
+	}
+
+	.VPNavBar.has-sidebar .title {
+		padding-left: 32px !important;
+		width: var(--vp-sidebar-width) !important;
+	}
+
+	.VPNavBar.has-sidebar .content {
+		padding-left: var(--vp-sidebar-width) !important;
+		padding-right: 32px !important;
+	}
+
+	.VPNavBar.has-sidebar .divider {
+		padding-left: var(--vp-sidebar-width) !important;
+	}
+
+	.VPContent.has-sidebar {
+		padding-left: var(--vp-sidebar-width) !important;
+		padding-right: 0 !important;
+	}
+}
+
 @media (min-width: 1440px) {
 	/* 展示手机栏并 sticky 跟随滚动（工具栏悬空于机身上方约 38px，需留出空间） */
 	.unix-layout.has-doc-demo .demo-phone {

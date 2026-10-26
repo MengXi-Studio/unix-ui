@@ -123,3 +123,10 @@
 ### 23. sticky 吸附范围由包含块高度决定，全程固定要把 sticky 上移到容器层
 - aside 内部子项（模拟器/大纲）sticky 的吸附范围只有 aside 内容高（~850px），正文几千 px 滚过即整块滚出视野
 - 正确做法：把 sticky 放到 aside-container 上（其父 .aside 被 flex stretch 拉至正文高度，吸附范围覆盖整个滚动），内部子项回归 static；等价地，grid 布局中 sticky 项的约束矩形是其 grid area，行高 auto 时 sticky 无行程
+
+## 2026-10-26 工作流适配与编译器警告
+
+### 24. 可空 prop（`T | null`）触发 TS2769 编译警告，属 uni-app x 编译器生成代码缺陷（HBuilderX 5.26）
+- 现象：类型式 `defineProps<Props>()` 中 `width?: string | number | null` + withDefaults 默认 `null` 的可空 prop，dev 编译逐个报 `TS2769: No overload matches this call`（全库 11 处全报：m-cell ×2、m-image ×3、m-space ×2、m-row ×3、m-col ×1）；build 模式仅显示首处（m-cell clickable 60:4），勿据 build 日志误判「只有单类型联合触发」
+- 根因链：UTS 编译器把可空 prop 转换为运行时声明 `{ type: [String, Number, null], required: false, default: null }`——把 null 塞进 type 数组；Web 端 TS 检查依据标准 @vue/runtime-core.d.ts（`PropConstructor[]` 不允许含 null），生成代码不满足其依赖的类型定义。原生端（Kotlin/Swift）不走此 TS 检查，不受影响
+- 处置：源码不改——三态语义（null = 未设置）是合理 API 设计，改两态/哨兵值/全库运行时声明均属扭曲；Vue 运行时对 type 数组含 null 实际宽容（页面渲染与交互实测正常），warning 仅控制台噪音。升级 HBuilderX 后若编译器修复则自动消失，届时复查即可

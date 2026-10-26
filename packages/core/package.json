@@ -16,8 +16,8 @@
 		"components",
 		"theme",
 		"license.md",
-		"readme.md",
-		"readme.en.md"
+		"README.md",
+		"README-en.md"
 	],
 	"author": {
 		"name": "PedroQue99",

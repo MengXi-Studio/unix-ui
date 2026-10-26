@@ -19,3 +19,5 @@
 | 2026-10-23 | [mxi-cell](新增/2026-10-23/mxi-cell.md) | 新增 mxi-cell + mxi-cell-group（单元格与分组，title/value/label、四向箭头、inset 圆角卡片、provide/inject 注册自动隐藏组内末线），浏览器十二项实测与文档回填完成（双语文档按用户要求暂缓） |
 | 2026-10-23 | [mxi-image](新增/2026-10-23/mxi-image.md) | 新增 mxi-image（原生 image 增强封装，参考 Sard 结合 Vant：mode 直通、加载/失败占位、ucss transition 淡入、round 圆形、lazyLoad 透传），浏览器六项实测与文档回填完成（双语文档按用户要求暂缓） |
 | 2026-10-25 | [mxi-text](新增/2026-10-25/mxi-text.md) | 新增 mxi-text（文本样式快捷封装，参考 Sard：8 语义色 + CSS 色值双模式、三档字号、truncated 单行省略、line-clamp 直通原生 max-lines、user-select 透传），浏览器实测含 max-lines=0 回归确认与文档回填完成（双语文档按用户要求暂缓） |
+| 2026-10-26 | [mxi-space](新增/2026-10-26/mxi-space.md) | 新增 mxi-space（纯布局间距组件，对标 Vant：direction/wrap/fill/align 变体类、size 单值 gap + 数组 column-gap/row-gap 分写实测支持、align 默认链类组合显式化、align-self 收缩形态），浏览器八项实测与文档回填完成（双语文档按用户要求暂缓） |
+| 2026-10-26 | [mxi-space](新增/2026-10-26/mxi-space.md) | 验收修复：mxi-button 移除根节点 align-self: flex-start（CSS 标准中子元素 align-self 覆盖容器 align-items，导致 mxi-space 的 align 对按钮失效）并新增各尺寸 min-width（mini 50 / small 60 / normal 76 对齐 Vant，兜底短文本等宽观感），HMR 复测居中/贴底/等宽全部通过 |

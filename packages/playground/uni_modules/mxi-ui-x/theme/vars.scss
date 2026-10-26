@@ -36,6 +36,10 @@ $mxi-button-mini-font-size: 12px !default;
 $mxi-button-small-font-size: 14px !default;
 $mxi-button-normal-font-size: 16px !default;
 $mxi-button-large-font-size: 18px !default;
+/* 最小宽度兜底短文本按钮（对齐 Vant --van-button-*-min-width）；large 无独立变量（其全宽语义由 block 承担，共用 normal 兜底） */
+$mxi-button-mini-min-width: 50px !default;
+$mxi-button-small-min-width: 60px !default;
+$mxi-button-normal-min-width: 76px !default;
 $mxi-button-radius: $mxi-radius-md !default;
 $mxi-button-icon-size: 20px !default;
 $mxi-button-active-opacity: 0.8 !default;
@@ -104,3 +108,6 @@ $mxi-text-font-size-lg: 16px !default;         /* large 档字号 */
 $mxi-text-color-secondary: #646566 !default;   /* secondary 次要文本色（对齐 Vant gray-7） */
 $mxi-text-color-tertiary: #969799 !default;    /* tertiary 三级文本色（对齐 Vant gray-5） */
 $mxi-text-color-fourth: #c8c9cc !default;      /* fourth 四级文本色（对齐 Vant gray-4） */
+
+/* ========== Space 间距 ========== */
+$mxi-space-size: 8px !default;                 /* 默认间距（未传 size 时），对齐 Vant 默认 8px */

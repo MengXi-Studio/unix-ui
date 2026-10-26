@@ -66,6 +66,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '文本',
 				enName: 'Text',
 				desc: '文本样式快捷封装，支持语义色、三档字号、单行与多行省略、文本可选。'
+			},
+			{
+				name: 'space',
+				zhName: '间距',
+				enName: 'Space',
+				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
 			}
 		]
 	},

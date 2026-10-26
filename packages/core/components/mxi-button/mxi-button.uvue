@@ -185,8 +185,8 @@
 		flex-direction: row;
 		align-items: center;
 		justify-content: center;
-		align-self: flex-start;
 		height: $mxi-button-normal-height;
+		min-width: $mxi-button-normal-min-width;
 		padding: $mxi-button-normal-padding;
 		border-width: $mxi-border-width;
 		border-style: solid;
@@ -200,10 +200,12 @@
 	/* ========== 尺寸 ========== */
 	.mxi-button--mini {
 		height: $mxi-button-mini-height;
+		min-width: $mxi-button-mini-min-width;
 		padding: $mxi-button-mini-padding;
 	}
 	.mxi-button--small {
 		height: $mxi-button-small-height;
+		min-width: $mxi-button-small-min-width;
 		padding: $mxi-button-small-padding;
 	}
 	.mxi-button--large {

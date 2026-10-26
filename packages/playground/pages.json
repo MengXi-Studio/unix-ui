@@ -52,6 +52,12 @@
 				"style": {
 					"navigationBarTitleText": "文本 Text"
 				}
+			},
+			{
+				"path": "space/space",
+				"style": {
+					"navigationBarTitleText": "间距 Space"
+				}
 			}
 		]
 		}

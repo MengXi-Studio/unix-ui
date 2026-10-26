@@ -1,0 +1,127 @@
+<template>
+	<view class="page">
+		<demo-navbar title="间距" subtitle="Space" />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+			<text class="section">基础用法</text>
+			<view class="card">
+				<mxi-space>
+					<mxi-button type="primary">按钮</mxi-button>
+					<mxi-button type="primary">按钮</mxi-button>
+					<mxi-button type="primary">按钮</mxi-button>
+					<mxi-button type="primary">按钮</mxi-button>
+				</mxi-space>
+				<text class="caption">默认 8px 间距（$mxi-space-size 主题变量）</text>
+			</view>
+
+			<text class="section">垂直排列</text>
+			<view class="card">
+				<mxi-space direction="vertical" fill>
+					<mxi-button type="primary" block>按钮</mxi-button>
+					<mxi-button type="primary" block>按钮</mxi-button>
+					<mxi-button type="primary" block>按钮</mxi-button>
+				</mxi-space>
+				<text class="caption">direction vertical + fill 填充父元素</text>
+			</view>
+
+			<text class="section">自定义间距</text>
+			<view class="card">
+				<mxi-space :size="20">
+					<mxi-button type="primary">按钮</mxi-button>
+					<mxi-button type="primary">按钮</mxi-button>
+					<mxi-button type="primary">按钮</mxi-button>
+				</mxi-space>
+				<text class="caption">size 20（number 补 px）</text>
+				<mxi-space size="12px">
+					<mxi-button type="primary">按钮</mxi-button>
+					<mxi-button type="primary">按钮</mxi-button>
+					<mxi-button type="primary">按钮</mxi-button>
+				</mxi-space>
+				<text class="caption">size '12px'（string 原样）</text>
+				<mxi-space :size="[20, 8]" wrap>
+					<mxi-button v-for="i in 8" :key="i" type="primary">按钮{{ i }}</mxi-button>
+				</mxi-space>
+				<text class="caption">size [20, 8] 数组：横向 20 / 换行后纵向 8</text>
+			</view>
+
+			<text class="section">对齐方式</text>
+			<view class="card">
+				<view class="align-box">
+					<mxi-space align="start">
+						<mxi-button size="small" type="primary">start</mxi-button>
+						<view class="tall-block"></view>
+					</mxi-space>
+				</view>
+				<view class="align-box">
+					<mxi-space align="center">
+						<mxi-button size="small" type="primary">center</mxi-button>
+						<view class="tall-block"></view>
+					</mxi-space>
+				</view>
+				<view class="align-box">
+					<mxi-space align="end">
+						<mxi-button size="small" type="primary">end</mxi-button>
+						<view class="tall-block"></view>
+					</mxi-space>
+				</view>
+				<view class="align-box">
+					<mxi-space align="baseline">
+						<mxi-button size="small" type="primary">baseline</mxi-button>
+						<mxi-text size="large">基线文本</mxi-text>
+					</mxi-space>
+				</view>
+				<text class="caption">align start / center / end / baseline（水平模式默认 center）</text>
+			</view>
+
+			<text class="section">自动换行</text>
+			<view class="card">
+				<view class="wrap-box">
+					<mxi-space wrap>
+						<mxi-button v-for="i in 10" :key="i" type="primary">按钮{{ i }}</mxi-button>
+					</mxi-space>
+				</view>
+				<text class="caption">wrap 换行，默认 8px 行间距</text>
+			</view>
+
+			<text class="section">组合</text>
+			<view class="card">
+				<mxi-space direction="vertical" :size="[4, 12]" fill>
+					<mxi-button type="primary" block>按钮一</mxi-button>
+					<mxi-button type="primary" block>按钮二</mxi-button>
+					<mxi-button type="primary" block>按钮三</mxi-button>
+				</mxi-space>
+				<text class="caption">vertical + size [4, 12]（垂直取第一个值 4px 作主轴间距，第二个值忽略）+ fill</text>
+			</view>
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/** 演示页无动态逻辑：所有场景均为静态穷举（v-for 仅生成按钮序列） */
+</script>
+
+<style lang="scss">
+	/* 对齐演示容器：灰底对照块（Vant demo 同款观感） */
+	.align-box {
+		padding: 12px;
+		background-color: #f3f2f5;
+		margin-bottom: 12px;
+	}
+	/* 高矮对照色块（align 顶端/居中/末端对齐差异） */
+	.tall-block {
+		width: 80px;
+		height: 48px;
+		background-color: #ffffff;
+	}
+	/* 换行演示容器宽度约束 */
+	.wrap-box {
+		max-width: 260px;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+		margin-bottom: 12px;
+	}
+</style>

@@ -110,7 +110,7 @@
 	/* ========== 基类（横向 + 收缩贴合内容 + 默认间距） ========== */
 	.mxi-space {
 		flex-direction: row;
-		align-self: flex-start; /* 收缩宽度贴内容（mxi-loading 同款先例），fill 时覆盖为 stretch */
+		align-self: flex-start; /* 收缩宽度贴内容，fill 时覆盖为 stretch */
 		gap: $mxi-space-size;
 	}
 

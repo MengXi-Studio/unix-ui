@@ -8,7 +8,7 @@
 		</view>
 		<!-- 组内容：mxi-cell 依次排列 -->
 		<slot></slot>
-		<!-- 外边框上下 0.5px 细线：inset 模式无外框（对齐 Vant） -->
+		<!-- 外边框上下 0.5px 细线：inset 模式无外框 -->
 		<view v-if="showFrame" class="mxi-cell-group__line-top"></view>
 		<view v-if="showFrame" class="mxi-cell-group__line-bottom"></view>
 	</view>

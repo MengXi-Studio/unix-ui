@@ -132,7 +132,7 @@
 	.demo-row {
 		margin-bottom: 12px;
 	}
-	/* 栅格色块（Vant demo 观感）：挂在 col 内层 view 上，col 的 gutter padding 保持透明显示缝隙 */
+	/* 栅格色块：挂在 col 内层 view 上，col 的 gutter padding 保持透明显示缝隙 */
 	.col-block {
 		background-color: #e5e9f2;
 		border-radius: 4px;

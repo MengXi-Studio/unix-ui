@@ -62,6 +62,12 @@ export const demoGroups: DemoGroup[] = [
 				desc: '原生 image 增强封装，mode 直通，扩展加载/失败占位、淡入动画、圆角圆形与懒加载。'
 			},
 			{
+				name: 'layout',
+				zhName: '布局',
+				enName: 'Layout',
+				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
+			},
+			{
 				name: 'text',
 				zhName: '文本',
 				enName: 'Text',
@@ -72,12 +78,6 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '间距',
 				enName: 'Space',
 				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
-			},
-			{
-				name: 'layout',
-				zhName: '布局',
-				enName: 'Layout',
-				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
 			}
 		]
 	},

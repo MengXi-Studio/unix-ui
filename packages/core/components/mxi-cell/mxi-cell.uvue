@@ -18,7 +18,7 @@
 				<text v-if="props.label != ''" :class="labelTextClass">{{ props.label }}</text>
 			</slot>
 		</view>
-		<!-- 值区：右对齐，title 区与 value 区均 flex:1（对齐 Vant 布局） -->
+		<!-- 值区：右对齐，title 区与 value 区均 flex:1 -->
 		<view class="mxi-cell__value">
 			<slot name="value">
 				<text v-if="props.value != ''" :class="valueTextClass">{{ props.value }}</text>
@@ -114,7 +114,7 @@
 	})
 
 	/**
-	 * 点击事件透传：向父组件派发原生 click 事件（Vant cell 的 click 无条件触发）
+	 * 点击事件透传：向父组件派发原生 click 事件（无条件触发，不做 clickable 拦截）
 	 */
 	function handleClick(event: MouseEvent) {
 		emit('click', event)

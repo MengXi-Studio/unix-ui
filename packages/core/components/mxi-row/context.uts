@@ -1,7 +1,7 @@
 /**
  * mxi-row 与 mxi-col 的栅格上下文（跨组件共享，独立 .uts）
  *
- * gutter 间距沿用 Vant 方案：row 收集全部 col 上报的 span（24 栅格分组），
+ * gutter 间距方案：row 收集全部 col 上报的 span（24 栅格分组），
  * 在 row 侧以 computed 派生每个 col 的水平 padding 与垂直 margin-bottom，
  * 经 provide/inject 下发，col 以自身 id 查询当前下标后以 inline style 消费。
  * class 实现：非蒸汽（Kotlin/Swift）端不支持「含方法的对象字面量 type」。

@@ -36,7 +36,7 @@ $mxi-button-mini-font-size: 12px !default;
 $mxi-button-small-font-size: 14px !default;
 $mxi-button-normal-font-size: 16px !default;
 $mxi-button-large-font-size: 18px !default;
-/* 最小宽度兜底短文本按钮（对齐 Vant --van-button-*-min-width）；large 无独立变量（其全宽语义由 block 承担，共用 normal 兜底） */
+/* 最小宽度兜底短文本按钮，避免内容宽度差异导致布局不一致；large 无独立变量（其全宽语义由 block 承担，共用 normal 兜底） */
 $mxi-button-mini-min-width: 50px !default;
 $mxi-button-small-min-width: 60px !default;
 $mxi-button-normal-min-width: 76px !default;
@@ -98,16 +98,16 @@ $mxi-cell-group-inset-radius: $mxi-radius-md !default;
 $mxi-cell-group-inset-padding: 0 16px !default;
 
 /* ========== Image 图片 ========== */
-$mxi-image-background: #f7f8fa !default;   /* 加载 / 失败占位背景（Vant 占位背景同值，Sard 为 fill-color-tertiary 同观感） */
-$mxi-image-icon-color: #dcdee0 !default;   /* 占位图标色（对齐 Vant gray-4） */
+$mxi-image-background: #f7f8fa !default;   /* 加载 / 失败占位背景 */
+$mxi-image-icon-color: #dcdee0 !default;   /* 占位图标色 */
 
 /* ========== Text 文本 ========== */
 $mxi-text-font-size-sm: 12px !default;         /* small 档字号 */
 $mxi-text-font-size-md: 14px !default;         /* medium 档字号（基准档） */
 $mxi-text-font-size-lg: 16px !default;         /* large 档字号 */
-$mxi-text-color-secondary: #646566 !default;   /* secondary 次要文本色（对齐 Vant gray-7） */
-$mxi-text-color-tertiary: #969799 !default;    /* tertiary 三级文本色（对齐 Vant gray-5） */
-$mxi-text-color-fourth: #c8c9cc !default;      /* fourth 四级文本色（对齐 Vant gray-4） */
+$mxi-text-color-secondary: #646566 !default;   /* secondary 次要文本色 */
+$mxi-text-color-tertiary: #969799 !default;    /* tertiary 三级文本色 */
+$mxi-text-color-fourth: #c8c9cc !default;      /* fourth 四级文本色 */
 
 /* ========== Space 间距 ========== */
-$mxi-space-size: 8px !default;                 /* 默认间距（未传 size 时），对齐 Vant 默认 8px */
+$mxi-space-size: 8px !default;                 /* 默认间距（未传 size 时） */

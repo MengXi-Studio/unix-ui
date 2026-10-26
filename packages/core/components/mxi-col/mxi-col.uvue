@@ -40,7 +40,7 @@
 
 	/**
 	 * 栅格份数是否为有效类名档位：1-24 的整数
-	 * （0 为 Vant 约定的内容自适应形态不拼类，小数无对应档位类同样不拼）
+	 * （0 表示宽度由内容决定不拼类，小数无对应档位类同样不拼）
 	 */
 	function isSpanSlot(value: number): boolean {
 		if (value < 1 || value > 24) return false
@@ -74,7 +74,7 @@
 	)
 
 	/**
-	 * 点击事件透传：向使用者派发原生 click 事件（对齐 Vant / mxi-cell）
+	 * 点击事件透传：向使用者派发原生 click 事件
 	 */
 	function handleClick(event: MouseEvent) {
 		emit('click', event)

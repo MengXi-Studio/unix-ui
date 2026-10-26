@@ -197,7 +197,7 @@
 		height: 100%;
 	}
 
-	/* 淡入过渡：opacity 变化 300ms ease-out（时长观感对齐 Sard --s-image-duration） */
+	/* 淡入过渡：opacity 变化 300ms ease-out */
 	.mxi-image__img--fade {
 		transition-property: opacity;
 		transition-duration: 300ms;

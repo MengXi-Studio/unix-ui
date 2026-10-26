@@ -102,7 +102,7 @@
 </script>
 
 <style lang="scss">
-	/* 对齐演示容器：灰底对照块（Vant demo 同款观感） */
+	/* 对齐演示容器：灰底对照块 */
 	.align-box {
 		padding: 12px;
 		background-color: #f3f2f5;

@@ -60,7 +60,7 @@
 	}
 
 	/**
-	 * 栅格上下文：col 注册表 + 间距下发（机制对齐 mxi-cell-group 先例），
+	 * 栅格上下文：col 注册表 + 间距下发，
 	 * spaces / verticalSpaces 在下方 computed 求值后挂入，provide 给组内 col
 	 */
 	const ctx = new RowContext()
@@ -85,7 +85,7 @@
 	})
 
 	/**
-	 * 行分组：span 累加超 24 即分行（Vant 同款算法，offset 不计入行判定）；
+	 * 行分组：span 累加超 24 即分行（offset 不计入行判定）；
 	 * 换行本身由 flex-wrap 自然完成，分组仅用于间距的行级计算
 	 */
 	const groups = computed<number[][]>(() => {
@@ -104,7 +104,7 @@
 	})
 
 	/**
-	 * 水平间距（Vant 同款平均分配）：行内 n 列时 avg = gutter×(n-1)/n，
+	 * 水平间距（平均分配）：行内 n 列时 avg = gutter×(n-1)/n，
 	 * 首列无左 padding、尾列无右 padding，相邻列间 padding 之和恰为 gutter
 	 */
 	const spaces = computed<RowSpace[]>(() => {
@@ -146,7 +146,7 @@
 	provide(ROW_KEY, ctx)
 
 	/**
-	 * 点击事件透传：向使用者派发原生 click 事件（对齐 Vant / mxi-cell）
+	 * 点击事件透传：向使用者派发原生 click 事件
 	 */
 	function handleClick(event: MouseEvent) {
 		emit('click', event)

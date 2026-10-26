@@ -38,7 +38,7 @@
 		customStyle: ''
 	})
 
-	/** 语义色名单：命中走编译期变体类（绑定 $mxi-* 主题变量，覆盖仍生效），否则视为 CSS 色值走 inline（mxi-loading 同款双模式） */
+	/** 语义色名单：命中走编译期变体类（绑定 $mxi-* 主题变量，覆盖仍生效），否则视为 CSS 色值走 inline */
 	const semanticColors: string[] = ['default', 'secondary', 'tertiary', 'fourth', 'primary', 'success', 'warning', 'danger']
 
 	/** 语义色变体名：color 为语义色名时返回该名，否则空串 */

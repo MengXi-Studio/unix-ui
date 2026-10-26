@@ -39,6 +39,16 @@
 }
 
 /**
+ * 组件文档页首节去双线：页头 .doc-header 已提供分割线，
+ * 首个 h2 取消 VitePress 默认上边线（border + 24px 内距 + 48px 外距）
+ */
+.unix-layout.has-doc-header .vp-doc h2:first-of-type {
+	margin-top: 16px;
+	padding-top: 0;
+	border-top: 0;
+}
+
+/**
  * 文档表格对齐：全网格边框 + 表头底色 + 宽松行距
  * （VitePress 默认仅横向分隔线、无表头底色）
  */

@@ -16,7 +16,7 @@ hero:
       text: Quick Start
       link: /en/guide/getting-started
     - theme: alt
-      text: Learning Path
+      text: Introduction
       link: /en/guide/introduction
     - theme: alt
       text: GitHub

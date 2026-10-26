@@ -88,11 +88,9 @@
 }
 
 @media (min-width: 1440px) {
-	/* 展示手机栏并 sticky 跟随滚动（工具栏悬空于机身上方约 38px，需留出空间） */
+	/* 展示手机栏（固定跟随由 aside-container 整体 sticky 提供，工具栏悬空于机身上方约 38px 已由容器 top 留出） */
 	.unix-layout.has-doc-demo .demo-phone {
 		display: block;
-		position: sticky;
-		top: calc(var(--vp-nav-height) + 48px);
 	}
 
 	/* 内容列取消 640px 下限，避免三栏溢出 */
@@ -100,15 +98,19 @@
 		min-width: 0;
 	}
 
-	/* aside 取消定宽，宽度交给内部网格内容 */
+	/* aside 取消定宽与伸缩：宽度完全由内部网格内容决定并贴靠右缘
+	   （主题默认 width:100% 参与等权收缩，会与 content 对半分宽留出项内空白） */
 	.unix-layout.has-doc-demo .VPDoc .aside {
-		flex-grow: 0;
+		flex: 0 0 auto;
+		width: auto;
 		max-width: none;
 	}
 
-	/* aside 滚动容器由 fixed 100vh 改为随页流式，配合子项 sticky */
+	/* aside 容器整体 sticky 吸附在导航栏下方（模拟器 + 页面导航随之固定）；
+	   吸附范围由外层 .aside（flex 拉伸至正文高度）提供，覆盖整个滚动过程 */
 	.unix-layout.has-doc-demo .VPDoc .aside-container {
-		position: static;
+		position: sticky;
+		top: calc(var(--vp-nav-height) + 48px);
 		width: auto;
 		height: auto;
 		padding-top: 0;
@@ -137,11 +139,9 @@
 		grid-column: 1 / -1;
 	}
 
-	/* 页面导航 sticky 跟随滚动，超高时内部滚动 */
+	/* 页面导航超高时内部滚动（固定跟随由 aside-container 整体 sticky 提供） */
 	.unix-layout.has-doc-demo .VPDocAside .VPDocAsideOutline {
-		position: sticky;
-		top: calc(var(--vp-nav-height) + 16px);
-		max-height: calc(100vh - var(--vp-nav-height) - 32px);
+		max-height: calc(100vh - var(--vp-nav-height) - 48px);
 		overflow-y: auto;
 		scrollbar-width: none;
 	}

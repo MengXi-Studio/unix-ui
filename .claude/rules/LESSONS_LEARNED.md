@@ -115,3 +115,11 @@
 ### 21. 浏览器自动化代理视口受限时的验证策略
 - browser_use 代理无法设置 viewport（实测默认 1134px），window.open 被序列化错误拦截；≥1440 媒体查询样式无法直接观测
 - 替代策略：①hash 驱动交互用 `location.hash` 赋值代替 outline 点击（DOM 点击在代理环境易因快照 ref 失效而抖动，两者走同一响应链）；②跨端消息链路按「发送端日志 → 消息到达日志 → 同源等尺寸 iframe 内 scrollTop」三环拆分验证；③console 采集能捕获跨域 iframe 内 frame 的日志，接收端打点可见
+
+### 22. VitePress config 对象展开只合并顶层键，嵌套 themeConfig 字面量会静默覆盖 shared
+- `defineConfig({ ...sharedConfig, themeConfig: { search } })` 中顶层 themeConfig 字面量整体替换 sharedConfig.themeConfig——logo/socialLinks/footer 静默丢失，症状是产物 HTML 中 `<img>` 计数为 0 且无报错
+- 继承写法：`themeConfig: { ...sharedConfig.themeConfig, search: {...} }`；判别手法：产物 HTML grep 预期元素计数，配置「写了但没渲染」先查顶层键覆盖再查组件条件
+
+### 23. sticky 吸附范围由包含块高度决定，全程固定要把 sticky 上移到容器层
+- aside 内部子项（模拟器/大纲）sticky 的吸附范围只有 aside 内容高（~850px），正文几千 px 滚过即整块滚出视野
+- 正确做法：把 sticky 放到 aside-container 上（其父 .aside 被 flex stretch 拉至正文高度，吸附范围覆盖整个滚动），内部子项回归 static；等价地，grid 布局中 sticky 项的约束矩形是其 grid area，行高 auto 时 sticky 无行程

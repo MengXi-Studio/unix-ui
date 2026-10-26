@@ -72,6 +72,19 @@
 
 - `pnpm build:docs` 5.23s 通过、无死链；preview(4173) 产物校验：doc-header 渲染、介绍节在、引入节 0、正文 h1 0、en Introduction/Examples 结构正确、18 页锚点数与映射表逐一吻合（button 7/7、cell 5/5、icon 4/4、image 5/5、layout 4/4、text 6/6、space 5/5、loading 6/6、badge 8/8，zh/en 对称）。
 
-### 6.5 待办
+### 6.5 右侧空白条修复（用户验收反馈）
 
-- 宽视口（≥1440px）人工验收：模拟器可见状态下点击 outline 锚点的视觉联动（链路三环已客观验证，仅差视觉确认）。
+- 现象：宽视口下 aside（模拟器 + 页面导航）右侧残留 ≈267px 空白竖条，Sard 中模拟器贴右缘与头部对齐。
+- 根因：demo.css 对 aside 只写了 `flex-grow: 0; max-width: none`，但主题默认 `.aside { width: 100% }` 仍作为 flex-basis 参与——aside 与 content 两个 `width: 100%` 子项等权收缩、各占一半容器宽，aside 内部网格仅 ~551px，余量全部变成项内右侧空白（≈267px 与截图吻合）。
+- 修复：aside 改 `flex: 0 0 auto; width: auto; max-width: none`——宽度完全由内部网格（模拟器 331 + gap 20 + 导航 200）决定并贴靠右缘，content 自动占满剩余宽度。
+- 验证：`pnpm build:docs` 4.25s 通过；产物 CSS 确认 `flex:0 0 auto` 进入构建；preview(4173) 重启 200。宽视口视觉由用户复核（测试代理视口 1134px 物理放不下三栏，无法直测）。
+
+### 6.6 导航栏 logo 与右侧固定修复（用户验收反馈，推翻「base 路径」误判）
+
+- **logo 缺失根因**：`config/index.ts` 顶层 `themeConfig: { search }` 字面量整体覆盖了 `...sharedConfig` 带入的 themeConfig（对象展开只合并顶层键，嵌套对象直接替换）——logo、socialLinks、footer 从未进入最终配置，产物 HTML 中 `<img>` 为 0（socialLinks/footer 同此根因，一并修复）。VPImage 源码证实本就对 logo 做 withBase，`logo: '/logo.svg'` 写法正确；此前 curl `/logo.svg` 404 与此无关（该 URL 本就无人请求）。修复：index.ts themeConfig 先展开 `...sharedConfig.themeConfig` 再补 search（search provider 置顶层的要求保持不变）。
+- **右侧固定**：原方案把 sticky 放在 demo-phone / outline 内部子项上，sticky 吸附范围由父容器高度决定，aside-container 改 static 后只有 aside 内容高（~850px），正文几千 px 滚过即整块滚出视野。修复：吸附点上移到 `.aside-container` 整体 `position: sticky; top: calc(var(--vp-nav-height) + 48px)`（48px 为悬空工具栏留位），其父 `.aside` 被 flex 拉伸至正文高度、吸附范围覆盖整个滚动过程；移除内部子项 sticky，outline 仅保留 max-height 内滚（上限同步改 `100vh - nav - 48px` 与容器 top 对齐）。
+- 验证：`pnpm build:docs` 3.98s 通过、无死链；产物确认 `<img class="VPImage logo" src="/unix-ui/logo.svg">`、VPNavBarExtra/github 社交图标、footer Copyright、`.aside-container{position:sticky;...}` 全部进构建；preview(4173) 重启后 curl 200；浏览器实测导航栏 logo 图标可见（img naturalWidth 126、渲染 21.9×24、console 无报错）。宽视口 sticky 效果待用户复核。
+
+### 6.7 待办
+
+- 宽视口（≥1440px）人工验收：右侧空白条消失、模拟器 + 页面导航随滚动固定（Sard「相对于头部固定」效果）、logo 图标显示、outline 锚点联动视觉确认（链路三环已客观验证，仅差视觉确认）。

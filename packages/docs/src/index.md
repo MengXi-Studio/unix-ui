@@ -16,7 +16,7 @@ hero:
       text: 快速上手
       link: /guide/getting-started
     - theme: alt
-      text: 学习路径
+      text: 介绍
       link: /guide/introduction
     - theme: alt
       text: GitHub

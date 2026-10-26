@@ -1,9 +1,10 @@
 <template>
 	<view class="page">
 		<demo-navbar title="图标" subtitle="Icon" />
+		<demo-bridge />
 		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
-			<text class="section">基础图标（{{ iconBasicNames.length }}）</text>
+			<text class="section" id="basic">基础图标（{{ iconBasicNames.length }}）</text>
 			<view class="card">
 				<text class="tip">最近点击：{{ lastTapped == '' ? '－' : lastTapped }}</text>
 				<view class="grid">
@@ -34,7 +35,7 @@
 				</view>
 			</view>
 
-			<text class="section">自定义颜色</text>
+			<text class="section" id="color">自定义颜色</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -56,7 +57,7 @@
 				</view>
 			</view>
 
-			<text class="section">自定义大小</text>
+			<text class="section" id="size">自定义大小</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -92,7 +93,7 @@
 				</view>
 			</view>
 
-			<text class="section">icon 插槽</text>
+			<text class="section" id="slot">icon 插槽</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">

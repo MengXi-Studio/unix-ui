@@ -50,8 +50,8 @@ export const sharedConfig = defineConfig({
 
 	/** 网站主题配置 */
 	themeConfig: {
-		/** 主题 logo（VitePress 自动拼 base） */
-		logo: '/logo.png',
+		/** 主题 logo（VitePress 自动拼 base，svg 保证导航栏清晰渲染） */
+		logo: '/logo.svg',
 
 		/** 社交链接 */
 		socialLinks: [

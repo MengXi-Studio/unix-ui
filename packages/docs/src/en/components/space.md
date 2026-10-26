@@ -1,18 +1,15 @@
 ---
+title: Space
 demo: pages-sub/space/space
 ---
 
-# Space
+## Introduction
 
 The space component sets a uniform spacing between child elements, implemented with flex gap. It supports horizontal and vertical directions, custom spacing, alignment, wrapping and block filling.
 
-## Usage
-
-Components follow the easycom convention and can be used without being imported. See [Getting Started](/en/guide/getting-started) for details.
-
 ## Examples
 
-### Basic Usage
+### Basic Usage {#demo-basic}
 
 Arranges horizontally by default with the theme default spacing (8px) between child elements.
 
@@ -24,7 +21,7 @@ Arranges horizontally by default with the theme default spacing (8px) between ch
 </mxi-space>
 ```
 
-### Vertical Spacing
+### Vertical Spacing {#demo-vertical}
 
 Use the `direction` attribute to set the spacing direction, can be set to `horizontal` `vertical`. The default is `horizontal`.
 
@@ -35,7 +32,7 @@ Use the `direction` attribute to set the spacing direction, can be set to `horiz
 </mxi-space>
 ```
 
-### Custom Spacing
+### Custom Spacing {#demo-custom}
 
 `size` accepts a number (px is appended), a string (used as is) and an array `[horizontal, vertical]`; the theme default spacing is used when not set, and the vertical direction takes the first array value as the main-axis spacing.
 
@@ -45,7 +42,7 @@ Use the `direction` attribute to set the spacing direction, can be set to `horiz
 <mxi-space :size="[20, 8]" wrap>20 horizontal / 8 vertical after wrapping</mxi-space>
 ```
 
-### Alignment
+### Alignment {#demo-align}
 
 Use the `align` attribute to set the alignment of child elements, can be set to `start` `end` `center` `baseline`. When not set, the horizontal direction defaults to `center` and the vertical direction defaults to `stretch`.
 
@@ -56,7 +53,7 @@ Use the `align` attribute to set the alignment of child elements, can be set to 
 <mxi-space align="baseline">Align baseline</mxi-space>
 ```
 
-### Wrapping
+### Wrapping {#demo-wrap}
 
 Enable the `wrap` attribute so child elements wrap automatically when exceeding the width; effective only in the horizontal direction.
 

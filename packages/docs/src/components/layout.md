@@ -1,18 +1,16 @@
 ---
+title: Layout
+subtitle: 布局
 demo: pages-sub/layout/layout
 ---
 
-# Layout 布局
+## 介绍
 
 布局组件通过 `mxi-row` 与 `mxi-col` 的 24 栅格体系实现页面分栏，支持列间距、左右偏移、对齐方式与自动换行。
 
-## 引入
-
-组件遵循 easycom 规范，无需引入即可使用，详见[快速上手](/guide/getting-started)。
-
 ## 代码演示
 
-### 基础用法
+### 基础用法 {#demo-basic}
 
 `mxi-row` 为横向行容器，`mxi-col` 为列元素，`span` 设置列宽占 24 份栅格中的份数。
 
@@ -36,7 +34,7 @@ demo: pages-sub/layout/layout
 </mxi-row>
 ```
 
-### 分栏间隔
+### 分栏间隔 {#demo-gutter}
 
 `gutter` 属性设置列元素之间的间距（px），支持数组 `[水平, 垂直]` 设置换行后的行间距。列间距基于内边距实现，列内容若需背景色应设置在 Col 内层元素上，保持 Col 自身透明以展示缝隙。
 
@@ -59,7 +57,7 @@ demo: pages-sub/layout/layout
 </mxi-row>
 ```
 
-### 对齐方式
+### 对齐方式 {#demo-align}
 
 `justify` 属性设置主轴对齐，可选值为 `start` `end` `center` `space-around` `space-between`，默认为 `start`；`align` 属性设置交叉轴对齐，可选值为 `top` `center` `bottom`，默认为 `top`。
 
@@ -74,7 +72,7 @@ demo: pages-sub/layout/layout
 </mxi-row>
 ```
 
-### 自动换行
+### 自动换行 {#demo-wrap}
 
 `wrap` 属性默认开启，列元素份数相加超过 24 时自然换行；关闭后不换行。
 

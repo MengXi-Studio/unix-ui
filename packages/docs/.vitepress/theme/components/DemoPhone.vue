@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useData } from 'vitepress'
 import { setupCodeCollapse } from '../code-collapse'
 
@@ -13,13 +13,38 @@ const props = defineProps<{
 	title?: string
 }>()
 
-const { lang, page } = useData()
+const { lang, page, hash } = useData()
 
 /** 是否中文界面（控件文案区分语言） */
 const isZh = computed(() => lang.value.startsWith('zh'))
 
 /** 组件页代码演示区折叠增强（随演示页挂载注册） */
 setupCodeCollapse(() => isZh.value)
+
+/** 模拟器锚点前缀：正文 h3 以 {#demo-<id>} 声明联动锚点，其余 hash 不联动 */
+const DEMO_HASH_PREFIX = '#demo-'
+
+/** 当前路由 hash 对应的演示分节 id（非联动锚点时为 null；hash 由 useData 提供，hashchange 时响应式更新） */
+const demoSectionId = computed(() => {
+	const value = hash.value
+	return value.startsWith(DEMO_HASH_PREFIX) ? value.slice(DEMO_HASH_PREFIX.length) : null
+})
+
+/** iframe 引用：postMessage 发送目标 */
+const iframeRef = ref<HTMLIFrameElement | null>(null)
+
+/**
+ * 通知模拟器内演示页滚动到锚点分节（演示页经 demo-bridge 组件接收）
+ * 调用时机：hash 变化 + iframe load（兜底从外页带锚点直达时 iframe 尚未挂载的时序）
+ */
+const sendDemoScroll = () => {
+	const id = demoSectionId.value
+	if (id != null && iframeRef.value != null) {
+		iframeRef.value.contentWindow?.postMessage({ type: 'demo-scroll', id }, '*')
+	}
+}
+
+watch(demoSectionId, sendDemoScroll)
 
 /** 本地开发直连 playground dev server（manifest 固定端口 5174，router.base 与生产一致） */
 const DEV_ORIGIN = 'http://localhost:5174/unix-ui/playground/'
@@ -135,7 +160,7 @@ const linkTitle = computed(() => props.title || props.path)
 						<span class="demo-phone__nav-title">{{ navTitle }}</span>
 						<span class="demo-phone__nav-spacer" />
 					</div>
-					<iframe class="demo-phone__screen" :src="src" :title="linkTitle" loading="lazy" />
+					<iframe ref="iframeRef" class="demo-phone__screen" :src="src" :title="linkTitle" @load="sendDemoScroll" />
 				</div>
 			</div>
 		</div>

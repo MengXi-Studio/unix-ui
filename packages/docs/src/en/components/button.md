@@ -1,18 +1,15 @@
 ---
+title: Button
 demo: pages-sub/button/button
 ---
 
-# Button
+## Introduction
 
 Buttons are used to trigger an action, such as submitting a form. Supports types, sizes, plain, round, square, block, disabled and loading states.
 
-## Usage
-
-Components follow the easycom convention and can be used without being imported. See [Getting Started](/en/guide/getting-started) for details.
-
 ## Examples
 
-### Button Type
+### Button Type {#demo-type}
 
 Five types are supported: `default`, `primary`, `success`, `warning` and `danger`. The default is `default`.
 
@@ -24,7 +21,7 @@ Five types are supported: `default`, `primary`, `success`, `warning` and `danger
 <mxi-button type="default">Default</mxi-button>
 ```
 
-### Plain Button
+### Plain Button {#demo-plain}
 
 Set a button as plain with the `plain` attribute: the text takes the button color and the background becomes white.
 
@@ -40,7 +37,7 @@ Use the `hairline` attribute for a 0.5px border (implemented via `scale(0.5)`).
 <mxi-button type="primary" plain hairline>Hairline</mxi-button>
 ```
 
-### Disabled
+### Disabled {#demo-disabled}
 
 Disable a button with the `disabled` attribute; disabled buttons cannot be clicked.
 
@@ -48,7 +45,7 @@ Disable a button with the `disabled` attribute; disabled buttons cannot be click
 <mxi-button type="primary" disabled>Disabled</mxi-button>
 ```
 
-### Loading
+### Loading {#demo-loading}
 
 Set a button to the loading state with the `loading` attribute; loading buttons cannot be clicked. Use `loading-text` to customize the loading label. Use `loading-type` to switch the loading icon style (`circular` spinning ring / `spinner` spinning petals); the icon is powered by the [Loading](/en/components/loading) component.
 
@@ -66,7 +63,7 @@ The button's overall opacity drops to 0.8 while pressed and restores on release;
 <mxi-button type="primary">Press to see feedback</mxi-button>
 ```
 
-### Button Size
+### Button Size {#demo-size}
 
 Four sizes are supported: `large`, `normal`, `small` and `mini`. The default is `normal`.
 
@@ -77,7 +74,7 @@ Four sizes are supported: `large`, `normal`, `small` and `mini`. The default is 
 <mxi-button type="primary" size="mini">Mini</mxi-button>
 ```
 
-### Block Element
+### Block Element {#demo-block}
 
 The `block` attribute makes the button fill its parent container's width.
 
@@ -85,7 +82,7 @@ The `block` attribute makes the button fill its parent container's width.
 <mxi-button type="primary" block>Block</mxi-button>
 ```
 
-### Custom Color
+### Custom Color {#demo-color}
 
 Customize the button color with the `color` attribute; `linear-gradient` is supported.
 

@@ -1,9 +1,10 @@
 <template>
 	<view class="page">
 		<demo-navbar title="间距" subtitle="Space" />
+		<demo-bridge />
 		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
-			<text class="section">基础用法</text>
+			<text class="section" id="basic">基础用法</text>
 			<view class="card">
 				<mxi-space>
 					<mxi-button type="primary">按钮</mxi-button>
@@ -14,7 +15,7 @@
 				<text class="caption">默认 8px 间距（$mxi-space-size 主题变量）</text>
 			</view>
 
-			<text class="section">垂直排列</text>
+			<text class="section" id="vertical">垂直排列</text>
 			<view class="card">
 				<mxi-space direction="vertical" fill>
 					<mxi-button type="primary" block>按钮</mxi-button>
@@ -24,7 +25,7 @@
 				<text class="caption">direction vertical + fill 填充父元素</text>
 			</view>
 
-			<text class="section">自定义间距</text>
+			<text class="section" id="custom">自定义间距</text>
 			<view class="card">
 				<mxi-space :size="20">
 					<mxi-button type="primary">按钮</mxi-button>
@@ -44,7 +45,7 @@
 				<text class="caption">size [20, 8] 数组：横向 20 / 换行后纵向 8</text>
 			</view>
 
-			<text class="section">对齐方式</text>
+			<text class="section" id="align">对齐方式</text>
 			<view class="card">
 				<view class="align-box">
 					<mxi-space align="start">
@@ -73,7 +74,7 @@
 				<text class="caption">align start / center / end / baseline（水平模式默认 center）</text>
 			</view>
 
-			<text class="section">自动换行</text>
+			<text class="section" id="wrap">自动换行</text>
 			<view class="card">
 				<view class="wrap-box">
 					<mxi-space wrap>

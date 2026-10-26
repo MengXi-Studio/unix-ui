@@ -1,14 +1,15 @@
 <template>
 	<view class="page">
 		<demo-navbar title="文本" subtitle="Text" />
+		<demo-bridge />
 		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
-			<text class="section">基础用法</text>
+			<text class="section" id="basic">基础用法</text>
 			<view class="card">
 				<mxi-text>这是一段默认样式的文本。</mxi-text>
 			</view>
 
-			<text class="section">文本颜色</text>
+			<text class="section" id="color">文本颜色</text>
 			<view class="card">
 				<view class="col-list">
 					<mxi-text color="default">default 默认文本颜色</mxi-text>
@@ -23,7 +24,7 @@
 				</view>
 			</view>
 
-			<text class="section">文本大小</text>
+			<text class="section" id="size">文本大小</text>
 			<view class="card">
 				<view class="col-list">
 					<mxi-text size="small">small 小号文本</mxi-text>
@@ -32,7 +33,7 @@
 				</view>
 			</view>
 
-			<text class="section">单行省略</text>
+			<text class="section" id="ellipsis">单行省略</text>
 			<view class="card">
 				<mxi-text truncated :custom-style="'max-width: 200px;'">
 					这是一段很长很长很长很长很长很长很长很长很长很长的文本，设置 truncated 后会显示省略号。
@@ -40,7 +41,7 @@
 				<text class="caption">max-width 200px 约束 + truncated，超出显示省略号</text>
 			</view>
 
-			<text class="section">多行省略</text>
+			<text class="section" id="ellipsis-multi">多行省略</text>
 			<view class="card">
 				<mxi-text :line-clamp="2" :custom-style="'max-width: 300px;'">{{ clampText }}</mxi-text>
 				<text class="caption">line-clamp 2，超出两行显示省略号</text>
@@ -48,7 +49,7 @@
 				<text class="caption">line-clamp 3，超出三行显示省略号</text>
 			</view>
 
-			<text class="section">文本可选</text>
+			<text class="section" id="selectable">文本可选</text>
 			<view class="card">
 				<mxi-text :user-select="true">这段文本设置了 user-select，可以选中复制（web 端拖选 / App 端长按）。</mxi-text>
 			</view>

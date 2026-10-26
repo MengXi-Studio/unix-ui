@@ -1,18 +1,15 @@
 ---
+title: Icon
 demo: pages-sub/icon/icon
 ---
 
-# Icon
+## Introduction
 
 A font-based icon set with 257 built-in icons, supporting custom color & size and click events.
 
-## Import
+## Examples
 
-Components follow the easycom convention and can be used without import. See [Getting Started](/en/guide/getting-started) for details.
-
-## Usage
-
-### Basic Usage
+### Basic Usage {#demo-basic}
 
 `name` is a string union type `IconName` (IDE autocompletes all icon names; invalid names fail at compile time). The font file is bundled with the package (declarative `@font-face` loading) — zero configuration, works offline.
 
@@ -20,7 +17,7 @@ Components follow the easycom convention and can be used without import. See [Ge
 <mxi-icon name="chat-o" />
 ```
 
-### Custom Color
+### Custom Color {#demo-color}
 
 Use the `color` prop to customize the icon color (CSS color values are supported). When empty, the color is inherited from outer styles.
 
@@ -29,7 +26,7 @@ Use the `color` prop to customize the icon color (CSS color values are supported
 <mxi-icon name="star" size="24" color="#07c160" />
 ```
 
-### Custom Size
+### Custom Size {#demo-size}
 
 Use the `size` prop to customize the icon size. Pure numbers are treated as `px`; unit strings are used as-is. When empty, the font size is inherited from outer styles.
 
@@ -63,7 +60,7 @@ The `click` event is emitted when the icon is tapped.
 <mxi-icon name="like" @click="onTap" />
 ```
 
-### Custom Icons
+### Custom Icons {#demo-slot}
 
 Two ways to plug in your own icon font:
 

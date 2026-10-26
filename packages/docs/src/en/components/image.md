@@ -1,18 +1,15 @@
 ---
+title: Image
 demo: pages-sub/image/image
 ---
 
-# Image
+## Introduction
 
 The image component wraps the native image with enhancements: native capabilities such as `mode` are passed through with the same names, plus loading and error placeholders, fade-in transition, border radius and round shapes.
 
-## Usage
-
-Components follow the easycom convention and can be used without being imported. See [Getting Started](/en/guide/getting-started) for details.
-
 ## Examples
 
-### Basic Usage
+### Basic Usage {#demo-basic}
 
 `src` is the required image URL. Without a size, the default width is 100% and the default height is 240px. `width` and `height` accept a string (used as is, supporting % and other units) and a number (px is appended automatically).
 
@@ -22,7 +19,7 @@ Components follow the easycom convention and can be used without being imported.
 <mxi-image src="https://cdn.example.com/demo.jpg" :width="120" :height="120" />
 ```
 
-### Fill Mode
+### Fill Mode {#demo-mode}
 
 Use the `mode` attribute to set the crop and scale mode, passed through with the same name as the native image mode. The default is `aspectFill` (crop to fill, keeping the aspect ratio).
 
@@ -32,7 +29,7 @@ Use the `mode` attribute to set the crop and scale mode, passed through with the
 <mxi-image src="https://cdn.example.com/demo.jpg" width="110px" height="110px" mode="widthFix" />
 ```
 
-### Border Radius and Round
+### Border Radius and Round {#demo-radius}
 
 Use the `radius` attribute to set the border radius, and the `round` attribute to render a circle (taking precedence over `radius`).
 
@@ -42,7 +39,7 @@ Use the `radius` attribute to set the border radius, and the `round` attribute t
 <mxi-image src="https://cdn.example.com/demo.jpg" width="80px" height="80px" radius="16" />
 ```
 
-### Loading and Error Placeholder
+### Loading and Error Placeholder {#demo-loading}
 
 A placeholder icon is shown by default while loading and on failure. Use `loading-icon` and `error-icon` to customize the placeholder icons, and `icon-size` to set their size. Use `show-loading` and `show-error` to disable the placeholders, and the `loading` and `error` slots for custom placeholder content.
 
@@ -52,7 +49,7 @@ A placeholder icon is shown by default while loading and on failure. Use `loadin
 <mxi-image src="https://cdn.example.com/nonexistent.jpg" width="110px" height="110px" :show-error="false" />
 ```
 
-### Lazy Load and Fade In
+### Lazy Load and Fade In {#demo-lazy}
 
 `lazy-load` is passed through to the native attribute, effective only under page and scroll-view. When `fade` is enabled, the image fades in over 300ms after loading; it is enabled by default, and switching the image resets to the loading state automatically.
 

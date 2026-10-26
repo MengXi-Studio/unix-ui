@@ -1,9 +1,10 @@
 <template>
 	<view class="page">
 		<demo-navbar title="徽标" subtitle="Badge" />
+		<demo-bridge />
 		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
-			<text class="section">基础用法</text>
+			<text class="section" id="basic">基础用法</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -33,7 +34,7 @@
 				</view>
 			</view>
 
-			<text class="section">最大值</text>
+			<text class="section" id="max">最大值</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -57,7 +58,7 @@
 				</view>
 			</view>
 
-			<text class="section">自定义颜色（语义色名 + CSS 色值）</text>
+			<text class="section" id="color">自定义颜色（语义色名 + CSS 色值）</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -93,7 +94,7 @@
 				</view>
 			</view>
 
-			<text class="section">自定义位置</text>
+			<text class="section" id="position">自定义位置</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -123,7 +124,7 @@
 				</view>
 			</view>
 
-			<text class="section">偏移量（offsetX 向右 / offsetY 向下，负值反向）</text>
+			<text class="section" id="offset">偏移量（offsetX 向右 / offsetY 向下，负值反向）</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -141,7 +142,7 @@
 				</view>
 			</view>
 
-			<text class="section">独立展示（无子元素）</text>
+			<text class="section" id="standalone">独立展示（无子元素）</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -159,7 +160,7 @@
 				</view>
 			</view>
 
-			<text class="section">content 插槽（徽标内嵌图标）</text>
+			<text class="section" id="slot">content 插槽（徽标内嵌图标）</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -205,7 +206,7 @@
 				</view>
 			</view>
 
-			<text class="section">边界：content 为 0 与 show-zero</text>
+			<text class="section" id="zero">边界：content 为 0 与 show-zero</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">

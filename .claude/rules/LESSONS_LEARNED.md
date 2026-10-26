@@ -101,3 +101,17 @@
 - 现象：点击 mxi-col 色块后 toast 显示「row click」而非「col click」，疑似 col 的 emit 未触发；实际 col 与 row（冒泡）都触发了，row 的 toast 后触发覆盖了 col 的（toast 单例），从最终 toast 无法区分
 - 验证手法：在子元素回调内 `event.stopPropagation()`（uni-app x web 端事件对象支持）隔离冒泡后再 toast，col / row 两个点击行为即可独立观测；组件本身不加 stopPropagation——「子触发后父也触发」是 Vant 同款语义
 - 关联第 12 条：uni-app x web 端组件事件只认真实点击，toast 验证必须与冒泡链路一起分析
+
+## 2026-10-26 文档站模拟器联动（运行实测）
+
+### 19. VitePress 同页 hash 联动只能用 useData().hash（route.data 无 hash 字段）
+- PageData 类型没有 hash 字段，`useRoute().data.hash` 恒为 undefined——在 computed 里 `.startsWith()` 直接抛 TypeError；响应式 hash 在 `useData()` 返回值上（data.js 监听 hashchange 更新）
+- 点击 outline 锚点 → router pushState + dispatchEvent(HashChangeEvent) → hashRef 更新，同页 hash 变化全程响应式可达；`location.hash = '...'` 赋值走同一事件链，可与点击互换
+
+### 20. display:none 容器里的 iframe 视口为 0×0，lazy iframe 永不加载
+- 模拟器 iframe 挂在媒体查询 display:none 的容器里：`loading="lazy"` 使 iframe 永不加载（无可见性触发），postMessage 全部发进 about:blank；即使去掉 lazy，display:none 下 window.innerWidth/innerHeight=0、全链 clientHeight=0，scrollIntoView 无效
+- 排查手法：接收端探针 `console.log(window.innerWidth, window.innerHeight)` 一行定位；跨域 iframe 内部状态不可读时，在顶层页面创建「等尺寸同源 iframe」复现（同源可直读 contentDocument scrollTop），用数据替代截图判定
+
+### 21. 浏览器自动化代理视口受限时的验证策略
+- browser_use 代理无法设置 viewport（实测默认 1134px），window.open 被序列化错误拦截；≥1440 媒体查询样式无法直接观测
+- 替代策略：①hash 驱动交互用 `location.hash` 赋值代替 outline 点击（DOM 点击在代理环境易因快照 ref 失效而抖动，两者走同一响应链）；②跨端消息链路按「发送端日志 → 消息到达日志 → 同源等尺寸 iframe 内 scrollTop」三环拆分验证；③console 采集能捕获跨域 iframe 内 frame 的日志，接收端打点可见

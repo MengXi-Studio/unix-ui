@@ -1,18 +1,15 @@
 ---
+title: Layout
 demo: pages-sub/layout/layout
 ---
 
-# Layout
+## Introduction
 
 The layout component implements page columns through the 24-grid system of `mxi-row` and `mxi-col`, supporting column spacing, offsets, alignment and wrapping.
 
-## Usage
-
-Components follow the easycom convention and can be used without being imported. See [Getting Started](/en/guide/getting-started) for details.
-
 ## Examples
 
-### Basic Usage
+### Basic Usage {#demo-basic}
 
 `mxi-row` is a horizontal row container and `mxi-col` is a column element. Use `span` to set the column width as a share of the 24-grid.
 
@@ -36,7 +33,7 @@ Components follow the easycom convention and can be used without being imported.
 </mxi-row>
 ```
 
-### Column Spacing
+### Column Spacing {#demo-gutter}
 
 The `gutter` attribute sets the spacing between columns (px), and supports an array `[horizontal, vertical]` for the row spacing after wrapping. The column spacing is implemented with padding, so if the column content needs a background color, set it on an inner element of the Col and keep the Col itself transparent to show the gaps.
 
@@ -59,7 +56,7 @@ The `offset` attribute sets the number of offset columns to the left of a column
 </mxi-row>
 ```
 
-### Alignment
+### Alignment {#demo-align}
 
 The `justify` attribute sets the main-axis alignment, can be set to `start` `end` `center` `space-around` `space-between`. The default is `start`. The `align` attribute sets the cross-axis alignment, can be set to `top` `center` `bottom`. The default is `top`.
 
@@ -74,7 +71,7 @@ The `justify` attribute sets the main-axis alignment, can be set to `start` `end
 </mxi-row>
 ```
 
-### Wrapping
+### Wrapping {#demo-wrap}
 
 The `wrap` attribute is enabled by default, so columns wrap naturally when the sum of spans exceeds 24; disable it to keep one line.
 

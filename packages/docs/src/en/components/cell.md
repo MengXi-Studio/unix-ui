@@ -1,18 +1,15 @@
 ---
+title: Cell
 demo: pages-sub/cell/cell
 ---
 
-# Cell
+## Introduction
 
 The cell provides a content container for each row of a list, commonly used in settings pages and info lists. It supports title, value, label, icon, arrow, size and grouping.
 
-## Usage
-
-Components follow the easycom convention and can be used without being imported. See [Getting Started](/en/guide/getting-started) for details.
-
 ## Examples
 
-### Basic Usage
+### Basic Usage {#demo-basic}
 
 Use `title` and `value` to set the left and right content, and `label` to add a description below the title.
 
@@ -23,7 +20,7 @@ Use `title` and `value` to set the left and right content, and `label` to add a 
 </mxi-cell-group>
 ```
 
-### Cell Size
+### Cell Size {#demo-size}
 
 Use the `size` attribute to set the cell size, can be set to `normal` `large`. The default is `normal`.
 
@@ -32,7 +29,7 @@ Use the `size` attribute to set the cell size, can be set to `normal` `large`. T
 <mxi-cell title="Cell" value="Content" label="Description" size="large" />
 ```
 
-### Left Icon
+### Left Icon {#demo-icon}
 
 Use the `icon` attribute to show an icon to the left of the title. Set it to an icon name; no icon is shown when it is null.
 
@@ -41,7 +38,7 @@ Use the `icon` attribute to show an icon to the left of the title. Set it to an 
 <mxi-cell title="Shop" icon="shop-o" />
 ```
 
-### Link and Arrow Direction
+### Link and Arrow Direction {#demo-arrow}
 
 The `is-link` attribute shows a right arrow, and `arrow-direction` controls the arrow direction, can be set to `left` `up` `down` `right`. The default is `right`. The `clickable` attribute controls whether press feedback is shown; it defaults to the value of `is-link`, and takes precedence once set explicitly.
 
@@ -52,7 +49,7 @@ The `is-link` attribute shows a right arrow, and `arrow-direction` controls the 
 <mxi-cell title="Press feedback only" clickable />
 ```
 
-### Cell Group
+### Cell Group {#demo-group}
 
 `mxi-cell-group` wraps multiple cells into a group, and the `title` attribute sets the group title. The `inset` attribute renders the group as a rounded card with side margins, in which case no outer border is shown. The divider of the last cell in a group is hidden automatically, and can also be forced off with `border: false`.
 

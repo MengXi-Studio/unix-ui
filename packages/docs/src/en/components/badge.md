@@ -1,18 +1,15 @@
 ---
+title: Badge
 demo: pages-sub/badge/badge
 ---
 
-# Badge
+## Introduction
 
 Display a badge number or a red dot at the top-right corner of an icon or text, or standalone.
 
-## Import
+## Examples
 
-Components follow the easycom convention and can be used without import. See [Getting Started](/en/guide/getting-started) for details.
-
-## Usage
-
-### Basic Usage
+### Basic Usage {#demo-basic}
 
 After setting the `content` prop, the badge is displayed at the top-right corner of the wrapped child; the `dot` prop renders a small red dot (ignores content). Wrapping an icon composes with the [Icon](/en/components/icon) component.
 
@@ -33,7 +30,7 @@ After setting the `content` prop, the badge is displayed at the top-right corner
 </mxi-badge>
 ```
 
-### Max
+### Max {#demo-max}
 
 After setting the `max` prop, when the numeric `content` exceeds the maximum, `{max}+` is displayed (only effective when content is a number).
 
@@ -46,7 +43,7 @@ After setting the `max` prop, when the numeric `content` exceeds the maximum, `{
 </mxi-badge>
 ```
 
-### Custom Color
+### Custom Color {#demo-color}
 
 Use the `color` prop to set the badge background. Semantic color names (`primary` / `success` / `warning` / `danger` / `white`, mapped to theme variables — overriding uni.scss variables takes effect immediately) and CSS color values are supported; defaults to danger red.
 
@@ -59,7 +56,7 @@ Use the `color` prop to set the badge background. Semantic color names (`primary
 </mxi-badge>
 ```
 
-### Custom Position
+### Custom Position {#demo-position}
 
 Use the `position` prop to set the badge position, defaulting to `top-right`. The badge center sits on the corner.
 
@@ -75,7 +72,7 @@ Use the `position` prop to set the badge position, defaulting to `top-right`. Th
 </mxi-badge>
 ```
 
-### Offset
+### Offset {#demo-offset}
 
 Use the `offset-x` / `offset-y` props to set the offset (split into two props for the most solid UTS type constraints): positive values point right / down respectively, negative values reverse, pure numbers are treated as `px`.
 
@@ -88,7 +85,7 @@ Use the `offset-x` / `offset-y` props to set the offset (split into two props fo
 </mxi-badge>
 ```
 
-### Standalone
+### Standalone {#demo-standalone}
 
 When the badge has no child element, it renders as a standalone element.
 
@@ -98,7 +95,7 @@ When the badge has no child element, it renders as a standalone element.
 <mxi-badge dot />
 ```
 
-### Custom Badge Content
+### Custom Badge Content {#demo-slot}
 
 Use the `content` slot to customize the badge content, such as inserting an icon.
 
@@ -113,7 +110,7 @@ Use the `content` slot to customize the badge content, such as inserting an icon
 </mxi-badge>
 ```
 
-### Zero and show-zero
+### Zero and show-zero {#demo-zero}
 
 When `content` is numeric 0, the badge is displayed by default; setting `:show-zero="false"` hides it.
 

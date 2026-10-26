@@ -1,16 +1,13 @@
 ---
+title: Loading
 demo: pages-sub/loading/loading
 ---
 
-# Loading
+## Introduction
 
 The loading icon indicates a loading state of a page or operation. Two types are supported: circular arc ring and spinner petals.
 
-## Import
-
-The component follows the easycom convention and can be used without importing. See [Quick Start](/en/guide/getting-started) for details.
-
-## Usage
+## Examples
 
 ### Basic Usage
 
@@ -18,7 +15,7 @@ The component follows the easycom convention and can be used without importing. 
 <mxi-loading />
 ```
 
-### Type
+### Type {#demo-type}
 
 Two types are supported: `circular` (arc ring, default) and `spinner` (petals).
 
@@ -27,7 +24,7 @@ Two types are supported: `circular` (arc ring, default) and `spinner` (petals).
 <mxi-loading type="spinner" />
 ```
 
-### Custom Color
+### Custom Color {#demo-color}
 
 Use the `color` prop to customize the icon color. Both CSS color values and semantic color names (`default` / `primary` / `success` / `warning` / `danger` / `white`) are supported; semantic names are bound to theme variables at compile time, so overriding the corresponding `$mxi-color-*` variables in `uni.scss` takes effect.
 
@@ -37,7 +34,7 @@ Use the `color` prop to customize the icon color. Both CSS color values and sema
 <mxi-loading type="spinner" color="primary" />
 ```
 
-### Custom Size
+### Custom Size {#demo-size}
 
 Use the `size` prop to customize the icon size. Pure numbers (with `px` appended automatically), strings with units, or `100%` (filling an externally sized container) are supported; the default is `30px`.
 
@@ -46,7 +43,7 @@ Use the `size` prop to customize the icon size. Pure numbers (with `px` appended
 <mxi-loading type="spinner" size="24" />
 ```
 
-### Loading Text
+### Loading Text {#demo-text}
 
 Place the loading text in the default slot; use `vertical` to arrange the icon and text vertically.
 
@@ -55,7 +52,7 @@ Place the loading text in the default slot; use `vertical` to arrange the icon a
 <mxi-loading type="spinner" size="24" vertical>Loading...</mxi-loading>
 ```
 
-### Custom Text Style
+### Custom Text Style {#demo-text-style}
 
 Use the `text-size` and `text-color` props to customize the text font size and color.
 
@@ -63,7 +60,7 @@ Use the `text-size` and `text-color` props to customize the text font size and c
 <mxi-loading text-size="16" text-color="#1989fa">Loading...</mxi-loading>
 ```
 
-### Custom Icon
+### Custom Icon {#demo-icon}
 
 Use the `icon` slot to replace the default icon; the replaced icon still rotates with the rhythm of the given `type`.
 

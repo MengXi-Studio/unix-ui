@@ -1,9 +1,10 @@
 <template>
 	<view class="page">
 		<demo-navbar title="单元格" subtitle="Cell" />
+		<demo-bridge />
 		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
-			<text class="section">基础用法</text>
+			<text class="section" id="basic">基础用法</text>
 			<view class="cell-wrap">
 				<mxi-cell-group>
 					<mxi-cell title="单元格" value="内容" />
@@ -19,7 +20,7 @@
 				</mxi-cell-group>
 			</view>
 
-			<text class="section">大尺寸</text>
+			<text class="section" id="size">大尺寸</text>
 			<view class="cell-wrap">
 				<mxi-cell-group>
 					<mxi-cell title="单元格" value="内容" size="large" />
@@ -27,7 +28,7 @@
 				</mxi-cell-group>
 			</view>
 
-			<text class="section">左侧图标</text>
+			<text class="section" id="icon">左侧图标</text>
 			<view class="cell-wrap">
 				<mxi-cell-group>
 					<mxi-cell title="位置" icon="location-o" />
@@ -35,7 +36,7 @@
 				</mxi-cell-group>
 			</view>
 
-			<text class="section">展示箭头（arrow-direction 四向）</text>
+			<text class="section" id="arrow">展示箭头（arrow-direction 四向）</text>
 			<view class="cell-wrap">
 				<mxi-cell-group>
 					<mxi-cell title="默认右箭头" is-link />
@@ -45,7 +46,7 @@
 				</mxi-cell-group>
 			</view>
 
-			<text class="section">分组标题</text>
+			<text class="section" id="group">分组标题</text>
 			<view class="cell-wrap">
 				<mxi-cell-group title="分组 1">
 					<mxi-cell title="单元格" value="内容" />

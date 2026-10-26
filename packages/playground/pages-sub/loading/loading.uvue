@@ -1,9 +1,10 @@
 <template>
 	<view class="page">
 		<demo-navbar title="加载" subtitle="Loading" />
+		<demo-bridge />
 		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
-			<text class="section">加载类型</text>
+			<text class="section" id="type">加载类型</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -17,7 +18,7 @@
 				</view>
 			</view>
 
-			<text class="section">自定义颜色</text>
+			<text class="section" id="color">自定义颜色</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -39,7 +40,7 @@
 				</view>
 			</view>
 
-			<text class="section">自定义大小</text>
+			<text class="section" id="size">自定义大小</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -61,7 +62,7 @@
 				</view>
 			</view>
 
-			<text class="section">加载文案</text>
+			<text class="section" id="text">加载文案</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -79,7 +80,7 @@
 				</view>
 			</view>
 
-			<text class="section">自定义文字样式</text>
+			<text class="section" id="text-style">自定义文字样式</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
@@ -115,7 +116,7 @@
 				</view>
 			</view>
 
-			<text class="section">自定义图标</text>
+			<text class="section" id="icon">自定义图标</text>
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">

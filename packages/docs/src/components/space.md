@@ -1,18 +1,16 @@
 ---
+title: Space
+subtitle: 间距
 demo: pages-sub/space/space
 ---
 
-# Space 间距
+## 介绍
 
 间距组件用于在子元素之间统一设置间距，基于 flex gap 实现，支持水平与垂直方向、自定义间距大小、对齐方式、自动换行与块级填充。
 
-## 引入
-
-组件遵循 easycom 规范，无需引入即可使用，详见[快速上手](/guide/getting-started)。
-
 ## 代码演示
 
-### 基础用法
+### 基础用法 {#demo-basic}
 
 默认水平排列，子元素之间保持主题默认间距（8px）。
 
@@ -24,7 +22,7 @@ demo: pages-sub/space/space
 </mxi-space>
 ```
 
-### 垂直间距
+### 垂直间距 {#demo-vertical}
 
 `direction` 属性设置间距方向，可选值为 `horizontal` `vertical`，默认为 `horizontal`。
 
@@ -35,7 +33,7 @@ demo: pages-sub/space/space
 </mxi-space>
 ```
 
-### 自定义间距
+### 自定义间距 {#demo-custom}
 
 `size` 支持数字（自动补 px）、字符串（原样使用）与数组 `[横向, 纵向]`；未传时取主题默认间距，垂直方向取数组第一个值作主轴间距。
 
@@ -45,7 +43,7 @@ demo: pages-sub/space/space
 <mxi-space :size="[20, 8]" wrap>横向 20 / 换行后纵向 8</mxi-space>
 ```
 
-### 对齐方式
+### 对齐方式 {#demo-align}
 
 `align` 属性设置子元素对齐方式，可选值为 `start` `end` `center` `baseline`；未传时水平方向默认 `center`，垂直方向默认 `stretch`。
 
@@ -56,7 +54,7 @@ demo: pages-sub/space/space
 <mxi-space align="baseline">基线对齐</mxi-space>
 ```
 
-### 自动换行
+### 自动换行 {#demo-wrap}
 
 `wrap` 属性开启后子元素超出宽度自动换行，仅水平方向生效。
 

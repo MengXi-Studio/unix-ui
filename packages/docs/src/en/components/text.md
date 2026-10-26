@@ -1,18 +1,15 @@
 ---
+title: Text
 demo: pages-sub/text/text
 ---
 
-# Text
+## Introduction
 
 The text component is the basic component for text layout, providing semantic colors, font size tiers, single-line and multi-line truncation, and selectable text.
 
-## Usage
-
-Components follow the easycom convention and can be used without being imported. See [Getting Started](/en/guide/getting-started) for details.
-
 ## Examples
 
-### Basic Usage
+### Basic Usage {#demo-basic}
 
 Displays the theme body color and the medium font size by default.
 
@@ -20,7 +17,7 @@ Displays the theme body color and the medium font size by default.
 <mxi-text>This is a text with the default style.</mxi-text>
 ```
 
-### Text Color
+### Text Color {#demo-color}
 
 `color` supports semantic color names `default` `secondary` `tertiary` `fourth` `primary` `success` `warning` `danger`, as well as any CSS color value (such as `#7232dd`).
 
@@ -32,7 +29,7 @@ Displays the theme body color and the medium font size by default.
 <mxi-text color="#7232dd">Custom color value</mxi-text>
 ```
 
-### Font Size Tier
+### Font Size Tier {#demo-size}
 
 Use the `size` attribute to set the font size tier, can be set to `small` `medium` `large`. The default is `medium`.
 
@@ -42,7 +39,7 @@ Use the `size` attribute to set the font size tier, can be set to `small` `mediu
 <mxi-text size="large">Large text</mxi-text>
 ```
 
-### Single-line Truncation
+### Single-line Truncation {#demo-ellipsis}
 
 The `truncated` attribute shows an ellipsis when the text exceeds the width constraint, which requires an external width constraint; it does not take effect when both `truncated` and `line-clamp` are set.
 
@@ -52,7 +49,7 @@ The `truncated` attribute shows an ellipsis when the text exceeds the width cons
 </mxi-text>
 ```
 
-### Multi-line Truncation
+### Multi-line Truncation {#demo-ellipsis-multi}
 
 The `line-clamp` attribute limits the maximum number of lines, showing an ellipsis for the overflow; unlimited when not set.
 
@@ -62,7 +59,7 @@ The `line-clamp` attribute limits the maximum number of lines, showing an ellips
 </mxi-text>
 ```
 
-### Selectable Text
+### Selectable Text {#demo-selectable}
 
 The `user-select` attribute makes the text selectable and copyable (drag to select on web, long press on App).
 

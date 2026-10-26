@@ -1,9 +1,10 @@
 <template>
 	<view class="page">
 		<demo-navbar title="按钮" subtitle="Button" />
+		<demo-bridge />
 		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
-			<text class="section">按钮类型</text>
+			<text class="section" id="type">按钮类型</text>
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">
@@ -24,7 +25,7 @@
 				</view>
 			</view>
 
-			<text class="section">按钮尺寸</text>
+			<text class="section" id="size">按钮尺寸</text>
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">
@@ -42,7 +43,7 @@
 				</view>
 			</view>
 
-			<text class="section">朴素 / 圆角 / 方形</text>
+			<text class="section" id="plain">朴素 / 圆角 / 方形</text>
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">
@@ -66,7 +67,7 @@
 				</view>
 			</view>
 
-			<text class="section">块级元素</text>
+			<text class="section" id="block">块级元素</text>
 			<view class="card">
 				<view class="block-gap">
 					<mxi-button type="primary" :block="true" @click="onButtonClick('block')">块级按钮</mxi-button>
@@ -76,7 +77,7 @@
 				</view>
 			</view>
 
-			<text class="section">禁用状态</text>
+			<text class="section" id="disabled">禁用状态</text>
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">
@@ -88,7 +89,7 @@
 				</view>
 			</view>
 
-			<text class="section">加载状态</text>
+			<text class="section" id="loading">加载状态</text>
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">
@@ -109,7 +110,7 @@
 				</view>
 			</view>
 
-			<text class="section">自定义颜色</text>
+			<text class="section" id="color">自定义颜色</text>
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">

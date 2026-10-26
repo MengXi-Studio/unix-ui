@@ -39,6 +39,24 @@
 }
 
 /**
+ * 文档表格对齐：全网格边框 + 表头底色 + 宽松行距
+ * （VitePress 默认仅横向分隔线、无表头底色）
+ */
+.vp-doc table {
+	border: 1px solid var(--vp-c-divider);
+}
+
+.vp-doc th,
+.vp-doc td {
+	border: 1px solid var(--vp-c-divider);
+	padding: 12px 16px;
+}
+
+.vp-doc th {
+	background-color: var(--vp-c-bg-soft);
+}
+
+/**
  * 文档页大屏全宽化（≥1440px）：取消默认主题的居中钳制，恢复与 960–1440px 区间一致的三栏基准值。
  * 覆盖对象为 VPSidebar / VPNavBar / VPContent 组件内样式（scoped，特异度更高），需 !important 提权；
  * 选择器形态与主题规则一致（has-sidebar 挂在 VPNavBar 根节点，而非 .content 上）。

@@ -1,14 +1,12 @@
 ---
+title: Loading
+subtitle: 加载
 demo: pages-sub/loading/loading
 ---
 
-# Loading 加载
+## 介绍
 
 加载图标用于表示页面或操作的加载状态。支持弧段圆环与花瓣两种类型。
-
-## 引入
-
-组件遵循 easycom 规范，无需引入即可使用，详见[快速上手](/guide/getting-started)。
 
 ## 代码演示
 
@@ -18,7 +16,7 @@ demo: pages-sub/loading/loading
 <mxi-loading />
 ```
 
-### 加载类型
+### 加载类型 {#demo-type}
 
 支持 `circular`（弧段圆环，默认）与 `spinner`（花瓣）两种类型。
 
@@ -27,7 +25,7 @@ demo: pages-sub/loading/loading
 <mxi-loading type="spinner" />
 ```
 
-### 自定义颜色
+### 自定义颜色 {#demo-color}
 
 通过 `color` 属性自定义加载图标的颜色，支持 CSS 色值与语义色名（`default` / `primary` / `success` / `warning` / `danger` / `white`）；语义色名编译期绑定主题变量，在 `uni.scss` 中覆盖对应 `$mxi-color-*` 变量即可生效。
 
@@ -37,7 +35,7 @@ demo: pages-sub/loading/loading
 <mxi-loading type="spinner" color="primary" />
 ```
 
-### 自定义大小
+### 自定义大小 {#demo-size}
 
 通过 `size` 属性自定义加载图标的大小，支持纯数字（自动补 `px`）、带单位字符串或 `100%`（撑满外部定尺寸容器），默认为 `30px`。
 
@@ -46,7 +44,7 @@ demo: pages-sub/loading/loading
 <mxi-loading type="spinner" size="24" />
 ```
 
-### 加载文案
+### 加载文案 {#demo-text}
 
 将加载文案放在默认插槽中；`vertical` 属性可将图标与文案垂直排列。
 
@@ -55,7 +53,7 @@ demo: pages-sub/loading/loading
 <mxi-loading type="spinner" size="24" vertical>加载中...</mxi-loading>
 ```
 
-### 自定义文字样式
+### 自定义文字样式 {#demo-text-style}
 
 通过 `text-size` 与 `text-color` 属性自定义文案的字号与颜色。
 
@@ -63,7 +61,7 @@ demo: pages-sub/loading/loading
 <mxi-loading text-size="16" text-color="#1989fa">加载中...</mxi-loading>
 ```
 
-### 自定义图标
+### 自定义图标 {#demo-icon}
 
 通过 `icon` 插槽替换默认图标，替换后的图标仍按 `type` 对应的节奏旋转。
 

@@ -1,9 +1,10 @@
 <template>
 	<view class="page">
 		<demo-navbar title="布局" subtitle="Layout" />
+		<demo-bridge />
 		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
-			<text class="section">基础用法</text>
+			<text class="section" id="basic">基础用法</text>
 			<view class="card">
 				<mxi-row custom-class="demo-row">
 					<mxi-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></mxi-col>
@@ -21,7 +22,7 @@
 				<text class="caption">24 栅格：span 设置列宽份数，offset 设置左侧偏移份数</text>
 			</view>
 
-			<text class="section">设置列元素间距</text>
+			<text class="section" id="gutter">设置列元素间距</text>
 			<view class="card">
 				<mxi-row gutter="20">
 					<mxi-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></mxi-col>
@@ -41,7 +42,7 @@
 				<text class="caption">gutter 数组 [水平, 垂直]：换行后行间距 20px（末行不加）</text>
 			</view>
 
-			<text class="section">主轴对齐</text>
+			<text class="section" id="align">主轴对齐</text>
 			<view class="card">
 				<mxi-row justify="center" custom-class="demo-row">
 					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
@@ -83,7 +84,7 @@
 				<text class="caption">align top / center / bottom（top 为默认值）</text>
 			</view>
 
-			<text class="section">换行与组合</text>
+			<text class="section" id="wrap">换行与组合</text>
 			<view class="card">
 				<mxi-row :gutter="[10, 10]">
 					<mxi-col v-for="i in 10" :key="i" span="6">

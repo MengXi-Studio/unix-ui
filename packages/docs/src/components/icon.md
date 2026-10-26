@@ -1,18 +1,16 @@
 ---
+title: Icon
+subtitle: 图标
 demo: pages-sub/icon/icon
 ---
 
-# Icon 图标
+## 介绍
 
 基于字体图标的图标集，内置 257 个图标，支持颜色与大小自定义、点击事件。
 
-## 引入
-
-组件遵循 easycom 规范，无需引入即可使用，详见[快速上手](/guide/getting-started)。
-
 ## 代码演示
 
-### 基础用法
+### 基础用法 {#demo-basic}
 
 `name` 为字符串联合类型 `IconName`（IDE 自动提示全部图标名，写错编译期报错）。字体文件随包内置（`@font-face` 声明式加载），零配置、离线可用。
 
@@ -20,7 +18,7 @@ demo: pages-sub/icon/icon
 <mxi-icon name="chat-o" />
 ```
 
-### 自定义颜色
+### 自定义颜色 {#demo-color}
 
 通过 `color` 属性自定义图标颜色，支持 CSS 色值；为空时继承外部样式。
 
@@ -29,7 +27,7 @@ demo: pages-sub/icon/icon
 <mxi-icon name="star" size="24" color="#07c160" />
 ```
 
-### 自定义大小
+### 自定义大小 {#demo-size}
 
 通过 `size` 属性自定义图标大小，支持纯数字（自动补 `px`）或带单位字符串；为空时继承外部字号。
 
@@ -63,7 +61,7 @@ demo: pages-sub/icon/icon
 <mxi-icon name="like" @click="onTap" />
 ```
 
-### 自定义图标
+### 自定义图标 {#demo-slot}
 
 两种方式接入自有字体图标：
 

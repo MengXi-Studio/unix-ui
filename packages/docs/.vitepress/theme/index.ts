@@ -4,6 +4,7 @@ import type { Theme } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import HomeBadges from './components/HomeBadges.vue'
 import DemoPhone from './components/DemoPhone.vue'
+import DocHeader from './components/DocHeader.vue'
 import './styles/demo.css'
 
 /**
@@ -21,13 +22,23 @@ const UnixLayout = defineComponent({
 		/** 组件页演示路由（frontmatter.demo），非演示页为空 */
 		const demoPath = computed(() => page.value.frontmatter.demo as string | undefined)
 
+		/** 是否渲染自定义页头（frontmatter.subtitle 存在即组件文档页，正文 h1 已由页头接管） */
+		const hasDocHeader = computed(() => Boolean(page.value.frontmatter.subtitle))
+
 		return () =>
 			h(
 				'div',
-				{ class: ['unix-layout', demoPath.value ? 'has-doc-demo' : ''] },
+				{
+					class: [
+						'unix-layout',
+						demoPath.value ? 'has-doc-demo' : '',
+						hasDocHeader.value ? 'has-doc-header' : ''
+					]
+				},
 				[
 					h(DefaultTheme.Layout, null, {
 						'home-hero-after': () => h(HomeBadges),
+						'doc-before': () => h(DocHeader),
 						...(demoPath.value
 							? { 'aside-top': () => h(DemoPhone, { path: demoPath.value as string }) }
 							: {})

@@ -1,18 +1,16 @@
 ---
+title: Text
+subtitle: 文本
 demo: pages-sub/text/text
 ---
 
-# Text 文本
+## 介绍
 
 文本组件是页面文字排版的基础组件，提供语义色、字号档位、单行与多行省略、文本可选等能力。
 
-## 引入
-
-组件遵循 easycom 规范，无需引入即可使用，详见[快速上手](/guide/getting-started)。
-
 ## 代码演示
 
-### 基础用法
+### 基础用法 {#demo-basic}
 
 默认展示主题正文色与中号字号。
 
@@ -20,7 +18,7 @@ demo: pages-sub/text/text
 <mxi-text>这是一段默认样式的文本。</mxi-text>
 ```
 
-### 文本颜色
+### 文本颜色 {#demo-color}
 
 `color` 支持语义色名 `default` `secondary` `tertiary` `fourth` `primary` `success` `warning` `danger`，也支持任意 CSS 色值（如 `#7232dd`）。
 
@@ -32,7 +30,7 @@ demo: pages-sub/text/text
 <mxi-text color="#7232dd">自定义色值</mxi-text>
 ```
 
-### 字号档位
+### 字号档位 {#demo-size}
 
 通过 `size` 属性设置字号档位，可选值为 `small` `medium` `large`，默认为 `medium`。
 
@@ -42,7 +40,7 @@ demo: pages-sub/text/text
 <mxi-text size="large">大号文本</mxi-text>
 ```
 
-### 单行省略
+### 单行省略 {#demo-ellipsis}
 
 `truncated` 属性在文本超出宽度约束时显示省略号，需配合外部宽度约束使用；与 `line-clamp` 同传时本属性不生效。
 
@@ -52,7 +50,7 @@ demo: pages-sub/text/text
 </mxi-text>
 ```
 
-### 多行省略
+### 多行省略 {#demo-ellipsis-multi}
 
 `line-clamp` 属性限制文本最大行数，超出部分显示省略号，为空时不限制。
 
@@ -62,7 +60,7 @@ demo: pages-sub/text/text
 </mxi-text>
 ```
 
-### 文本可选
+### 文本可选 {#demo-selectable}
 
 `user-select` 属性使文本可选中复制（web 端拖选，App 端长按）。
 

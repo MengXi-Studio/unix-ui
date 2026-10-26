@@ -1,3 +1,7 @@
+---
+demo: pages-sub/button/button
+---
+
 # Button 按钮
 
 按钮用于触发一个操作，如提交表单。支持类型、尺寸、朴素、圆形、方形、块级、禁用与加载状态等特性。
@@ -12,7 +16,7 @@
 
 支持 `default`、`primary`、`success`、`warning`、`danger` 五种类型，默认为 `default`。
 
-```html
+```vue
 <mxi-button type="primary">主要按钮</mxi-button>
 <mxi-button type="success">成功按钮</mxi-button>
 <mxi-button type="danger">危险按钮</mxi-button>
@@ -24,7 +28,7 @@
 
 通过 `plain` 属性将按钮设置为朴素按钮，朴素按钮的文字为按钮颜色，背景为白色。
 
-```html
+```vue
 <mxi-button type="primary" plain>朴素按钮</mxi-button>
 ```
 
@@ -32,7 +36,7 @@
 
 通过 `hairline` 属性设置 0.5px 边框（基于 `scale(0.5)` 实现）。
 
-```html
+```vue
 <mxi-button type="primary" plain hairline>细边框按钮</mxi-button>
 ```
 
@@ -40,7 +44,7 @@
 
 通过 `disabled` 属性禁用按钮，禁用状态下按钮不可点击。
 
-```html
+```vue
 <mxi-button type="primary" disabled>禁用状态</mxi-button>
 ```
 
@@ -48,7 +52,7 @@
 
 通过 `loading` 属性设置按钮为加载状态，加载状态下按钮不可点击；`loading-text` 可自定义加载文字；`loading-type` 可切换加载图标形态（`circular` 圆环旋转 / `spinner` 花瓣旋转），图标由 [Loading](/components/loading) 组件承载。
 
-```html
+```vue
 <mxi-button type="primary" loading />
 <mxi-button type="primary" loading loading-text="加载中..." />
 <mxi-button type="primary" loading loading-type="spinner" />
@@ -58,7 +62,7 @@
 
 按钮按下时整体透明度降为 0.8，松开后恢复；`disabled` 与 `loading` 状态不出现按压反馈（基于 `hover-class` 实现）。
 
-```html
+```vue
 <mxi-button type="primary">按下查看按压反馈</mxi-button>
 ```
 
@@ -66,7 +70,7 @@
 
 支持 `large`、`normal`、`small`、`mini` 四种尺寸，默认为 `normal`。
 
-```html
+```vue
 <mxi-button type="primary" size="large">大号按钮</mxi-button>
 <mxi-button type="primary" size="normal">普通按钮</mxi-button>
 <mxi-button type="primary" size="small">小型按钮</mxi-button>
@@ -77,7 +81,7 @@
 
 `block` 属性将使按钮宽度撑满父容器。
 
-```html
+```vue
 <mxi-button type="primary" block>块级按钮</mxi-button>
 ```
 
@@ -85,7 +89,7 @@
 
 通过 `color` 属性自定义按钮颜色，支持 `linear-gradient` 渐变。
 
-```html
+```vue
 <mxi-button color="#7232dd">单色按钮</mxi-button>
 <mxi-button color="linear-gradient(to right, #ff6034, #ee0a24)">渐变按钮</mxi-button>
 <mxi-button color="#7232dd" plain>彩色按钮</mxi-button>

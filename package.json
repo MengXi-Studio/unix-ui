@@ -11,6 +11,7 @@
 	"scripts": {
 		"dev:docs": "pnpm --filter @meng-xi/unix-ui-docs dev",
 		"build:docs": "pnpm --filter @meng-xi/unix-ui-docs build",
+		"build:demo": "node scripts/build-demo.mjs",
 		"sync:uni-modules": "node scripts/sync-uni-modules.mjs",
 		"sync:uni-modules:check": "node scripts/sync-uni-modules.mjs --check",
 		"release": "bumpp"

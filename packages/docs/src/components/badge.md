@@ -1,3 +1,7 @@
+---
+demo: pages-sub/badge/badge
+---
+
 # Badge 徽标
 
 在图标或文字的右上角展示徽标数字或小红点，也支持独立展示。
@@ -12,7 +16,7 @@
 
 设置 `content` 属性后，徽标会在子元素的右上角显示对应内容；`dot` 属性展示为小红点（无视 content）。徽标包裹图标即与 [Icon 图标](/components/icon)组合使用。
 
-```html
+```vue
 <mxi-badge content="5">
 	<view class="child"></view>
 </mxi-badge>
@@ -33,7 +37,7 @@
 
 设置 `max` 属性后，当 `content` 的数值超过最大值时，会自动显示为 `{max}+`（仅当 content 为数字时有效）。
 
-```html
+```vue
 <mxi-badge content="20" max="9">
 	<view class="child"></view>
 </mxi-badge>
@@ -46,7 +50,7 @@
 
 通过 `color` 属性设置徽标背景色，支持语义色名（`primary` / `success` / `warning` / `danger` / `white`，映射主题变量，覆盖 uni.scss 变量即生效）与 CSS 色值；默认为 danger 红。
 
-```html
+```vue
 <mxi-badge content="5" color="primary">
 	<view class="child"></view>
 </mxi-badge>
@@ -59,7 +63,7 @@
 
 通过 `position` 属性设置徽标位置，默认 `top-right`。徽标中心压角展示。
 
-```html
+```vue
 <mxi-badge content="10" position="top-left">
 	<view class="child"></view>
 </mxi-badge>
@@ -75,7 +79,7 @@
 
 通过 `offset-x` / `offset-y` 两个属性设置偏移量（拆分为双属性以获得最稳的 UTS 类型约束）：正值分别向右、向下，负值反向，纯数字自动补 `px`。
 
-```html
+```vue
 <mxi-badge content="10" offset-x="4" offset-y="4">
 	<view class="child"></view>
 </mxi-badge>
@@ -88,7 +92,7 @@
 
 当徽标没有子元素时，会作为一个独立的元素进行展示。
 
-```html
+```vue
 <mxi-badge content="20" />
 <mxi-badge content="200" max="99" />
 <mxi-badge dot />
@@ -98,7 +102,7 @@
 
 通过 `content` 插槽可以自定义徽标的内容，比如插入一个图标。
 
-```html
+```vue
 <mxi-badge>
 	<view class="child"></view>
 	<template #content>
@@ -113,7 +117,7 @@
 
 `content` 为数字 0 时默认展示；设置 `:show-zero="false"` 后隐藏徽标。
 
-```html
+```vue
 <mxi-badge content="0">
 	<view class="child"></view>
 </mxi-badge>
@@ -126,7 +130,7 @@
 
 uni-app x 中 view 组件的 `overflow` 默认值为 `hidden`（与 W3C 的 `visible` 不同，见官方 CSS 默认值表）。徽标中心压角展示会超出组件根节点约半个徽标高度，当直接父级是「收缩贴合」的 view（如 flex 行内子项）时，超出部分会被裁剪。此时需给父级容器显式设置 `overflow: visible`：
 
-```html
+```vue
 <!-- 父级收缩贴合徽标尺寸时，需放开裁剪 -->
 <view class="badge-item">
 	<mxi-badge content="5">

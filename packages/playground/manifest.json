@@ -77,7 +77,8 @@
 	},
 	"web": {
 		"router": {
-			"mode": "history"
+			"mode": "history",
+			"base": "/unix-ui/playground/"
 		},
 		"title": "@meng-xi/unix-ui",
 		"devServer": {

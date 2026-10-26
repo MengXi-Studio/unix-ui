@@ -1,3 +1,7 @@
+---
+demo: pages-sub/button/button
+---
+
 # Button
 
 Buttons are used to trigger an action, such as submitting a form. Supports types, sizes, plain, round, square, block, disabled and loading states.
@@ -12,7 +16,7 @@ Components follow the easycom convention and can be used without being imported.
 
 Five types are supported: `default`, `primary`, `success`, `warning` and `danger`. The default is `default`.
 
-```html
+```vue
 <mxi-button type="primary">Primary</mxi-button>
 <mxi-button type="success">Success</mxi-button>
 <mxi-button type="danger">Danger</mxi-button>
@@ -24,7 +28,7 @@ Five types are supported: `default`, `primary`, `success`, `warning` and `danger
 
 Set a button as plain with the `plain` attribute: the text takes the button color and the background becomes white.
 
-```html
+```vue
 <mxi-button type="primary" plain>Plain</mxi-button>
 ```
 
@@ -32,7 +36,7 @@ Set a button as plain with the `plain` attribute: the text takes the button colo
 
 Use the `hairline` attribute for a 0.5px border (implemented via `scale(0.5)`).
 
-```html
+```vue
 <mxi-button type="primary" plain hairline>Hairline</mxi-button>
 ```
 
@@ -40,7 +44,7 @@ Use the `hairline` attribute for a 0.5px border (implemented via `scale(0.5)`).
 
 Disable a button with the `disabled` attribute; disabled buttons cannot be clicked.
 
-```html
+```vue
 <mxi-button type="primary" disabled>Disabled</mxi-button>
 ```
 
@@ -48,7 +52,7 @@ Disable a button with the `disabled` attribute; disabled buttons cannot be click
 
 Set a button to the loading state with the `loading` attribute; loading buttons cannot be clicked. Use `loading-text` to customize the loading label. Use `loading-type` to switch the loading icon style (`circular` spinning ring / `spinner` spinning petals); the icon is powered by the [Loading](/en/components/loading) component.
 
-```html
+```vue
 <mxi-button type="primary" loading />
 <mxi-button type="primary" loading loading-text="Loading..." />
 <mxi-button type="primary" loading loading-type="spinner" />
@@ -58,7 +62,7 @@ Set a button to the loading state with the `loading` attribute; loading buttons 
 
 The button's overall opacity drops to 0.8 while pressed and restores on release; no press feedback is shown in `disabled` or `loading` state (implemented via `hover-class`).
 
-```html
+```vue
 <mxi-button type="primary">Press to see feedback</mxi-button>
 ```
 
@@ -66,7 +70,7 @@ The button's overall opacity drops to 0.8 while pressed and restores on release;
 
 Four sizes are supported: `large`, `normal`, `small` and `mini`. The default is `normal`.
 
-```html
+```vue
 <mxi-button type="primary" size="large">Large</mxi-button>
 <mxi-button type="primary" size="normal">Normal</mxi-button>
 <mxi-button type="primary" size="small">Small</mxi-button>
@@ -77,7 +81,7 @@ Four sizes are supported: `large`, `normal`, `small` and `mini`. The default is 
 
 The `block` attribute makes the button fill its parent container's width.
 
-```html
+```vue
 <mxi-button type="primary" block>Block</mxi-button>
 ```
 
@@ -85,7 +89,7 @@ The `block` attribute makes the button fill its parent container's width.
 
 Customize the button color with the `color` attribute; `linear-gradient` is supported.
 
-```html
+```vue
 <mxi-button color="#7232dd">Solid</mxi-button>
 <mxi-button color="linear-gradient(to right, #ff6034, #ee0a24)">Gradient</mxi-button>
 <mxi-button color="#7232dd" plain>Plain Color</mxi-button>

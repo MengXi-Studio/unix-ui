@@ -1,6 +1,6 @@
 <template>
-	<!-- 自绘导航骨架：状态栏占位（App 端动态 padding）+ 44px 导航行 -->
-	<view class="navbar" :style="'padding-top:' + statusBarHeight + 'px'">
+	<!-- 自绘导航骨架：状态栏占位（App 端动态 padding）+ 44px 导航行；文档站模拟器嵌入时隐藏（壳已提供仿真导航） -->
+	<view v-if="!embedded" class="navbar" :style="'padding-top:' + statusBarHeight + 'px'">
 		<view class="navbar-body">
 			<view class="navbar-side" @click="onBack">
 				<mxi-icon name="arrow-left" size="18" color="#1a1a1a" />
@@ -32,6 +32,12 @@
 	const statusBarHeight = ref(0)
 	// #ifdef APP
 	statusBarHeight.value = uni.getWindowInfo().statusBarHeight
+	// #endif
+
+	// 嵌入模式：文档站模拟器 iframe 携带 navbar=0 时隐藏自绘导航（避免与壳导航重复），仅 Web 端消费
+	const embedded = ref(false)
+	// #ifdef WEB
+	embedded.value = typeof location !== 'undefined' && location.search.indexOf('navbar=0') >= 0
 	// #endif
 
 	const router = useRouter()

@@ -6,7 +6,17 @@ const base = process.env.DOCS_BASE || '/unix-ui/'
 /** 将根路径资源拼接到当前 base 下，避免 favicon 等资源 404 */
 const asset = (p: string) => base + p.replace(/^\//, '')
 
+/** 组件演示（playground）同站部署路径：CI 可经 DEMO_BASE 注入，本地默认子路径 */
+const demoBase = (process.env.DEMO_BASE || '/unix-ui/playground/').replace(/\/?$/, '/')
+
 export const sharedConfig = defineConfig({
+	/** 构建期常量：注入演示页部署路径供 DemoPhone 组件消费 */
+	vite: {
+		define: {
+			__DEMO_BASE__: JSON.stringify(demoBase)
+		}
+	},
+
 	/** 网站标题 */
 	title: 'unix-ui',
 

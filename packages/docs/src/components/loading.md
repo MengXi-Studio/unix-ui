@@ -1,3 +1,7 @@
+---
+demo: pages-sub/loading/loading
+---
+
 # Loading 加载
 
 加载图标用于表示页面或操作的加载状态。支持弧段圆环与花瓣两种类型。
@@ -10,7 +14,7 @@
 
 ### 基础用法
 
-```html
+```vue
 <mxi-loading />
 ```
 
@@ -18,7 +22,7 @@
 
 支持 `circular`（弧段圆环，默认）与 `spinner`（花瓣）两种类型。
 
-```html
+```vue
 <mxi-loading />
 <mxi-loading type="spinner" />
 ```
@@ -27,7 +31,7 @@
 
 通过 `color` 属性自定义加载图标的颜色，支持 CSS 色值与语义色名（`default` / `primary` / `success` / `warning` / `danger` / `white`）；语义色名编译期绑定主题变量，在 `uni.scss` 中覆盖对应 `$mxi-color-*` 变量即可生效。
 
-```html
+```vue
 <mxi-loading color="#1989fa" />
 <mxi-loading type="spinner" color="#07c160" />
 <mxi-loading type="spinner" color="primary" />
@@ -37,7 +41,7 @@
 
 通过 `size` 属性自定义加载图标的大小，支持纯数字（自动补 `px`）、带单位字符串或 `100%`（撑满外部定尺寸容器），默认为 `30px`。
 
-```html
+```vue
 <mxi-loading size="16" />
 <mxi-loading type="spinner" size="24" />
 ```
@@ -46,7 +50,7 @@
 
 将加载文案放在默认插槽中；`vertical` 属性可将图标与文案垂直排列。
 
-```html
+```vue
 <mxi-loading>加载中...</mxi-loading>
 <mxi-loading type="spinner" size="24" vertical>加载中...</mxi-loading>
 ```
@@ -55,7 +59,7 @@
 
 通过 `text-size` 与 `text-color` 属性自定义文案的字号与颜色。
 
-```html
+```vue
 <mxi-loading text-size="16" text-color="#1989fa">加载中...</mxi-loading>
 ```
 
@@ -63,7 +67,7 @@
 
 通过 `icon` 插槽替换默认图标，替换后的图标仍按 `type` 对应的节奏旋转。
 
-```html
+```vue
 <mxi-loading>
 	<template #icon>
 		<text style="font-size: 24px;">❀</text>

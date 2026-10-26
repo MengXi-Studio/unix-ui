@@ -1,0 +1,99 @@
+/**
+ * 组件页演示布局与代码块折叠样式（全局）
+ *
+ * has-doc-demo 由根布局按 frontmatter.demo 注入：
+ * ≥1440px 视口在内容右侧展开「手机模拟器 | 页面导航」双列，二者 sticky 跟随滚动；
+ * 更窄视口回退为默认两栏（内容 | 页面导航），手机栏隐藏。
+ */
+
+/* 组件页代码块折叠按钮（onContentUpdated 注入到代码块内部） */
+.vp-doc div[class*='language-'] .vp-code-collapse {
+	position: absolute;
+	top: 8px;
+	left: 12px;
+	z-index: 2;
+	padding: 0 8px;
+	border: 1px solid var(--vp-c-divider);
+	border-radius: 4px;
+	background: var(--vp-c-bg-soft);
+	font-size: 12px;
+	line-height: 20px;
+	color: var(--vp-c-text-2);
+	cursor: pointer;
+	transition: color 0.25s, border-color 0.25s;
+}
+
+.vp-doc div[class*='language-'] .vp-code-collapse:hover {
+	color: var(--vp-c-brand-1);
+	border-color: var(--vp-c-brand-1);
+}
+
+/* 折叠态隐藏代码主体，保留操作条 */
+.vp-doc div[class*='language-'].collapsed pre {
+	display: none;
+}
+
+/* 演示手机栏：默认隐藏，≥1440px 展示 */
+.unix-layout.has-doc-demo .demo-phone {
+	display: none;
+}
+
+@media (min-width: 1440px) {
+	/* 展示手机栏并 sticky 跟随滚动（工具栏悬空于机身上方约 38px，需留出空间） */
+	.unix-layout.has-doc-demo .demo-phone {
+		display: block;
+		position: sticky;
+		top: calc(var(--vp-nav-height) + 48px);
+	}
+
+	/* 内容列取消 640px 下限，避免三栏溢出 */
+	.unix-layout.has-doc-demo .VPDoc .content {
+		min-width: 0;
+	}
+
+	/* aside 取消定宽，宽度交给内部网格内容 */
+	.unix-layout.has-doc-demo .VPDoc .aside {
+		flex-grow: 0;
+		max-width: none;
+	}
+
+	/* aside 滚动容器由 fixed 100vh 改为随页流式，配合子项 sticky */
+	.unix-layout.has-doc-demo .VPDoc .aside-container {
+		position: static;
+		width: auto;
+		height: auto;
+		padding-top: 0;
+		overflow: visible;
+	}
+
+	.unix-layout.has-doc-demo .VPDoc .aside-curtain {
+		display: none;
+	}
+
+	.unix-layout.has-doc-demo .VPDoc .aside-content {
+		display: block;
+		min-height: 0;
+	}
+
+	/* aside 内部双列网格：手机模拟器 | 页面导航 */
+	.unix-layout.has-doc-demo .VPDocAside {
+		display: grid;
+		grid-template-columns: max-content 200px;
+		column-gap: 20px;
+		align-items: start;
+	}
+
+	/* 占位元素跨全行，避免挤占第二列 */
+	.unix-layout.has-doc-demo .VPDocAside > .spacer {
+		grid-column: 1 / -1;
+	}
+
+	/* 页面导航 sticky 跟随滚动，超高时内部滚动 */
+	.unix-layout.has-doc-demo .VPDocAside .VPDocAsideOutline {
+		position: sticky;
+		top: calc(var(--vp-nav-height) + 16px);
+		max-height: calc(100vh - var(--vp-nav-height) - 32px);
+		overflow-y: auto;
+		scrollbar-width: none;
+	}
+}

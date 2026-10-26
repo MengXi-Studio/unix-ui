@@ -1,3 +1,7 @@
+---
+demo: pages-sub/icon/icon
+---
+
 # Icon
 
 A font-based icon set with 257 built-in icons, supporting custom color & size and click events.
@@ -12,7 +16,7 @@ Components follow the easycom convention and can be used without import. See [Ge
 
 `name` is a string union type `IconName` (IDE autocompletes all icon names; invalid names fail at compile time). The font file is bundled with the package (declarative `@font-face` loading) — zero configuration, works offline.
 
-```html
+```vue
 <mxi-icon name="chat-o" />
 ```
 
@@ -20,7 +24,7 @@ Components follow the easycom convention and can be used without import. See [Ge
 
 Use the `color` prop to customize the icon color (CSS color values are supported). When empty, the color is inherited from outer styles.
 
-```html
+```vue
 <mxi-icon name="star" size="24" color="#1989fa" />
 <mxi-icon name="star" size="24" color="#07c160" />
 ```
@@ -29,7 +33,7 @@ Use the `color` prop to customize the icon color (CSS color values are supported
 
 Use the `size` prop to customize the icon size. Pure numbers are treated as `px`; unit strings are used as-is. When empty, the font size is inherited from outer styles.
 
-```html
+```vue
 <mxi-icon name="chat-o" size="16" />
 <mxi-icon name="chat-o" size="24" />
 <mxi-icon name="chat-o" size="32" />
@@ -39,7 +43,7 @@ Use the `size` prop to customize the icon size. Pure numbers are treated as `px`
 
 Like the official uni-icons, the component renders a single `text` root node: without `color` / `size`, no inline styles are written, so `custom-class` / `custom-style` apply directly to the icon text — color, font-size and other text styles can be freely overridden.
 
-```html
+```vue
 <mxi-icon name="fire-o" custom-class="my-icon" />
 <mxi-icon name="fire-o" custom-style="color: #1989fa;" />
 ```
@@ -55,7 +59,7 @@ Like the official uni-icons, the component renders a single `text` root node: wi
 
 The `click` event is emitted when the icon is tapped.
 
-```html
+```vue
 <mxi-icon name="like" @click="onTap" />
 ```
 
@@ -66,7 +70,7 @@ Two ways to plug in your own icon font:
 - Override the root node's `font-family` via `custom-class` (together with your own font and codepoints, `!important` if needed);
 - Put arbitrary content into the `icon` slot (same as the Loading component).
 
-```html
+```vue
 <!-- Option 1: override font-family -->
 <mxi-icon name="star" custom-class="my-font-icon" />
 

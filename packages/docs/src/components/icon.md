@@ -1,3 +1,7 @@
+---
+demo: pages-sub/icon/icon
+---
+
 # Icon 图标
 
 基于字体图标的图标集，内置 257 个图标，支持颜色与大小自定义、点击事件。
@@ -12,7 +16,7 @@
 
 `name` 为字符串联合类型 `IconName`（IDE 自动提示全部图标名，写错编译期报错）。字体文件随包内置（`@font-face` 声明式加载），零配置、离线可用。
 
-```html
+```vue
 <mxi-icon name="chat-o" />
 ```
 
@@ -20,7 +24,7 @@
 
 通过 `color` 属性自定义图标颜色，支持 CSS 色值；为空时继承外部样式。
 
-```html
+```vue
 <mxi-icon name="star" size="24" color="#1989fa" />
 <mxi-icon name="star" size="24" color="#07c160" />
 ```
@@ -29,7 +33,7 @@
 
 通过 `size` 属性自定义图标大小，支持纯数字（自动补 `px`）或带单位字符串；为空时继承外部字号。
 
-```html
+```vue
 <mxi-icon name="chat-o" size="16" />
 <mxi-icon name="chat-o" size="24" />
 <mxi-icon name="chat-o" size="32" />
@@ -39,7 +43,7 @@
 
 与官方 uni-icons 一致，组件为单 `text` 根节点：未传 `color` / `size` 时无内联样式，`custom-class` / `custom-style` 直接作用于图标文本，可任意覆盖颜色、字号等文字样式。
 
-```html
+```vue
 <mxi-icon name="fire-o" custom-class="my-icon" />
 <mxi-icon name="fire-o" custom-style="color: #1989fa;" />
 ```
@@ -55,7 +59,7 @@
 
 点击图标时触发 `click` 事件。
 
-```html
+```vue
 <mxi-icon name="like" @click="onTap" />
 ```
 
@@ -66,7 +70,7 @@
 - `custom-class` 覆盖根节点 `font-family`（配合自有字体与码点，必要时配合 `!important`）；
 - `icon` 插槽放置任意内容（与 Loading 组件一致）。
 
-```html
+```vue
 <!-- 方式一：覆盖 font-family -->
 <mxi-icon name="star" custom-class="my-font-icon" />
 

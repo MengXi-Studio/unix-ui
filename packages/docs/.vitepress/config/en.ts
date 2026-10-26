@@ -72,10 +72,21 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					text: 'Basic Components',
 					items: [
 						{ text: 'Button', link: '/en/components/button' },
-						{ text: 'Loading', link: '/en/components/loading' },
+						{ text: 'Cell', link: '/en/components/cell' },
 						{ text: 'Icon', link: '/en/components/icon' },
-						{ text: 'Badge', link: '/en/components/badge' }
+						{ text: 'Image', link: '/en/components/image' },
+						{ text: 'Layout', link: '/en/components/layout' },
+						{ text: 'Text', link: '/en/components/text' },
+						{ text: 'Space', link: '/en/components/space' }
 					]
+				},
+				{
+					text: 'Feedback Components',
+					items: [{ text: 'Loading', link: '/en/components/loading' }]
+				},
+				{
+					text: 'Display Components',
+					items: [{ text: 'Badge', link: '/en/components/badge' }]
 				}
 			]
 		}

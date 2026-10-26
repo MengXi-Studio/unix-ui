@@ -85,10 +85,21 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					text: '基础组件',
 					items: [
 						{ text: 'Button 按钮', link: '/components/button' },
-						{ text: 'Loading 加载', link: '/components/loading' },
+						{ text: 'Cell 单元格', link: '/components/cell' },
 						{ text: 'Icon 图标', link: '/components/icon' },
-						{ text: 'Badge 徽标', link: '/components/badge' }
+						{ text: 'Image 图片', link: '/components/image' },
+						{ text: 'Layout 布局', link: '/components/layout' },
+						{ text: 'Text 文本', link: '/components/text' },
+						{ text: 'Space 间距', link: '/components/space' }
 					]
+				},
+				{
+					text: '反馈组件',
+					items: [{ text: 'Loading 加载', link: '/components/loading' }]
+				},
+				{
+					text: '展示组件',
+					items: [{ text: 'Badge 徽标', link: '/components/badge' }]
 				}
 			]
 		}

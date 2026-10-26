@@ -1,3 +1,7 @@
+---
+demo: pages-sub/loading/loading
+---
+
 # Loading
 
 The loading icon indicates a loading state of a page or operation. Two types are supported: circular arc ring and spinner petals.
@@ -10,7 +14,7 @@ The component follows the easycom convention and can be used without importing. 
 
 ### Basic Usage
 
-```html
+```vue
 <mxi-loading />
 ```
 
@@ -18,7 +22,7 @@ The component follows the easycom convention and can be used without importing. 
 
 Two types are supported: `circular` (arc ring, default) and `spinner` (petals).
 
-```html
+```vue
 <mxi-loading />
 <mxi-loading type="spinner" />
 ```
@@ -27,7 +31,7 @@ Two types are supported: `circular` (arc ring, default) and `spinner` (petals).
 
 Use the `color` prop to customize the icon color. Both CSS color values and semantic color names (`default` / `primary` / `success` / `warning` / `danger` / `white`) are supported; semantic names are bound to theme variables at compile time, so overriding the corresponding `$mxi-color-*` variables in `uni.scss` takes effect.
 
-```html
+```vue
 <mxi-loading color="#1989fa" />
 <mxi-loading type="spinner" color="#07c160" />
 <mxi-loading type="spinner" color="primary" />
@@ -37,7 +41,7 @@ Use the `color` prop to customize the icon color. Both CSS color values and sema
 
 Use the `size` prop to customize the icon size. Pure numbers (with `px` appended automatically), strings with units, or `100%` (filling an externally sized container) are supported; the default is `30px`.
 
-```html
+```vue
 <mxi-loading size="16" />
 <mxi-loading type="spinner" size="24" />
 ```
@@ -46,7 +50,7 @@ Use the `size` prop to customize the icon size. Pure numbers (with `px` appended
 
 Place the loading text in the default slot; use `vertical` to arrange the icon and text vertically.
 
-```html
+```vue
 <mxi-loading>Loading...</mxi-loading>
 <mxi-loading type="spinner" size="24" vertical>Loading...</mxi-loading>
 ```
@@ -55,7 +59,7 @@ Place the loading text in the default slot; use `vertical` to arrange the icon a
 
 Use the `text-size` and `text-color` props to customize the text font size and color.
 
-```html
+```vue
 <mxi-loading text-size="16" text-color="#1989fa">Loading...</mxi-loading>
 ```
 
@@ -63,7 +67,7 @@ Use the `text-size` and `text-color` props to customize the text font size and c
 
 Use the `icon` slot to replace the default icon; the replaced icon still rotates with the rhythm of the given `type`.
 
-```html
+```vue
 <mxi-loading>
 	<template #icon>
 		<text style="font-size: 24px;">❀</text>

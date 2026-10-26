@@ -8,11 +8,11 @@
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
-						<mxi-loading />
+						<m-loading />
 						<text class="caption">circular</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading type="spinner" />
+						<m-loading type="spinner" />
 						<text class="caption">spinner</text>
 					</view>
 				</view>
@@ -22,19 +22,19 @@
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
-						<mxi-loading color="#1989fa" />
+						<m-loading color="#1989fa" />
 						<text class="caption">primary</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading color="#07c160" />
+						<m-loading color="#07c160" />
 						<text class="caption">success</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading type="spinner" color="#ee0a24" />
+						<m-loading type="spinner" color="#ee0a24" />
 						<text class="caption">danger</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading type="spinner" color="#7232dd" />
+						<m-loading type="spinner" color="#7232dd" />
 						<text class="caption">purple</text>
 					</view>
 				</view>
@@ -44,19 +44,19 @@
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
-						<mxi-loading type="spinner" size="16" />
+						<m-loading type="spinner" size="16" />
 						<text class="caption">16</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading type="spinner" size="24" />
+						<m-loading type="spinner" size="24" />
 						<text class="caption">24</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading type="spinner" size="30" />
+						<m-loading type="spinner" size="30" />
 						<text class="caption">30</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading size="36" />
+						<m-loading size="36" />
 						<text class="caption">36</text>
 					</view>
 				</view>
@@ -66,15 +66,15 @@
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
-						<mxi-loading>加载中...</mxi-loading>
+						<m-loading>加载中...</m-loading>
 						<text class="caption">default</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading :vertical="true">加载中...</mxi-loading>
+						<m-loading :vertical="true">加载中...</m-loading>
 						<text class="caption">vertical</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading type="spinner" :vertical="true">加载中...</mxi-loading>
+						<m-loading type="spinner" :vertical="true">加载中...</m-loading>
 						<text class="caption">vertical+spinner</text>
 					</view>
 				</view>
@@ -84,11 +84,11 @@
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
-						<mxi-loading text-size="16" text-color="#1989fa">加载中...</mxi-loading>
+						<m-loading text-size="16" text-color="#1989fa">加载中...</m-loading>
 						<text class="caption">text-size/color</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading type="spinner" :vertical="true" text-size="12" text-color="#ee0a24">加载中...</mxi-loading>
+						<m-loading type="spinner" :vertical="true" text-size="12" text-color="#ee0a24">加载中...</m-loading>
 						<text class="caption">vertical+text</text>
 					</view>
 				</view>
@@ -98,19 +98,19 @@
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
-						<mxi-loading color="primary" />
+						<m-loading color="primary" />
 						<text class="caption">primary</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading color="success" />
+						<m-loading color="success" />
 						<text class="caption">success</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading type="spinner" color="danger" />
+						<m-loading type="spinner" color="danger" />
 						<text class="caption">danger</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading type="spinner" color="white" custom-style="background-color: #1989fa; border-radius: 4px; padding: 4px;" />
+						<m-loading type="spinner" color="white" custom-style="background-color: #1989fa; border-radius: 4px; padding: 4px;" />
 						<text class="caption">white</text>
 					</view>
 				</view>
@@ -120,20 +120,20 @@
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
-						<mxi-loading color="#1989fa">
+						<m-loading color="#1989fa">
 							<template #icon>
 								<text class="icon-demo">❀</text>
 							</template>
-						</mxi-loading>
+						</m-loading>
 						<text class="caption">icon 插槽</text>
 					</view>
 					<view class="col-gap">
-						<mxi-loading type="spinner" :vertical="true">
+						<m-loading type="spinner" :vertical="true">
 							<template #icon>
 								<text class="icon-demo">✿</text>
 							</template>
 							加载中...
-						</mxi-loading>
+						</m-loading>
 						<text class="caption">icon+文案</text>
 					</view>
 				</view>

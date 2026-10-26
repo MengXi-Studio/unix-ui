@@ -5,20 +5,20 @@ demo: pages-sub/layout/layout
 
 ## Introduction
 
-The layout component implements page columns through the 24-grid system of `mxi-row` and `mxi-col`, supporting column spacing, offsets, alignment and wrapping.
+The layout component implements page columns through the 24-grid system of `m-row` and `m-col`, supporting column spacing, offsets, alignment and wrapping.
 
 ## Examples
 
 ### Basic Usage {#demo-basic}
 
-`mxi-row` is a horizontal row container and `mxi-col` is a column element. Use `span` to set the column width as a share of the 24-grid.
+`m-row` is a horizontal row container and `m-col` is a column element. Use `span` to set the column width as a share of the 24-grid.
 
 ```vue
-<mxi-row>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-</mxi-row>
+<m-row>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+</m-row>
 ```
 
 ### 24 Grid
@@ -26,11 +26,11 @@ The layout component implements page columns through the 24-grid system of `mxi-
 `span` ranges from 1 to 24; columns wrap automatically when the sum of spans in a row exceeds 24. When `span` is 0 or not set, the column width is determined by its content.
 
 ```vue
-<mxi-row>
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-	<mxi-col span="12"><view class="demo-block">span: 12</view></mxi-col>
-</mxi-row>
+<m-row>
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+	<m-col span="12"><view class="demo-block">span: 12</view></m-col>
+</m-row>
 ```
 
 ### Column Spacing {#demo-gutter}
@@ -38,11 +38,11 @@ The layout component implements page columns through the 24-grid system of `mxi-
 The `gutter` attribute sets the spacing between columns (px), and supports an array `[horizontal, vertical]` for the row spacing after wrapping. The column spacing is implemented with padding, so if the column content needs a background color, set it on an inner element of the Col and keep the Col itself transparent to show the gaps.
 
 ```vue
-<mxi-row gutter="20">
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-</mxi-row>
+<m-row gutter="20">
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+</m-row>
 ```
 
 ### Offset
@@ -50,10 +50,10 @@ The `gutter` attribute sets the spacing between columns (px), and supports an ar
 The `offset` attribute sets the number of offset columns to the left of a column, calculated the same way as `span`.
 
 ```vue
-<mxi-row>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-	<mxi-col span="8" offset="8"><view class="demo-block">span: 8</view></mxi-col>
-</mxi-row>
+<m-row>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+	<m-col span="8" offset="8"><view class="demo-block">span: 8</view></m-col>
+</m-row>
 ```
 
 ### Alignment {#demo-align}
@@ -61,14 +61,14 @@ The `offset` attribute sets the number of offset columns to the left of a column
 The `justify` attribute sets the main-axis alignment, can be set to `start` `end` `center` `space-around` `space-between`. The default is `start`. The `align` attribute sets the cross-axis alignment, can be set to `top` `center` `bottom`. The default is `top`.
 
 ```vue
-<mxi-row justify="center">
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-</mxi-row>
-<mxi-row align="bottom">
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-</mxi-row>
+<m-row justify="center">
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+</m-row>
+<m-row align="bottom">
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+</m-row>
 ```
 
 ### Wrapping {#demo-wrap}
@@ -76,13 +76,13 @@ The `justify` attribute sets the main-axis alignment, can be set to `start` `end
 The `wrap` attribute is enabled by default, so columns wrap naturally when the sum of spans exceeds 24; disable it to keep one line.
 
 ```vue
-<mxi-row :gutter="[10, 10]">
-	<mxi-col span="6"><view class="demo-block">1</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">2</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">3</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">4</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">5</view></mxi-col>
-</mxi-row>
+<m-row :gutter="[10, 10]">
+	<m-col span="6"><view class="demo-block">1</view></m-col>
+	<m-col span="6"><view class="demo-block">2</view></m-col>
+	<m-col span="6"><view class="demo-block">3</view></m-col>
+	<m-col span="6"><view class="demo-block">4</view></m-col>
+	<m-col span="6"><view class="demo-block">5</view></m-col>
+</m-row>
 ```
 
 ## API

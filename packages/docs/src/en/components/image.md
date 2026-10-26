@@ -14,9 +14,9 @@ The image component wraps the native image with enhancements: native capabilitie
 `src` is the required image URL. Without a size, the default width is 100% and the default height is 240px. `width` and `height` accept a string (used as is, supporting % and other units) and a number (px is appended automatically).
 
 ```vue
-<mxi-image src="https://cdn.example.com/demo.jpg" />
-<mxi-image src="https://cdn.example.com/demo.jpg" width="160px" height="160px" />
-<mxi-image src="https://cdn.example.com/demo.jpg" :width="120" :height="120" />
+<m-image src="https://cdn.example.com/demo.jpg" />
+<m-image src="https://cdn.example.com/demo.jpg" width="160px" height="160px" />
+<m-image src="https://cdn.example.com/demo.jpg" :width="120" :height="120" />
 ```
 
 ### Fill Mode {#demo-mode}
@@ -24,9 +24,9 @@ The image component wraps the native image with enhancements: native capabilitie
 Use the `mode` attribute to set the crop and scale mode, passed through with the same name as the native image mode. The default is `aspectFill` (crop to fill, keeping the aspect ratio).
 
 ```vue
-<mxi-image src="https://cdn.example.com/demo.jpg" width="110px" height="110px" mode="scaleToFill" />
-<mxi-image src="https://cdn.example.com/demo.jpg" width="110px" height="110px" mode="aspectFit" />
-<mxi-image src="https://cdn.example.com/demo.jpg" width="110px" height="110px" mode="widthFix" />
+<m-image src="https://cdn.example.com/demo.jpg" width="110px" height="110px" mode="scaleToFill" />
+<m-image src="https://cdn.example.com/demo.jpg" width="110px" height="110px" mode="aspectFit" />
+<m-image src="https://cdn.example.com/demo.jpg" width="110px" height="110px" mode="widthFix" />
 ```
 
 ### Border Radius and Round {#demo-radius}
@@ -34,9 +34,9 @@ Use the `mode` attribute to set the crop and scale mode, passed through with the
 Use the `radius` attribute to set the border radius, and the `round` attribute to render a circle (taking precedence over `radius`).
 
 ```vue
-<mxi-image src="https://cdn.example.com/demo.jpg" width="80px" height="80px" round />
-<mxi-image src="https://cdn.example.com/demo.jpg" width="80px" height="80px" radius="8" />
-<mxi-image src="https://cdn.example.com/demo.jpg" width="80px" height="80px" radius="16" />
+<m-image src="https://cdn.example.com/demo.jpg" width="80px" height="80px" round />
+<m-image src="https://cdn.example.com/demo.jpg" width="80px" height="80px" radius="8" />
+<m-image src="https://cdn.example.com/demo.jpg" width="80px" height="80px" radius="16" />
 ```
 
 ### Loading and Error Placeholder {#demo-loading}
@@ -44,9 +44,9 @@ Use the `radius` attribute to set the border radius, and the `round` attribute t
 A placeholder icon is shown by default while loading and on failure. Use `loading-icon` and `error-icon` to customize the placeholder icons, and `icon-size` to set their size. Use `show-loading` and `show-error` to disable the placeholders, and the `loading` and `error` slots for custom placeholder content.
 
 ```vue
-<mxi-image src="https://cdn.example.com/nonexistent.jpg" width="110px" height="110px" />
-<mxi-image src="https://cdn.example.com/nonexistent.jpg" width="110px" height="110px" error-icon="photo-o" />
-<mxi-image src="https://cdn.example.com/nonexistent.jpg" width="110px" height="110px" :show-error="false" />
+<m-image src="https://cdn.example.com/nonexistent.jpg" width="110px" height="110px" />
+<m-image src="https://cdn.example.com/nonexistent.jpg" width="110px" height="110px" error-icon="photo-o" />
+<m-image src="https://cdn.example.com/nonexistent.jpg" width="110px" height="110px" :show-error="false" />
 ```
 
 ### Lazy Load and Fade In {#demo-lazy}
@@ -54,8 +54,8 @@ A placeholder icon is shown by default while loading and on failure. Use `loadin
 `lazy-load` is passed through to the native attribute, effective only under page and scroll-view. When `fade` is enabled, the image fades in over 300ms after loading; it is enabled by default, and switching the image resets to the loading state automatically.
 
 ```vue
-<mxi-image src="https://cdn.example.com/demo.jpg" width="130px" height="130px" lazy-load />
-<mxi-image src="https://cdn.example.com/demo.jpg" width="130px" height="130px" :fade="false" />
+<m-image src="https://cdn.example.com/demo.jpg" width="130px" height="130px" lazy-load />
+<m-image src="https://cdn.example.com/demo.jpg" width="130px" height="130px" :fade="false" />
 ```
 
 ## API
@@ -102,7 +102,7 @@ Image styles can be customized with the following SCSS variables (define them di
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| $mxi-image-background | Loading and error placeholder background color | #f7f8fa |
-| $mxi-image-icon-color | Placeholder icon color | #dcdee0 |
+| $m-image-background | Loading and error placeholder background color | #f7f8fa |
+| $m-image-icon-color | Placeholder icon color | #dcdee0 |
 
 See [Theming](/en/guide/theming) for the full variable list and override instructions.

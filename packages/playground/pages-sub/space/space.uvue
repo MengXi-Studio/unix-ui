@@ -6,70 +6,70 @@
 		<view class="container">
 			<text class="section" id="basic">基础用法</text>
 			<view class="card">
-				<mxi-space>
-					<mxi-button type="primary">按钮</mxi-button>
-					<mxi-button type="primary">按钮</mxi-button>
-					<mxi-button type="primary">按钮</mxi-button>
-					<mxi-button type="primary">按钮</mxi-button>
-				</mxi-space>
-				<text class="caption">默认 8px 间距（$mxi-space-size 主题变量）</text>
+				<m-space>
+					<m-button type="primary">按钮</m-button>
+					<m-button type="primary">按钮</m-button>
+					<m-button type="primary">按钮</m-button>
+					<m-button type="primary">按钮</m-button>
+				</m-space>
+				<text class="caption">默认 8px 间距（$m-space-size 主题变量）</text>
 			</view>
 
 			<text class="section" id="vertical">垂直排列</text>
 			<view class="card">
-				<mxi-space direction="vertical" fill>
-					<mxi-button type="primary" block>按钮</mxi-button>
-					<mxi-button type="primary" block>按钮</mxi-button>
-					<mxi-button type="primary" block>按钮</mxi-button>
-				</mxi-space>
+				<m-space direction="vertical" fill>
+					<m-button type="primary" block>按钮</m-button>
+					<m-button type="primary" block>按钮</m-button>
+					<m-button type="primary" block>按钮</m-button>
+				</m-space>
 				<text class="caption">direction vertical + fill 填充父元素</text>
 			</view>
 
 			<text class="section" id="custom">自定义间距</text>
 			<view class="card">
-				<mxi-space :size="20">
-					<mxi-button type="primary">按钮</mxi-button>
-					<mxi-button type="primary">按钮</mxi-button>
-					<mxi-button type="primary">按钮</mxi-button>
-				</mxi-space>
+				<m-space :size="20">
+					<m-button type="primary">按钮</m-button>
+					<m-button type="primary">按钮</m-button>
+					<m-button type="primary">按钮</m-button>
+				</m-space>
 				<text class="caption">size 20（number 补 px）</text>
-				<mxi-space size="12px">
-					<mxi-button type="primary">按钮</mxi-button>
-					<mxi-button type="primary">按钮</mxi-button>
-					<mxi-button type="primary">按钮</mxi-button>
-				</mxi-space>
+				<m-space size="12px">
+					<m-button type="primary">按钮</m-button>
+					<m-button type="primary">按钮</m-button>
+					<m-button type="primary">按钮</m-button>
+				</m-space>
 				<text class="caption">size '12px'（string 原样）</text>
-				<mxi-space :size="[20, 8]" wrap>
-					<mxi-button v-for="i in 8" :key="i" type="primary">按钮{{ i }}</mxi-button>
-				</mxi-space>
+				<m-space :size="[20, 8]" wrap>
+					<m-button v-for="i in 8" :key="i" type="primary">按钮{{ i }}</m-button>
+				</m-space>
 				<text class="caption">size [20, 8] 数组：横向 20 / 换行后纵向 8</text>
 			</view>
 
 			<text class="section" id="align">对齐方式</text>
 			<view class="card">
 				<view class="align-box">
-					<mxi-space align="start">
-						<mxi-button size="small" type="primary">start</mxi-button>
+					<m-space align="start">
+						<m-button size="small" type="primary">start</m-button>
 						<view class="tall-block"></view>
-					</mxi-space>
+					</m-space>
 				</view>
 				<view class="align-box">
-					<mxi-space align="center">
-						<mxi-button size="small" type="primary">center</mxi-button>
+					<m-space align="center">
+						<m-button size="small" type="primary">center</m-button>
 						<view class="tall-block"></view>
-					</mxi-space>
+					</m-space>
 				</view>
 				<view class="align-box">
-					<mxi-space align="end">
-						<mxi-button size="small" type="primary">end</mxi-button>
+					<m-space align="end">
+						<m-button size="small" type="primary">end</m-button>
 						<view class="tall-block"></view>
-					</mxi-space>
+					</m-space>
 				</view>
 				<view class="align-box">
-					<mxi-space align="baseline">
-						<mxi-button size="small" type="primary">baseline</mxi-button>
-						<mxi-text size="large">基线文本</mxi-text>
-					</mxi-space>
+					<m-space align="baseline">
+						<m-button size="small" type="primary">baseline</m-button>
+						<m-text size="large">基线文本</m-text>
+					</m-space>
 				</view>
 				<text class="caption">align start / center / end / baseline（水平模式默认 center）</text>
 			</view>
@@ -77,20 +77,20 @@
 			<text class="section" id="wrap">自动换行</text>
 			<view class="card">
 				<view class="wrap-box">
-					<mxi-space wrap>
-						<mxi-button v-for="i in 10" :key="i" type="primary">按钮{{ i }}</mxi-button>
-					</mxi-space>
+					<m-space wrap>
+						<m-button v-for="i in 10" :key="i" type="primary">按钮{{ i }}</m-button>
+					</m-space>
 				</view>
 				<text class="caption">wrap 换行，默认 8px 行间距</text>
 			</view>
 
 			<text class="section">组合</text>
 			<view class="card">
-				<mxi-space direction="vertical" :size="[4, 12]" fill>
-					<mxi-button type="primary" block>按钮一</mxi-button>
-					<mxi-button type="primary" block>按钮二</mxi-button>
-					<mxi-button type="primary" block>按钮三</mxi-button>
-				</mxi-space>
+				<m-space direction="vertical" :size="[4, 12]" fill>
+					<m-button type="primary" block>按钮一</m-button>
+					<m-button type="primary" block>按钮二</m-button>
+					<m-button type="primary" block>按钮三</m-button>
+				</m-space>
 				<text class="caption">vertical + size [4, 12]（垂直取第一个值 4px 作主轴间距，第二个值忽略）+ fill</text>
 			</view>
 		</view>

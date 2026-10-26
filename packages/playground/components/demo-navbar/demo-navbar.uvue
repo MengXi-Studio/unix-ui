@@ -3,7 +3,7 @@
 	<view v-if="!embedded" class="navbar" :style="'padding-top:' + statusBarHeight + 'px'">
 		<view class="navbar-body">
 			<view class="navbar-side" @click="onBack">
-				<mxi-icon name="arrow-left" size="18" color="#1a1a1a" />
+				<m-icon name="arrow-left" size="18" color="#1a1a1a" />
 			</view>
 			<view class="navbar-center">
 				<text class="navbar-title">{{ title }}</text>

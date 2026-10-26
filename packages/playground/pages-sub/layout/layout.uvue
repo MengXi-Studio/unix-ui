@@ -6,104 +6,104 @@
 		<view class="container">
 			<text class="section" id="basic">基础用法</text>
 			<view class="card">
-				<mxi-row custom-class="demo-row">
-					<mxi-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></mxi-col>
-					<mxi-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></mxi-col>
-					<mxi-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></mxi-col>
-				</mxi-row>
-				<mxi-row custom-class="demo-row">
-					<mxi-col span="4"><view class="col-block"><text class="col-text">span: 4</text></view></mxi-col>
-					<mxi-col span="10" offset="4"><view class="col-block"><text class="col-text">span: 10 offset: 4</text></view></mxi-col>
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-				</mxi-row>
-				<mxi-row>
-					<mxi-col span="12" offset="12"><view class="col-block"><text class="col-text">span: 12 offset: 12</text></view></mxi-col>
-				</mxi-row>
+				<m-row custom-class="demo-row">
+					<m-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></m-col>
+					<m-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></m-col>
+					<m-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></m-col>
+				</m-row>
+				<m-row custom-class="demo-row">
+					<m-col span="4"><view class="col-block"><text class="col-text">span: 4</text></view></m-col>
+					<m-col span="10" offset="4"><view class="col-block"><text class="col-text">span: 10 offset: 4</text></view></m-col>
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+				</m-row>
+				<m-row>
+					<m-col span="12" offset="12"><view class="col-block"><text class="col-text">span: 12 offset: 12</text></view></m-col>
+				</m-row>
 				<text class="caption">24 栅格：span 设置列宽份数，offset 设置左侧偏移份数</text>
 			</view>
 
 			<text class="section" id="gutter">设置列元素间距</text>
 			<view class="card">
-				<mxi-row gutter="20">
-					<mxi-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></mxi-col>
-					<mxi-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></mxi-col>
-					<mxi-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></mxi-col>
-				</mxi-row>
+				<m-row gutter="20">
+					<m-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></m-col>
+					<m-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></m-col>
+					<m-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></m-col>
+				</m-row>
 				<text class="caption">gutter 20：每缝恰 20px，首尾列与容器边缘对齐（色块为 col 内层元素，col 的 gutter padding 保持透明）</text>
 			</view>
 
 			<text class="section">垂直间距</text>
 			<view class="card">
-				<mxi-row :gutter="[20, 20]">
-					<mxi-col v-for="i in 4" :key="i" span="12">
+				<m-row :gutter="[20, 20]">
+					<m-col v-for="i in 4" :key="i" span="12">
 						<view class="col-block"><text class="col-text">span: 12</text></view>
-					</mxi-col>
-				</mxi-row>
+					</m-col>
+				</m-row>
 				<text class="caption">gutter 数组 [水平, 垂直]：换行后行间距 20px（末行不加）</text>
 			</view>
 
 			<text class="section" id="align">主轴对齐</text>
 			<view class="card">
-				<mxi-row justify="center" custom-class="demo-row">
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-				</mxi-row>
-				<mxi-row justify="end" custom-class="demo-row">
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-				</mxi-row>
-				<mxi-row justify="space-between" custom-class="demo-row">
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-				</mxi-row>
-				<mxi-row justify="space-around">
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-					<mxi-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></mxi-col>
-				</mxi-row>
+				<m-row justify="center" custom-class="demo-row">
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+				</m-row>
+				<m-row justify="end" custom-class="demo-row">
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+				</m-row>
+				<m-row justify="space-between" custom-class="demo-row">
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+				</m-row>
+				<m-row justify="space-around">
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+					<m-col span="6"><view class="col-block"><text class="col-text">span: 6</text></view></m-col>
+				</m-row>
 				<text class="caption">justify center / end / space-between / space-around</text>
 			</view>
 
 			<text class="section">交叉轴对齐</text>
 			<view class="card">
-				<mxi-row align="top" custom-class="demo-row">
-					<mxi-col span="8"><view class="col-block col-tall"><text class="col-text">top</text></view></mxi-col>
-					<mxi-col span="8"><view class="col-block col-short"><text class="col-text">top</text></view></mxi-col>
-				</mxi-row>
-				<mxi-row align="center" custom-class="demo-row">
-					<mxi-col span="8"><view class="col-block col-tall"><text class="col-text">center</text></view></mxi-col>
-					<mxi-col span="8"><view class="col-block col-short"><text class="col-text">center</text></view></mxi-col>
-				</mxi-row>
-				<mxi-row align="bottom">
-					<mxi-col span="8"><view class="col-block col-tall"><text class="col-text">bottom</text></view></mxi-col>
-					<mxi-col span="8"><view class="col-block col-short"><text class="col-text">bottom</text></view></mxi-col>
-				</mxi-row>
+				<m-row align="top" custom-class="demo-row">
+					<m-col span="8"><view class="col-block col-tall"><text class="col-text">top</text></view></m-col>
+					<m-col span="8"><view class="col-block col-short"><text class="col-text">top</text></view></m-col>
+				</m-row>
+				<m-row align="center" custom-class="demo-row">
+					<m-col span="8"><view class="col-block col-tall"><text class="col-text">center</text></view></m-col>
+					<m-col span="8"><view class="col-block col-short"><text class="col-text">center</text></view></m-col>
+				</m-row>
+				<m-row align="bottom">
+					<m-col span="8"><view class="col-block col-tall"><text class="col-text">bottom</text></view></m-col>
+					<m-col span="8"><view class="col-block col-short"><text class="col-text">bottom</text></view></m-col>
+				</m-row>
 				<text class="caption">align top / center / bottom（top 为默认值）</text>
 			</view>
 
 			<text class="section" id="wrap">换行与组合</text>
 			<view class="card">
-				<mxi-row :gutter="[10, 10]">
-					<mxi-col v-for="i in 10" :key="i" span="6">
+				<m-row :gutter="[10, 10]">
+					<m-col v-for="i in 10" :key="i" span="6">
 						<view class="col-block"><text class="col-text">{{ i }}</text></view>
-					</mxi-col>
-				</mxi-row>
+					</m-col>
+				</m-row>
 				<text class="caption">10 个 span 6 超 24 自然换行，gutter [10, 10] 水平垂直间距组合</text>
 			</view>
 
 			<text class="section">点击事件</text>
 			<view class="card">
-				<mxi-row custom-class="demo-row" @click="onRowClick">
-					<mxi-col span="12" @click="onColClick">
+				<m-row custom-class="demo-row" @click="onRowClick">
+					<m-col span="12" @click="onColClick">
 						<view class="col-block col-dark"><text class="col-text col-text--light">点击 col</text></view>
-					</mxi-col>
-					<mxi-col span="12">
+					</m-col>
+					<m-col span="12">
 						<view class="col-block"><text class="col-text">点击 row 空白处</text></view>
-					</mxi-col>
-				</mxi-row>
+					</m-col>
+				</m-row>
 				<text class="caption">row / col 均派发 click 事件（col 回调内 stopPropagation 隔离冒泡演示）</text>
 			</view>
 		</view>

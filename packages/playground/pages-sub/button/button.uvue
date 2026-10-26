@@ -8,19 +8,19 @@
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">
-						<mxi-button type="primary" @click="onButtonClick('primary')">主要按钮</mxi-button>
+						<m-button type="primary" @click="onButtonClick('primary')">主要按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="success" @click="onButtonClick('success')">成功按钮</mxi-button>
+						<m-button type="success" @click="onButtonClick('success')">成功按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="danger" @click="onButtonClick('danger')">危险按钮</mxi-button>
+						<m-button type="danger" @click="onButtonClick('danger')">危险按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="warning" @click="onButtonClick('warning')">警告按钮</mxi-button>
+						<m-button type="warning" @click="onButtonClick('warning')">警告按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="default" @click="onButtonClick('default')">默认按钮</mxi-button>
+						<m-button type="default" @click="onButtonClick('default')">默认按钮</m-button>
 					</view>
 				</view>
 			</view>
@@ -29,16 +29,16 @@
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">
-						<mxi-button type="primary" size="large" @click="onButtonClick('large')">大号按钮</mxi-button>
+						<m-button type="primary" size="large" @click="onButtonClick('large')">大号按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" size="normal" @click="onButtonClick('normal')">普通按钮</mxi-button>
+						<m-button type="primary" size="normal" @click="onButtonClick('normal')">普通按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" size="small" @click="onButtonClick('small')">小型按钮</mxi-button>
+						<m-button type="primary" size="small" @click="onButtonClick('small')">小型按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" size="mini" @click="onButtonClick('mini')">迷你按钮</mxi-button>
+						<m-button type="primary" size="mini" @click="onButtonClick('mini')">迷你按钮</m-button>
 					</view>
 				</view>
 			</view>
@@ -47,22 +47,22 @@
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">
-						<mxi-button type="primary" :plain="true" @click="onButtonClick('plain')">朴素按钮</mxi-button>
+						<m-button type="primary" :plain="true" @click="onButtonClick('plain')">朴素按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="success" :plain="true" @click="onButtonClick('plain-success')">朴素成功</mxi-button>
+						<m-button type="success" :plain="true" @click="onButtonClick('plain-success')">朴素成功</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" :round="true" @click="onButtonClick('round')">圆形按钮</mxi-button>
+						<m-button type="primary" :round="true" @click="onButtonClick('round')">圆形按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" :square="true" @click="onButtonClick('square')">方形按钮</mxi-button>
+						<m-button type="primary" :square="true" @click="onButtonClick('square')">方形按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="danger" :plain="true" :hairline="true" @click="onButtonClick('plain-hairline')">朴素细边框</mxi-button>
+						<m-button type="danger" :plain="true" :hairline="true" @click="onButtonClick('plain-hairline')">朴素细边框</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" :plain="true" :hairline="true" :round="true" @click="onButtonClick('plain-hairline-round')">细边框圆角</mxi-button>
+						<m-button type="primary" :plain="true" :hairline="true" :round="true" @click="onButtonClick('plain-hairline-round')">细边框圆角</m-button>
 					</view>
 				</view>
 			</view>
@@ -70,10 +70,10 @@
 			<text class="section" id="block">块级元素</text>
 			<view class="card">
 				<view class="block-gap">
-					<mxi-button type="primary" :block="true" @click="onButtonClick('block')">块级按钮</mxi-button>
+					<m-button type="primary" :block="true" @click="onButtonClick('block')">块级按钮</m-button>
 				</view>
 				<view class="block-gap">
-					<mxi-button type="danger" :block="true" :round="true" @click="onButtonClick('block-round')">块级圆角按钮</mxi-button>
+					<m-button type="danger" :block="true" :round="true" @click="onButtonClick('block-round')">块级圆角按钮</m-button>
 				</view>
 			</view>
 
@@ -81,10 +81,10 @@
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">
-						<mxi-button type="primary" :disabled="true" @click="onButtonClick('disabled')">禁用状态</mxi-button>
+						<m-button type="primary" :disabled="true" @click="onButtonClick('disabled')">禁用状态</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" :plain="true" :disabled="true" @click="onButtonClick('disabled-plain')">禁用朴素</mxi-button>
+						<m-button type="primary" :plain="true" :disabled="true" @click="onButtonClick('disabled-plain')">禁用朴素</m-button>
 					</view>
 				</view>
 			</view>
@@ -93,19 +93,19 @@
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">
-						<mxi-button type="primary" :loading="true" @click="onButtonClick('loading')">加载中</mxi-button>
+						<m-button type="primary" :loading="true" @click="onButtonClick('loading')">加载中</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" :loading="true" loading-text="加载中..." @click="onButtonClick('loading-text')">加载文字</mxi-button>
+						<m-button type="primary" :loading="true" loading-text="加载中..." @click="onButtonClick('loading-text')">加载文字</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" :loading="true" loading-type="circular" @click="onButtonClick('loading-circular')">圆环加载</mxi-button>
+						<m-button type="primary" :loading="true" loading-type="circular" @click="onButtonClick('loading-circular')">圆环加载</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" :loading="true" loading-type="spinner" @click="onButtonClick('loading-spinner')">花瓣加载</mxi-button>
+						<m-button type="primary" :loading="true" loading-type="spinner" @click="onButtonClick('loading-spinner')">花瓣加载</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button type="primary" :loading="demoLoading" @click="toggleLoading">点击模拟加载</mxi-button>
+						<m-button type="primary" :loading="demoLoading" @click="toggleLoading">点击模拟加载</m-button>
 					</view>
 				</view>
 			</view>
@@ -114,13 +114,13 @@
 			<view class="card">
 				<view class="row">
 					<view class="row-gap">
-						<mxi-button color="#7232dd" @click="onButtonClick('color')">单色按钮</mxi-button>
+						<m-button color="#7232dd" @click="onButtonClick('color')">单色按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button color="linear-gradient(to right, #ff6034, #ee0a24)" @click="onButtonClick('color-gradient')">渐变按钮</mxi-button>
+						<m-button color="linear-gradient(to right, #ff6034, #ee0a24)" @click="onButtonClick('color-gradient')">渐变按钮</m-button>
 					</view>
 					<view class="row-gap">
-						<mxi-button color="#7232dd" :plain="true" @click="onButtonClick('color-plain')">彩色朴素</mxi-button>
+						<m-button color="#7232dd" :plain="true" @click="onButtonClick('color-plain')">彩色朴素</m-button>
 					</view>
 				</view>
 			</view>

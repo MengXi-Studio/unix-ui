@@ -8,12 +8,12 @@ unix-ui 的主题由 SCSS 变量驱动，**默认主题开箱即用**（组件�
 
 ```scss
 // 自定义主题色（对全部组件生效）
-$mxi-color-primary: #10b981;
-$mxi-color-danger: #dc2626;
+$m-color-primary: #10b981;
+$m-color-danger: #dc2626;
 
 // 定制组件规格
-$mxi-button-normal-height: 48px;
-$mxi-radius-md: 12px;
+$m-button-normal-height: 48px;
+$m-radius-md: 12px;
 ```
 
 变量文件全部使用 `!default` 定义，用户定义值始终优先于组件默认值，与定义书写位置无关。
@@ -40,23 +40,23 @@ $mxi-radius-md: 12px;
 
 | 变量 | 说明 | 默认值 |
 | --- | --- | --- |
-| $mxi-color-primary | 主要色 | #1989fa |
-| $mxi-color-success | 成功色 | #07c160 |
-| $mxi-color-warning | 警告色 | #ff976a |
-| $mxi-color-danger | 危险色 | #ee0a24 |
-| $mxi-white | 基础白色 | #ffffff |
-| $mxi-text-color | 基础文字色 | #323233 |
-| $mxi-disabled-opacity | 禁用透明度 | 0.5 |
-| $mxi-color-default-bg | default 类型背景色 | #ffffff |
-| $mxi-color-default-border | default 类型边框色 | #ebedf0 |
+| $m-color-primary | 主要色 | #1989fa |
+| $m-color-success | 成功色 | #07c160 |
+| $m-color-warning | 警告色 | #ff976a |
+| $m-color-danger | 危险色 | #ee0a24 |
+| $m-white | 基础白色 | #ffffff |
+| $m-text-color | 基础文字色 | #323233 |
+| $m-disabled-opacity | 禁用透明度 | 0.5 |
+| $m-color-default-bg | default 类型背景色 | #ffffff |
+| $m-color-default-border | default 类型边框色 | #ebedf0 |
 
 ### 基础规格
 
 | 变量 | 说明 | 默认值 |
 | --- | --- | --- |
-| $mxi-border-width | 基础边框宽度 | 1px |
-| $mxi-radius-md | 基础圆角 | 8px |
-| $mxi-radius-max | 全圆角 | 999px |
+| $m-border-width | 基础边框宽度 | 1px |
+| $m-radius-md | 基础圆角 | 8px |
+| $m-radius-max | 全圆角 | 999px |
 
 ### Button 按钮
 

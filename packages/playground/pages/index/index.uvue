@@ -13,7 +13,7 @@
 
 				<!-- 搜索框 -->
 				<view class="search">
-					<mxi-icon name="search" size="16" color="#999999" />
+					<m-icon name="search" size="16" color="#999999" />
 					<input
 						class="search-input"
 						:value="keyword"
@@ -40,7 +40,7 @@
 								</view>
 								<text class="item-desc">{{ comp.desc }}</text>
 							</view>
-							<mxi-icon name="arrow" size="14" color="#c8c9cc" />
+							<m-icon name="arrow" size="14" color="#c8c9cc" />
 						</view>
 					</view>
 				</view>

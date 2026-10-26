@@ -10,7 +10,7 @@ Components follow the easycom convention — use them directly in templates with
 
 ```html
 <template>
-	<mxi-button type="primary" @click="onClick">Primary Button</mxi-button>
+	<m-button type="primary" @click="onClick">Primary Button</m-button>
 </template>
 
 <script setup lang="uts">
@@ -25,28 +25,28 @@ Components follow the easycom convention — use them directly in templates with
 ### Types and Sizes
 
 ```html
-<mxi-button type="primary">Primary</mxi-button>
-<mxi-button type="danger" size="large">Large Danger</mxi-button>
-<mxi-button type="success" size="small">Small Success</mxi-button>
+<m-button type="primary">Primary</m-button>
+<m-button type="danger" size="large">Large Danger</m-button>
+<m-button type="success" size="small">Small Success</m-button>
 ```
 
 ### States
 
 ```html
 <!-- Loading: click is suppressed, the icon spins automatically -->
-<mxi-button type="primary" loading loading-text="Submitting..." />
+<m-button type="primary" loading loading-text="Submitting..." />
 
 <!-- Disabled: click is suppressed -->
-<mxi-button type="primary" disabled>Disabled</mxi-button>
+<m-button type="primary" disabled>Disabled</m-button>
 ```
 
 ### Dynamic Loading
 
 ```html
 <template>
-	<mxi-button type="primary" :loading="loading" @click="submit">
+	<m-button type="primary" :loading="loading" @click="submit">
 		Submit
-	</mxi-button>
+	</m-button>
 </template>
 
 <script setup lang="uts">

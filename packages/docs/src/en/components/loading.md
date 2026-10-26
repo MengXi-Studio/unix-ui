@@ -12,7 +12,7 @@ The loading icon indicates a loading state of a page or operation. Two types are
 ### Basic Usage
 
 ```vue
-<mxi-loading />
+<m-loading />
 ```
 
 ### Type {#demo-type}
@@ -20,18 +20,18 @@ The loading icon indicates a loading state of a page or operation. Two types are
 Two types are supported: `circular` (arc ring, default) and `spinner` (petals).
 
 ```vue
-<mxi-loading />
-<mxi-loading type="spinner" />
+<m-loading />
+<m-loading type="spinner" />
 ```
 
 ### Custom Color {#demo-color}
 
-Use the `color` prop to customize the icon color. Both CSS color values and semantic color names (`default` / `primary` / `success` / `warning` / `danger` / `white`) are supported; semantic names are bound to theme variables at compile time, so overriding the corresponding `$mxi-color-*` variables in `uni.scss` takes effect.
+Use the `color` prop to customize the icon color. Both CSS color values and semantic color names (`default` / `primary` / `success` / `warning` / `danger` / `white`) are supported; semantic names are bound to theme variables at compile time, so overriding the corresponding `$m-color-*` variables in `uni.scss` takes effect.
 
 ```vue
-<mxi-loading color="#1989fa" />
-<mxi-loading type="spinner" color="#07c160" />
-<mxi-loading type="spinner" color="primary" />
+<m-loading color="#1989fa" />
+<m-loading type="spinner" color="#07c160" />
+<m-loading type="spinner" color="primary" />
 ```
 
 ### Custom Size {#demo-size}
@@ -39,8 +39,8 @@ Use the `color` prop to customize the icon color. Both CSS color values and sema
 Use the `size` prop to customize the icon size. Pure numbers (with `px` appended automatically), strings with units, or `100%` (filling an externally sized container) are supported; the default is `30px`.
 
 ```vue
-<mxi-loading size="16" />
-<mxi-loading type="spinner" size="24" />
+<m-loading size="16" />
+<m-loading type="spinner" size="24" />
 ```
 
 ### Loading Text {#demo-text}
@@ -48,8 +48,8 @@ Use the `size` prop to customize the icon size. Pure numbers (with `px` appended
 Place the loading text in the default slot; use `vertical` to arrange the icon and text vertically.
 
 ```vue
-<mxi-loading>Loading...</mxi-loading>
-<mxi-loading type="spinner" size="24" vertical>Loading...</mxi-loading>
+<m-loading>Loading...</m-loading>
+<m-loading type="spinner" size="24" vertical>Loading...</m-loading>
 ```
 
 ### Custom Text Style {#demo-text-style}
@@ -57,7 +57,7 @@ Place the loading text in the default slot; use `vertical` to arrange the icon a
 Use the `text-size` and `text-color` props to customize the text font size and color.
 
 ```vue
-<mxi-loading text-size="16" text-color="#1989fa">Loading...</mxi-loading>
+<m-loading text-size="16" text-color="#1989fa">Loading...</m-loading>
 ```
 
 ### Custom Icon {#demo-icon}
@@ -65,11 +65,11 @@ Use the `text-size` and `text-color` props to customize the text font size and c
 Use the `icon` slot to replace the default icon; the replaced icon still rotates with the rhythm of the given `type`.
 
 ```vue
-<mxi-loading>
+<m-loading>
 	<template #icon>
 		<text style="font-size: 24px;">❀</text>
 	</template>
-</mxi-loading>
+</m-loading>
 ```
 
 ## API
@@ -100,10 +100,10 @@ Loading styles can be customized with the following SCSS variables (define them 
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| $mxi-loading-spinner-size | Loading icon size | 30px |
-| $mxi-loading-spinner-color | Loading icon color | #c8c9cc |
-| $mxi-loading-text-color | Text color | #646566 |
-| $mxi-loading-text-font-size | Text font size | 14px |
-| $mxi-loading-text-gap | Gap between icon and text | 4px |
+| $m-loading-spinner-size | Loading icon size | 30px |
+| $m-loading-spinner-color | Loading icon color | #c8c9cc |
+| $m-loading-text-color | Text color | #646566 |
+| $m-loading-text-font-size | Text font size | 14px |
+| $m-loading-text-gap | Gap between icon and text | 4px |
 
 See [Theming](/en/guide/theming) for the full variable list and how to override them.

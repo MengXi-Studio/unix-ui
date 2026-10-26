@@ -15,11 +15,11 @@ demo: pages-sub/space/space
 默认水平排列，子元素之间保持主题默认间距（8px）。
 
 ```vue
-<mxi-space>
-	<mxi-button type="primary">按钮</mxi-button>
-	<mxi-button type="primary">按钮</mxi-button>
-	<mxi-button type="primary">按钮</mxi-button>
-</mxi-space>
+<m-space>
+	<m-button type="primary">按钮</m-button>
+	<m-button type="primary">按钮</m-button>
+	<m-button type="primary">按钮</m-button>
+</m-space>
 ```
 
 ### 垂直间距 {#demo-vertical}
@@ -27,10 +27,10 @@ demo: pages-sub/space/space
 `direction` 属性设置间距方向，可选值为 `horizontal` `vertical`，默认为 `horizontal`。
 
 ```vue
-<mxi-space direction="vertical">
-	<mxi-button type="primary" block>按钮</mxi-button>
-	<mxi-button type="primary" block>按钮</mxi-button>
-</mxi-space>
+<m-space direction="vertical">
+	<m-button type="primary" block>按钮</m-button>
+	<m-button type="primary" block>按钮</m-button>
+</m-space>
 ```
 
 ### 自定义间距 {#demo-custom}
@@ -38,9 +38,9 @@ demo: pages-sub/space/space
 `size` 支持数字（自动补 px）、字符串（原样使用）与数组 `[横向, 纵向]`；未传时取主题默认间距，垂直方向取数组第一个值作主轴间距。
 
 ```vue
-<mxi-space :size="20">按钮 20px 间距</mxi-space>
-<mxi-space size="12px">按钮 12px 间距</mxi-space>
-<mxi-space :size="[20, 8]" wrap>横向 20 / 换行后纵向 8</mxi-space>
+<m-space :size="20">按钮 20px 间距</m-space>
+<m-space size="12px">按钮 12px 间距</m-space>
+<m-space :size="[20, 8]" wrap>横向 20 / 换行后纵向 8</m-space>
 ```
 
 ### 对齐方式 {#demo-align}
@@ -48,10 +48,10 @@ demo: pages-sub/space/space
 `align` 属性设置子元素对齐方式，可选值为 `start` `end` `center` `baseline`；未传时水平方向默认 `center`，垂直方向默认 `stretch`。
 
 ```vue
-<mxi-space align="start">顶端对齐</mxi-space>
-<mxi-space align="center">居中对齐</mxi-space>
-<mxi-space align="end">末端对齐</mxi-space>
-<mxi-space align="baseline">基线对齐</mxi-space>
+<m-space align="start">顶端对齐</m-space>
+<m-space align="center">居中对齐</m-space>
+<m-space align="end">末端对齐</m-space>
+<m-space align="baseline">基线对齐</m-space>
 ```
 
 ### 自动换行 {#demo-wrap}
@@ -59,11 +59,11 @@ demo: pages-sub/space/space
 `wrap` 属性开启后子元素超出宽度自动换行，仅水平方向生效。
 
 ```vue
-<mxi-space wrap>
-	<mxi-button type="primary">按钮 1</mxi-button>
-	<mxi-button type="primary">按钮 2</mxi-button>
-	<mxi-button type="primary">按钮 3</mxi-button>
-</mxi-space>
+<m-space wrap>
+	<m-button type="primary">按钮 1</m-button>
+	<m-button type="primary">按钮 2</m-button>
+	<m-button type="primary">按钮 3</m-button>
+</m-space>
 ```
 
 ### 块级填充
@@ -71,10 +71,10 @@ demo: pages-sub/space/space
 `fill` 属性使组件块级填充父元素宽度，默认宽度收缩贴合内容。
 
 ```vue
-<mxi-space direction="vertical" fill>
-	<mxi-button type="primary" block>按钮</mxi-button>
-	<mxi-button type="primary" block>按钮</mxi-button>
-</mxi-space>
+<m-space direction="vertical" fill>
+	<m-button type="primary" block>按钮</m-button>
+	<m-button type="primary" block>按钮</m-button>
+</m-space>
 ```
 
 ## API
@@ -103,6 +103,6 @@ demo: pages-sub/space/space
 
 | 变量 | 说明 | 默认值 |
 | --- | --- | --- |
-| $mxi-space-size | 默认间距（未传 size 时） | 8px |
+| $m-space-size | 默认间距（未传 size 时） | 8px |
 
 完整变量与覆盖方式见[主题定制](/guide/theming)。

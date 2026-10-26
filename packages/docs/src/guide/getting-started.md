@@ -10,7 +10,7 @@
 
 ```html
 <template>
-	<mxi-button type="primary" @click="onClick">主要按钮</mxi-button>
+	<m-button type="primary" @click="onClick">主要按钮</m-button>
 </template>
 
 <script setup lang="uts">
@@ -25,28 +25,28 @@
 ### 按钮类型与尺寸
 
 ```html
-<mxi-button type="primary">主要按钮</mxi-button>
-<mxi-button type="danger" size="large">危险大按钮</mxi-button>
-<mxi-button type="success" size="small">成功小按钮</mxi-button>
+<m-button type="primary">主要按钮</m-button>
+<m-button type="danger" size="large">危险大按钮</m-button>
+<m-button type="success" size="small">成功小按钮</m-button>
 ```
 
 ### 状态控制
 
 ```html
 <!-- 加载中：点击不触发，图标自动旋转 -->
-<mxi-button type="primary" loading loading-text="提交中..." />
+<m-button type="primary" loading loading-text="提交中..." />
 
 <!-- 禁用：点击不触发 -->
-<mxi-button type="primary" disabled>禁用状态</mxi-button>
+<m-button type="primary" disabled>禁用状态</m-button>
 ```
 
 ### 动态加载
 
 ```html
 <template>
-	<mxi-button type="primary" :loading="loading" @click="submit">
+	<m-button type="primary" :loading="loading" @click="submit">
 		提交
-	</mxi-button>
+	</m-button>
 </template>
 
 <script setup lang="uts">

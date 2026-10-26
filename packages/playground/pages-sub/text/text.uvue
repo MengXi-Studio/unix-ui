@@ -6,59 +6,59 @@
 		<view class="container">
 			<text class="section" id="basic">基础用法</text>
 			<view class="card">
-				<mxi-text>这是一段默认样式的文本。</mxi-text>
+				<m-text>这是一段默认样式的文本。</m-text>
 			</view>
 
 			<text class="section" id="color">文本颜色</text>
 			<view class="card">
 				<view class="col-list">
-					<mxi-text color="default">default 默认文本颜色</mxi-text>
-					<mxi-text color="secondary">secondary 次要文本颜色</mxi-text>
-					<mxi-text color="tertiary">tertiary 三级文本颜色</mxi-text>
-					<mxi-text color="fourth">fourth 四级文本颜色</mxi-text>
-					<mxi-text color="primary">primary 主题文本颜色</mxi-text>
-					<mxi-text color="success">success 成功文本颜色</mxi-text>
-					<mxi-text color="warning">warning 警告文本颜色</mxi-text>
-					<mxi-text color="danger">danger 危险文本颜色</mxi-text>
-					<mxi-text color="#7232dd">自定义色值 #7232dd（兼容 CSS 色值）</mxi-text>
+					<m-text color="default">default 默认文本颜色</m-text>
+					<m-text color="secondary">secondary 次要文本颜色</m-text>
+					<m-text color="tertiary">tertiary 三级文本颜色</m-text>
+					<m-text color="fourth">fourth 四级文本颜色</m-text>
+					<m-text color="primary">primary 主题文本颜色</m-text>
+					<m-text color="success">success 成功文本颜色</m-text>
+					<m-text color="warning">warning 警告文本颜色</m-text>
+					<m-text color="danger">danger 危险文本颜色</m-text>
+					<m-text color="#7232dd">自定义色值 #7232dd（兼容 CSS 色值）</m-text>
 				</view>
 			</view>
 
 			<text class="section" id="size">文本大小</text>
 			<view class="card">
 				<view class="col-list">
-					<mxi-text size="small">small 小号文本</mxi-text>
-					<mxi-text size="medium">medium 中号文本（默认）</mxi-text>
-					<mxi-text size="large">large 大号文本</mxi-text>
+					<m-text size="small">small 小号文本</m-text>
+					<m-text size="medium">medium 中号文本（默认）</m-text>
+					<m-text size="large">large 大号文本</m-text>
 				</view>
 			</view>
 
 			<text class="section" id="ellipsis">单行省略</text>
 			<view class="card">
-				<mxi-text truncated :custom-style="'max-width: 200px;'">
+				<m-text truncated :custom-style="'max-width: 200px;'">
 					这是一段很长很长很长很长很长很长很长很长很长很长的文本，设置 truncated 后会显示省略号。
-				</mxi-text>
+				</m-text>
 				<text class="caption">max-width 200px 约束 + truncated，超出显示省略号</text>
 			</view>
 
 			<text class="section" id="ellipsis-multi">多行省略</text>
 			<view class="card">
-				<mxi-text :line-clamp="2" :custom-style="'max-width: 300px;'">{{ clampText }}</mxi-text>
+				<m-text :line-clamp="2" :custom-style="'max-width: 300px;'">{{ clampText }}</m-text>
 				<text class="caption">line-clamp 2，超出两行显示省略号</text>
-				<mxi-text :line-clamp="3" :custom-style="'max-width: 300px; margin-top: 12px;'">{{ clampText }}</mxi-text>
+				<m-text :line-clamp="3" :custom-style="'max-width: 300px; margin-top: 12px;'">{{ clampText }}</m-text>
 				<text class="caption">line-clamp 3，超出三行显示省略号</text>
 			</view>
 
 			<text class="section" id="selectable">文本可选</text>
 			<view class="card">
-				<mxi-text :user-select="true">这段文本设置了 user-select，可以选中复制（web 端拖选 / App 端长按）。</mxi-text>
+				<m-text :user-select="true">这段文本设置了 user-select，可以选中复制（web 端拖选 / App 端长按）。</m-text>
 			</view>
 
 			<text class="section">组合</text>
 			<view class="card">
-				<mxi-text size="small" color="danger" truncated :custom-style="'max-width: 240px;'">
+				<m-text size="small" color="danger" truncated :custom-style="'max-width: 240px;'">
 					组合演示：small + danger + truncated，超出容器宽度显示省略号。
-				</mxi-text>
+				</m-text>
 				<text class="caption">size + color + truncated 组合（max-width 240px）</text>
 			</view>
 		</view>

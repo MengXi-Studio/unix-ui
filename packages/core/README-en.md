@@ -21,29 +21,29 @@ Building UI with raw uni-app x `view` / `text` elements means hand-writing every
 
 - **Familiar with mainstream uni-app component libraries?** Component taxonomy, prop naming and visual specs are fully aligned — zero mental remapping, pick it up at a glance;
 - **Multi-platform release?** One UTS + uvue codebase compiles to App (Android / iOS / HarmonyOS), Web and mini-programs; platform quirks like hairline borders and scroll containers are handled deterministically inside the library;
-- **Care about theming?** Every visual parameter is a `$mxi-*` SCSS variable injected at compile time — change one line in the root `uni.scss` and it applies across all components, with zero runtime overhead.
+- **Care about theming?** Every visual parameter is a `$m-*` SCSS variable injected at compile time — change one line in the root `uni.scss` and it applies across all components, with zero runtime overhead.
 
 The library depends only on built-in uni-app x components and `UniElement.animate` — no custom rendering stack. UTS source is distributed directly (Web / mini-programs → JS, Android → Kotlin, iOS → Swift) and compiled on the fly by the uni-app x toolchain.
 
 ## Features
 
-- **Zero-registration easycom** - Follows the uni_modules component plugin spec (plugin id: `mxi-ui-x`); use `<mxi-button>` directly, no imports or manual registration
+- **Zero-registration easycom** - Follows the uni_modules component plugin spec (plugin id: `m-ui-x`); use `<m-button>` directly, no imports or manual registration
 - **All platforms, vapor-compatible** - One component codebase for App (Android / iOS / HarmonyOS), Web and mini-programs, compatible with vapor mode
-- **Compile-time theming** - All visual parameters live in `theme/vars.scss` as `$mxi-*` variables (all `!default`); define the same variable in the root `uni.scss` to override, otherwise the default theme works with zero configuration
+- **Compile-time theming** - All visual parameters live in `theme/vars.scss` as `$m-*` variables (all `!default`); define the same variable in the root `uni.scss` to override, otherwise the default theme works with zero configuration
 - **Cross-platform pixel details** - 0.5px hairline borders (transform scale technique) and pressed feedback are handled uniformly by the library
 - **Composition API + strongly typed UTS** - Fully typed props and events for UTS / TS IntelliSense; animations use `UniElement.animate`, no `@keyframes` dependency
 - **No global side effects** - Component styles are self-contained and only reference the in-package `vars.scss`; no global style injection
 
 ## Installation
 
-**npm**——after installing, sync the package contents into your project's `uni_modules/mxi-ui-x/` (the compiler does not scan node_modules):
+**npm**——after installing, sync the package contents into your project's `uni_modules/m-ui-x/` (the compiler does not scan node_modules):
 
 ```bash
 pnpm add @meng-xi/unix-ui
-mkdir -p uni_modules && cp -R node_modules/@meng-xi/unix-ui uni_modules/mxi-ui-x
+mkdir -p uni_modules && cp -R node_modules/@meng-xi/unix-ui uni_modules/m-ui-x
 ```
 
-> `packages/core` is a standard **uni_modules component plugin** (plugin id: `mxi-ui-x`; the directory name must match), consumed via zero-config easycom. If you use a different directory name or reference node_modules directly, configure the easycom rule in `pages.json` yourself.
+> `packages/core` is a standard **uni_modules component plugin** (plugin id: `m-ui-x`; the directory name must match), consumed via zero-config easycom. If you use a different directory name or reference node_modules directly, configure the easycom rule in `pages.json` yourself.
 
 ## Quick Start
 
@@ -51,7 +51,7 @@ mkdir -p uni_modules && cp -R node_modules/@meng-xi/unix-ui uni_modules/mxi-ui-x
 
 ```html
 <template>
-	<mxi-button type="primary" @click="onClick">Primary Button</mxi-button>
+	<m-button type="primary" @click="onClick">Primary Button</m-button>
 </template>
 
 <script setup lang="uts">
@@ -67,26 +67,26 @@ Define same-named variables directly in the root `uni.scss` to override defaults
 
 ```scss
 /* Normal button height 44px → 48px */
-$mxi-button-normal-height: 48px;
+$m-button-normal-height: 48px;
 ```
 
 > Do NOT `@import` the in-package `vars.scss` from `uni.scss` — `uni.scss` is injected into every component's style, and importing the same file again triggers a sass circular-import error.
 
-For all available variables see [theme/vars.scss](./theme/vars.scss), named as `$mxi-<component>-<property>`.
+For all available variables see [theme/vars.scss](./theme/vars.scss), named as `$m-<component>-<property>`.
 
 ## Components
 
 | Component | Description |
 | --- | --- |
-| mxi-button | Button: semantic type, plain / disabled / loading, four sizes, block, hairline borders, pressed feedback |
-| mxi-cell / mxi-cell-group | Cell and group: title / value / label, icon, four-direction arrows, inset rounded-card grouping |
-| mxi-row / mxi-col | Grid layout: gutter, alignment, wrapping |
-| mxi-icon | Icon: 250+ common icons (ttf bundled), color and size, custom icon slot |
-| mxi-image | Image: pass-through mode, loading / error placeholders, fade-in transition, circle, lazy loading |
-| mxi-text | Text: semantic / custom color modes, three font sizes, single-line ellipsis, multi-line clamp, selectable |
-| mxi-space | Spacing: direction / wrap / alignment, single or dual (row / column) size |
-| mxi-loading | Loading: circular / spinner variants, custom color and size, with text |
-| mxi-badge | Badge: number / dot, max truncation, semantic and custom colors, position offset, standalone mode |
+| m-button | Button: semantic type, plain / disabled / loading, four sizes, block, hairline borders, pressed feedback |
+| m-cell / m-cell-group | Cell and group: title / value / label, icon, four-direction arrows, inset rounded-card grouping |
+| m-row / m-col | Grid layout: gutter, alignment, wrapping |
+| m-icon | Icon: 250+ common icons (ttf bundled), color and size, custom icon slot |
+| m-image | Image: pass-through mode, loading / error placeholders, fade-in transition, circle, lazy loading |
+| m-text | Text: semantic / custom color modes, three font sizes, single-line ellipsis, multi-line clamp, selectable |
+| m-space | Spacing: direction / wrap / alignment, single or dual (row / column) size |
+| m-loading | Loading: circular / spinner variants, custom color and size, with text |
+| m-badge | Badge: number / dot, max truncation, semantic and custom colors, position offset, standalone mode |
 
 ## Live Demo
 

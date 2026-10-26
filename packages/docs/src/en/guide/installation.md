@@ -7,13 +7,13 @@
 
 ## Option 1: uni_modules (recommended)
 
-Place the library into your project's `uni_modules/mxi-ui-x` directory (via the plugin marketplace or manual copy), following the [uni_modules component plugin spec](https://doc.dcloud.net.cn/uni-app-x/plugin/uni_modules.html#dir):
+Place the library into your project's `uni_modules/m-ui-x` directory (via the plugin marketplace or manual copy), following the [uni_modules component plugin spec](https://doc.dcloud.net.cn/uni-app-x/plugin/uni_modules.html#dir):
 
 ```
-uni_modules/mxi-ui-x/
+uni_modules/m-ui-x/
 ├── components/
-│   └── mxi-button/
-│       └── mxi-button.uvue
+│   └── m-button/
+│       └── m-button.uvue
 ├── theme/
 │   └── vars.scss
 ├── package.json
@@ -35,7 +35,7 @@ Then configure the easycom rule in `pages.json`:
 	"easycom": {
 		"autoscan": true,
 		"custom": {
-			"^mxi-(.*)": "@meng-xi/unix-ui/components/mxi-$1/mxi-$1.uvue"
+			"^m-(.*)": "@meng-xi/unix-ui/components/m-$1/m-$1.uvue"
 		}
 	}
 }
@@ -47,7 +47,7 @@ Use a component directly in any page template, no import or registration:
 
 ```html
 <template>
-	<mxi-button type="primary">Installed</mxi-button>
+	<m-button type="primary">Installed</m-button>
 </template>
 ```
 

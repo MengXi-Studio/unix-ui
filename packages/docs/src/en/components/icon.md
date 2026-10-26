@@ -14,7 +14,7 @@ A font-based icon set with 257 built-in icons, supporting custom color & size an
 `name` is a string union type `IconName` (IDE autocompletes all icon names; invalid names fail at compile time). The font file is bundled with the package (declarative `@font-face` loading) — zero configuration, works offline.
 
 ```vue
-<mxi-icon name="chat-o" />
+<m-icon name="chat-o" />
 ```
 
 ### Custom Color {#demo-color}
@@ -22,8 +22,8 @@ A font-based icon set with 257 built-in icons, supporting custom color & size an
 Use the `color` prop to customize the icon color (CSS color values are supported). When empty, the color is inherited from outer styles.
 
 ```vue
-<mxi-icon name="star" size="24" color="#1989fa" />
-<mxi-icon name="star" size="24" color="#07c160" />
+<m-icon name="star" size="24" color="#1989fa" />
+<m-icon name="star" size="24" color="#07c160" />
 ```
 
 ### Custom Size {#demo-size}
@@ -31,9 +31,9 @@ Use the `color` prop to customize the icon color (CSS color values are supported
 Use the `size` prop to customize the icon size. Pure numbers are treated as `px`; unit strings are used as-is. When empty, the font size is inherited from outer styles.
 
 ```vue
-<mxi-icon name="chat-o" size="16" />
-<mxi-icon name="chat-o" size="24" />
-<mxi-icon name="chat-o" size="32" />
+<m-icon name="chat-o" size="16" />
+<m-icon name="chat-o" size="24" />
+<m-icon name="chat-o" size="32" />
 ```
 
 ### Direct Tag Styling
@@ -41,8 +41,8 @@ Use the `size` prop to customize the icon size. Pure numbers are treated as `px`
 Like the official uni-icons, the component renders a single `text` root node: without `color` / `size`, no inline styles are written, so `custom-class` / `custom-style` apply directly to the icon text — color, font-size and other text styles can be freely overridden.
 
 ```vue
-<mxi-icon name="fire-o" custom-class="my-icon" />
-<mxi-icon name="fire-o" custom-style="color: #1989fa;" />
+<m-icon name="fire-o" custom-class="my-icon" />
+<m-icon name="fire-o" custom-style="color: #1989fa;" />
 ```
 
 ```scss
@@ -57,7 +57,7 @@ Like the official uni-icons, the component renders a single `text` root node: wi
 The `click` event is emitted when the icon is tapped.
 
 ```vue
-<mxi-icon name="like" @click="onTap" />
+<m-icon name="like" @click="onTap" />
 ```
 
 ### Custom Icons {#demo-slot}
@@ -69,14 +69,14 @@ Two ways to plug in your own icon font:
 
 ```vue
 <!-- Option 1: override font-family -->
-<mxi-icon name="star" custom-class="my-font-icon" />
+<m-icon name="star" custom-class="my-font-icon" />
 
 <!-- Option 2: icon slot -->
-<mxi-icon name="like" size="24">
+<m-icon name="like" size="24">
 	<template #icon>
 		<text style="font-size: 24px;">✿</text>
 	</template>
-</mxi-icon>
+</m-icon>
 ```
 
 ### Icon Set
@@ -130,6 +130,6 @@ Two ways to plug in your own icon font:
 
 ## Theming
 
-This component has no default theme variables: icon color and size follow outer styles (props / direct tag styling), consistent with the official uni-icons' no-default-style design; the font name is fixed as `mxi-icon` — no multi-font switching scenario, so no variable is introduced.
+This component has no default theme variables: icon color and size follow outer styles (props / direct tag styling), consistent with the official uni-icons' no-default-style design; the font name is fixed as `m-icon` — no multi-font switching scenario, so no variable is introduced.
 
 See [Theming](/en/guide/theming) for all variables and how to override them.

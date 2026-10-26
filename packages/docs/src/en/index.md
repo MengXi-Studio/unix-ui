@@ -28,7 +28,7 @@ features:
     details: Follows the uni_modules component plugin spec — use components directly in templates without import or registration; an easycom custom rule is provided for npm installs
   - icon: 🎨
     title: Themeable
-    details: A default theme ships with the components and works out of the box; defining $mxi-* variables in the project root uni.scss overrides it globally at compile time, with !default giving user values priority
+    details: A default theme ships with the components and works out of the box; defining $m-* variables in the project root uni.scss overrides it globally at compile time, with !default giving user values priority
   - icon: 📱
     title: Multi-Platform
     details: Supports App (Android / iOS / HarmonyOS), Web and Mini Programs, compatible with vapor mode; platform differences are isolated via conditional compilation

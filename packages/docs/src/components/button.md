@@ -15,11 +15,11 @@ demo: pages-sub/button/button
 支持 `default`、`primary`、`success`、`warning`、`danger` 五种类型，默认为 `default`。
 
 ```vue
-<mxi-button type="primary">主要按钮</mxi-button>
-<mxi-button type="success">成功按钮</mxi-button>
-<mxi-button type="danger">危险按钮</mxi-button>
-<mxi-button type="warning">警告按钮</mxi-button>
-<mxi-button type="default">默认按钮</mxi-button>
+<m-button type="primary">主要按钮</m-button>
+<m-button type="success">成功按钮</m-button>
+<m-button type="danger">危险按钮</m-button>
+<m-button type="warning">警告按钮</m-button>
+<m-button type="default">默认按钮</m-button>
 ```
 
 ### 朴素按钮 {#demo-plain}
@@ -27,7 +27,7 @@ demo: pages-sub/button/button
 通过 `plain` 属性将按钮设置为朴素按钮，朴素按钮的文字为按钮颜色，背景为白色。
 
 ```vue
-<mxi-button type="primary" plain>朴素按钮</mxi-button>
+<m-button type="primary" plain>朴素按钮</m-button>
 ```
 
 ### 细边框
@@ -35,7 +35,7 @@ demo: pages-sub/button/button
 通过 `hairline` 属性设置 0.5px 边框（基于 `scale(0.5)` 实现）。
 
 ```vue
-<mxi-button type="primary" plain hairline>细边框按钮</mxi-button>
+<m-button type="primary" plain hairline>细边框按钮</m-button>
 ```
 
 ### 禁用状态 {#demo-disabled}
@@ -43,7 +43,7 @@ demo: pages-sub/button/button
 通过 `disabled` 属性禁用按钮，禁用状态下按钮不可点击。
 
 ```vue
-<mxi-button type="primary" disabled>禁用状态</mxi-button>
+<m-button type="primary" disabled>禁用状态</m-button>
 ```
 
 ### 加载状态 {#demo-loading}
@@ -51,9 +51,9 @@ demo: pages-sub/button/button
 通过 `loading` 属性设置按钮为加载状态，加载状态下按钮不可点击；`loading-text` 可自定义加载文字；`loading-type` 可切换加载图标形态（`circular` 圆环旋转 / `spinner` 花瓣旋转），图标由 [Loading](/components/loading) 组件承载。
 
 ```vue
-<mxi-button type="primary" loading />
-<mxi-button type="primary" loading loading-text="加载中..." />
-<mxi-button type="primary" loading loading-type="spinner" />
+<m-button type="primary" loading />
+<m-button type="primary" loading loading-text="加载中..." />
+<m-button type="primary" loading loading-type="spinner" />
 ```
 
 ### 按压反馈
@@ -61,7 +61,7 @@ demo: pages-sub/button/button
 按钮按下时整体透明度降为 0.8，松开后恢复；`disabled` 与 `loading` 状态不出现按压反馈（基于 `hover-class` 实现）。
 
 ```vue
-<mxi-button type="primary">按下查看按压反馈</mxi-button>
+<m-button type="primary">按下查看按压反馈</m-button>
 ```
 
 ### 按钮尺寸 {#demo-size}
@@ -69,10 +69,10 @@ demo: pages-sub/button/button
 支持 `large`、`normal`、`small`、`mini` 四种尺寸，默认为 `normal`。
 
 ```vue
-<mxi-button type="primary" size="large">大号按钮</mxi-button>
-<mxi-button type="primary" size="normal">普通按钮</mxi-button>
-<mxi-button type="primary" size="small">小型按钮</mxi-button>
-<mxi-button type="primary" size="mini">迷你按钮</mxi-button>
+<m-button type="primary" size="large">大号按钮</m-button>
+<m-button type="primary" size="normal">普通按钮</m-button>
+<m-button type="primary" size="small">小型按钮</m-button>
+<m-button type="primary" size="mini">迷你按钮</m-button>
 ```
 
 ### 块级元素 {#demo-block}
@@ -80,7 +80,7 @@ demo: pages-sub/button/button
 `block` 属性将使按钮宽度撑满父容器。
 
 ```vue
-<mxi-button type="primary" block>块级按钮</mxi-button>
+<m-button type="primary" block>块级按钮</m-button>
 ```
 
 ### 自定义颜色 {#demo-color}
@@ -88,9 +88,9 @@ demo: pages-sub/button/button
 通过 `color` 属性自定义按钮颜色，支持 `linear-gradient` 渐变。
 
 ```vue
-<mxi-button color="#7232dd">单色按钮</mxi-button>
-<mxi-button color="linear-gradient(to right, #ff6034, #ee0a24)">渐变按钮</mxi-button>
-<mxi-button color="#7232dd" plain>彩色按钮</mxi-button>
+<m-button color="#7232dd">单色按钮</m-button>
+<m-button color="linear-gradient(to right, #ff6034, #ee0a24)">渐变按钮</m-button>
+<m-button color="#7232dd" plain>彩色按钮</m-button>
 ```
 
 ## API
@@ -132,15 +132,15 @@ demo: pages-sub/button/button
 
 | 变量 | 说明 | 默认值 |
 | --- | --- | --- |
-| $mxi-color-primary | 主要色 | #1989fa |
-| $mxi-color-success | 成功色 | #07c160 |
-| $mxi-color-warning | 警告色 | #ff976a |
-| $mxi-color-danger | 危险色 | #ee0a24 |
-| $mxi-button-normal-height | 常规按钮高度 | 44px |
-| $mxi-button-large-height | 大号按钮高度 | 50px |
-| $mxi-button-small-height | 小型按钮高度 | 32px |
-| $mxi-button-mini-height | 迷你按钮高度 | 24px |
-| $mxi-button-radius | 按钮圆角 | 8px |
-| $mxi-button-active-opacity | 按压时透明度 | 0.8 |
+| $m-color-primary | 主要色 | #1989fa |
+| $m-color-success | 成功色 | #07c160 |
+| $m-color-warning | 警告色 | #ff976a |
+| $m-color-danger | 危险色 | #ee0a24 |
+| $m-button-normal-height | 常规按钮高度 | 44px |
+| $m-button-large-height | 大号按钮高度 | 50px |
+| $m-button-small-height | 小型按钮高度 | 32px |
+| $m-button-mini-height | 迷你按钮高度 | 24px |
+| $m-button-radius | 按钮圆角 | 8px |
+| $m-button-active-opacity | 按压时透明度 | 0.8 |
 
 完整变量与覆盖方式见[主题定制](/guide/theming)。

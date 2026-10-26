@@ -8,7 +8,7 @@ uni-app x 编译器会把项目根 `uni.scss` **注入每个组件的样式**参
 [sass] This file is already being loaded.
 ```
 
-覆盖主题只需在 `uni.scss` 中**直接定义** `$mxi-*` 变量，详见[主题定制](/guide/theming)。
+覆盖主题只需在 `uni.scss` 中**直接定义** `$m-*` 变量，详见[主题定制](/guide/theming)。
 
 ## 编译报「根目录缺少 index.html」
 

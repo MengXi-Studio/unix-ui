@@ -14,10 +14,10 @@ The cell provides a content container for each row of a list, commonly used in s
 Use `title` and `value` to set the left and right content, and `label` to add a description below the title.
 
 ```vue
-<mxi-cell-group>
-	<mxi-cell title="Cell" value="Content" />
-	<mxi-cell title="Cell" value="Content" label="Description" />
-</mxi-cell-group>
+<m-cell-group>
+	<m-cell title="Cell" value="Content" />
+	<m-cell title="Cell" value="Content" label="Description" />
+</m-cell-group>
 ```
 
 ### Cell Size {#demo-size}
@@ -25,8 +25,8 @@ Use `title` and `value` to set the left and right content, and `label` to add a 
 Use the `size` attribute to set the cell size, can be set to `normal` `large`. The default is `normal`.
 
 ```vue
-<mxi-cell title="Cell" value="Content" size="large" />
-<mxi-cell title="Cell" value="Content" label="Description" size="large" />
+<m-cell title="Cell" value="Content" size="large" />
+<m-cell title="Cell" value="Content" label="Description" size="large" />
 ```
 
 ### Left Icon {#demo-icon}
@@ -34,8 +34,8 @@ Use the `size` attribute to set the cell size, can be set to `normal` `large`. T
 Use the `icon` attribute to show an icon to the left of the title. Set it to an icon name; no icon is shown when it is null.
 
 ```vue
-<mxi-cell title="Location" icon="location-o" />
-<mxi-cell title="Shop" icon="shop-o" />
+<m-cell title="Location" icon="location-o" />
+<m-cell title="Shop" icon="shop-o" />
 ```
 
 ### Link and Arrow Direction {#demo-arrow}
@@ -43,25 +43,25 @@ Use the `icon` attribute to show an icon to the left of the title. Set it to an 
 The `is-link` attribute shows a right arrow, and `arrow-direction` controls the arrow direction, can be set to `left` `up` `down` `right`. The default is `right`. The `clickable` attribute controls whether press feedback is shown; it defaults to the value of `is-link`, and takes precedence once set explicitly.
 
 ```vue
-<mxi-cell title="Default right arrow" is-link />
-<mxi-cell title="Left arrow" is-link arrow-direction="left" />
-<mxi-cell title="Up arrow" is-link arrow-direction="up" value="Content" />
-<mxi-cell title="Press feedback only" clickable />
+<m-cell title="Default right arrow" is-link />
+<m-cell title="Left arrow" is-link arrow-direction="left" />
+<m-cell title="Up arrow" is-link arrow-direction="up" value="Content" />
+<m-cell title="Press feedback only" clickable />
 ```
 
 ### Cell Group {#demo-group}
 
-`mxi-cell-group` wraps multiple cells into a group, and the `title` attribute sets the group title. The `inset` attribute renders the group as a rounded card with side margins, in which case no outer border is shown. The divider of the last cell in a group is hidden automatically, and can also be forced off with `border: false`.
+`m-cell-group` wraps multiple cells into a group, and the `title` attribute sets the group title. The `inset` attribute renders the group as a rounded card with side margins, in which case no outer border is shown. The divider of the last cell in a group is hidden automatically, and can also be forced off with `border: false`.
 
 ```vue
-<mxi-cell-group title="Group 1">
-	<mxi-cell title="Cell" value="Content" />
-	<mxi-cell title="Cell" value="Content" />
-</mxi-cell-group>
-<mxi-cell-group inset>
-	<mxi-cell title="Cell" value="Content" />
-	<mxi-cell title="Cell" value="Content" />
-</mxi-cell-group>
+<m-cell-group title="Group 1">
+	<m-cell title="Cell" value="Content" />
+	<m-cell title="Cell" value="Content" />
+</m-cell-group>
+<m-cell-group inset>
+	<m-cell title="Cell" value="Content" />
+	<m-cell title="Cell" value="Content" />
+</m-cell-group>
 ```
 
 ### Required Star
@@ -69,7 +69,7 @@ The `is-link` attribute shows a right arrow, and `arrow-direction` controls the 
 The `required` attribute shows a required star before the title.
 
 ```vue
-<mxi-cell title="Phone" required />
+<m-cell title="Phone" required />
 ```
 
 ## API
@@ -122,28 +122,28 @@ Cell styles can be customized with the following SCSS variables (define them dir
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| $mxi-cell-font-size | Text font size | 14px |
-| $mxi-cell-vertical-padding | Vertical padding | 10px |
-| $mxi-cell-horizontal-padding | Horizontal padding | 16px |
-| $mxi-cell-text-color | Title text color | #323233 |
-| $mxi-cell-background | Background color | #fff |
-| $mxi-cell-border-color | Divider color | #ebedf0 |
-| $mxi-cell-active-color | Press feedback background color | #f2f3f5 |
-| $mxi-cell-required-color | Required star color | #ee0a24 |
-| $mxi-cell-label-color | Label text color | #969799 |
-| $mxi-cell-label-font-size | Label font size | 12px |
-| $mxi-cell-value-color | Value text color | #969799 |
-| $mxi-cell-icon-margin | Right margin of the left icon | 8px |
-| $mxi-cell-arrow-margin | Left margin of the arrow | 4px |
-| $mxi-cell-right-icon-color | Arrow color | #c8c9cc |
-| $mxi-cell-large-vertical-padding | Vertical padding of the large size | 12px |
-| $mxi-cell-large-title-font-size | Title font size of the large size | 16px |
-| $mxi-cell-large-label-font-size | Label font size of the large size | 14px |
-| $mxi-cell-group-background | Group background color (CellGroup) | #fff |
-| $mxi-cell-group-title-color | Group title color (CellGroup) | #969799 |
-| $mxi-cell-group-title-padding | Group title padding (CellGroup) | 16px 16px 8px |
-| $mxi-cell-group-title-font-size | Group title font size (CellGroup) | 14px |
-| $mxi-cell-group-inset-radius | Inset group border radius (CellGroup) | 8px |
-| $mxi-cell-group-inset-padding | Inset group margin (CellGroup) | 0 16px |
+| $m-cell-font-size | Text font size | 14px |
+| $m-cell-vertical-padding | Vertical padding | 10px |
+| $m-cell-horizontal-padding | Horizontal padding | 16px |
+| $m-cell-text-color | Title text color | #323233 |
+| $m-cell-background | Background color | #fff |
+| $m-cell-border-color | Divider color | #ebedf0 |
+| $m-cell-active-color | Press feedback background color | #f2f3f5 |
+| $m-cell-required-color | Required star color | #ee0a24 |
+| $m-cell-label-color | Label text color | #969799 |
+| $m-cell-label-font-size | Label font size | 12px |
+| $m-cell-value-color | Value text color | #969799 |
+| $m-cell-icon-margin | Right margin of the left icon | 8px |
+| $m-cell-arrow-margin | Left margin of the arrow | 4px |
+| $m-cell-right-icon-color | Arrow color | #c8c9cc |
+| $m-cell-large-vertical-padding | Vertical padding of the large size | 12px |
+| $m-cell-large-title-font-size | Title font size of the large size | 16px |
+| $m-cell-large-label-font-size | Label font size of the large size | 14px |
+| $m-cell-group-background | Group background color (CellGroup) | #fff |
+| $m-cell-group-title-color | Group title color (CellGroup) | #969799 |
+| $m-cell-group-title-padding | Group title padding (CellGroup) | 16px 16px 8px |
+| $m-cell-group-title-font-size | Group title font size (CellGroup) | 14px |
+| $m-cell-group-inset-radius | Inset group border radius (CellGroup) | 8px |
+| $m-cell-group-inset-padding | Inset group margin (CellGroup) | 0 16px |
 
 See [Theming](/en/guide/theming) for the full variable list and override instructions.

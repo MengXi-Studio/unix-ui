@@ -14,11 +14,11 @@ The space component sets a uniform spacing between child elements, implemented w
 Arranges horizontally by default with the theme default spacing (8px) between child elements.
 
 ```vue
-<mxi-space>
-	<mxi-button type="primary">Button</mxi-button>
-	<mxi-button type="primary">Button</mxi-button>
-	<mxi-button type="primary">Button</mxi-button>
-</mxi-space>
+<m-space>
+	<m-button type="primary">Button</m-button>
+	<m-button type="primary">Button</m-button>
+	<m-button type="primary">Button</m-button>
+</m-space>
 ```
 
 ### Vertical Spacing {#demo-vertical}
@@ -26,10 +26,10 @@ Arranges horizontally by default with the theme default spacing (8px) between ch
 Use the `direction` attribute to set the spacing direction, can be set to `horizontal` `vertical`. The default is `horizontal`.
 
 ```vue
-<mxi-space direction="vertical">
-	<mxi-button type="primary" block>Button</mxi-button>
-	<mxi-button type="primary" block>Button</mxi-button>
-</mxi-space>
+<m-space direction="vertical">
+	<m-button type="primary" block>Button</m-button>
+	<m-button type="primary" block>Button</m-button>
+</m-space>
 ```
 
 ### Custom Spacing {#demo-custom}
@@ -37,9 +37,9 @@ Use the `direction` attribute to set the spacing direction, can be set to `horiz
 `size` accepts a number (px is appended), a string (used as is) and an array `[horizontal, vertical]`; the theme default spacing is used when not set, and the vertical direction takes the first array value as the main-axis spacing.
 
 ```vue
-<mxi-space :size="20">20px spacing</mxi-space>
-<mxi-space size="12px">12px spacing</mxi-space>
-<mxi-space :size="[20, 8]" wrap>20 horizontal / 8 vertical after wrapping</mxi-space>
+<m-space :size="20">20px spacing</m-space>
+<m-space size="12px">12px spacing</m-space>
+<m-space :size="[20, 8]" wrap>20 horizontal / 8 vertical after wrapping</m-space>
 ```
 
 ### Alignment {#demo-align}
@@ -47,10 +47,10 @@ Use the `direction` attribute to set the spacing direction, can be set to `horiz
 Use the `align` attribute to set the alignment of child elements, can be set to `start` `end` `center` `baseline`. When not set, the horizontal direction defaults to `center` and the vertical direction defaults to `stretch`.
 
 ```vue
-<mxi-space align="start">Align start</mxi-space>
-<mxi-space align="center">Align center</mxi-space>
-<mxi-space align="end">Align end</mxi-space>
-<mxi-space align="baseline">Align baseline</mxi-space>
+<m-space align="start">Align start</m-space>
+<m-space align="center">Align center</m-space>
+<m-space align="end">Align end</m-space>
+<m-space align="baseline">Align baseline</m-space>
 ```
 
 ### Wrapping {#demo-wrap}
@@ -58,11 +58,11 @@ Use the `align` attribute to set the alignment of child elements, can be set to 
 Enable the `wrap` attribute so child elements wrap automatically when exceeding the width; effective only in the horizontal direction.
 
 ```vue
-<mxi-space wrap>
-	<mxi-button type="primary">Button 1</mxi-button>
-	<mxi-button type="primary">Button 2</mxi-button>
-	<mxi-button type="primary">Button 3</mxi-button>
-</mxi-space>
+<m-space wrap>
+	<m-button type="primary">Button 1</m-button>
+	<m-button type="primary">Button 2</m-button>
+	<m-button type="primary">Button 3</m-button>
+</m-space>
 ```
 
 ### Block Filling
@@ -70,10 +70,10 @@ Enable the `wrap` attribute so child elements wrap automatically when exceeding 
 The `fill` attribute makes the component fill the parent element's width as a block; by default the width shrinks to fit the content.
 
 ```vue
-<mxi-space direction="vertical" fill>
-	<mxi-button type="primary" block>Button</mxi-button>
-	<mxi-button type="primary" block>Button</mxi-button>
-</mxi-space>
+<m-space direction="vertical" fill>
+	<m-button type="primary" block>Button</m-button>
+	<m-button type="primary" block>Button</m-button>
+</m-space>
 ```
 
 ## API
@@ -102,6 +102,6 @@ Space styles can be customized with the following SCSS variables (define them di
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| $mxi-space-size | Default spacing (when size is not set) | 8px |
+| $m-space-size | Default spacing (when size is not set) | 8px |
 
 See [Theming](/en/guide/theming) for the full variable list and override instructions.

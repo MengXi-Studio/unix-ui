@@ -28,7 +28,7 @@ features:
     details: 遵循 uni_modules 组件插件规范，组件免 import、免注册，模板中直接使用；npm 安装方式提供 easycom custom 规则
   - icon: 🎨
     title: 主题可定制
-    details: 默认主题开箱即用，零配置可用；在项目根 uni.scss 中直接定义 $mxi-* 变量即可编译期全局覆盖，!default 语义保证用户值优先
+    details: 默认主题开箱即用，零配置可用；在项目根 uni.scss 中直接定义 $m-* 变量即可编译期全局覆盖，!default 语义保证用户值优先
   - icon: 📱
     title: 多端兼容
     details: 支持 App（Android / iOS / HarmonyOS）、Web、小程序，兼容蒸汽模式（vapor + bytecode）；条件编译隔离平台差异

@@ -6,20 +6,20 @@ demo: pages-sub/layout/layout
 
 ## 介绍
 
-布局组件通过 `mxi-row` 与 `mxi-col` 的 24 栅格体系实现页面分栏，支持列间距、左右偏移、对齐方式与自动换行。
+布局组件通过 `m-row` 与 `m-col` 的 24 栅格体系实现页面分栏，支持列间距、左右偏移、对齐方式与自动换行。
 
 ## 代码演示
 
 ### 基础用法 {#demo-basic}
 
-`mxi-row` 为横向行容器，`mxi-col` 为列元素，`span` 设置列宽占 24 份栅格中的份数。
+`m-row` 为横向行容器，`m-col` 为列元素，`span` 设置列宽占 24 份栅格中的份数。
 
 ```vue
-<mxi-row>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-</mxi-row>
+<m-row>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+</m-row>
 ```
 
 ### 24 栅格
@@ -27,11 +27,11 @@ demo: pages-sub/layout/layout
 `span` 取值 1~24，一行内各列份数相加超过 24 时自动换行；`span` 为 0 或未设置时列宽由内容决定。
 
 ```vue
-<mxi-row>
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-	<mxi-col span="12"><view class="demo-block">span: 12</view></mxi-col>
-</mxi-row>
+<m-row>
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+	<m-col span="12"><view class="demo-block">span: 12</view></m-col>
+</m-row>
 ```
 
 ### 分栏间隔 {#demo-gutter}
@@ -39,11 +39,11 @@ demo: pages-sub/layout/layout
 `gutter` 属性设置列元素之间的间距（px），支持数组 `[水平, 垂直]` 设置换行后的行间距。列间距基于内边距实现，列内容若需背景色应设置在 Col 内层元素上，保持 Col 自身透明以展示缝隙。
 
 ```vue
-<mxi-row gutter="20">
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-</mxi-row>
+<m-row gutter="20">
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+</m-row>
 ```
 
 ### 左右偏移
@@ -51,10 +51,10 @@ demo: pages-sub/layout/layout
 `offset` 属性设置列左侧的偏移份数，计算方式同 `span`。
 
 ```vue
-<mxi-row>
-	<mxi-col span="8"><view class="demo-block">span: 8</view></mxi-col>
-	<mxi-col span="8" offset="8"><view class="demo-block">span: 8</view></mxi-col>
-</mxi-row>
+<m-row>
+	<m-col span="8"><view class="demo-block">span: 8</view></m-col>
+	<m-col span="8" offset="8"><view class="demo-block">span: 8</view></m-col>
+</m-row>
 ```
 
 ### 对齐方式 {#demo-align}
@@ -62,14 +62,14 @@ demo: pages-sub/layout/layout
 `justify` 属性设置主轴对齐，可选值为 `start` `end` `center` `space-around` `space-between`，默认为 `start`；`align` 属性设置交叉轴对齐，可选值为 `top` `center` `bottom`，默认为 `top`。
 
 ```vue
-<mxi-row justify="center">
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-</mxi-row>
-<mxi-row align="bottom">
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">span: 6</view></mxi-col>
-</mxi-row>
+<m-row justify="center">
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+</m-row>
+<m-row align="bottom">
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+	<m-col span="6"><view class="demo-block">span: 6</view></m-col>
+</m-row>
 ```
 
 ### 自动换行 {#demo-wrap}
@@ -77,13 +77,13 @@ demo: pages-sub/layout/layout
 `wrap` 属性默认开启，列元素份数相加超过 24 时自然换行；关闭后不换行。
 
 ```vue
-<mxi-row :gutter="[10, 10]">
-	<mxi-col span="6"><view class="demo-block">1</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">2</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">3</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">4</view></mxi-col>
-	<mxi-col span="6"><view class="demo-block">5</view></mxi-col>
-</mxi-row>
+<m-row :gutter="[10, 10]">
+	<m-col span="6"><view class="demo-block">1</view></m-col>
+	<m-col span="6"><view class="demo-block">2</view></m-col>
+	<m-col span="6"><view class="demo-block">3</view></m-col>
+	<m-col span="6"><view class="demo-block">4</view></m-col>
+	<m-col span="6"><view class="demo-block">5</view></m-col>
+</m-row>
 ```
 
 ## API

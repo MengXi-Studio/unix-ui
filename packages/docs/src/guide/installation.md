@@ -7,13 +7,13 @@
 
 ## 方式一：uni_modules（推荐）
 
-将组件库放入项目的 `uni_modules/mxi-ui-x` 目录（可通过插件市场导入或手动拷贝），目录结构遵循 [uni_modules 组件插件规范](https://doc.dcloud.net.cn/uni-app-x/plugin/uni_modules.html#dir)：
+将组件库放入项目的 `uni_modules/m-ui-x` 目录（可通过插件市场导入或手动拷贝），目录结构遵循 [uni_modules 组件插件规范](https://doc.dcloud.net.cn/uni-app-x/plugin/uni_modules.html#dir)：
 
 ```
-uni_modules/mxi-ui-x/
+uni_modules/m-ui-x/
 ├── components/
-│   └── mxi-button/
-│       └── mxi-button.uvue
+│   └── m-button/
+│       └── m-button.uvue
 ├── theme/
 │   └── vars.scss
 ├── package.json
@@ -35,7 +35,7 @@ npm install @meng-xi/unix-ui
 	"easycom": {
 		"autoscan": true,
 		"custom": {
-			"^mxi-(.*)": "@meng-xi/unix-ui/components/mxi-$1/mxi-$1.uvue"
+			"^m-(.*)": "@meng-xi/unix-ui/components/m-$1/m-$1.uvue"
 		}
 	}
 }
@@ -47,7 +47,7 @@ npm install @meng-xi/unix-ui
 
 ```html
 <template>
-	<mxi-button type="primary">安装成功</mxi-button>
+	<m-button type="primary">安装成功</m-button>
 </template>
 ```
 

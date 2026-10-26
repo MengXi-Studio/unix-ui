@@ -15,20 +15,20 @@ demo: pages-sub/badge/badge
 设置 `content` 属性后，徽标会在子元素的右上角显示对应内容；`dot` 属性展示为小红点（无视 content）。徽标包裹图标即与 [Icon 图标](/components/icon)组合使用。
 
 ```vue
-<mxi-badge content="5">
+<m-badge content="5">
 	<view class="child"></view>
-</mxi-badge>
-<mxi-badge content="Hot">
+</m-badge>
+<m-badge content="Hot">
 	<view class="child"></view>
-</mxi-badge>
-<mxi-badge dot>
+</m-badge>
+<m-badge dot>
 	<view class="child"></view>
-</mxi-badge>
+</m-badge>
 
 <!-- 与图标组合 -->
-<mxi-badge content="5">
-	<mxi-icon name="chat-o" size="28" />
-</mxi-badge>
+<m-badge content="5">
+	<m-icon name="chat-o" size="28" />
+</m-badge>
 ```
 
 ### 最大值 {#demo-max}
@@ -36,12 +36,12 @@ demo: pages-sub/badge/badge
 设置 `max` 属性后，当 `content` 的数值超过最大值时，会自动显示为 `{max}+`（仅当 content 为数字时有效）。
 
 ```vue
-<mxi-badge content="20" max="9">
+<m-badge content="20" max="9">
 	<view class="child"></view>
-</mxi-badge>
-<mxi-badge content="200" max="99">
+</m-badge>
+<m-badge content="200" max="99">
 	<view class="child"></view>
-</mxi-badge>
+</m-badge>
 ```
 
 ### 自定义颜色 {#demo-color}
@@ -49,12 +49,12 @@ demo: pages-sub/badge/badge
 通过 `color` 属性设置徽标背景色，支持语义色名（`primary` / `success` / `warning` / `danger` / `white`，映射主题变量，覆盖 uni.scss 变量即生效）与 CSS 色值；默认为 danger 红。
 
 ```vue
-<mxi-badge content="5" color="primary">
+<m-badge content="5" color="primary">
 	<view class="child"></view>
-</mxi-badge>
-<mxi-badge dot color="primary">
+</m-badge>
+<m-badge dot color="primary">
 	<view class="child"></view>
-</mxi-badge>
+</m-badge>
 ```
 
 ### 自定义位置 {#demo-position}
@@ -62,15 +62,15 @@ demo: pages-sub/badge/badge
 通过 `position` 属性设置徽标位置，默认 `top-right`。徽标中心压角展示。
 
 ```vue
-<mxi-badge content="10" position="top-left">
+<m-badge content="10" position="top-left">
 	<view class="child"></view>
-</mxi-badge>
-<mxi-badge content="10" position="bottom-left">
+</m-badge>
+<m-badge content="10" position="bottom-left">
 	<view class="child"></view>
-</mxi-badge>
-<mxi-badge content="10" position="bottom-right">
+</m-badge>
+<m-badge content="10" position="bottom-right">
 	<view class="child"></view>
-</mxi-badge>
+</m-badge>
 ```
 
 ### 偏移量 {#demo-offset}
@@ -78,12 +78,12 @@ demo: pages-sub/badge/badge
 通过 `offset-x` / `offset-y` 两个属性设置偏移量（拆分为双属性以获得最稳的 UTS 类型约束）：正值分别向右、向下，负值反向，纯数字自动补 `px`。
 
 ```vue
-<mxi-badge content="10" offset-x="4" offset-y="4">
+<m-badge content="10" offset-x="4" offset-y="4">
 	<view class="child"></view>
-</mxi-badge>
-<mxi-badge content="10" offset-x="-4" offset-y="-4">
+</m-badge>
+<m-badge content="10" offset-x="-4" offset-y="-4">
 	<view class="child"></view>
-</mxi-badge>
+</m-badge>
 ```
 
 ### 独立展示 {#demo-standalone}
@@ -91,9 +91,9 @@ demo: pages-sub/badge/badge
 当徽标没有子元素时，会作为一个独立的元素进行展示。
 
 ```vue
-<mxi-badge content="20" />
-<mxi-badge content="200" max="99" />
-<mxi-badge dot />
+<m-badge content="20" />
+<m-badge content="200" max="99" />
+<m-badge dot />
 ```
 
 ### 自定义徽标内容 {#demo-slot}
@@ -101,14 +101,14 @@ demo: pages-sub/badge/badge
 通过 `content` 插槽可以自定义徽标的内容，比如插入一个图标。
 
 ```vue
-<mxi-badge>
+<m-badge>
 	<view class="child"></view>
 	<template #content>
 		<view class="badge-icon-box">
-			<mxi-icon name="success" custom-style="font-size: 10px;" />
+			<m-icon name="success" custom-style="font-size: 10px;" />
 		</view>
 	</template>
-</mxi-badge>
+</m-badge>
 ```
 
 ### 数字 0 与 show-zero {#demo-zero}
@@ -116,12 +116,12 @@ demo: pages-sub/badge/badge
 `content` 为数字 0 时默认展示；设置 `:show-zero="false"` 后隐藏徽标。
 
 ```vue
-<mxi-badge content="0">
+<m-badge content="0">
 	<view class="child"></view>
-</mxi-badge>
-<mxi-badge content="0" :show-zero="false">
+</m-badge>
+<m-badge content="0" :show-zero="false">
 	<view class="child"></view>
-</mxi-badge>
+</m-badge>
 ```
 
 ### 平台注意：父级容器裁剪
@@ -131,9 +131,9 @@ uni-app x 中 view 组件的 `overflow` 默认值为 `hidden`（与 W3C 的 `vis
 ```vue
 <!-- 父级收缩贴合徽标尺寸时，需放开裁剪 -->
 <view class="badge-item">
-	<mxi-badge content="5">
-		<mxi-icon name="chat-o" size="28" />
-	</mxi-badge>
+	<m-badge content="5">
+		<m-icon name="chat-o" size="28" />
+	</m-badge>
 </view>
 ```
 
@@ -153,7 +153,7 @@ uni-app x 中 view 组件的 `overflow` 默认值为 `hidden`（与 W3C 的 `vis
 | --- | --- | --- | --- |
 | content | 徽标内容（数字语义用字符串表达；`dot` 为 true 时不生效） | string | - |
 | dot | 是否展示为小红点 | boolean | `false` |
-| color | 徽标背景色，支持语义色名与 CSS 色值 | string | `$mxi-badge-bg`（danger 红） |
+| color | 徽标背景色，支持语义色名与 CSS 色值 | string | `$m-badge-bg`（danger 红） |
 | max | 最大值，数字 content 超限时显示 `{max}+` | string | - |
 | show-zero | content 为数字 0 时是否展示徽标 | boolean | `true` |
 | position | 徽标位置，可选值 `top-right` / `top-left` / `bottom-left` / `bottom-right` | string | `top-right` |
@@ -175,14 +175,14 @@ uni-app x 中 view 组件的 `overflow` 默认值为 `hidden`（与 W3C 的 `vis
 
 | 变量 | 默认值 | 描述 |
 | --- | --- | --- |
-| $mxi-badge-height | 16px | 徽标高度 |
-| $mxi-badge-color | $mxi-white | 徽标文字颜色 |
-| $mxi-badge-bg | $mxi-color-danger | 徽标背景色 |
-| $mxi-badge-font-size | 12px | 徽标文字字号 |
-| $mxi-badge-font-weight | bold | 徽标文字字重 |
-| $mxi-badge-padding | 0 3px | 徽标内边距 |
-| $mxi-badge-min-width | 16px | 徽标最小宽度（单数字呈圆形） |
-| $mxi-badge-dot-size | 8px | 红点尺寸 |
-| $mxi-badge-dot-bg | $mxi-color-danger | 红点背景色 |
+| $m-badge-height | 16px | 徽标高度 |
+| $m-badge-color | $m-white | 徽标文字颜色 |
+| $m-badge-bg | $m-color-danger | 徽标背景色 |
+| $m-badge-font-size | 12px | 徽标文字字号 |
+| $m-badge-font-weight | bold | 徽标文字字重 |
+| $m-badge-padding | 0 3px | 徽标内边距 |
+| $m-badge-min-width | 16px | 徽标最小宽度（单数字呈圆形） |
+| $m-badge-dot-size | 8px | 红点尺寸 |
+| $m-badge-dot-bg | $m-color-danger | 红点背景色 |
 
 完整变量与覆盖方式见[主题定制](/guide/theming)。

@@ -8,12 +8,12 @@ Define variables with the same names directly in the project root `uni.scss` to 
 
 ```scss
 // Custom theme colors (applies to all components)
-$mxi-color-primary: #10b981;
-$mxi-color-danger: #dc2626;
+$m-color-primary: #10b981;
+$m-color-danger: #dc2626;
 
 // Custom component metrics
-$mxi-button-normal-height: 48px;
-$mxi-radius-md: 12px;
+$m-button-normal-height: 48px;
+$m-radius-md: 12px;
 ```
 
 All variables in the variable file are declared with `!default`, so user-defined values always win over component defaults, regardless of where they are written.
@@ -40,23 +40,23 @@ To override the theme, just **define the variables directly** — no import of a
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| $mxi-color-primary | Primary color | #1989fa |
-| $mxi-color-success | Success color | #07c160 |
-| $mxi-color-warning | Warning color | #ff976a |
-| $mxi-color-danger | Danger color | #ee0a24 |
-| $mxi-white | Base white | #ffffff |
-| $mxi-text-color | Base text color | #323233 |
-| $mxi-disabled-opacity | Disabled opacity | 0.5 |
-| $mxi-color-default-bg | Background of the default type | #ffffff |
-| $mxi-color-default-border | Border of the default type | #ebedf0 |
+| $m-color-primary | Primary color | #1989fa |
+| $m-color-success | Success color | #07c160 |
+| $m-color-warning | Warning color | #ff976a |
+| $m-color-danger | Danger color | #ee0a24 |
+| $m-white | Base white | #ffffff |
+| $m-text-color | Base text color | #323233 |
+| $m-disabled-opacity | Disabled opacity | 0.5 |
+| $m-color-default-bg | Background of the default type | #ffffff |
+| $m-color-default-border | Border of the default type | #ebedf0 |
 
 ### Base Metrics
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| $mxi-border-width | Base border width | 1px |
-| $mxi-radius-md | Base radius | 8px |
-| $mxi-radius-max | Full radius | 999px |
+| $m-border-width | Base border width | 1px |
+| $m-radius-md | Base radius | 8px |
+| $m-radius-max | Full radius | 999px |
 
 ### Button
 

@@ -8,7 +8,7 @@ The uni-app x compiler **injects the project root `uni.scss` into every componen
 [sass] This file is already being loaded.
 ```
 
-To override the theme, simply **define** `$mxi-*` variables directly in `uni.scss`. See [Theming](/en/guide/theming) for details.
+To override the theme, simply **define** `$m-*` variables directly in `uni.scss`. See [Theming](/en/guide/theming) for details.
 
 ## Build error: "index.html is missing in the root directory"
 

@@ -9,7 +9,7 @@
 				<text class="tip">最近点击：{{ lastTapped == '' ? '－' : lastTapped }}</text>
 				<view class="grid">
 					<view v-for="name in iconBasicNames" :key="name" class="grid-item">
-						<mxi-icon :name="name" @click="onIconTap(name)" />
+						<m-icon :name="name" @click="onIconTap(name)" />
 						<text class="grid-caption">{{ name }}</text>
 					</view>
 				</view>
@@ -19,7 +19,7 @@
 			<view class="card">
 				<view class="grid">
 					<view v-for="name in iconOutlineNames" :key="name" class="grid-item">
-						<mxi-icon :name="name" @click="onIconTap(name)" />
+						<m-icon :name="name" @click="onIconTap(name)" />
 						<text class="grid-caption">{{ name }}</text>
 					</view>
 				</view>
@@ -29,7 +29,7 @@
 			<view class="card">
 				<view class="grid">
 					<view v-for="name in iconFilledNames" :key="name" class="grid-item">
-						<mxi-icon :name="name" @click="onIconTap(name)" />
+						<m-icon :name="name" @click="onIconTap(name)" />
 						<text class="grid-caption">{{ name }}</text>
 					</view>
 				</view>
@@ -39,19 +39,19 @@
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
-						<mxi-icon name="star" size="24" />
+						<m-icon name="star" size="24" />
 						<text class="caption">默认（黑）</text>
 					</view>
 					<view class="col-gap">
-						<mxi-icon name="star" size="24" color="#1989fa" />
+						<m-icon name="star" size="24" color="#1989fa" />
 						<text class="caption">#1989fa</text>
 					</view>
 					<view class="col-gap">
-						<mxi-icon name="star" size="24" color="#07c160" />
+						<m-icon name="star" size="24" color="#07c160" />
 						<text class="caption">#07c160</text>
 					</view>
 					<view class="col-gap">
-						<mxi-icon name="star" size="24" color="#ee0a24" />
+						<m-icon name="star" size="24" color="#ee0a24" />
 						<text class="caption">#ee0a24</text>
 					</view>
 				</view>
@@ -61,19 +61,19 @@
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
-						<mxi-icon name="chat-o" size="16" />
+						<m-icon name="chat-o" size="16" />
 						<text class="caption">16</text>
 					</view>
 					<view class="col-gap">
-						<mxi-icon name="chat-o" size="24" />
+						<m-icon name="chat-o" size="24" />
 						<text class="caption">24</text>
 					</view>
 					<view class="col-gap">
-						<mxi-icon name="chat-o" size="32" />
+						<m-icon name="chat-o" size="32" />
 						<text class="caption">32</text>
 					</view>
 					<view class="col-gap">
-						<mxi-icon name="chat-o" size="32px" />
+						<m-icon name="chat-o" size="32px" />
 						<text class="caption">32px</text>
 					</view>
 				</view>
@@ -83,11 +83,11 @@
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
-						<mxi-icon name="fire-o" size="24" custom-class="icon-red" />
+						<m-icon name="fire-o" size="24" custom-class="icon-red" />
 						<text class="caption">红色类</text>
 					</view>
 					<view class="col-gap">
-						<mxi-icon name="fire-o" size="24" custom-style="color: #1989fa;" />
+						<m-icon name="fire-o" size="24" custom-style="color: #1989fa;" />
 						<text class="caption">custom-style</text>
 					</view>
 				</view>
@@ -97,11 +97,11 @@
 			<view class="card">
 				<view class="row">
 					<view class="col-gap">
-						<mxi-icon name="like" size="24">
+						<m-icon name="like" size="24">
 							<template #icon>
 								<text class="slot-demo">✿</text>
 							</template>
-						</mxi-icon>
+						</m-icon>
 						<text class="caption">插槽替换</text>
 					</view>
 				</view>
@@ -112,7 +112,7 @@
 </template>
 
 <script setup lang="uts">
-	import { iconBasicNames, iconOutlineNames, iconFilledNames } from '@/uni_modules/mxi-ui-x/components/mxi-icon/icons.uts'
+	import { iconBasicNames, iconOutlineNames, iconFilledNames } from '@/uni_modules/m-ui-x/components/m-icon/icons.uts'
 
 	/** 最近点击的图标名（click 事件演示状态） */
 	const lastTapped = ref<string>('')

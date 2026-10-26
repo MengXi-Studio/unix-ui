@@ -28,9 +28,14 @@
 	border-color: var(--vp-c-brand-1);
 }
 
-/* 折叠态隐藏代码主体，保留操作条 */
+/* 折叠态隐藏代码主体，保留操作条：pre 隐藏后容器无流式内容会高度塌缩，
+   且 overflow-x:auto 裁剪绝对定位的按钮，必须撑起最小高度让展开按钮可见可点 */
 .vp-doc div[class*='language-'].collapsed pre {
 	display: none;
+}
+
+.vp-doc div[class*='language-'].collapsed {
+	min-height: 36px;
 }
 
 /* 演示手机栏：默认隐藏，≥1440px 展示 */

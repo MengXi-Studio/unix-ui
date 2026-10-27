@@ -11,7 +11,7 @@
   <h1>@meng-xi/unix-ui</h1>
   <p>A full-featured UI component library for uni-app x (written in UTS + uvue, one codebase for all platforms)</p>
 
-[![license](https://img.shields.io/github/license/MengXi-Studio/unix-ui.svg)](./license.md) [![npm](https://img.shields.io/npm/v/@meng-xi/unix-ui?color=blue)](https://www.npmjs.com/package/@meng-xi/unix-ui)
+[![license](https://img.shields.io/github/license/MengXi-Studio/unix-ui.svg)](./LICENSE) [![npm](https://img.shields.io/npm/v/@meng-xi/unix-ui?color=blue)](https://www.npmjs.com/package/@meng-xi/unix-ui)
 ![npm](https://img.shields.io/npm/dt/@meng-xi/unix-ui?color=green)
 </div>
 
@@ -118,4 +118,4 @@ Suggested reading: start with [Introduction](https://mengxi-studio.github.io/uni
 
 ## License
 
-[MIT](./license.md)
+[MIT](./LICENSE)

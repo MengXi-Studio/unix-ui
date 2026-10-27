@@ -10,8 +10,9 @@
  * 工程 uni_modules/ 目录，node_modules 内的组件不被 easycom 识别。
  *
  * 注意：插件目录名必须为 m-ui-x（DCloud 插件市场 id，x 后缀
- * 呼应 uni-app x 生态命名），因此 dest/package.json 为 playground 侧
- * 手工维护（id: m-ui-x），同步时保留、不参与复制与校验。
+ * 呼应 uni-app x 生态命名）；dest 侧 package.json、changelog.md、
+ * README.md 为 playground 侧手工维护（插件市场要求的格式与
+ * npm 包不同），同步时保留、不参与复制与校验。
  */
 import { cpSync, existsSync, rmSync, readdirSync, statSync, readFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
@@ -22,14 +23,16 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const src = join(root, 'packages/core')
 const dest = join(root, 'packages/playground/uni_modules/m-ui-x')
 
-/** 插件目录只需要这些内容（组件源码 + 主题变量 + 字体等静态资源 + 文档说明）；
- *  readme 用大写 README.md（与 core 源同名直拷，源/目标异名将导致哈希校验永久不一致） */
-const INCLUDE = ['components', 'theme', 'static', 'README.md', 'license.md']
+/** 插件目录同步这些内容（组件源码 + 主题变量 + 字体等静态资源 + 标准协议文件）；
+ *  README 不同步：npm 包侧文件与 DCloud 插件市场要求的格式不一致，
+ *  插件侧单独生成维护（见 KEEP） */
+const INCLUDE = ['components', 'theme', 'static', 'LICENSE']
 
 /** 同步时需在目标目录保留的手工维护文件（不复制、不删除、校验豁免）：
  *  - package.json：HBuilderX 插件发布要求 id 为 m-ui-x，与 core（npm 包）元数据不同
- *  - changelog.md：core 无此文件，仅 playground 侧维护 */
-const KEEP = ['package.json', 'changelog.md']
+ *  - changelog.md：core 无此文件，仅 playground 侧维护
+ *  - README.md：插件市场格式与 npm 包不同，插件侧单独生成维护 */
+const KEEP = ['package.json', 'changelog.md', 'README.md']
 
 /** 列出目录下全部相对文件；filterTop 为 true 时仅统计 INCLUDE 白名单内的顶层条目（与复制 filter 语义一致） */
 function listFiles(dir, filterTop = false) {
@@ -86,4 +89,4 @@ cpSync(src, dest, {
 		return INCLUDE.includes(rel.split(/[\\/]/)[0])
 	}
 })
-console.log('[sync] 已同步 packages/core → packages/playground/uni_modules/m-ui-x（package.json 保留手工版本）')
+console.log('[sync] 已同步 packages/core → packages/playground/uni_modules/m-ui-x（手工维护文件已保留）')

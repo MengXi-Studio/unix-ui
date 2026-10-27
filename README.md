@@ -118,4 +118,4 @@ $m-button-normal-height: 48px;
 
 ## License
 
-[MIT](./license.md)
+[MIT](./LICENSE)

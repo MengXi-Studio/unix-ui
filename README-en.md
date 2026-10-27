@@ -118,4 +118,4 @@ Suggested reading: start with [Introduction](https://mengxi-studio.github.io/uni
 
 ## License
 
-[MIT](./license.md)
+[MIT](./LICENSE)

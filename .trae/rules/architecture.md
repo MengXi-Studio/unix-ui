@@ -29,7 +29,7 @@ packages/docs（VitePress 双语文档站，手工维护）
 | 文档包 | `@meng-xi/unix-ui-docs` | VitePress 双语站（中文在 `src/` 根，英文在 `src/en/` 镜像） |
 | 组件前缀 | `m-` | 组件目录与标签名：`components/m-button/m-button.uvue` |
 | 主题变量前缀 | `$m-` | `theme/vars.scss` 全部变量；用户在根 uni.scss 定义同名变量即覆盖 |
-| 同步脚本 | `scripts/sync-uni-modules.mjs` | INCLUDE=`['components','theme','static','README.md','license.md']`（readme 大写，源/目标同名直拷），KEEP=`['package.json','changelog.md']` |
+| 同步脚本 | `scripts/sync-uni-modules.mjs` | INCLUDE=`['components','theme','static','LICENSE']`（README 不同步：插件市场格式与 npm 包不同），KEEP=`['package.json','changelog.md','README.md']` |
 
 ## 3. 新增组件的标准落码顺序
 

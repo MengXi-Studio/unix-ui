@@ -11,7 +11,7 @@
   <h1>@meng-xi/unix-ui</h1>
   <p>为 uni-app x 提供功能完善的 UI 组件库（UTS + uvue 编写，一套组件多端覆盖）</p>
 
-[![license](https://img.shields.io/github/license/MengXi-Studio/unix-ui.svg)](./license.md) [![npm](https://img.shields.io/npm/v/@meng-xi/unix-ui?color=blue)](https://www.npmjs.com/package/@meng-xi/unix-ui)
+[![license](https://img.shields.io/github/license/MengXi-Studio/unix-ui.svg)](./LICENSE) [![npm](https://img.shields.io/npm/v/@meng-xi/unix-ui?color=blue)](https://www.npmjs.com/package/@meng-xi/unix-ui)
 ![npm](https://img.shields.io/npm/dt/@meng-xi/unix-ui?color=green)
 </div>
 
@@ -118,4 +118,4 @@ $m-button-normal-height: 48px;
 
 ## License
 
-[MIT](./license.md)
+[MIT](./LICENSE)

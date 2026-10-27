@@ -172,3 +172,17 @@
 - 现象：本地 5.26 生成的 Kotlin 在云端 kotlinc 报 Unresolved reference（`slots.default`、`Animation`、`watch` 泛型 getter、`_uA` 空数组推断）——代码生成一致而运行时 SDK 旧
 - 依据：HBuilderX 导出日志明示「wgt 文件由 HBuilderX 5.26 版本生成，运行的基座 sdk 也需配套相同版本」（ask.dcloud.net.cn/article/35627）
 - 处置：确认本地 HBuilderX 渠道（alpha / 正式），云打包与离线打包基座用同版本；本地源码侧不做旧 SDK 兼容改写（slots 检测、Animation 句柄、watch getter 均为官方新 API，改写即失配）
+
+## 2026-10-27 m-overlay（Overlay 遮罩层，运行实测）
+
+### 32. Web 端组件根节点用 v-if，从注释节点切换创建后 attrs 透传事件丢失
+- 现象：m-overlay 根节点 `<view v-if="mounted" @click="onClick">`，lazyRender 默认 true 时初始不渲染；点击打开后遮罩显示正常，但**根元素的 click 永不触发**（子元素 click 正常、同页面 m-button 根 view 的 click 正常）
+- 根因：uni-app x web 端（uni-h5-vue 魔改 runtime），组件模板根节点从注释 vnode 切换为元素 vnode 后，模板编译的 `onClick` 依赖组件 attrs 透传（uni-h5 内置 View 组件渲染函数不直接绑定用户事件，全靠 fallthrough）链路在动态创建分支上丢失；根节点 DOM 常驻（初始就渲染）则透传正常
+- 修复：根节点改 `v-show`（DOM 常驻，显隐由 visible ref 控制），自造的 lazyRender prop 直接删除——查证 Vant Overlay 本无 lazy-render（那是 popup 的 prop），属于过度设计且正是事故根因
+- 诊断路径（可复用）：① curl `组件路径?import` 看编译产物 patchFlag/事件绑定 → ② grep `uni-h5-vue/dist-x/vue.runtime.esm.js` 的 patchEvent/_vei → ③ 浏览器 `Object.getOwnPropertySymbols(el)` 找 `Symbol("_vei")` 检查 onClick invoker（**`el._vei` 字符串访问恒为 undefined，veiKey 是 Symbol**）→ ④ elementFromPoint 命中测试 → ⑤ 逐层挂 capture/bubble 探针看事件传播在哪层中断
+- 对照判别：合成点击（`el.click()` / `dispatchEvent`）与真实点击在 DOM 层等价（uni-h5 不检查 isTrusted）；合成点击能完整触发 invoker→emit→页面回调即链路健康
+
+### 33. 浏览器自动化 agent 的验收报告必须带原始数据，否则默认存疑
+- 教训：本次排查中 browser agent 多轮「PASS/FAIL」结论与事实相反（误报遮罩已关闭、误报 _vei 不存在、点击方式不透明），浪费多轮排查方向
+- 规约：给 agent 的指令必须要求「每步返回原始输出（computed 值 / 日志原文 / 断言值），禁止臆测」；关键判断用可复核数据（console.log 输出 + browser_console_messages 原样取回，agent 的 evaluate 返回值可能被丢弃）
+- 工具坑：browser_evaluate 的返回字符串可能不回传（写入 `window.__x` 再单独读取可绕过）；browser_click 需要 snapshot 的元素 ref，坐标点击与 ref+offset 点击行为不一致；「真实输入 vs 合成点击」在该环境下不可靠，DoD 的人工点击验收应交给用户完成

@@ -64,6 +64,12 @@
 				"style": {
 					"navigationBarTitleText": "布局 Layout"
 				}
+			},
+			{
+				"path": "overlay/overlay",
+				"style": {
+					"navigationBarTitleText": "遮罩层 Overlay"
+				}
 			}
 		]
 		}

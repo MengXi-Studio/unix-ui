@@ -1,0 +1,195 @@
+<template>
+	<!-- 遮罩层根节点：DOM 常驻（v-show 控制显隐）。不可用根节点 v-if —— uni-app x web 端
+	     根节点从注释节点切换创建后 attrs 透传的事件绑定丢失，点击事件永不触发 -->
+	<view v-show="visible" :class="rootClass" :style="rootStyle" @click="onClick">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { lockBodyScroll, unlockBodyScroll } from './overlay-lock.uts'
+
+	type Props = {
+		/** 是否显示遮罩层 */
+		show?: boolean
+		/** z-index 层级（默认值以外的值以 inline 覆盖主题类 z-index） */
+		zIndex?: number
+		/** 动画时长（秒），0 表示无动画 */
+		duration?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		zIndex: 1,
+		duration: 0.3,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{ click: [event: MouseEvent] }>()
+
+	/** 根节点可见标记：关闭时等淡出过渡结束再置 false（v-show 解除显示） */
+	const visible = ref(false)
+
+	/** 过渡透明度：0 隐藏 / 1 显示（inline style 驱动 ucss transition 两态过渡） */
+	const opacity = ref(0)
+
+	/** 本实例是否持有 Web 端 body 滚动锁（与 lockBodyScroll 配对，卸载兜底释放） */
+	let locked = false
+
+	/** 关闭淡出延时句柄（-1 表示无待执行定时器） */
+	let hideTimer = -1
+
+	/**
+	 * 清理待执行的关闭定时器（快速连续开关时防止旧定时器把正在淡入的遮罩隐藏）
+	 */
+	function clearHideTimer() {
+		if (hideTimer != -1) {
+			clearTimeout(hideTimer)
+			hideTimer = -1
+		}
+	}
+
+	/**
+	 * 触发淡入过渡：浏览器在首帧绘制前不产生样式差值，需先以 opacity 0 完成一帧渲染，
+	 * 下一帧再置 1 才能触发过渡（双重 rAF 与 Vue Transition 同款时序）；
+	 * 非 Web 端原生渲染按 nextTick 时序切换
+	 */
+	function triggerFadeIn() {
+		// #ifdef WEB
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				opacity.value = 1
+			})
+		})
+		// #endif
+		// #ifndef WEB
+		nextTick(() => {
+			opacity.value = 1
+		})
+		// #endif
+	}
+
+	/**
+	 * 显示遮罩：清理未完成的关闭定时器，解除隐藏并进入淡入过渡
+	 */
+	function openOverlay() {
+		clearHideTimer()
+		visible.value = true
+		if (props.duration > 0) {
+			// 淡出中途重开的场景先归零，避免残留中间透明度；下一帧再拉起触发过渡
+			opacity.value = 0
+			triggerFadeIn()
+		} else {
+			opacity.value = 1
+		}
+	}
+
+	/**
+	 * 隐藏遮罩：立即释放滚动锁（对齐 Vant），duration > 0 时等淡出过渡结束后再解除显示
+	 */
+	function closeOverlay() {
+		if (locked) {
+			unlockBodyScroll()
+			locked = false
+		}
+		opacity.value = 0
+		if (props.duration > 0) {
+			clearHideTimer()
+			hideTimer = setTimeout(() => {
+				hideTimer = -1
+				visible.value = false
+			}, Math.round(props.duration * 1000))
+		} else {
+			visible.value = false
+		}
+	}
+
+	/** 根节点类名：m-overlay + 自定义类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-overlay'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 根节点动态样式：过渡透明度 + z-index（非默认值时 inline 覆盖主题类）+ 过渡时长 + 自定义样式（补分号拼接）；显隐由 v-show 控制 */
+	const rootStyle = computed<string>(() => {
+		let style = 'opacity: ' + opacity.value.toString() + ';'
+		if (props.zIndex != 1) style += ' z-index: ' + props.zIndex.toString() + ';'
+		style += ' transition-duration: ' + props.duration.toString() + 's;'
+		if (props.customStyle != '') {
+			if (props.customStyle.endsWith(';')) style += ' ' + props.customStyle
+			else style += ' ' + props.customStyle + ';'
+		}
+		return style
+	})
+
+	/**
+	 * 遮罩点击：透传给调用方（对齐 Vant：遮罩不自动关闭，由调用方在 click 回调置 show=false）
+	 */
+	function onClick(e: MouseEvent) {
+		emit('click', e)
+	}
+
+	// 初始即 show=true 的场景：直接进入可见态，不做过渡（对齐 Vant 无 appear 过渡）
+	onMounted(() => {
+		if (props.show) {
+			visible.value = true
+			opacity.value = 1
+			lockBodyScroll()
+			locked = true
+		}
+	})
+
+	// 卸载兜底：清理定时器并释放本实例持有的滚动锁（防止泄漏）
+	onUnmounted(() => {
+		clearHideTimer()
+		if (locked) {
+			unlockBodyScroll()
+			locked = false
+		}
+	})
+
+	// show 驱动显隐（flush: post 保证状态变更后的 DOM 时序一致）
+	watch(
+		() => props.show,
+		(show: boolean) => {
+			if (show) {
+				lockBodyScroll()
+				locked = true
+				openOverlay()
+			} else {
+				closeOverlay()
+			}
+		},
+		{ flush: 'post' }
+	)
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 遮罩层根节点 ========== */
+	/* fixed 全屏铺满视口；淡入淡出为 opacity 单属性两态过渡，走 ucss transition（时长由 inline 注入） */
+	.m-overlay {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-color: $m-overlay-background;
+		z-index: $m-overlay-z-index;
+		transition-property: opacity;
+		transition-timing-function: ease;
+	}
+</style>

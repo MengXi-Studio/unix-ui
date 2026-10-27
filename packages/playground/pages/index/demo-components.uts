@@ -68,6 +68,12 @@ export const demoGroups: DemoGroup[] = [
 				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
 			},
 			{
+				name: 'overlay',
+				zhName: '遮罩层',
+				enName: 'Overlay',
+				desc: '创建全屏遮罩层，支持淡入淡出、层级、嵌入内容与 Web 端滚动锁定，是弹窗类组件的基础。'
+			},
+			{
 				name: 'text',
 				zhName: '文本',
 				enName: 'Text',

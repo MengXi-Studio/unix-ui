@@ -76,6 +76,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Icon', link: '/en/components/icon' },
 						{ text: 'Image', link: '/en/components/image' },
 						{ text: 'Layout', link: '/en/components/layout' },
+						{ text: 'Overlay', link: '/en/components/overlay' },
 						{ text: 'Text', link: '/en/components/text' },
 						{ text: 'Space', link: '/en/components/space' }
 					]

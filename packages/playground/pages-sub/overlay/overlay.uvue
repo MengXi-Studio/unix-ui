@@ -1,0 +1,176 @@
+<template>
+	<view class="page">
+		<demo-navbar title="遮罩层" subtitle="Overlay" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-button type="primary" @click="openBasic">显示遮罩</m-button>
+				<text class="caption">点击遮罩关闭：遮罩不自动关闭，由调用方在 click 回调中置 show=false（对齐 Vant）</text>
+			</view>
+
+			<text class="section" id="content">嵌入内容</text>
+			<view class="card">
+				<m-button type="primary" @click="openContent">嵌入内容</m-button>
+				<text class="caption">默认插槽 + custom-style 居中；内容块 @click.stop 阻止冒泡，点击内容不触发遮罩关闭</text>
+			</view>
+
+			<text class="section" id="zindex">指定层级与浅色遮罩</text>
+			<view class="card">
+				<m-button type="primary" @click="openZIndex">自定义 z-index</m-button>
+				<text class="caption">z-index 10 + custom-style 浅色背景（inline 覆盖主题变量 $m-overlay-background）</text>
+			</view>
+
+			<text class="section" id="duration">动画时长</text>
+			<view class="card">
+				<m-space direction="vertical" fill>
+					<m-button type="primary" block @click="openSlow">时长 2 秒</m-button>
+					<m-button type="primary" block @click="openNone">时长 0（无动画）</m-button>
+				</m-space>
+				<text class="caption">duration 单位为秒（默认 0.3）；0 表示直接切换显示，无过渡</text>
+			</view>
+
+			<text class="section" id="lock">滚动锁定（Web 端）</text>
+			<view class="card">
+				<m-button type="primary" @click="openLock">锁定页面滚动</m-button>
+				<text class="caption">Web 端遮罩显示期间锁定 body 滚动（overflow hidden），关闭或组件卸载后还原；多实例堆叠按计数全关后才解锁。App 端全屏遮罩天然拦截触摸，无需处理</text>
+			</view>
+		</view>
+		</scroll-view>
+
+		<!-- 遮罩层挂页面根节点（scroll-view 外），position: fixed 铺满视口 -->
+		<m-overlay :show="showBasic" @click="closeBasic" />
+
+		<m-overlay
+			:show="showContent"
+			custom-style="display: flex; align-items: center; justify-content: center;"
+			@click="closeContent"
+		>
+			<view class="content-block" @click.stop="onContentBlockClick">
+				<text class="content-text">点击空白区域关闭遮罩</text>
+				<text class="content-close" @click.stop="closeContent">关闭</text>
+			</view>
+		</m-overlay>
+
+		<m-overlay
+			:show="showZIndex"
+			:z-index="10"
+			custom-style="background-color: rgba(255, 255, 255, 0.6); display: flex; align-items: center; justify-content: center;"
+			@click="closeZIndex"
+		>
+			<view class="content-block">
+				<text class="content-text">z-index: 10</text>
+			</view>
+		</m-overlay>
+
+		<m-overlay :show="showSlow" :duration="2" @click="closeSlow" />
+		<m-overlay :show="showNone" :duration="0" @click="closeNone" />
+		<m-overlay :show="showLock" @click="closeLock" />
+	</view>
+</template>
+
+<script setup lang="uts">
+	/** 基础用法遮罩显隐 */
+	const showBasic = ref(false)
+
+	/** 嵌入内容遮罩显隐 */
+	const showContent = ref(false)
+
+	/** 自定义 z-index 遮罩显隐 */
+	const showZIndex = ref(false)
+
+	/** 2 秒时长遮罩显隐 */
+	const showSlow = ref(false)
+
+	/** 0 时长（无动画）遮罩显隐 */
+	const showNone = ref(false)
+
+	/** 滚动锁定演示遮罩显隐 */
+	const showLock = ref(false)
+
+	/**
+	 * 基础用法：开 / 关
+	 */
+	function openBasic() {
+		showBasic.value = true
+	}
+	function closeBasic() {
+		showBasic.value = false
+	}
+
+	/**
+	 * 嵌入内容：开关与事件冒泡隔离演示
+	 */
+	function openContent() {
+		showContent.value = true
+	}
+	function closeContent() {
+		showContent.value = false
+	}
+	function onContentBlockClick() {
+		uni.showToast({ title: '内容点击：已阻止冒泡，遮罩未关闭', icon: 'none' })
+	}
+
+	/**
+	 * 自定义 z-index：开 / 关
+	 */
+	function openZIndex() {
+		showZIndex.value = true
+	}
+	function closeZIndex() {
+		showZIndex.value = false
+	}
+
+	/**
+	 * 动画时长对比：开 / 关
+	 */
+	function openSlow() {
+		showSlow.value = true
+	}
+	function closeSlow() {
+		showSlow.value = false
+	}
+	function openNone() {
+		showNone.value = true
+	}
+	function closeNone() {
+		showNone.value = false
+	}
+
+	/**
+	 * 滚动锁定演示：开 / 关
+	 */
+	function openLock() {
+		showLock.value = true
+	}
+	function closeLock() {
+		showLock.value = false
+	}
+</script>
+
+<style lang="scss">
+	/* 嵌入内容演示块（遮罩内居中的白色圆角卡片） */
+	.content-block {
+		flex-direction: column;
+		align-items: center;
+		padding: 30px 40px;
+		background-color: #ffffff;
+		border-radius: 8px;
+	}
+	.content-text {
+		font-size: 14px;
+		color: #323233;
+		margin-bottom: 12px;
+	}
+	/* 内容块内的关闭入口（模拟链接样式） */
+	.content-close {
+		font-size: 14px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

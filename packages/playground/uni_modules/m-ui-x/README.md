@@ -1,4 +1,4 @@
-![梦曦工作室 Logo](https://raw.githubusercontent.com/MengXi-Studio/unix-ui/master/packages/docs/src/public/logo.png)
+<img alt="梦曦工作室 Logo" width="180" src="https://raw.githubusercontent.com/MengXi-Studio/unix-ui/master/packages/docs/src/public/logo.png">
 
 # m-ui-x
 
@@ -90,7 +90,7 @@ $m-button-normal-height: 48px;
 
 想了解设计思路与实现原理（编译期主题变量注入、hairline 跨端方案、UTS 组件开发等）？公众号「**梦曦工作室**」有系列解析，扫码关注：
 
-![微信公众号二维码](https://raw.githubusercontent.com/MengXi-Studio/unix-ui/master/packages/docs/src/public/QR_code.jpg)
+<img alt="微信公众号二维码" width="180" src="https://raw.githubusercontent.com/MengXi-Studio/unix-ui/master/packages/docs/src/public/QR_code.jpg">
 
 - 🐛 [Issues](https://github.com/MengXi-Studio/unix-ui/issues) / 💬 [Discussions](https://github.com/MengXi-Studio/unix-ui/discussions)
 - 💬 QQ：1403440919

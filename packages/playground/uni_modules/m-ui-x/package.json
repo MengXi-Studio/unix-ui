@@ -7,14 +7,13 @@
 		"unix-ui",
 		"m-ui-x",
 		"ui",
-		"button",
 		"组件库"
 	],
 	"repository": "https://github.com/MengXi-Studio/unix-ui",
 	"engines": {
 		"HBuilderX": "^5.08",
 		"uni-app": "",
-		"uni-app-x": "^5.08"
+		"uni-app-x": "^3.8.7"
 	},
 	"dcloudext": {
 		"type": "component-vue",
@@ -44,9 +43,9 @@
 		"encrypt": [],
 		"platforms": {
 			"cloud": {
-				"tcb": "x",
-				"aliyun": "x",
-				"alipay": "x"
+				"tcb": "√",
+				"aliyun": "√",
+				"alipay": "√"
 			},
 			"client": {
 				"uni-app": {

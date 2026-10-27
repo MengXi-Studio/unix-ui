@@ -184,23 +184,17 @@
 			</view>
 		</m-popup>
 
-		<!-- 销毁后重建对比 -->
+		<!-- 销毁后重建对比：计数状态在 demo-popup-counter 组件内部 -->
 		<m-popup v-model:show="showDestroy" :destroy-on-close="true">
 			<view class="panel-center">
-				<text class="panel-text">点击次数：{{ destroyCount }}</text>
-				<m-space>
-					<m-button type="primary" size="small" @click="incDestroy">+1</m-button>
-					<m-button type="primary" size="small" @click="closeDestroy">关闭</m-button>
-				</m-space>
+				<demo-popup-counter />
+				<m-button type="primary" size="small" @click="closeDestroy">关闭</m-button>
 			</view>
 		</m-popup>
 		<m-popup v-model:show="showKeep">
 			<view class="panel-center">
-				<text class="panel-text">点击次数：{{ keepCount }}</text>
-				<m-space>
-					<m-button type="primary" size="small" @click="incKeep">+1</m-button>
-					<m-button type="primary" size="small" @click="closeKeep">关闭</m-button>
-				</m-space>
+				<demo-popup-counter />
+				<m-button type="primary" size="small" @click="closeKeep">关闭</m-button>
 			</view>
 		</m-popup>
 	</view>
@@ -243,11 +237,6 @@
 	const showDestroy = ref(false)
 	/** 默认保留对比显隐 */
 	const showKeep = ref(false)
-
-	/** 销毁重建面板内计数（重开后应归零） */
-	const destroyCount = ref(0)
-	/** 默认保留面板内计数（重开后应保留） */
-	const keepCount = ref(0)
 
 	/**
 	 * 基础用法：开 / 关
@@ -355,7 +344,7 @@
 	}
 
 	/**
-	 * 销毁重建对比：开 / 关与计数
+	 * 销毁重建对比：开 / 关（计数状态在 demo-popup-counter 组件内部，随 slot 销毁与保留）
 	 */
 	function openDestroy() {
 		showDestroy.value = true
@@ -363,17 +352,11 @@
 	function closeDestroy() {
 		showDestroy.value = false
 	}
-	function incDestroy() {
-		destroyCount.value++
-	}
 	function openKeep() {
 		showKeep.value = true
 	}
 	function closeKeep() {
 		showKeep.value = false
-	}
-	function incKeep() {
-		keepCount.value++
 	}
 </script>
 

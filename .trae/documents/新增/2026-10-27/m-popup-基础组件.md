@@ -233,7 +233,7 @@ $m-popup-close-icon-z-index: 1 !default;
    - T6 事件：open → opened → close → closed 日志序列完整
    - T7 无遮罩：overlay 背景 rgba(0,0,0,0)
    - T8 duration=0：立即两态直切
-   - T9 destroy-on-close：关闭后 slot 内容从 DOM 移除、重开内容重建；默认保留：关闭后 slot 内容保留（注：面板内计数变量在父页面，销毁不重置父页面 ref，属预期语义）
+   - T9 destroy-on-close：关闭后 slot 连同面板内组件实例一起从 DOM 移除、重开内容重建且组件内部状态复位（计数归零）；默认保留：关闭后 slot 内容保留、状态保留
    - T10 收尾：bodyOv 还原、全程无 pageerror / console error
 3. `pnpm build:docs` → 通过（VitePress 死链检查，4.2s）
 4. `pnpm run build:demo` → 编译成功（50 文件）
@@ -242,6 +242,10 @@ $m-popup-close-icon-z-index: 1 !default;
 ### 排查插曲（已定性为脚本缺陷，非组件缺陷）
 
 浏览器自动化 agent（browser_use）四轮无法触达按钮（uni-app x 页面 a11y 快照仅 3 节点、browser_click 强制要求 ref、无坐标点击能力），切换 playwright-core + 系统 Chrome 后一次通过。初期 T3/T4 两项 FAIL 经 dump elementFromPoint 定性为**验证脚本探针未刷新**（check 引用点击前的旧快照），修正断言时序后全绿——教训记入 LESSONS #34 / #35。
+
+### 用户验证反馈修正（destroy-on-close 演示语义）
+
+用户人工验证发现「销毁后重建」演示效果不符：按钮文案为「重开计数归零」，但重开后仍显示关闭前的数。根因是演示素材设计缺陷——计数 ref 定义在父页面 script setup，slot 销毁只卸载面板内容，不会重置父页面 ref（组件行为本身正确，T9 早期探针已证实 slot 移除/重建）。修正：新增演示辅助组件 `packages/playground/components/demo-popup-counter/demo-popup-counter.uvue`（计数状态在组件内部），destroy 面板 slot 销毁时组件实例随之卸载、重开计数归零；keep 面板实例常驻、计数保留。重跑矩阵 61 PASS / 0 FAIL（T9 七项断言含「重开计数归零」全过）。经验：destroy-on-close 类演示的状态必须放在 slot 内部（子组件实例状态），放父页面 ref 无法体现销毁语义。
 
 ### 遗留 TODO
 

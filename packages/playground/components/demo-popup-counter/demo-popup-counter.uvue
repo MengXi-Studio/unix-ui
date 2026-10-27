@@ -1,0 +1,35 @@
+<template>
+	<view class="demo-popup-counter">
+		<text class="demo-popup-counter__text">点击次数：{{ count }}</text>
+		<m-button type="primary" size="small" @click="inc">+1</m-button>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * 演示辅助：面板内计数器（状态在组件内部）
+	 * destroy-on-close 演示专用：slot 销毁时本组件实例随之卸载、count 复位归零；
+	 * 默认保留时实例常驻、count 保留——以此区分「销毁重建」与「仅隐藏」两种语义
+	 */
+	const count = ref(0)
+
+	/**
+	 * 面板内点击 +1（组件内部自增，不经父页面）
+	 */
+	function inc() {
+		count.value++
+	}
+</script>
+
+<style lang="scss">
+	.demo-popup-counter {
+		flex-direction: column;
+		align-items: center;
+		margin-bottom: 12px;
+	}
+	.demo-popup-counter__text {
+		font-size: 14px;
+		color: #323233;
+		margin-bottom: 8px;
+	}
+</style>

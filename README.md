@@ -1,4 +1,4 @@
-**中文** | [English](./readme.en.md)
+**中文** | [English](./README-en.md)
 
 <div align="center">
   <a href="https://github.com/MengXi-Studio/unix-ui">
@@ -51,13 +51,13 @@ mkdir -p uni_modules && cp -R node_modules/@meng-xi/unix-ui uni_modules/m-ui-x
 
 ```html
 <template>
-	<m-button type="primary" @click="onClick">主要按钮</m-button>
+  <m-button type="primary" @click="onClick">主要按钮</m-button>
 </template>
 
 <script setup lang="uts">
-	const onClick = () => {
-		uni.showToast({ title: '点击了按钮' })
-	}
+  const onClick = () => {
+    uni.showToast({ title: '点击了按钮' })
+  }
 </script>
 ```
 
@@ -91,6 +91,8 @@ $m-button-normal-height: 48px;
 ## 在线演示
 
 示例工程 [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground)（每个组件一页穷举全部 props / 变体 / 事件的可运行验证矩阵），部署于文档站的[在线演示](https://mengxi-studio.github.io/unix-ui/playground/)，浏览器可直接体验。
+
+**Android 真机体验**：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1793059625238-__UNI__F1AA560_1793059613497.apk)——云打包产物（Android），覆盖全部组件的真实原生渲染效果；安装包随版本更新重新打包，链接以最新发版说明为准。
 
 ## 交流与支持
 

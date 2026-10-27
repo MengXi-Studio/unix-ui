@@ -1,4 +1,4 @@
-**中文** | [English](./README-en.md)
+[中文](./README.md) | **English**
 
 <div align="center">
   <a href="https://github.com/MengXi-Studio/unix-ui">
@@ -51,13 +51,13 @@ mkdir -p uni_modules && cp -R node_modules/@meng-xi/unix-ui uni_modules/m-ui-x
 
 ```html
 <template>
-	<m-button type="primary" @click="onClick">Primary Button</m-button>
+  <m-button type="primary" @click="onClick">Primary Button</m-button>
 </template>
 
 <script setup lang="uts">
-	const onClick = () => {
-		uni.showToast({ title: 'Button clicked' })
-	}
+  const onClick = () => {
+    uni.showToast({ title: 'Button clicked' })
+  }
 </script>
 ```
 
@@ -91,6 +91,8 @@ For all available variables see [theme/vars.scss](./theme/vars.scss), named as `
 ## Live Demo
 
 The example project [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) (one page per component exhaustively covering all props / variants / events) is deployed as a [live demo](https://mengxi-studio.github.io/unix-ui/playground/) on the documentation site — try it right in your browser.
+
+**Try it on a real Android device**: [Download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1793059625238-__UNI__F1AA560_1793059613497.apk) — a cloud-packaged Android build showcasing native rendering of all components. The package is rebuilt with each release; use the link in the latest release notes.
 
 ## Community & Support
 

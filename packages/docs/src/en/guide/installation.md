@@ -51,6 +51,10 @@ Use a component directly in any page template, no import or registration:
 </template>
 ```
 
+## Try It on a Device
+
+You can experience the components on a real device without writing any code: [download the Android demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1793059625238-__UNI__F1AA560_1793059613497.apk) — a cloud-packaged build of the playground example project (one page per component exhaustively covering all props / variants / events). The package is rebuilt with each release; use the link in the latest release notes.
+
 ## Next Steps
 
 - [Quick Start](/en/guide/getting-started): basic usage and event handling

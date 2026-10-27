@@ -22,8 +22,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const src = join(root, 'packages/core')
 const dest = join(root, 'packages/playground/uni_modules/m-ui-x')
 
-/** 插件目录只需要这些内容（组件源码 + 主题变量 + 字体等静态资源 + 文档说明） */
-const INCLUDE = ['components', 'theme', 'static', 'readme.md', 'license.md']
+/** 插件目录只需要这些内容（组件源码 + 主题变量 + 字体等静态资源 + 文档说明）；
+ *  readme 用大写 README.md（与 core 源同名直拷，源/目标异名将导致哈希校验永久不一致） */
+const INCLUDE = ['components', 'theme', 'static', 'README.md', 'license.md']
 
 /** 同步时需在目标目录保留的手工维护文件（不复制、不删除、校验豁免）：
  *  - package.json：HBuilderX 插件发布要求 id 为 m-ui-x，与 core（npm 包）元数据不同

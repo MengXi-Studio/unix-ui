@@ -51,6 +51,10 @@ npm install @meng-xi/unix-ui
 </template>
 ```
 
+## 真机体验
+
+不写代码也可以先在真机上体验组件效果：[下载 Android 演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1793059625238-__UNI__F1AA560_1793059613497.apk)——示例工程（playground）的云打包产物，每个组件一页穷举全部 props / 变体 / 事件。安装包随版本更新重新打包，链接以最新发版说明为准。
+
 ## 下一步
 
 - [快速上手](/guide/getting-started)：了解基础用法与事件处理

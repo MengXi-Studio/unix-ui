@@ -1,6 +1,6 @@
 # 更新日志
 
-## [0.1.0] - 2026-10-21
+## [0.1.0] - 2026-10-27
 
 首个可用版本：面向 uni-app x 的 UI 组件库，pnpm monorepo 架构（core / docs / playground 三包），UTS + uvue 一套源码多端覆盖，内置 11 个基础组件。
 

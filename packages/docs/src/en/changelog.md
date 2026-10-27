@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0] - 2026-10-21
+## [0.1.0] - 2026-10-27
 
 First usable release: a UI component library for uni-app x with a pnpm monorepo architecture (core / docs / playground), one set of UTS + uvue sources covering multiple platforms, with 11 built-in base components.
 

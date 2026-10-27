@@ -4,7 +4,8 @@
 
 为 uni-app x 提供功能完善的 UI 组件库（UTS + uvue 编写，一套组件多端覆盖）。
 
-**m-ui-x** 是开源项目 [unix-ui](https://github.com/MengXi-Studio/unix-ui) 的 uni_modules 插件发行版（npm 包名 [`@meng-xi/unix-ui`](https://www.npmjs.com/package/@meng-xi/unix-ui)），内置按钮、徽标、图标、加载、单元格、栅格、图片、文本、间距等 11 个基础组件，把原生开发的交互细节（按压反馈、0.5px 细边框、文本省略、徽标截断……）与多端差异一次收敛。
+**m-ui-x** 是开源项目 [unix-ui](https://github.com/MengXi-Studio/unix-ui) 的 uni_modules 插件发行版（npm 包名
+[`@meng-xi/unix-ui`](https://www.npmjs.com/package/@meng-xi/unix-ui)），内置按钮、徽标、图标、加载、单元格、栅格、图片、文本、间距等 11 个基础组件，把原生开发的交互细节（按压反馈、0.5px 细边框、文本省略、徽标截断……）与多端差异一次收敛。
 
 ## 特性
 
@@ -18,8 +19,8 @@
 ## 平台兼容性
 
 | App-Android | App-iOS | App-HarmonyOS | Web（Chrome / Safari） | 微信小程序 |
-| :---: | :---: | :---: | :---: | :---: |
-| √ | √ | √ | √ | √ |
+| :---------: | :-----: | :-----------: | :--------------------: | :--------: |
+|      √      |    √    |       √       |           √            |     √      |
 
 > 环境要求：HBuilderX 5.08+，uni-app x 项目。
 
@@ -58,17 +59,17 @@ $m-button-normal-height: 48px;
 
 ## 组件清单
 
-| 组件 | 说明 |
-| --- | --- |
-| m-button | 按钮：语义色 type、plain / disabled / loading、四档尺寸、block、hairline 细边框、按压反馈 |
-| m-cell / m-cell-group | 单元格与分组：title / value / label、图标、四向箭头、inset 圆角卡片分组 |
-| m-row / m-col | 栅格布局：gutter 间距、对齐、换行 |
-| m-icon | 图标：250+ 常用图标（ttf 随包内置）、颜色尺寸、自定义图标插槽 |
-| m-image | 图片：mode 直通、加载 / 失败占位、淡入过渡、圆形、懒加载 |
-| m-text | 文本：语义色 / 色值双模式、三档字号、单行省略、多行截断、可选中 |
-| m-space | 间距：方向 / 换行 / 对齐，size 单值或双值（行 / 列）分写 |
-| m-loading | 加载：circular / spinner 双形态、自定义色与尺寸、带文案 |
-| m-badge | 徽标：数字 / 点、max 截断、语义色与色值、位置偏移、独立形态 |
+| 组件                  | 说明                                                                                      |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| m-button              | 按钮：语义色 type、plain / disabled / loading、四档尺寸、block、hairline 细边框、按压反馈 |
+| m-cell / m-cell-group | 单元格与分组：title / value / label、图标、四向箭头、inset 圆角卡片分组                   |
+| m-row / m-col         | 栅格布局：gutter 间距、对齐、换行                                                         |
+| m-icon                | 图标：250+ 常用图标（ttf 随包内置）、颜色尺寸、自定义图标插槽                             |
+| m-image               | 图片：mode 直通、加载 / 失败占位、淡入过渡、圆形、懒加载                                  |
+| m-text                | 文本：语义色 / 色值双模式、三档字号、单行省略、多行截断、可选中                           |
+| m-space               | 间距：方向 / 换行 / 对齐，size 单值或双值（行 / 列）分写                                  |
+| m-loading             | 加载：circular / spinner 双形态、自定义色与尺寸、带文案                                   |
+| m-badge               | 徽标：数字 / 点、max 截断、语义色与色值、位置偏移、独立形态                               |
 
 ## 文档与演示
 
@@ -88,12 +89,12 @@ $m-button-normal-height: 48px;
 
 ## 交流与支持
 
-想了解设计思路与实现原理（编译期主题变量注入、hairline 跨端方案、UTS 组件开发等）？公众号「**梦曦工作室**」有系列解析，扫码关注：
+想了解设计思路与实现原理（编译期主题变量注入、hairline 跨端方案、UTS 组件开发等）？公众号「**梦曦工作室**」有系列解析，扫码获取更多信息：
 
 <img alt="微信公众号二维码" width="180" src="https://raw.githubusercontent.com/MengXi-Studio/unix-ui/master/packages/docs/src/public/QR_code.jpg">
 
 - 🐛 [Issues](https://github.com/MengXi-Studio/unix-ui/issues) / 💬 [Discussions](https://github.com/MengXi-Studio/unix-ui/discussions)
-- 💬 QQ：1403440919
+- 🌐 官网：[mengxi-studio.github.io](https://mengxi-studio.github.io/.github/)
 
 ## 开源协议
 

@@ -1,0 +1,413 @@
+<template>
+	<view class="page">
+		<demo-navbar title="弹出层" subtitle="Popup" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-button type="primary" @click="openBasic">显示弹出层</m-button>
+				<text class="caption">v-model:show 双向绑定；点击遮罩自动关闭（close-on-click-overlay 默认 true），面板内点击不误触遮罩</text>
+			</view>
+
+			<text class="section" id="position">弹出位置</text>
+			<view class="card">
+				<m-space wrap>
+					<m-button type="primary" @click="openTop">顶部弹出</m-button>
+					<m-button type="primary" @click="openBottom">底部弹出</m-button>
+					<m-button type="primary" @click="openLeft">左侧弹出</m-button>
+					<m-button type="primary" @click="openRight">右侧弹出</m-button>
+				</m-space>
+				<text class="caption">position 五方位：top / bottom / left / right / center（默认 center）；top/bottom 宽度撑满、left/right 高度撑满</text>
+			</view>
+
+			<text class="section" id="round">圆角弹窗</text>
+			<view class="card">
+				<m-space wrap>
+					<m-button type="primary" @click="openRoundCenter">居中圆角</m-button>
+					<m-button type="primary" @click="openRoundBottom">底部圆角</m-button>
+				</m-space>
+				<text class="caption">round 按弹出方位分侧圆角（bottom 弹出仅上侧两角圆角，center 四角全圆）</text>
+			</view>
+
+			<text class="section" id="closeable">关闭图标</text>
+			<view class="card">
+				<m-space wrap>
+					<m-button type="primary" @click="openCloseTR">右上角图标</m-button>
+					<m-button type="primary" @click="openCloseTL">左上角图标</m-button>
+					<m-button type="primary" @click="openCloseBR">右下角图标</m-button>
+					<m-button type="primary" @click="openCloseBL">左下角图标</m-button>
+					<m-button type="primary" @click="openCloseCustom">自定义图标</m-button>
+				</m-space>
+				<text class="caption">closeable 显示关闭图标（m-icon 驱动），close-icon-position 四角可选；close-icon 自定义图标名（点击触发 click-close-icon 后关闭）</text>
+			</view>
+
+			<text class="section" id="overlay-click">点击遮罩不关闭</text>
+			<view class="card">
+				<m-button type="primary" @click="openNoClose">禁用遮罩关闭</m-button>
+				<text class="caption">close-on-click-overlay=false：点击遮罩仅触发 click-overlay 事件不关闭（控制台可见 POPUP-EVENT 日志），面板内按钮可关闭</text>
+			</view>
+
+			<text class="section" id="events">监听显示事件</text>
+			<view class="card">
+				<m-button type="primary" @click="openEvents">打开并观察控制台</m-button>
+				<text class="caption">open / opened 在开始与完成进入过渡时触发，close / closed 在开始与完成离开过渡时触发（本页控制台输出 POPUP-EVENT 日志）</text>
+			</view>
+
+			<text class="section" id="no-overlay">无遮罩弹层</text>
+			<view class="card">
+				<m-button type="primary" @click="openNoOverlay">透明浮层</m-button>
+				<text class="caption">overlay=false：不显示遮罩背景（透明浮层）；点击浮层外区域仍会触发 click-overlay 并可关闭（透明层仍拦截点击，与 Vant 差异见文档）</text>
+			</view>
+
+			<text class="section" id="duration">动画时长</text>
+			<view class="card">
+				<m-button type="primary" @click="openInstant">时长 0（无动画）</m-button>
+				<text class="caption">duration=0 直切两态，无过渡动画（默认 0.3 秒）</text>
+			</view>
+
+			<text class="section" id="destroy">销毁后重建</text>
+			<view class="card">
+				<m-space direction="vertical" fill>
+					<m-button type="primary" block @click="openDestroy">destroy-on-close（重开计数归零）</m-button>
+					<m-button type="primary" block @click="openKeep">默认保留（重开计数保留）</m-button>
+				</m-space>
+				<text class="caption">destroy-on-close 在关闭动画结束后销毁面板内容、重开时重建（内部状态复位）；默认仅隐藏、状态保留</text>
+			</view>
+		</view>
+		</scroll-view>
+
+		<!-- 基础用法：v-model:show 双向绑定 -->
+		<m-popup v-model:show="showBasic">
+			<view class="panel-center">
+				<text class="panel-text">正文内容</text>
+				<text class="panel-hint">点击遮罩关闭</text>
+				<m-button type="primary" size="small" @click="closeBasic">关闭</m-button>
+			</view>
+		</m-popup>
+
+		<!-- 弹出位置 -->
+		<m-popup v-model:show="showTop" position="top">
+			<view class="panel-edge">
+				<text class="panel-text">顶部弹出</text>
+			</view>
+		</m-popup>
+		<m-popup v-model:show="showBottom" position="bottom">
+			<view class="panel-edge">
+				<text class="panel-text">底部弹出</text>
+			</view>
+		</m-popup>
+		<m-popup v-model:show="showLeft" position="left">
+			<view class="panel-side">
+				<text class="panel-text">左侧弹出</text>
+			</view>
+		</m-popup>
+		<m-popup v-model:show="showRight" position="right">
+			<view class="panel-side">
+				<text class="panel-text">右侧弹出</text>
+			</view>
+		</m-popup>
+
+		<!-- 圆角弹窗 -->
+		<m-popup v-model:show="showRoundCenter" round>
+			<view class="panel-center">
+				<text class="panel-text">居中圆角弹窗</text>
+			</view>
+		</m-popup>
+		<m-popup v-model:show="showRoundBottom" position="bottom" round>
+			<view class="panel-edge">
+				<text class="panel-text">底部圆角弹窗</text>
+			</view>
+		</m-popup>
+
+		<!-- 关闭图标：四角变体（静态字面量 prop，避免运行时拼接类型） -->
+		<m-popup v-model:show="showCloseTR" round closeable>
+			<view class="panel-center">
+				<text class="panel-text">右上角关闭图标</text>
+			</view>
+		</m-popup>
+		<m-popup v-model:show="showCloseTL" round closeable close-icon-position="top-left">
+			<view class="panel-center">
+				<text class="panel-text">左上角关闭图标</text>
+			</view>
+		</m-popup>
+		<m-popup v-model:show="showCloseBR" round closeable close-icon-position="bottom-right">
+			<view class="panel-center">
+				<text class="panel-text">右下角关闭图标</text>
+			</view>
+		</m-popup>
+		<m-popup v-model:show="showCloseBL" round closeable close-icon-position="bottom-left">
+			<view class="panel-center">
+				<text class="panel-text">左下角关闭图标</text>
+			</view>
+		</m-popup>
+		<m-popup v-model:show="showCloseCustom" round closeable close-icon="fail">
+			<view class="panel-center">
+				<text class="panel-text">自定义关闭图标（fail）</text>
+			</view>
+		</m-popup>
+
+		<!-- 点击遮罩不关闭 -->
+		<m-popup v-model:show="showNoClose" :close-on-click-overlay="false" @click-overlay="onNoCloseOverlayClick">
+			<view class="panel-center">
+				<text class="panel-text">点击遮罩不会关闭</text>
+				<m-button type="primary" size="small" @click="closeNoClose">关闭</m-button>
+			</view>
+		</m-popup>
+
+		<!-- 监听显示事件 -->
+		<m-popup
+			v-model:show="showEvents"
+			@open="logOpen"
+			@opened="logOpened"
+			@close="logClose"
+			@closed="logClosed"
+		>
+			<view class="panel-center">
+				<text class="panel-text">事件演示</text>
+				<text class="panel-hint">open / opened / close / closed 见控制台</text>
+			</view>
+		</m-popup>
+
+		<!-- 无遮罩弹层 -->
+		<m-popup v-model:show="showNoOverlay" :overlay="false">
+			<view class="panel-center">
+				<text class="panel-text">透明浮层（无遮罩背景）</text>
+				<m-button type="primary" size="small" @click="closeNoOverlay">关闭</m-button>
+			</view>
+		</m-popup>
+
+		<!-- 动画时长 0 -->
+		<m-popup v-model:show="showInstant" :duration="0">
+			<view class="panel-center">
+				<text class="panel-text">duration=0 无动画</text>
+			</view>
+		</m-popup>
+
+		<!-- 销毁后重建对比 -->
+		<m-popup v-model:show="showDestroy" :destroy-on-close="true">
+			<view class="panel-center">
+				<text class="panel-text">点击次数：{{ destroyCount }}</text>
+				<m-space>
+					<m-button type="primary" size="small" @click="incDestroy">+1</m-button>
+					<m-button type="primary" size="small" @click="closeDestroy">关闭</m-button>
+				</m-space>
+			</view>
+		</m-popup>
+		<m-popup v-model:show="showKeep">
+			<view class="panel-center">
+				<text class="panel-text">点击次数：{{ keepCount }}</text>
+				<m-space>
+					<m-button type="primary" size="small" @click="incKeep">+1</m-button>
+					<m-button type="primary" size="small" @click="closeKeep">关闭</m-button>
+				</m-space>
+			</view>
+		</m-popup>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/** 基础用法显隐 */
+	const showBasic = ref(false)
+	/** 顶部弹出显隐 */
+	const showTop = ref(false)
+	/** 底部弹出显隐 */
+	const showBottom = ref(false)
+	/** 左侧弹出显隐 */
+	const showLeft = ref(false)
+	/** 右侧弹出显隐 */
+	const showRight = ref(false)
+	/** 居中圆角显隐 */
+	const showRoundCenter = ref(false)
+	/** 底部圆角显隐 */
+	const showRoundBottom = ref(false)
+	/** 右上角关闭图标显隐 */
+	const showCloseTR = ref(false)
+	/** 左上角关闭图标显隐 */
+	const showCloseTL = ref(false)
+	/** 右下角关闭图标显隐 */
+	const showCloseBR = ref(false)
+	/** 左下角关闭图标显隐 */
+	const showCloseBL = ref(false)
+	/** 自定义关闭图标显隐 */
+	const showCloseCustom = ref(false)
+	/** 禁用遮罩关闭显隐 */
+	const showNoClose = ref(false)
+	/** 显示事件演示显隐 */
+	const showEvents = ref(false)
+	/** 无遮罩弹层显隐 */
+	const showNoOverlay = ref(false)
+	/** 无动画弹层显隐 */
+	const showInstant = ref(false)
+	/** 销毁重建对比显隐 */
+	const showDestroy = ref(false)
+	/** 默认保留对比显隐 */
+	const showKeep = ref(false)
+
+	/** 销毁重建面板内计数（重开后应归零） */
+	const destroyCount = ref(0)
+	/** 默认保留面板内计数（重开后应保留） */
+	const keepCount = ref(0)
+
+	/**
+	 * 基础用法：开 / 关
+	 */
+	function openBasic() {
+		showBasic.value = true
+	}
+	function closeBasic() {
+		showBasic.value = false
+	}
+
+	/**
+	 * 弹出位置：开（关闭走遮罩点击）
+	 */
+	function openTop() {
+		showTop.value = true
+	}
+	function openBottom() {
+		showBottom.value = true
+	}
+	function openLeft() {
+		showLeft.value = true
+	}
+	function openRight() {
+		showRight.value = true
+	}
+
+	/**
+	 * 圆角弹窗：开
+	 */
+	function openRoundCenter() {
+		showRoundCenter.value = true
+	}
+	function openRoundBottom() {
+		showRoundBottom.value = true
+	}
+
+	/**
+	 * 关闭图标四角变体与自定义图标：开（关闭走图标点击或遮罩点击）
+	 */
+	function openCloseTR() {
+		showCloseTR.value = true
+	}
+	function openCloseTL() {
+		showCloseTL.value = true
+	}
+	function openCloseBR() {
+		showCloseBR.value = true
+	}
+	function openCloseBL() {
+		showCloseBL.value = true
+	}
+	function openCloseCustom() {
+		showCloseCustom.value = true
+	}
+
+	/**
+	 * 禁用遮罩关闭：开 / 关与遮罩事件日志
+	 */
+	function openNoClose() {
+		showNoClose.value = true
+	}
+	function closeNoClose() {
+		showNoClose.value = false
+	}
+	function onNoCloseOverlayClick() {
+		console.log('POPUP-EVENT: click-overlay（close-on-click-overlay=false，弹层保持显示）')
+		uni.showToast({ title: '已触发 click-overlay，但未关闭', icon: 'none' })
+	}
+
+	/**
+	 * 显示事件演示：四事件日志（供运行验证捕获）
+	 */
+	function openEvents() {
+		showEvents.value = true
+	}
+	function logOpen() {
+		console.log('POPUP-EVENT: open')
+	}
+	function logOpened() {
+		console.log('POPUP-EVENT: opened')
+	}
+	function logClose() {
+		console.log('POPUP-EVENT: close')
+	}
+	function logClosed() {
+		console.log('POPUP-EVENT: closed')
+	}
+
+	/**
+	 * 无遮罩弹层：开 / 关
+	 */
+	function openNoOverlay() {
+		showNoOverlay.value = true
+	}
+	function closeNoOverlay() {
+		showNoOverlay.value = false
+	}
+
+	/**
+	 * 无动画弹层：开
+	 */
+	function openInstant() {
+		showInstant.value = true
+	}
+
+	/**
+	 * 销毁重建对比：开 / 关与计数
+	 */
+	function openDestroy() {
+		showDestroy.value = true
+	}
+	function closeDestroy() {
+		showDestroy.value = false
+	}
+	function incDestroy() {
+		destroyCount.value++
+	}
+	function openKeep() {
+		showKeep.value = true
+	}
+	function closeKeep() {
+		showKeep.value = false
+	}
+	function incKeep() {
+		keepCount.value++
+	}
+</script>
+
+<style lang="scss">
+	/* 居中面板内容（基础 / 圆角 / 关闭图标 / 事件 / 无遮罩 / 计数场景共用） */
+	.panel-center {
+		flex-direction: column;
+		align-items: center;
+		padding: 40px 50px;
+	}
+	/* 顶部 / 底部面板内容 */
+	.panel-edge {
+		flex-direction: row;
+		justify-content: center;
+		padding: 30px 16px;
+	}
+	/* 左右面板内容（宽度自定，高度由方位定位撑满） */
+	.panel-side {
+		width: 200px;
+		padding: 30px 16px;
+	}
+	.panel-text {
+		font-size: 14px;
+		color: #323233;
+		margin-bottom: 8px;
+	}
+	.panel-hint {
+		font-size: 12px;
+		color: #969799;
+		margin-bottom: 12px;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

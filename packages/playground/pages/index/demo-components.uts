@@ -74,6 +74,12 @@ export const demoGroups: DemoGroup[] = [
 				desc: '创建全屏遮罩层，支持淡入淡出、层级、嵌入内容与 Web 端滚动锁定，是弹窗类组件的基础。'
 			},
 			{
+				name: 'popup',
+				zhName: '弹出层',
+				enName: 'Popup',
+				desc: '弹出层容器，支持五种弹出方位、圆角、关闭图标、遮罩开关、显示事件回调与内容销毁重建，是弹窗类组件的基座。'
+			},
+			{
 				name: 'text',
 				zhName: '文本',
 				enName: 'Text',

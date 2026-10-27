@@ -115,3 +115,11 @@ $m-space-size: 8px !default;                 /* 默认间距（未传 size 时�
 /* ========== Overlay 遮罩层 ========== */
 $m-overlay-z-index: 1 !default;
 $m-overlay-background: rgba(0, 0, 0, 0.7) !default;
+
+/* ========== Popup 弹出层 ========== */
+$m-popup-background: #ffffff !default;
+$m-popup-round-radius: 16px !default;
+$m-popup-close-icon-size: 22px !default;
+$m-popup-close-icon-color: #c8c9cc !default;
+$m-popup-close-icon-margin: 16px !default;
+$m-popup-close-icon-z-index: 1 !default;

@@ -70,6 +70,12 @@
 				"style": {
 					"navigationBarTitleText": "遮罩层 Overlay"
 				}
+			},
+			{
+				"path": "popup/popup",
+				"style": {
+					"navigationBarTitleText": "弹出层 Popup"
+				}
 			}
 		]
 		}

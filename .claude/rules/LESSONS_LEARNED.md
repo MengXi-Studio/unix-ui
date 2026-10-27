@@ -186,3 +186,27 @@
 - 教训：本次排查中 browser agent 多轮「PASS/FAIL」结论与事实相反（误报遮罩已关闭、误报 _vei 不存在、点击方式不透明），浪费多轮排查方向
 - 规约：给 agent 的指令必须要求「每步返回原始输出（computed 值 / 日志原文 / 断言值），禁止臆测」；关键判断用可复核数据（console.log 输出 + browser_console_messages 原样取回，agent 的 evaluate 返回值可能被丢弃）
 - 工具坑：browser_evaluate 的返回字符串可能不回传（写入 `window.__x` 再单独读取可绕过）；browser_click 需要 snapshot 的元素 ref，坐标点击与 ref+offset 点击行为不一致；「真实输入 vs 合成点击」在该环境下不可靠，DoD 的人工点击验收应交给用户完成
+
+## 2026-10-27 m-popup（Popup 弹出层，运行实测）
+
+### 34. 自动化验收脚本的「探针-断言时序错位」会制造组件假 FAIL
+- 现象：Playwright 九场景矩阵中 T3/T4 两项稳定 FAIL（visOvCount=1，弹层"关不掉"），但单场景复现脚本全部通过，一度怀疑 hideTimer 竞争 / 多实例状态污染
+- 根因：check 断言引用的快照变量 s 是「点击前」probe 的结果，执行关闭点击后未重新取快照——点击后 700ms 组件实际早已关闭，FAIL 是脚本引用了过期数据；dump elementFromPoint + 全 overlay computed display 一锤定音（`visOvs: []`）
+- 规约：每次交互（click / 等待）之后、断言之前必须重新取快照，断言变量与其数据时刻一一对应；「单场景过、全流程挂」优先怀疑脚本自身状态管理而非被测组件
+- 排查利器：在 FAIL 断言前临时 dump `elementFromPoint` 命中链 + 全部目标节点 computed display/opacity，一次运行即可定性「组件没关」还是「快照过期」
+
+### 35. browser_use 无法交互 uni-app x Web 页面，playwright-core + 系统 Chrome 是可靠替代
+- 现象：browser_use 四轮无法触发任何弹层——browser_snapshot 对 uni-app x 页面仅返回 3 个文本节点（无交互元素 ref）；browser_click 强制要求 ref 且无坐标点击能力；elementFromPoint 证实按钮中心可点（命中 SPAN）但自动化就是触达不了
+- 替代方案（/tmp 下建独立 npm 工程即可，复用系统 Chrome 免下浏览器）：
+  ```bash
+  npm i playwright-core
+  ```
+  ```js
+  const { chromium } = require('playwright-core')
+  const browser = await chromium.launch({
+    executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    headless: true
+  })
+  ```
+- 关键优势：`locator.click` 走 CDP 真实输入（trusted event，等价人工点击）；CSS 选择器 + hasText 文案定位不依赖 a11y 快照；`page.mouse.click(x, y)` 坐标点击可测遮罩空白区；`page.evaluate` 全量探针（computed 样式 / borderRadius / elementFromPoint）原始数据可复核；`page.on('console' / 'pageerror')` 捕获运行日志与业务日志（POPUP-EVENT）
+- 断言细节：uni-app x Web 端页面 body 的 overflow 基线可能是 `hidden auto`（页面自身样式），滚动锁断言必须与 T0 基线对比，不能硬编码 `''` / `'visible'`；transition 后的断言等待 ≥ 2×duration（本例 300ms 动画等 600–700ms）

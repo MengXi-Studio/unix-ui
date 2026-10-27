@@ -90,6 +90,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Image 图片', link: '/components/image' },
 						{ text: 'Layout 布局', link: '/components/layout' },
 						{ text: 'Overlay 遮罩层', link: '/components/overlay' },
+						{ text: 'Popup 弹出层', link: '/components/popup' },
 						{ text: 'Text 文本', link: '/components/text' },
 						{ text: 'Space 间距', link: '/components/space' }
 					]

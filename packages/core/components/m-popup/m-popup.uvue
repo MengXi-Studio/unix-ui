@@ -1,0 +1,385 @@
+<template>
+	<!-- 组合实现：根节点即内置 m-overlay（复用遮罩、Web 滚动锁、淡入淡出、hideTimer 可重入）；
+	     面板在 overlay 插槽内按 position 绝对定位。面板为内部节点而非组件根节点，
+	     v-if 切换安全（根节点 v-if 事件丢失问题仅影响组件根节点） -->
+	<m-overlay
+		:show="show"
+		:z-index="zIndex"
+		:duration="duration"
+		:custom-class="overlayClass"
+		:custom-style="overlayRootStyle"
+		@click="onOverlayClick"
+	>
+		<view v-if="rendered" :class="panelClass" :style="panelStyle" @click.stop="onPanelClick">
+			<slot v-if="!destroyed"></slot>
+			<m-icon v-if="closeable" :name="closeIcon" :custom-class="closeIconClass" @click="onCloseIconClick" />
+		</view>
+	</m-overlay>
+</template>
+
+<script setup lang="uts">
+	import { IconName } from '../m-icon/icons.uts'
+
+	/** 弹出方位 */
+	type PopupPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'
+
+	/** 关闭图标方位 */
+	type PopupCloseIconPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+
+	type Props = {
+		/** 是否显示弹出层（v-model:show） */
+		show?: boolean
+		/** 弹出方位 */
+		position?: PopupPosition
+		/** 是否显示遮罩背景（false 时遮罩透明，为无遮罩视觉的浮层） */
+		overlay?: boolean
+		/** 遮罩自定义类名（透传内置 m-overlay custom-class） */
+		overlayClass?: string.ClassString
+		/** 遮罩自定义样式（透传内置 m-overlay custom-style） */
+		overlayStyle?: string
+		/** z-index 层级（透传内置 m-overlay；沿用 overlay 体系默认 1，与 Vant 2000+ 动态递增不同） */
+		zIndex?: number
+		/** 动画时长（秒），0 表示无动画（面板过渡与遮罩过渡共用） */
+		duration?: number
+		/** 是否显示圆角（按弹出方位分侧） */
+		round?: boolean
+		/** 是否显示关闭图标 */
+		closeable?: boolean
+		/** 关闭图标名称（m-icon 图标名） */
+		closeIcon?: IconName
+		/** 关闭图标方位 */
+		closeIconPosition?: PopupCloseIconPosition
+		/** 是否在点击遮罩后自动关闭（false 时遮罩点击仅触发 click-overlay 事件） */
+		closeOnClickOverlay?: boolean
+		/** 是否在首次展示时才渲染面板（此后保留 DOM 不销毁） */
+		lazyRender?: boolean
+		/** 关闭后是否销毁面板内容（关闭动画结束后销毁，重开时重建） */
+		destroyOnClose?: boolean
+		/** 是否增加顶部安全区间距（env(safe-area-inset-top)） */
+		safeAreaInsetTop?: boolean
+		/** 是否增加底部安全区间距（env(safe-area-inset-bottom)） */
+		safeAreaInsetBottom?: boolean
+		/** 关闭前回调：返回 false 可阻止关闭（boolean 同步版，作用于关闭图标与遮罩点击两条内部关闭路径） */
+		beforeClose?: ((action: string) => boolean) | null
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		position: 'center',
+		overlay: true,
+		overlayClass: '',
+		overlayStyle: '',
+		zIndex: 1,
+		duration: 0.3,
+		round: false,
+		closeable: false,
+		closeIcon: 'cross',
+		closeIconPosition: 'top-right',
+		closeOnClickOverlay: true,
+		lazyRender: true,
+		destroyOnClose: false,
+		safeAreaInsetTop: false,
+		safeAreaInsetBottom: false,
+		beforeClose: null
+	})
+
+	const emit = defineEmits<{
+		'update:show': [value: boolean]
+		click: [event: MouseEvent]
+		'click-overlay': [event: MouseEvent]
+		'click-close-icon': [event: MouseEvent]
+		open: []
+		close: []
+		opened: []
+		closed: []
+	}>()
+
+	/** 面板挂载标记：lazyRender=true 时首次 show 才置 true（此后不回退）；lazyRender=false 初始即挂载 */
+	const rendered = ref(!props.lazyRender)
+
+	/** 面板内容销毁标记：destroyOnClose=true 时关闭动画结束后置 true，重开时复位 */
+	const destroyed = ref(false)
+
+	/** 面板过渡两态：true 面板在终位（in），false 在起始位（out） */
+	const enter = ref(false)
+
+	/** opened / closed 延时句柄（-1 表示无待执行定时器，快速开关可重入） */
+	let timer = -1
+
+	/** 内置遮罩根样式：透传 overlayStyle；overlay=false 时追加透明背景（无遮罩视觉的浮层） */
+	const overlayRootStyle = computed<string>(() => {
+		let style = props.overlayStyle
+		if (!props.overlay) {
+			if (style != '' && !style.endsWith(';')) style += ';'
+			style += ' background-color: transparent;'
+		}
+		return style
+	})
+
+	/** 面板类名：m-popup + 方位定位类 + 过渡两态类（position×state 组合扁平类）+ round 分侧圆角类 */
+	const panelClass = computed<string>(() => {
+		let cls = 'm-popup'
+		cls += ' m-popup--' + props.position
+		cls += enter.value ? ' m-popup--' + props.position + '-in' : ' m-popup--' + props.position + '-out'
+		if (props.round) cls += ' m-popup--round-' + props.position
+		return cls
+	})
+
+	/** 面板动态样式：过渡时长（秒，inline 注入）+ 安全区 padding */
+	const panelStyle = computed<string>(() => {
+		let style = 'transition-duration: ' + props.duration.toString() + 's;'
+		if (props.safeAreaInsetTop) style += ' padding-top: env(safe-area-inset-top);'
+		if (props.safeAreaInsetBottom) style += ' padding-bottom: env(safe-area-inset-bottom);'
+		return style
+	})
+
+	/** 关闭图标类名（经 m-icon custom-class 挂载：定位 + 主题色/字号——SCSS 变量无法直通 m-icon 的 color/size prop） */
+	const closeIconClass = computed<string>(() => {
+		return 'm-popup__close-icon m-popup__close-icon--' + props.closeIconPosition
+	})
+
+	/**
+	 * 清理待执行的 opened / closed 定时器（快速连续开关时防止旧定时器误发事件或误销毁内容）
+	 */
+	function clearTimer() {
+		if (timer != -1) {
+			clearTimeout(timer)
+			timer = -1
+		}
+	}
+
+	/**
+	 * 触发面板进入过渡：面板可能随本次 show 变化新挂载（lazyRender 首开），
+	 * 浏览器在首帧绘制前不产生样式差值，需先以起始位（out）完成一帧渲染，
+	 * 下一帧再切 in 才能触发过渡（Web 端双重 rAF 与 Vue Transition 同款时序，非 Web 端 nextTick）
+	 */
+	function triggerPanelIn() {
+		// #ifdef WEB
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				enter.value = true
+			})
+		})
+		// #endif
+		// #ifndef WEB
+		nextTick(() => {
+			enter.value = true
+		})
+		// #endif
+	}
+
+	/**
+	 * 统一关闭入口：before-close 拦截判断通过后派发 update:show=false，
+	 * 关闭图标与遮罩点击两条内部关闭路径共用；v-model 外部驱动 show=false 不经拦截（父级显式决策）
+	 */
+	function requestClose(action: string) {
+		const beforeClose = props.beforeClose
+		if (beforeClose != null) {
+			const allowed = beforeClose!(action)
+			if (!allowed) return
+		}
+		emit('update:show', false)
+	}
+
+	/**
+	 * 遮罩点击（内置 m-overlay 的 click；面板区域已 @click.stop 隔离，仅背景区域可达）：
+	 * 派发 click-overlay；close-on-click-overlay 开启时走统一关闭入口
+	 */
+	function onOverlayClick(e: MouseEvent) {
+		emit('click-overlay', e)
+		if (props.closeOnClickOverlay) {
+			requestClose('close-overlay')
+		}
+	}
+
+	/**
+	 * 面板点击：派发 click 事件（对齐 Vant「点击弹出层时触发」）；
+	 * 模板上 @click.stop 阻止冒泡到遮罩根节点，面板内点击不会误触 click-overlay 与遮罩关闭
+	 */
+	function onPanelClick(e: MouseEvent) {
+		emit('click', e)
+	}
+
+	/**
+	 * 关闭图标点击：派发 click-close-icon 后走统一关闭入口
+	 */
+	function onCloseIconClick(e: MouseEvent) {
+		emit('click-close-icon', e)
+		requestClose('close-button')
+	}
+
+	// 初始即 show=true 的场景：面板直接以终位挂载，不做过渡、不派发 open/opened（对齐 Vant 无 appear 过渡）
+	onMounted(() => {
+		if (props.show) {
+			rendered.value = true
+			destroyed.value = false
+			enter.value = true
+		}
+	})
+
+	// 卸载兜底：清理定时器
+	onUnmounted(() => {
+		clearTimer()
+	})
+
+	// show 驱动开合（flush: post 保证状态变更后的 DOM 时序一致）
+	watch(
+		() => props.show,
+		(show: boolean) => {
+			clearTimer()
+			if (show) {
+				destroyed.value = false
+				rendered.value = true
+				emit('open')
+				if (props.duration > 0) {
+					// 兜底复位起始位（正常重开时本就为 false；防极端时序下残留 true 导致无过渡）
+					enter.value = false
+					triggerPanelIn()
+					timer = setTimeout(() => {
+						timer = -1
+						emit('opened')
+					}, Math.round(props.duration * 1000))
+				} else {
+					enter.value = true
+					emit('opened')
+				}
+			} else {
+				enter.value = false
+				emit('close')
+				if (props.duration > 0) {
+					timer = setTimeout(() => {
+						timer = -1
+						if (props.destroyOnClose) destroyed.value = true
+						emit('closed')
+					}, Math.round(props.duration * 1000))
+				} else {
+					if (props.destroyOnClose) destroyed.value = true
+					emit('closed')
+				}
+			}
+		},
+		{ flush: 'post' }
+	)
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 面板基类（在内置 m-overlay 内绝对定位，m-overlay 即包含块） ========== */
+	/* 面板过渡：transform + opacity 双属性两态过渡，时长由 inline 注入 */
+	.m-popup {
+		position: absolute;
+		background-color: $m-popup-background;
+		transition-property: transform, opacity;
+		transition-timing-function: ease;
+	}
+
+	/* ========== 五方位定位 ========== */
+	.m-popup--center {
+		top: 50%;
+		left: 50%;
+	}
+	.m-popup--top {
+		top: 0;
+		left: 0;
+		right: 0;
+	}
+	.m-popup--bottom {
+		bottom: 0;
+		left: 0;
+		right: 0;
+	}
+	.m-popup--left {
+		top: 0;
+		bottom: 0;
+		left: 0;
+	}
+	.m-popup--right {
+		top: 0;
+		bottom: 0;
+		right: 0;
+	}
+
+	/* ========== 过渡两态（position × state 组合，扁平展开 10 类） ========== */
+	/* center：scale 缩放 + opacity 淡入淡出，居中位移并入 transform 组（对齐 Vant 观感） */
+	.m-popup--center-in {
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 1;
+	}
+	.m-popup--center-out {
+		transform: translate(-50%, -50%) scale(0.8);
+		opacity: 0;
+	}
+	/* 四方位：translate 平移（opacity 恒 1，起始位移出遮罩边界被裁剪不可见） */
+	.m-popup--top-in {
+		transform: translateY(0);
+	}
+	.m-popup--top-out {
+		transform: translateY(-100%);
+	}
+	.m-popup--bottom-in {
+		transform: translateY(0);
+	}
+	.m-popup--bottom-out {
+		transform: translateY(100%);
+	}
+	.m-popup--left-in {
+		transform: translateX(0);
+	}
+	.m-popup--left-out {
+		transform: translateX(-100%);
+	}
+	.m-popup--right-in {
+		transform: translateX(0);
+	}
+	.m-popup--right-out {
+		transform: translateX(100%);
+	}
+
+	/* ========== round 分侧圆角（对齐弹出方位的外侧直角、内侧圆角） ========== */
+	.m-popup--round-center {
+		border-radius: $m-popup-round-radius;
+	}
+	.m-popup--round-top {
+		border-radius: 0 0 $m-popup-round-radius $m-popup-round-radius;
+	}
+	.m-popup--round-bottom {
+		border-radius: $m-popup-round-radius $m-popup-round-radius 0 0;
+	}
+	.m-popup--round-left {
+		border-radius: 0 $m-popup-round-radius $m-popup-round-radius 0;
+	}
+	.m-popup--round-right {
+		border-radius: $m-popup-round-radius 0 0 $m-popup-round-radius;
+	}
+
+	/* ========== 关闭图标（m-icon custom-class 载体：定位 + 主题色/字号） ========== */
+	.m-popup__close-icon {
+		position: absolute;
+		z-index: $m-popup-close-icon-z-index;
+		color: $m-popup-close-icon-color;
+		font-size: $m-popup-close-icon-size;
+	}
+	.m-popup__close-icon--top-right {
+		top: $m-popup-close-icon-margin;
+		right: $m-popup-close-icon-margin;
+	}
+	.m-popup__close-icon--top-left {
+		top: $m-popup-close-icon-margin;
+		left: $m-popup-close-icon-margin;
+	}
+	.m-popup__close-icon--bottom-right {
+		bottom: $m-popup-close-icon-margin;
+		right: $m-popup-close-icon-margin;
+	}
+	.m-popup__close-icon--bottom-left {
+		bottom: $m-popup-close-icon-margin;
+		left: $m-popup-close-icon-margin;
+	}
+</style>

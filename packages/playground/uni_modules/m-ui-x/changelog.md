@@ -8,6 +8,8 @@
   分割线组件：水平 / 垂直两种形态（垂直为 flex 子项，外层容器需 `flex-direction: row` + `align-items: center`）、`dashed` 虚线、`hairline` 0.5px 细线（border 1px + 单轴缩放 0.5 实现，App 端安全）、`content-position` 内容位置（left / right / center，一侧线限宽 10%）、默认插槽与文本样式继承
 - 新增 `m-grid` / `m-grid-item`
   宫格组件：`column-num` 自定义列数、`square` 正方形格子、`gutter` 格子间距、`border` 完整表格边框（容器顶线 + 左线、格子右线 + 下线拼线）、`center` 内容居中、`direction` 横排、`reverse` 反向、`clickable` 按压反馈（hover-class）；格子 `text` / `icon` / `icon-color`、`dot` / `badge` 徽标、`click` 事件与 `url` 应用内跳转，default / icon / text 三插槽
+- 新增 `m-toast`
+  轻提示组件：函数式 API（`showToast` / `showSuccessToast` / `showFailToast` / `showLoadingToast` / `closeToast`，string 简写与 ToastOptions 对象双入参，单例语义）与组件式（`v-model:show` + default 插槽）双形态；`type`（text / loading / success / fail）、`position`（top / middle / bottom）、`icon` 自定义图标、`overlay` / `forbidClick` 遮罩与点击拦截、`closeOnClick` / `closeOnClickOverlay`、`duration`（loading 型默认 0 不自动关）、`wordBreak` 换行控制（normal / break-all / break-word，App 端 Vapor 5.31+ 生效）、`onOpened` / `onClose` 回调与 opened / close 事件；采用「全局函数 + 页面预置容器 + 全局单例桥」方案（uni-app x 无运行时动态挂载能力），API 手感对齐 Vant
 
 ## 0.1.0（2026-10-27）
 

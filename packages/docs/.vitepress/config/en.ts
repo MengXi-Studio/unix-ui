@@ -85,7 +85,8 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					text: 'Feedback Components',
 					items: [
 						{ text: 'Loading', link: '/en/components/loading' },
-						{ text: 'Overlay', link: '/en/components/overlay' }
+						{ text: 'Overlay', link: '/en/components/overlay' },
+						{ text: 'Toast', link: '/en/components/toast' }
 					]
 				},
 				{

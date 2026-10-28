@@ -1,0 +1,268 @@
+<template>
+	<view class="page">
+		<demo-navbar title="轻提示" subtitle="Toast" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-space direction="vertical" :size="12" fill>
+						<m-button type="primary" block @click="onBasic">文字提示</m-button>
+						<m-button type="primary" block @click="onNewline">换行提示</m-button>
+						<m-button type="primary" block @click="onBreakAll">换行时截断单词</m-button>
+						<m-button type="primary" block @click="onBreakNormal">换行时不截断单词</m-button>
+						<m-button type="primary" block @click="onBreakWord">长单词放不下才截断</m-button>
+					</m-space>
+					<text class="caption">showToast 纯文字气泡，默认 2s 自动关闭；message 支持 \n 换行；word-break 控制换行方式：break-all 任意字符截断 / normal 按单词换行（默认）/ break-word 单词优先、放不下才截断</text>
+				</view>
+
+				<text class="section" id="status">成功 / 失败提示</text>
+				<view class="card">
+					<m-space direction="vertical" :size="12" fill>
+						<m-button type="primary" block @click="onSuccess">成功提示</m-button>
+						<m-button type="primary" block @click="onFail">失败提示</m-button>
+					</m-space>
+					<text class="caption">showSuccessToast / showFailToast 强制类型并显示对应默认图标，2s 自动关闭</text>
+				</view>
+
+				<text class="section" id="loading">加载提示</text>
+				<view class="card">
+					<m-space direction="vertical" :size="12" fill>
+						<m-button type="primary" block @click="onLoading">加载提示</m-button>
+					</m-space>
+					<text class="caption">showLoadingToast 默认 duration 0 不自动关闭、forbidClick 禁止背景点击（期间页面按钮均不可点），示例 1.2s 后模拟业务完成调用 closeToast</text>
+				</view>
+
+				<text class="section" id="icon">自定义图标</text>
+				<view class="card">
+					<m-space direction="vertical" :size="12" fill>
+						<m-button type="primary" block @click="onIcon">自定义图标</m-button>
+					</m-space>
+					<text class="caption">icon 传入 m-icon 图标名（IconName）覆盖展示图标，与文字竖排方形气泡</text>
+				</view>
+
+				<text class="section" id="position">展示位置</text>
+				<view class="card">
+					<m-space direction="vertical" :size="12" fill>
+						<m-button type="primary" block @click="onTop">顶部展示</m-button>
+						<m-button type="primary" block @click="onMiddle">中部展示</m-button>
+						<m-button type="primary" block @click="onBottom">底部展示</m-button>
+					</m-space>
+					<text class="caption">position 支持 top / middle / bottom（默认 middle），示例 1s 自动关闭便于连续点击</text>
+				</view>
+
+				<text class="section" id="overlay">遮罩与禁止点击</text>
+				<view class="card">
+					<m-space direction="vertical" :size="12" fill>
+						<m-button type="primary" block @click="onOverlay">带遮罩提示</m-button>
+						<m-button type="primary" block @click="onForbid">禁止点击提示</m-button>
+					</m-space>
+					<text class="caption">overlay 显示半透明背景遮罩；forbidClick 渲染透明拦截层（loading 型默认开启），点击遮罩区均被吞掉</text>
+				</view>
+
+				<text class="section" id="click-close">点击与手动关闭</text>
+				<view class="card">
+					<m-space direction="vertical" :size="12" fill>
+						<m-button type="primary" block @click="onClickClose">点击气泡关闭</m-button>
+						<m-button type="primary" block @click="onLongShow">长显提示</m-button>
+						<m-button type="primary" block @click="onClose">关闭提示</m-button>
+					</m-space>
+					<text class="caption">closeOnClick 开启后点击气泡即关闭；duration 0 不自动关闭，任意时刻调用 closeToast 可关闭当前提示</text>
+				</view>
+
+				<text class="section" id="callback">展示 / 关闭回调</text>
+				<view class="card">
+					<m-space direction="vertical" :size="12" fill>
+						<m-button type="primary" block @click="onCallback">带回调提示</m-button>
+					</m-space>
+					<view class="log-area">
+						<text v-for="(log, i) in logs" :key="i" class="log-text">{{ log }}</text>
+					</view>
+					<text class="caption">onOpened 在淡入完成后触发，onClose 在关闭后触发（日志区记录最近 4 条）</text>
+				</view>
+
+				<text class="section" id="component">组件式用法</text>
+				<view class="card">
+					<m-space direction="vertical" :size="12" fill>
+						<m-button type="primary" block @click="onCustomShow">展示组件式提示</m-button>
+					</m-space>
+					<!-- 组件式实例：v-model:show 控制显隐，default 插槽容纳自定义内容 -->
+					<m-toast v-model:show="customShow" :duration="2000" @opened="log('组件式：已展示')" @close="log('组件式：已关闭')">
+						<view class="custom-toast">
+							<m-image :src="customImage" width="40px" height="40px" round />
+							<text class="custom-toast__text">自定义内容</text>
+						</view>
+					</m-toast>
+					<text class="caption">v-model:show 控制显隐 + default 插槽嵌入任意内容，opened / close 事件在过渡完成后触发</text>
+				</view>
+			</view>
+		</scroll-view>
+		<!-- 函数式命令容器：页面预置一次（须在组件式实例之后渲染，后注册覆盖使函数式命令落到本容器） -->
+		<m-toast />
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { showToast, showSuccessToast, showFailToast, showLoadingToast, closeToast } from '@/uni_modules/m-ui-x/components/m-toast/toast.uts'
+
+	/** 组件式显隐状态（v-model:show） */
+	const customShow = ref(false)
+
+	/** 组件式插槽演示图（与 image 演示页同源） */
+	const customImage = 'https://raw.githubusercontent.com/MengXi-Studio/unix-ui/master/packages/playground/static/demo/demo-cat.jpg'
+
+	/** 回调演示日志（最近 4 条，新事件置顶） */
+	const logs = reactive<string[]>([])
+
+	/**
+	 * 记录一条回调日志（置顶展示，超出 4 条移除末尾）
+	 */
+	function log(message: string) {
+		logs.unshift(message)
+		if (logs.length > 4) {
+			logs.splice(logs.length - 1, 1)
+		}
+	}
+
+	/** 文字提示 */
+	function onBasic() {
+		showToast('提示内容')
+	}
+
+	/** 换行提示（message 支持 \n） */
+	function onNewline() {
+		showToast('这是一条\n换行的提示')
+	}
+
+	/** 换行时截断单词（break-all：无空格长串在任意字符处断行，不会溢出气泡） */
+	function onBreakAll() {
+		showToast({ message: 'abcdefghijklmnopqrstuvwxyz0123456789', wordBreak: 'break-all' })
+	}
+
+	/** 换行时不截断单词（normal：带空格长句在单词边界断行） */
+	function onBreakNormal() {
+		showToast({ message: 'the quick brown fox jumps over the lazy dog', wordBreak: 'normal' })
+	}
+
+	/** 长单词放不下才截断（break-word：整词优先换行，单个超长词溢出气泡前截断） */
+	function onBreakWord() {
+		showToast({ message: 'thisisaverylongwordwithoutspaces', wordBreak: 'break-word' })
+	}
+
+	/** 成功提示 */
+	function onSuccess() {
+		showSuccessToast('成功文案')
+	}
+
+	/** 失败提示 */
+	function onFail() {
+		showFailToast('失败文案')
+	}
+
+	/** 加载提示（duration 0 不自动关 + forbidClick；1.2s 后模拟业务完成自动 closeToast） */
+	function onLoading() {
+		showLoadingToast('加载中...')
+		setTimeout(() => {
+			closeToast()
+		}, 1200)
+	}
+
+	/** 手动关闭当前提示 */
+	function onClose() {
+		closeToast()
+	}
+
+	/** 自定义图标提示 */
+	function onIcon() {
+		showToast({ message: '自定义图标', icon: 'like-o' })
+	}
+
+	/** 顶部提示（1s 自动关闭便于连续点击） */
+	function onTop() {
+		showToast({ message: '顶部提示', position: 'top', duration: 1000 })
+	}
+
+	/** 居中提示 */
+	function onMiddle() {
+		showToast({ message: '中部提示', duration: 1000 })
+	}
+
+	/** 底部提示 */
+	function onBottom() {
+		showToast({ message: '底部提示', position: 'bottom', duration: 1000 })
+	}
+
+	/** 带遮罩提示 */
+	function onOverlay() {
+		showToast({ message: '遮罩提示', overlay: true })
+	}
+
+	/** 禁止点击提示（loading 型默认 forbidClick；1.2s 后自动 closeToast 便于继续操作） */
+	function onForbid() {
+		showLoadingToast({ message: '禁止点击' })
+		setTimeout(() => {
+			closeToast()
+		}, 1200)
+	}
+
+	/** 点击气泡关闭提示（duration 5000 防自动关干扰点击演示） */
+	function onClickClose() {
+		showToast({ message: '点击我关闭', closeOnClick: true, duration: 5000 })
+	}
+
+	/** 长显提示（duration 0 不自动关闭，配合「关闭提示」按钮演示手动关闭） */
+	function onLongShow() {
+		showToast({ message: '长显提示', duration: 0 })
+	}
+
+	/** 带生命周期回调的提示 */
+	function onCallback() {
+		showToast({
+			message: '回调提示',
+			duration: 1500,
+			onOpened: () => {
+				log('onOpened：已展示')
+			},
+			onClose: () => {
+				log('onClose：已关闭')
+			}
+		})
+	}
+
+	/** 组件式开关演示 */
+	function onCustomShow() {
+		customShow.value = true
+		log('组件式：show = true')
+	}
+</script>
+
+<style lang="scss">
+	/* 回调日志区 */
+	.log-area {
+		margin-top: 12px;
+		padding: 8px 12px;
+		background-color: #f7f8fa;
+		border-radius: 8px;
+		min-height: 24px;
+	}
+	.log-text {
+		font-size: 12px;
+		color: #646566;
+		line-height: 20px;
+	}
+	/* 组件式插槽自定义内容（竖排图片 + 文案，白色适配深色气泡） */
+	.custom-toast {
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+	}
+	.custom-toast__text {
+		color: #ffffff;
+		font-size: 14px;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

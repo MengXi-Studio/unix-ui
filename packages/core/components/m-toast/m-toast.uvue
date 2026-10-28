@@ -1,0 +1,487 @@
+<template>
+	<!-- 逻辑根：常驻透明无定位（LESSONS #32：根节点 v-if 切换致 Web 端 attrs 透传丢失），
+	     不拦截点击；遮罩与气泡按条件各自 fixed 渲染 -->
+	<view class="m-toast">
+		<!-- 遮罩/拦截层：overlay 背景遮罩或 forbidClick 透明拦截（uvue 无 pointer-events，全屏层天然拦截背景点击）；
+		     maskVisible=false 时不渲染（普通提示显示期间页面保持可点） -->
+		<view v-show="visible && maskVisible" :class="maskClass" :style="maskStyle" @click="onMaskClick"></view>
+		<!-- 气泡：fixed 定位 + translate 居中，本体尺寸自适应（仅气泡区域拦截点击） -->
+		<view v-show="visible" :class="bubbleClass" :style="bubbleStyle" @click="onBubbleClick">
+			<m-loading v-if="activeType == 'loading'" :type="activeLoadingType" color="white" :size="iconSizeValue" />
+			<m-icon v-else-if="iconShown" :name="iconName" color="#ffffff" :size="iconSizeValue" />
+			<text v-if="!hasSlot && activeMessage != ''" :class="messageClass">{{ activeMessage }}</text>
+			<slot v-if="hasSlot"></slot>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { ToastType, ToastPosition, ToastWordBreak, ToastOptions, ToastCmd, registerToastHost, unregisterToastHost } from './toast.uts'
+	import { LoadingType } from '../m-loading/loading.uts'
+	import { IconName } from '../m-icon/icons.uts'
+
+	type Props = {
+		/** 组件式显隐（v-model:show）；函数式命令驱动时忽略 */
+		show?: boolean
+		/** 提示类型：text / loading / success / fail */
+		type?: ToastType | null
+		/** 展示位置：top / middle / bottom */
+		position?: ToastPosition | null
+		/** 文本内容，支持 \n 换行 */
+		message?: string
+		/** 自定义图标（覆盖 success/fail 默认图标；loading 型忽略） */
+		icon?: IconName | null
+		/** 图标大小，纯数字自动补 px，默认走 '36px' */
+		iconSize?: string
+		/** 是否显示背景遮罩层 */
+		overlay?: boolean
+		/** 是否禁止背景点击（未传时 loading 型默认 true，其余 false） */
+		forbidClick?: boolean | null
+		/** 是否点击提示后关闭 */
+		closeOnClick?: boolean
+		/** 是否点击遮罩层后关闭 */
+		closeOnClickOverlay?: boolean
+		/** 加载图标类型（type=loading 时生效） */
+		loadingType?: LoadingType | null
+		/** 展示时长 ms，0 不自动关闭；未传时 loading 型 0、其余 2000 */
+		duration?: number | null
+		/** message 换行控制：normal / break-all / break-word（App 端仅 Vapor 模式生效） */
+		wordBreak?: ToastWordBreak | null
+		/** z-index 层级（字符串数字），默认走主题基准 */
+		zIndex?: string
+		/** 气泡自定义类名 */
+		customClass?: string.ClassString
+		/** 气泡自定义内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		type: null,
+		position: null,
+		message: '',
+		icon: null,
+		iconSize: '',
+		overlay: false,
+		forbidClick: null,
+		closeOnClick: false,
+		closeOnClickOverlay: false,
+		loadingType: null,
+		duration: null,
+		wordBreak: null,
+		zIndex: '',
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{ 'update:show': [value: boolean], opened: [], close: [] }>()
+
+	const slots = useSlots()
+
+	/** 函数式当前命令（组件式场景恒为 null，渲染配置走 props 归一） */
+	const cmdState = ref<ToastCmd | null>(null)
+
+	/** 根显隐（v-show；淡入淡出为 opacity 两态过渡，对齐 m-overlay 模式） */
+	const visible = ref(false)
+
+	/** 过渡透明度：0 隐藏 / 1 显示 */
+	const opacity = ref(0)
+
+	/** 宿主注册令牌（unregister 需要对自己身份的判断） */
+	let hostId = -1
+
+	/** 自动关闭定时器句柄（-1 表示无待执行） */
+	let showTimer = -1
+
+	/** 淡出完成定时器句柄 */
+	let hideTimer = -1
+
+	/** 完全展示（opened）定时器句柄 */
+	let openedTimer = -1
+
+	/** 过渡时长（秒）：淡入淡出与 opened 回调时延共用（Q5 定案：内置淡入淡出，无 transition 定制） */
+	const TRANSITION_DURATION = 300
+
+	/**
+	 * 数字或纯数字字符串补 px 单位（如 "24" → "24px"），带单位字符串原样返回
+	 */
+	function addUnit(value: string): string {
+		if (value == '') return ''
+		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
+		return pattern.test(value) ? value + 'px' : value
+	}
+
+	/**
+	 * iconSize / zIndex 归一：number 补 px（仅 iconSize）、其余原样；null 返回空串
+	 */
+	function sizeValue(value: number | string | null, isIcon: boolean): string {
+		if (value == null) return ''
+		if (isIcon && typeof value == 'number') return value.toString() + 'px'
+		if (typeof value == 'number') return value.toString()
+		return value as string
+	}
+
+	/**
+	 * 组件式 props 归一为完整选项（与桥 normalizeOptions 同一默认值契约）
+	 */
+	function propsToOptions(): ToastOptions {
+		const type: ToastType = props.type == null ? 'text' : props.type!
+		const isLoading = type == 'loading'
+		return {
+			type: type,
+			position: props.position == null ? 'middle' : props.position,
+			message: props.message,
+			icon: props.icon,
+			iconSize: props.iconSize == '' ? '36px' : props.iconSize,
+			overlay: props.overlay,
+			forbidClick: props.forbidClick == null ? isLoading : props.forbidClick,
+			closeOnClick: props.closeOnClick,
+			closeOnClickOverlay: props.closeOnClickOverlay,
+			loadingType: props.loadingType == null ? 'circular' : props.loadingType,
+			duration: props.duration == null ? (isLoading ? 0 : 2000) : props.duration,
+			wordBreak: props.wordBreak == null ? 'normal' : props.wordBreak,
+			zIndex: props.zIndex == '' ? null : props.zIndex,
+			customClass: props.customClass == '' ? '' : props.customClass,
+			customStyle: props.customStyle,
+			onOpened: null,
+			onClose: null
+		} as ToastOptions
+	}
+
+	/** 当前生效配置：函数式命令优先（归一后的完整选项），组件式走 props 归一 */
+	const active = computed<ToastOptions>(() => {
+		if (cmdState.value != null) return cmdState.value!.options
+		return propsToOptions()
+	})
+
+	/** 当前提示类型 */
+	const activeType = computed<ToastType>(() => active.value.type == null ? 'text' : active.value.type!)
+
+	/** 加载图标类型（type=loading 时渲染 m-loading） */
+	const activeLoadingType = computed<LoadingType>(() => active.value.loadingType == null ? 'circular' : active.value.loadingType!)
+
+	/** 提示文本 */
+	const activeMessage = computed<string>(() => active.value.message == null ? '' : active.value.message!)
+
+	/** message 类名：基类 + 换行控制变体（归一后恒为 normal / break-all / break-word 三值之一） */
+	const messageClass = computed<string>(() => {
+		let cls = 'm-toast__message'
+		const wb = active.value.wordBreak == null ? 'normal' : active.value.wordBreak!
+		if (wb == 'break-all') cls += ' m-toast__message--break-all'
+		else if (wb == 'break-word') cls += ' m-toast__message--break-word'
+		else cls += ' m-toast__message--normal'
+		return cls
+	})
+
+	/** 图标尺寸值（number 补 px；未传走主题默认，此处恒有归一值 '36px'） */
+	const iconSizeValue = computed<string>(() => sizeValue(active.value.iconSize, true))
+
+	/** 是否渲染图标：非 loading 型且（传入自定义 icon 或 success/fail 默认图标） */
+	const iconShown = computed<boolean>(() => {
+		if (activeType.value == 'loading') return false
+		return active.value.icon != null || activeType.value == 'success' || activeType.value == 'fail'
+	})
+
+	/** 图标名：传入 icon 优先，success/fail 默认对应语义图标 */
+	const iconName = computed<IconName>(() => {
+		if (active.value.icon != null) return active.value.icon!
+		return activeType.value == 'fail' ? 'fail' : 'success'
+	})
+
+	/** 是否图标方形布局（竖排 88px 方形气泡）：非 text 型或传入自定义 icon；纯 text 走横排窄气泡 */
+	const iconLayout = computed<boolean>(() => activeType.value != 'text' || active.value.icon != null)
+
+	/** 是否使用默认插槽替代 message 文本 */
+	const hasSlot = computed<boolean>(() => slots.default != null)
+
+	/** 遮罩是否渲染：overlay 背景遮罩或 forbidClick 透明拦截 */
+	const maskVisible = computed<boolean>(() => (active.value.overlay == true) || (active.value.forbidClick == true))
+
+	/** 遮罩类名：overlay 变体加背景色（forbidClick 拦截层透明） */
+	const maskClass = computed<string>(() => {
+		let cls = 'm-toast__mask'
+		if (active.value.overlay == true) cls += ' m-toast__mask--overlay'
+		return cls
+	})
+
+	/** 气泡类名：基类 + 布局变体（icon 方形 / text 窄条）+ 位置变体 + 自定义类名 */
+	const bubbleClass = computed<string>(() => {
+		let cls = 'm-toast__bubble'
+		cls += iconLayout.value ? ' m-toast__bubble--icon' : ' m-toast__bubble--text'
+		const pos = active.value.position == null ? 'middle' : active.value.position!
+		if (pos == 'top') cls += ' m-toast__bubble--top'
+		else if (pos == 'bottom') cls += ' m-toast__bubble--bottom'
+		if (active.value.customClass != null && active.value.customClass != '') cls += ' ' + active.value.customClass!
+		return cls
+	})
+
+	/** 遮罩动态样式：过渡透明度 + z-index（非默认时 inline 覆盖）+ 过渡时长 */
+	const maskStyle = computed<string>(() => {
+		let style = 'opacity: ' + opacity.value.toString() + ';'
+		const z = sizeValue(active.value.zIndex, false)
+		if (z != '') style += ' z-index: ' + z + ';'
+		style += ' transition-duration: ' + (TRANSITION_DURATION / 1000.0).toString() + 's;'
+		return style
+	})
+
+	/** 气泡动态样式：过渡透明度 + z-index + 过渡时长 + 自定义内联样式（补分号拼接） */
+	const bubbleStyle = computed<string>(() => {
+		let style = 'opacity: ' + opacity.value.toString() + ';'
+		const z = sizeValue(active.value.zIndex, false)
+		if (z != '') style += ' z-index: ' + z + ';'
+		style += ' transition-duration: ' + (TRANSITION_DURATION / 1000.0).toString() + 's;'
+		const cs = active.value.customStyle == null ? '' : active.value.customStyle!
+		if (cs != '') {
+			if (cs.endsWith(';')) style += ' ' + cs
+			else style += ' ' + cs + ';'
+		}
+		return style
+	})
+
+	/**
+	 * 清理全部待执行定时器（快速连续开关时防止旧定时器干扰当前过渡）
+	 */
+	function clearAllTimers() {
+		if (showTimer != -1) {
+			clearTimeout(showTimer)
+			showTimer = -1
+		}
+		if (hideTimer != -1) {
+			clearTimeout(hideTimer)
+			hideTimer = -1
+		}
+		if (openedTimer != -1) {
+			clearTimeout(openedTimer)
+			openedTimer = -1
+		}
+	}
+
+	/**
+	 * 触发淡入过渡：浏览器在首帧绘制前不产生样式差值，需先以 opacity 0 完成一帧渲染，
+	 * 下一帧再置 1 才能触发过渡（双重 rAF 与 m-overlay 同款时序）；非 Web 端走 nextTick
+	 */
+	function triggerFadeIn() {
+		// #ifdef WEB
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				opacity.value = 1
+			})
+		})
+		// #endif
+		// #ifndef WEB
+		nextTick(() => {
+			opacity.value = 1
+		})
+		// #endif
+	}
+
+	/**
+	 * 重置自动关闭计时（duration > 0 时到期自动关闭；重复 show 调用即重置）
+	 */
+	function restartAutoClose() {
+		if (showTimer != -1) {
+			clearTimeout(showTimer)
+			showTimer = -1
+		}
+		const d = active.value.duration == null ? 2000 : active.value.duration!
+		if (d > 0) {
+			showTimer = setTimeout(() => {
+				showTimer = -1
+				closeToastInternal()
+			}, d)
+		}
+	}
+
+	/**
+	 * 展示流程：清理旧计时 → 可见并淡入 → 自动关闭计时 → opened 回调
+	 */
+	function openToast() {
+		clearAllTimers()
+		visible.value = true
+		opacity.value = 0
+		triggerFadeIn()
+		restartAutoClose()
+		openedTimer = setTimeout(() => {
+			openedTimer = -1
+			const cb = cmdState.value != null ? cmdState.value!.options.onOpened : null
+			if (cb != null) cb()
+			emit('opened')
+		}, TRANSITION_DURATION)
+	}
+
+	/**
+	 * 关闭流程：淡出 → 过渡结束解除显示 → onClose 回调；组件式同步 update:show。
+	 * 幂等：未显示时直接返回（重复 close / 从未 show 的 close 命令无副作用）
+	 */
+	function closeToastInternal() {
+		if (!visible.value) return
+		clearAllTimers()
+		emit('update:show', false)
+		opacity.value = 0
+		hideTimer = setTimeout(() => {
+			hideTimer = -1
+			visible.value = false
+			const cb = cmdState.value != null ? cmdState.value!.options.onClose : null
+			if (cb != null) cb()
+			emit('close')
+		}, TRANSITION_DURATION)
+	}
+
+	/**
+	 * 函数式命令处理：close 直关；show 更新配置（active computed 自动驱动渲染），已可见时重置计时
+	 */
+	function handleCmd(cmd: ToastCmd) {
+		if (cmd.action == 'close') {
+			closeToastInternal()
+			return
+		}
+		cmdState.value = cmd
+		if (visible.value) {
+			restartAutoClose()
+		} else {
+			openToast()
+		}
+	}
+
+	/** 遮罩点击：closeOnClickOverlay 时关闭，否则吞掉点击（全屏层天然拦截背景） */
+	function onMaskClick(_e: MouseEvent) {
+		if (active.value.closeOnClickOverlay == true) {
+			closeToastInternal()
+		}
+	}
+
+	/** 气泡点击：closeOnClick 时关闭 */
+	function onBubbleClick(_e: MouseEvent) {
+		if (active.value.closeOnClick == true) {
+			closeToastInternal()
+		}
+	}
+
+	// 初始即 show=true 的场景：直接进入可见态，不做过渡（对齐 m-overlay 无 appear 过渡），计时与 opened 照常
+	onMounted(() => {
+		hostId = registerToastHost((cmd: ToastCmd) => {
+			handleCmd(cmd)
+		})
+		if (props.show) {
+			visible.value = true
+			opacity.value = 1
+			restartAutoClose()
+			emit('opened')
+		}
+	})
+
+	// 卸载兜底：清理定时器并注销宿主注册（防止泄漏与跨页误调用）
+	onUnmounted(() => {
+		clearAllTimers()
+		unregisterToastHost(hostId)
+	})
+
+	// 组件式 show 驱动显隐（flush: post 保证状态变更后的 DOM 时序一致）
+	watch(
+		() => props.show,
+		(show: boolean) => {
+			if (show) {
+				openToast()
+			} else {
+				closeToastInternal()
+			}
+		},
+		{ flush: 'post' }
+	)
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 逻辑根（透明无定位，不拦截点击） ========== */
+	.m-toast {
+		background-color: transparent;
+	}
+
+	/* ========== 遮罩/拦截层（fixed 全屏；forbidClick 透明拦截、overlay 背景遮罩） ========== */
+	.m-toast__mask {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-color: transparent;
+		z-index: $m-toast-z-index;
+		transition-property: opacity;
+		transition-timing-function: ease;
+	}
+	.m-toast__mask--overlay {
+		background-color: $m-toast-overlay-background;
+	}
+
+	/* ========== 气泡基类（fixed + translate 居中定位，本体尺寸自适应仅拦截自身区域） ========== */
+	.m-toast__bubble {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		max-width: $m-toast-max-width;
+		background-color: $m-toast-background;
+		border-radius: $m-toast-radius;
+		z-index: $m-toast-z-index;
+		transition-property: opacity;
+		transition-timing-function: ease;
+	}
+
+	/* ========== 图标方形布局变体（loading/success/fail/自定义 icon：竖排 88px 方形） ========== */
+	.m-toast__bubble--icon {
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		width: $m-toast-default-width;
+		min-height: $m-toast-default-min-height;
+		padding: $m-toast-default-padding;
+	}
+
+	/* ========== 纯文本窄条布局变体（横排，min-width 96px） ========== */
+	.m-toast__bubble--text {
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		min-width: $m-toast-text-min-width;
+		padding: $m-toast-text-padding;
+	}
+
+	/* ========== 位置变体（声明顺序在基类后覆盖 transform / 偏移） ========== */
+	.m-toast__bubble--top {
+		top: $m-toast-top-distance;
+		transform: translate(-50%, 0);
+	}
+	.m-toast__bubble--bottom {
+		top: auto;
+		bottom: $m-toast-bottom-distance;
+		transform: translate(-50%, 0);
+	}
+
+	/* ========== 提示文本 ========== */
+	.m-toast__message {
+		color: $m-toast-text-color;
+		font-size: $m-toast-font-size;
+		line-height: $m-toast-line-height;
+		/* uvue flex 子项默认 flex-shrink 0（uvue 规范异于 W3C 的 1），不收缩则文本保持单行宽度溢出气泡、软换行永不触发 */
+		flex-shrink: 1;
+		/* 多行换行时各行水平居中（对齐 Vant） */
+		text-align: center;
+	}
+	/* ========== message 换行控制变体（word-break 三值，App 端仅 Vapor 模式生效） ========== */
+	.m-toast__message--normal {
+		word-break: normal;
+	}
+	.m-toast__message--break-all {
+		word-break: break-all;
+	}
+	.m-toast__message--break-word {
+		word-break: break-word;
+	}
+</style>

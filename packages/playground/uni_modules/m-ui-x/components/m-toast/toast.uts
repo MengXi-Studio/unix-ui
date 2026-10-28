@@ -1,0 +1,186 @@
+/**
+ * m-toast 轻提示：类型定义与函数式 API（全局桥）
+ *
+ * uni-app x 无运行时动态挂载能力（无 createApp 挂载、无 h() 渲染 uvue 组件、无 body 宿主），
+ * 函数式调用采用「页面预置 <m-toast /> 容器 + 全局单例桥」实现：
+ * 容器 mounted 时调用 registerToastHost 注册渲染回调（后注册覆盖，页面栈顶容器
+ * 最后 mounted 天然持有注册；返回前页时栈顶注销、前页注册恢复），
+ * showToast 等全局函数归一选项后经桥直调当前注册的容器。
+ *
+ * 使用前提：调用 showToast 的页面模板中需预置一次 <m-toast />（easycom 零 import）。
+ */
+import { IconName } from '../m-icon/icons.uts'
+import { LoadingType } from '../m-loading/loading.uts'
+
+/** 提示类型：文本 / 加载 / 成功 / 失败（Vant 的 html 型 uvue 无 v-html 能力，不支持） */
+export type ToastType = 'text' | 'loading' | 'success' | 'fail'
+
+/** 展示位置 */
+export type ToastPosition = 'top' | 'middle' | 'bottom'
+
+/** message 换行控制（对齐 Vant ToastWordBreak 三类）：break-all 任意字符截断换行 / break-word 单词优先、放不下才截断 / normal 默认按单词换行 */
+export type ToastWordBreak = 'normal' | 'break-all' | 'break-word'
+
+/** 桥指令动作：show 展示 / close 关闭当前提示 */
+export type ToastAction = 'show' | 'close'
+
+/**
+ * 函数式调用选项（Vant ToastOptions 裁剪版）
+ * 裁剪项（uvue 限制，Q5 定案）：html 类型 / wordBreak / transition 动画类名 / teleport / 图片链接图标
+ */
+export type ToastOptions = {
+	/** 提示类型，默认 'text' */
+	type?: ToastType | null
+	/** 展示位置，默认 'middle' */
+	position?: ToastPosition | null
+	/** 文本内容，支持 \n 换行 */
+	message?: string | null
+	/** 自定义图标（IconName；success/fail 型有默认图标，传入则覆盖；loading 型忽略） */
+	icon?: IconName | null
+	/** 图标大小，纯数字自动补 px，默认 '36px' */
+	iconSize?: number | string | null
+	/** 是否显示背景遮罩层，默认 false */
+	overlay?: boolean | null
+	/** 是否禁止背景点击（loading 型默认 true），默认 false */
+	forbidClick?: boolean | null
+	/** 是否点击提示后关闭，默认 false */
+	closeOnClick?: boolean | null
+	/** 是否点击遮罩层后关闭，默认 false */
+	closeOnClickOverlay?: boolean | null
+	/** 加载图标类型（type=loading 时生效），默认 'circular' */
+	loadingType?: LoadingType | null
+	/** 展示时长 ms，0 不自动关闭；默认 text/success/fail 2000、loading 0 */
+	duration?: number | null
+	/** message 换行控制：normal（默认）/ break-all / break-word；App 端仅 Vapor 模式（HBuilderX 5.31+）生效 */
+	wordBreak?: ToastWordBreak | null
+	/** z-index 层级，默认走主题基准 $m-toast-z-index */
+	zIndex?: number | string | null
+	/** 气泡自定义类名 */
+	customClass?: string
+	/** 气泡自定义内联样式 */
+	customStyle?: string
+	/** 完全展示后回调 */
+	onOpened?: (() => void) | null
+	/** 关闭后回调 */
+	onClose?: (() => void) | null
+}
+
+/** 容器渲染指令：容器收到后按 action 驱动显隐，options 为归一后的完整选项 */
+export type ToastCmd = {
+	action: ToastAction
+	options: ToastOptions
+}
+
+/** 宿主容器渲染回调类型 */
+export type ToastHostFunc = (cmd: ToastCmd) => void
+
+/** 全局单例：最近注册的容器渲染回调 */
+let toastHost: ToastHostFunc | null = null
+
+/** 最近注册的宿主令牌（unregister 仅在自己仍是注册者时清空，防止栈顶页面 unmount 清掉前页注册） */
+let toastHostSeq = 0
+
+/**
+ * 容器自注册渲染回调（m-toast onMounted 调用；后注册覆盖前页注册）
+ */
+export function registerToastHost(host: ToastHostFunc): number {
+	toastHostSeq += 1
+	toastHost = host
+	return toastHostSeq
+}
+
+/**
+ * 容器注销（m-toast onUnmounted 调用；仅当自己仍是注册者时清空）
+ */
+export function unregisterToastHost(seq: number): void {
+	if (toastHostSeq == seq) {
+		toastHost = null
+	}
+}
+
+/**
+ * 选项归一：string 简写转 message；逐字段补全默认值
+ * （loading 型 duration 0 + forbidClick true，其余 2000 / false；forceType 用于 showLoadingToast 等强制类型）
+ */
+function normalizeOptions(defaultType: ToastType, forceType: boolean, options: string | ToastOptions): ToastOptions {
+	const opts: ToastOptions = typeof options == 'string' ? ({ message: options } as ToastOptions) : options
+	const type: ToastType = forceType || opts.type == null ? defaultType : opts.type!
+	const isLoading = type == 'loading'
+	const result: ToastOptions = {
+		type: type,
+		position: opts.position == null ? 'middle' : opts.position,
+		message: opts.message == null ? '' : opts.message,
+		icon: opts.icon,
+		iconSize: opts.iconSize == null ? '36px' : opts.iconSize,
+		overlay: opts.overlay == null ? false : opts.overlay,
+		forbidClick: opts.forbidClick == null ? isLoading : opts.forbidClick,
+		closeOnClick: opts.closeOnClick == null ? false : opts.closeOnClick,
+		closeOnClickOverlay: opts.closeOnClickOverlay == null ? false : opts.closeOnClickOverlay,
+		loadingType: opts.loadingType == null ? 'circular' : opts.loadingType,
+		duration: opts.duration == null ? (isLoading ? 0 : 2000) : opts.duration,
+		wordBreak: opts.wordBreak == null ? 'normal' : opts.wordBreak,
+		zIndex: opts.zIndex,
+		customClass: opts.customClass == null ? '' : opts.customClass,
+		customStyle: opts.customStyle == null ? '' : opts.customStyle,
+		onOpened: opts.onOpened,
+		onClose: opts.onClose
+	}
+	return result
+}
+
+/**
+ * 构造容器渲染指令
+ */
+function buildCmd(action: ToastAction, options: ToastOptions): ToastCmd {
+	return { action: action, options: options } as ToastCmd
+}
+
+/**
+ * 展示轻提示（单例语义：连续调用覆盖当前提示，对齐 Vant 默认）
+ */
+export function showToast(options: string | ToastOptions): void {
+	const host = toastHost
+	if (host != null) {
+		host(buildCmd('show', normalizeOptions('text', false, options)))
+	}
+}
+
+/**
+ * 展示加载提示：type 强制 loading（duration 默认 0 不自动关闭、forbidClick 默认 true），需 closeToast 手动关闭
+ */
+export function showLoadingToast(options: string | ToastOptions): void {
+	const host = toastHost
+	if (host != null) {
+		host(buildCmd('show', normalizeOptions('loading', true, options)))
+	}
+}
+
+/**
+ * 展示成功提示（type 强制 success，默认图标 success）
+ */
+export function showSuccessToast(message: string): void {
+	const host = toastHost
+	if (host != null) {
+		host(buildCmd('show', normalizeOptions('success', true, { message: message } as ToastOptions)))
+	}
+}
+
+/**
+ * 展示失败提示（type 强制 fail，默认图标 fail）
+ */
+export function showFailToast(message: string): void {
+	const host = toastHost
+	if (host != null) {
+		host(buildCmd('show', normalizeOptions('fail', true, { message: message } as ToastOptions)))
+	}
+}
+
+/**
+ * 关闭当前展示的提示
+ */
+export function closeToast(): void {
+	const host = toastHost
+	if (host != null) {
+		host(buildCmd('close', normalizeOptions('text', false, '')))
+	}
+}

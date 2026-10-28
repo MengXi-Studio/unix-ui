@@ -101,6 +101,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '遮罩层',
 				enName: 'Overlay',
 				desc: '创建全屏遮罩层，支持淡入淡出、层级、嵌入内容与 Web 端滚动锁定，是弹窗类组件的基础。'
+			},
+			{
+				name: 'toast',
+				zhName: '轻提示',
+				enName: 'Toast',
+				desc: '在页面中间弹出黑色半透明提示，支持文字、成功失败、加载、自定义图标、位置、遮罩与函数式调用。'
 			}
 		]
 	},

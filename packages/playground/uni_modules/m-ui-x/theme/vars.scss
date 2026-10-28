@@ -143,3 +143,21 @@ $m-grid-item-icon-size: 28px !default;
 $m-grid-item-text-color: #323233 !default;
 $m-grid-item-text-font-size: 12px !default;
 $m-grid-item-border-color: #ebedf0 !default;
+
+/* ========== Toast 轻提示 ========== */
+$m-toast-z-index: 2000 !default;
+$m-toast-max-width: 70% !default;
+$m-toast-background: rgba(0, 0, 0, 0.7) !default;
+$m-toast-text-color: #ffffff !default;
+$m-toast-font-size: 14px !default;
+$m-toast-line-height: 20px !default;
+$m-toast-radius: 8px !default;
+$m-toast-icon-size: 36px !default;
+$m-toast-text-min-width: 96px !default;
+$m-toast-text-padding: 8px 12px !default;
+$m-toast-default-width: 88px !default;
+$m-toast-default-min-height: 88px !default;
+$m-toast-default-padding: 16px !default;
+$m-toast-top-distance: 20% !default;
+$m-toast-bottom-distance: 20% !default;
+$m-toast-overlay-background: rgba(0, 0, 0, 0.7) !default;

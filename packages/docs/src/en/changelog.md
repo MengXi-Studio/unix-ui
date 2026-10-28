@@ -2,7 +2,7 @@
 
 ## [0.2.0] - 2026-10-28
 
-Adds the popup-family base components (m-overlay / m-popup), the divider component (m-divider) and the grid components (m-grid / m-grid-item), bringing the total to 13 base components.
+Adds the popup-family base components (m-overlay / m-popup), the divider component (m-divider), the grid components (m-grid / m-grid-item) and the toast component (m-toast, feedback family), bringing the total to 13 base components.
 
 ### Added
 
@@ -10,6 +10,7 @@ Adds the popup-family base components (m-overlay / m-popup), the divider compone
 - **m-popup**: five positions (center / top / bottom / left / right), per-side round corners, closeable with `close-icon` / `close-icon-position`, `close-on-click-overlay`, overlay customization (`overlay` / `overlay-class` / `overlay-style`), `z-index` / `duration`, `lazy-render` / `destroy-on-close`, `safe-area-inset-top` / `safe-area-inset-bottom`, and a `before-close` guard (sync boolean); `v-model:show` two-way binding with full events (open / opened / close / closed / click / click-overlay / click-close-icon); center scales in with a fade, edge positions slide, composed on top of m-overlay
 - **m-divider**: horizontal / vertical forms (vertical as a flex item; parent container needs `flex-direction: row` + `align-items: center`), `dashed`, `hairline` 0.5px thin line (1px border + single-axis 0.5 scale, safe on App platforms), `content-position` (left / right / center, one line width-capped at 10%), default slot with inherited text styles
 - **m-grid / m-grid-item**: `column-num` custom columns, `square` cells (percentage padding-top + absolutely positioned content), `gutter` spacing (same value for rows / columns, evenly distributed per the m-row precedent), `border` full table borders (container draws the top + left lines, items draw the right + bottom lines), `center` content centering, `direction` horizontal layout, `reverse` icon-text swap, `clickable` press feedback (native view hover-class); per-item `text` / `icon` / `icon-color`, `dot` / `badge` (via m-badge), `click` events and `url` in-app page navigation, with default / icon / text slots
+- **m-toast**: imperative API (`showToast` / `showSuccessToast` / `showFailToast` / `showLoadingToast` / `closeToast`, string shorthand or ToastOptions object, singleton semantics) and component usage (`v-model:show` + default slot); `type` (text / loading / success / fail), `position` (top / middle / bottom), custom `icon`, `overlay` / `forbidClick` masking and click interception, `closeOnClick` / `closeOnClickOverlay`, `duration` (loading defaults to 0, no auto close), `wordBreak` wrapping control (normal / break-all / break-word, aligned with Vant, effective on App Vapor 5.31+), `onOpened` / `onClose` callbacks and opened / close events; built on the "global functions + page-level container + global singleton bridge" approach (uni-app x has no runtime dynamic mounting), keeping the API feel aligned with Vant
 
 ## [0.1.0] - 2026-10-27
 

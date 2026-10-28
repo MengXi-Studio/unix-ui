@@ -237,3 +237,26 @@
 - 根因：平均分配的分母依赖运行时行结构，同一容器不同行列数不同 → 同格位 padding 不同。Vant Row 源码同构（lib/row/Row.js 的 averagePadding 分母取 group.length），Vant 同样错位——**对齐参照实现不等于行为正确**
 - 修复（满行格位制）：分配只看格位（index % columnNum / 行内序号对照首行），不满行沿用首行同格位分配、空位承担行尾收边——相同 span 组合时上下行同位同宽；m-row 不满行直接复制 result[firstGroup[index]]，m-grid-item 用 pos = selfIndex % columnNum 替代 rowLen 判定（rowInfo / selfTotal 随之精简删除）
 - 规约：拼缝类间距的分母禁止依赖运行时行结构；「对齐参照实现」前先推演不满行 / 单行 / 单格边界，行级分配一律格位制——与 #38 拼线方案同源：空位也必须有归属
+
+## 2026-10-28 m-toast（Toast 轻提示，运行实测）
+
+### 40. 跨 .uts 导入类型必须从「类型自身的导出文件」导入，不能借道其它文件
+- 现象：m-toast.uvue 从 `./toast.uts` 导入 `LoadingType`（toast.uts 顶部有 import 该类型），页面报 `SyntaxError: The requested module does not provide an export named 'LoadingType'`，页面 404「连接服务器超时」——**编译错误的页面表现是路由 404 / 超时，不是报错弹窗**，先 curl / 看终端编译日志再排查路由
+- 根因：ESM 的 import 只绑定目标模块**自身 export 的符号**，A 文件 import 进来的类型不会随 A 的其它导出一起被再导出（无 re-export 语句时）
+- 规约：纯类型共享文件（如 loading.uts 只 `export type`）跨组件消费一律 `import { LoadingType } from '../m-loading/loading.uts'`（m-button / m-toast 先例）；或在中间文件显式 `export { X } from '../x.uts'` 再消费，禁止「顺路借道」
+
+### 41. 无 pointer-events 环境：全屏透明层天然拦截点击，「是否渲染」比「是否可见」更本质
+- 现象：m-toast 的 mask 层只写 `v-show="visible"`，overlay=false 的普通提示显示期间，点击气泡外任意按钮全部无响应——透明 mask 是真实节点且铺满全屏，uvue 无 pointer-events: none，天然吃掉全部点击；Playwright 点击 30s 超时暴露
+- 修复：显隐条件叠加语义条件 `v-show="visible && maskVisible"`（maskVisible = overlay || forbidClick），普通提示彻底不渲染拦截层；气泡本体 `fixed + left:50% + translate(-50%,-50%)` 独立定位（不用全屏 flex 容器居中），仅气泡矩形区域参与点击（closeOnClick）
+- 规约：无 pointer-events 的环境里，「透明可穿透」不存在——凡是铺满视口的层都必须用条件渲染控制存在性；禁用点击类需求（forbidClick）反而要利用这个特性渲染透明层；自动化测试对拦截语义用限时点击 `.catch()` 断言（点了=穿透失败）
+
+### 42. dev 环境自动化三噪音：favicon 404 / networkidle 不可达 / 页面双实例
+- favicon 404：uni-app x dev 环境浏览器内核自动请求 favicon.ico 且工程未提供，`page.on('response')` 不触发（内核级请求）、console error 文本不含 URL——过滤方式：console 按固定文本 `'Failed to load resource: the server responded with a status of 404 (Not Found)'` 剔除 + response 监听按 `url().indexOf('favicon')` 兜底，真实 404 仍会被捕获
+- networkidle：dev server 存在 HMR 长连接 / 挂起请求时 `waitUntil: 'networkidle'` 可能 30s 永不达成——页面就绪判定改 `waitUntil: 'load'` + `waitForSelector(业务选择器)`，自动化脚本一律用后者
+- 页面双实例：演示页常同时存在「组件式演示实例 + 函数式容器实例」两个 `<m-toast>`，`waitForSelector('.m-toast__bubble')` 会命中隐藏实例导致状态断言错乱——定位器一律加 `:visible` 后缀（`.m-toast__bubble:visible`）
+
+### 43. uvue 的 flex-shrink 默认值是 0（异于 W3C 的 1）：文本子项不收缩，软换行永不触发
+- 现象：m-toast message 落了 `white-space: pre-line` + `word-break` 三值（computed 断言全过），但长文本单行溢出气泡被裁——text 宽 277px > 父气泡 195px；`\n` 硬换行却正常（pre-line 保留换行符，不依赖收缩）
+- 根因：uvue 规范 `flex-shrink` 默认 **0**（对齐原生渲染端，与标准 CSS 的 1 不同）——flex 子项文本永远保持内容单行宽度，不会被父容器压窄，软换行（自动 wrap）的前提「元素宽度受限」不成立
+- 修复：文本子项显式 `flex-shrink: 1`，实测收缩到父宽内、clientHeight 20→40 两行
+- 规约：**任何「希望文本在 flex 子项内自动换行」的场景必须显式 `flex-shrink: 1`**（m-toast message 先例）；审查存量组件时凡 flex row 内放文本且依赖换行的都要核对。断言方法论：`white-space` / `word-break` 的 computed 值断言 ≠ 换行行为——**必须断言 clientHeight 跨行**（≥ 2×line-height）或 scrollWidth ≤ clientWidth

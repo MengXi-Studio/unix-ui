@@ -98,7 +98,8 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					text: '反馈组件',
 					items: [
 						{ text: 'Loading 加载', link: '/components/loading' },
-						{ text: 'Overlay 遮罩层', link: '/components/overlay' }
+						{ text: 'Overlay 遮罩层', link: '/components/overlay' },
+						{ text: 'Toast 轻提示', link: '/components/toast' }
 					]
 				},
 				{

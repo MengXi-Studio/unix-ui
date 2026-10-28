@@ -88,6 +88,12 @@
 				"style": {
 					"navigationBarTitleText": "宫格 Grid"
 				}
+			},
+			{
+				"path": "toast/toast",
+				"style": {
+					"navigationBarTitleText": "轻提示 Toast"
+				}
 			}
 		]
 		}

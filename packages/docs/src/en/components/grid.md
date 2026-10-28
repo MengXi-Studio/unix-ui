@@ -71,7 +71,7 @@ After setting the `square` prop, the height of the cell will remain consistent w
 
 ### Cell Spacing {#demo-gutter}
 
-Use the `gutter` prop to set the distance between cells (same value for rows and columns). Spacing is evenly distributed within a row: no left padding on the row start, no right padding on the row end, half each in between, and the row fills the full width.
+Use the `gutter` prop to set the distance between cells (same value for rows and columns). Spacing is distributed by full-row cell position: position 0 gets no left padding, the last position gets no right padding, and the middle positions get half each; an incomplete last row reuses the same per-position values (aligned left, matching the same positions of the row above, with the empty slots exposing the background).
 
 ```vue
 <m-grid :gutter="10">
@@ -197,4 +197,4 @@ See [Theming](/en/guide/theming) for the full variable list and override instruc
 - `badge` type is narrowed to string: numeric semantics are expressed as strings (e.g. `"99+"`), consistent with m-badge's content semantics
 - The border is composed of two groups of 0.5px scaled lines: "container top + left lines" and "cell right + bottom lines": ucss has no pseudo-elements, the structure is equivalent to Vant but carried by real views
 - Press feedback is implemented via the native `hover-class` of view (equivalent to Vant's `:active` pseudo-class, consistent across platforms)
-- gutter spacing is evenly distributed within a row (no left padding on row start, no right padding on row end), the row fills the full width; Vant applies padding-right to every cell, leaving whitespace at row end and the right edge
+- gutter spacing is distributed by full-row cell position (no left padding on position 0, none on the right of the last position), the row fills the full width, and an incomplete last row reuses the same per-position values so rows stay aligned; Vant applies padding-right to every cell (whitespace at row end and right edge) and averages by each row's actual column count, so its last row drifts out of alignment

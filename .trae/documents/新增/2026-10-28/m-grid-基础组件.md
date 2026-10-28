@@ -348,8 +348,9 @@ $m-grid-item-border-color: #ebedf0;
 
 - 排查：Playwright 实测布局数据精确（相邻白盒间隙 10.0px、padding 平均分配、无 pageerror），组件行为与 Vant 语义一致（Vant 格子 `::after` 在 gutter 下同样无条件画右+下线）；根因是**演示载体**——演示页 card 与格子 content 同为纯白（#ffffff），10px 间隙透出的仍是白色，视觉上完全不可见，只剩每格右/下 hairline 悬在空白里像断线；Vant 官网 demo 观感依赖其页面灰底衬托
 - 修复：演示页 gutter 节包 `.gutter-stage` 浅灰内衬（#f7f8fa + 圆角 + 12px 内距，与 log-area 底色一致），间隙透灰、白块分离观感成立；**组件零改动**
-- 二轮修复（用户红框反馈第二行空位）：原 6 格排 4 列，第二行仅 2 格，右侧两个格位露出大片灰底像布局断裂（白底时期该空位不可见，灰内衬后暴露；Vant 官网 gutter demo 为满行无此问题）——演示数据补至 8 格（4×2 满两行）消除空位
-- 复测：截图确认 8 格排满两行、列间 / 行间 10px 间隙清晰可见、描边自然；`pnpm run build:demo` 56 文件重新入库
+- 二轮（用户红框反馈第二行空位）：一度以「补至 8 格满两行」消除空位观感——被用户否定：补占位是掩盖问题
+- 三轮根因修复：用户指出 row/col 同有「gutter + 个数不凑齐 → 对不齐 / 宽度不对」——溯源发现 m-row spaces 与 m-grid-item 均按「行内实际列数」平均分配（拉 Vant lib/row/Row.js 源码确认同构同坑），不满行分配漂移致上下行同格位错位；统一改满行格位制：m-row 不满行复制首行同格位分配、m-grid-item 改 `pos = selfIndex % columnNum`（rowInfo / selfTotal 冗余结构精简删除）
+- 复测：row 6×span6 gutter20 与 grid 6 格 4 列 gutter10 的第二行白盒与首行同格位 left / width 全等（±0.6px）；`verify-grid.cjs` 53 断言回归全过（T5 末行断言更新为格位制语义）；演示页 layout 加「不满行」场景、grid 回 6 格 + caption 注明空位为标准行为；双语文档 gutter 描述与 Vant 差异注记更新（记 LESSONS #39）；`pnpm sync:uni-modules:check` / `build:demo` / `build:docs` 全部通过
 
 ### 遗留 TODO
 

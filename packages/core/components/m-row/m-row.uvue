@@ -104,16 +104,24 @@
 	})
 
 	/**
-	 * 水平间距（平均分配）：行内 n 列时 avg = gutter×(n-1)/n，
-	 * 首列无左 padding、尾列无右 padding，相邻列间 padding 之和恰为 gutter
+	 * 水平间距（平均分配）：按首行（满行）列数计算 avg = gutter×(n-1)/n，
+	 * 首列无左 padding、尾列无右 padding，相邻列间 padding 之和恰为 gutter；
+	 * 不满行沿用首行同格位的分配——相同 span 组合时上下行同格位同位同宽，
+	 * 避免「按各行实际列数平均」导致的不满行错位（空位承担行尾收边，与 m-grid 格位制一致）
 	 */
 	const spaces = computed<RowSpace[]>(() => {
 		const result: RowSpace[] = []
 		const g = gutterHorizontal.value
 		if (g <= 0) return result
-		groups.value.forEach((group: number[]) => {
-			const avg = (g * (group.length - 1)) / group.length
+		const firstGroup = groups.value[0]
+		groups.value.forEach((group: number[], groupIndex: number) => {
+			const avg = (g * (firstGroup.length - 1)) / firstGroup.length
 			group.forEach((item: number, index: number) => {
+				if (groupIndex > 0 && group.length < firstGroup.length && index < firstGroup.length) {
+					const inherited = result[firstGroup[index]]
+					result.push({ left: inherited.left, right: inherited.right } as RowSpace)
+					return
+				}
 				if (index == 0) {
 					result.push({ left: 0, right: avg } as RowSpace)
 				} else {

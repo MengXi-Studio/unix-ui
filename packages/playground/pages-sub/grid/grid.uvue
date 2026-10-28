@@ -57,11 +57,9 @@
 							<m-grid-item icon="setting-o" text="文字" />
 							<m-grid-item icon="clock-o" text="文字" />
 							<m-grid-item icon="question-o" text="文字" />
-							<m-grid-item icon="star-o" text="文字" />
-							<m-grid-item icon="gift-o" text="文字" />
 						</m-grid>
 					</view>
-					<text class="caption">gutter 设置格子间距（行间与列间同值）：行内平均分配（行首无左、行尾无右）、非首行 margin-top，整行铺满</text>
+					<text class="caption">gutter 设置格子间距：按满行格位分配、非首行 margin-top；最后一行不满时从左排布、同格位与上方行对齐（右侧空位露出内衬底色为标准行为）</text>
 				</view>
 
 				<text class="section" id="direction">内容横排</text>

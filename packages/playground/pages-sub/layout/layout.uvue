@@ -30,6 +30,12 @@
 					<m-col span="8"><view class="col-block"><text class="col-text">span: 8</text></view></m-col>
 				</m-row>
 				<text class="caption">gutter 20：每缝恰 20px，首尾列与容器边缘对齐（色块为 col 内层元素，col 的 gutter padding 保持透明）</text>
+				<m-row gutter="20" custom-class="gutter-row">
+					<m-col v-for="i in 6" :key="i" span="6">
+						<view class="col-block"><text class="col-text">span: 6</text></view>
+					</m-col>
+				</m-row>
+				<text class="caption">不满行（6 列排 4 列）：间距按满行格位分配，末行沿用首行同格位分配——上下行同位同宽、不错位（Vant 按各行实际列数平均，末行会漂移）</text>
 			</view>
 
 			<text class="section">垂直间距</text>

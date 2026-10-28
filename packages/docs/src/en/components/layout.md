@@ -35,7 +35,7 @@ The layout component implements page columns through the 24-grid system of `m-ro
 
 ### Column Spacing {#demo-gutter}
 
-The `gutter` attribute sets the spacing between columns (px), and supports an array `[horizontal, vertical]` for the row spacing after wrapping. The column spacing is implemented with padding, so if the column content needs a background color, set it on an inner element of the Col and keep the Col itself transparent to show the gaps.
+The `gutter` attribute sets the spacing between columns (px), and supports an array `[horizontal, vertical]` for the row spacing after wrapping. The column spacing is implemented with padding, so if the column content needs a background color, set it on an inner element of the Col and keep the Col itself transparent to show the gaps. Spacing is averaged by the first (full) row's column count; an incomplete last row reuses the first row's per-position values, so identical span combinations keep rows aligned (Vant averages by each row's actual column count, so its last row drifts).
 
 ```vue
 <m-row gutter="20">

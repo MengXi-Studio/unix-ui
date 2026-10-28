@@ -120,43 +120,10 @@
 		return gridContext == null ? 1 : gridContext.total()
 	})
 
-	/** 行位信息：行内位置（0 起）/ 该行实际格数（最后一行可能不满）/ 首行 / 末行判定 */
-	type ItemRowInfo = {
-		rowPos: number
-		rowLen: number
-		isFirstRow: boolean
-		isLastRow: boolean
-	}
-
-	const rowInfo = computed<ItemRowInfo>(() => {
-		const total = selfTotal.value
-		const col = snap.value.columnNum
-		const idx = selfIndex.value
-		if (total <= 0) {
-			return { rowPos: 0, rowLen: col, isFirstRow: true, isLastRow: true } as ItemRowInfo
-		}
-		const lastRowCount = ((total - 1) % col) + 1
-		const lastRowStart = total - lastRowCount
-		if (idx >= lastRowStart) {
-			return {
-				rowPos: idx - lastRowStart,
-				rowLen: lastRowCount,
-				isFirstRow: lastRowStart == 0,
-				isLastRow: true
-			} as ItemRowInfo
-		}
-		return {
-			rowPos: idx % col,
-			rowLen: col,
-			isFirstRow: idx < col,
-			isLastRow: false
-		} as ItemRowInfo
-	})
-
 	/**
 	 * 根节点内联样式：width 百分比定宽（100/列数%）；
 	 * square 时 padding-top 同百分比撑出正方形（相对容器宽，与定宽同基准）；
-	 * gutter 时行内精确平均分配（行首无左、行尾无右、中间各半）+ 非首行 margin-top
+	 * gutter 时按满行格位分配（格位 0 无左、末格位无右、中间各半）+ 非首行 margin-top
 	 */
 	const itemStyle = computed<string>(() => {
 		let style = ''
@@ -167,19 +134,22 @@
 			style += 'padding-top: ' + percent + ';'
 		}
 		const g = snap.value.gutter
-		if (g > 0) {
-			const info = rowInfo.value
+		if (g > 0 && col > 1) {
 			const half = (g / 2).toString()
-			if (info.rowLen > 1) {
-				if (info.rowPos == 0) {
-					style += 'padding-right: ' + half + 'px;'
-				} else if (info.rowPos == info.rowLen - 1) {
-					style += 'padding-left: ' + half + 'px;'
-				} else {
-					style += 'padding-left: ' + half + 'px; padding-right: ' + half + 'px;'
-				}
+			/*
+			 * 满行格位制：分配只看 index % columnNum，不看行内实际格数——
+			 * 最后一行不满时沿用同格位分配（空位承担收边），上下行同格位同位同宽；
+			 * 若按「行内实际格数」平均，末行分配漂移会导致与上方行错位（m-row 曾踩同坑）
+			 */
+			const pos = selfIndex.value % col
+			if (pos == 0) {
+				style += 'padding-right: ' + half + 'px;'
+			} else if (pos == col - 1) {
+				style += 'padding-left: ' + half + 'px;'
+			} else {
+				style += 'padding-left: ' + half + 'px; padding-right: ' + half + 'px;'
 			}
-			if (!info.isFirstRow) {
+			if (selfIndex.value >= col) {
 				style += 'margin-top: ' + g.toString() + 'px;'
 			}
 		}

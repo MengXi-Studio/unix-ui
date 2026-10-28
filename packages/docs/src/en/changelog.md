@@ -2,13 +2,14 @@
 
 ## [0.2.0] - 2026-10-28
 
-Adds the popup-family base components (m-overlay / m-popup) and the divider component (m-divider), bringing the total to 12 base components.
+Adds the popup-family base components (m-overlay / m-popup), the divider component (m-divider) and the grid components (m-grid / m-grid-item), bringing the total to 13 base components.
 
 ### Added
 
 - **m-overlay**: `show` visibility, `z-index` level, `duration` in seconds (`0` disables animation), `custom-class` / `custom-style` direct styling and a `click` event (the overlay does not close automatically, aligned with Vant semantics); built-in body scroll lock on Web (released only when all stacked instances close), the foundation of popup components
 - **m-popup**: five positions (center / top / bottom / left / right), per-side round corners, closeable with `close-icon` / `close-icon-position`, `close-on-click-overlay`, overlay customization (`overlay` / `overlay-class` / `overlay-style`), `z-index` / `duration`, `lazy-render` / `destroy-on-close`, `safe-area-inset-top` / `safe-area-inset-bottom`, and a `before-close` guard (sync boolean); `v-model:show` two-way binding with full events (open / opened / close / closed / click / click-overlay / click-close-icon); center scales in with a fade, edge positions slide, composed on top of m-overlay
 - **m-divider**: horizontal / vertical forms (vertical as a flex item; parent container needs `flex-direction: row` + `align-items: center`), `dashed`, `hairline` 0.5px thin line (1px border + single-axis 0.5 scale, safe on App platforms), `content-position` (left / right / center, one line width-capped at 10%), default slot with inherited text styles
+- **m-grid / m-grid-item**: `column-num` custom columns, `square` cells (percentage padding-top + absolutely positioned content), `gutter` spacing (same value for rows / columns, evenly distributed per the m-row precedent), `border` full table borders (container draws the top + left lines, items draw the right + bottom lines), `center` content centering, `direction` horizontal layout, `reverse` icon-text swap, `clickable` press feedback (native view hover-class); per-item `text` / `icon` / `icon-color`, `dot` / `badge` (via m-badge), `click` events and `url` in-app page navigation, with default / icon / text slots
 
 ## [0.1.0] - 2026-10-27
 

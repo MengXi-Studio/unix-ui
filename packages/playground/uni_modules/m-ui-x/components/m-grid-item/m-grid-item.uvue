@@ -1,0 +1,374 @@
+<template>
+	<!-- 格子：根节点定宽（inline width 百分比，App 端 width 百分比可靠见 m-col 先例）；
+	     content 承担背景与按压反馈；边框为 content 右线 + 下线（容器承担顶线 + 左线，拼出完整表格边框） -->
+	<view :class="itemClass" :style="itemStyle" @click="handleClick">
+		<view :class="contentClass" :hover-class="hoverClass">
+			<slot>
+				<!-- 图标区：m-badge 包裹（dot / badge 徽标压右上角），默认 m-icon 或 icon 插槽 -->
+				<view v-if="hasIconArea" :class="iconAreaClass">
+					<m-badge :content="badge" :dot="dot">
+						<slot name="icon">
+							<m-icon v-if="props.icon != null" :name="iconName" :color="iconColor" :size="iconSizeResolved" custom-class="m-grid-item__icon-text" />
+						</slot>
+					</m-badge>
+				</view>
+				<!-- 文字区：默认文字或 text 插槽 -->
+				<view v-if="hasTextArea" :class="textAreaClass">
+					<slot name="text">
+						<text class="m-grid-item__text-inner">{{ text }}</text>
+					</slot>
+				</view>
+			</slot>
+			<!-- 0.5px 右线 / 下线：绝对定位缩放层（与容器左/顶线拼出完整表格边框，含外框右/底边） -->
+			<view v-if="showLineRight" class="m-grid-item__line-right"></view>
+			<view v-if="showLineBottom" class="m-grid-item__line-bottom"></view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { IconName } from '../m-icon/icons.uts'
+	import { GRID_KEY, GridContext, generateGridItemId } from '../m-grid/context.uts'
+
+	type Props = {
+		/** 文字内容 */
+		text?: string
+		/** 图标名称（IconName 联合类型，null 表示无图标；icon 插槽可替代） */
+		icon?: IconName | null
+		/** 图标颜色：支持 CSS 色值；为空时继承内容色（主题变量 $m-grid-item-text-color） */
+		iconColor?: string
+		/** 是否显示图标右上角小红点 */
+		dot?: boolean
+		/** 图标右上角徽标内容（m-badge content 语义：数字用字符串表达）；空串不显示 */
+		badge?: string
+		/** 点击后跳转的应用内页面路径（uni.navigateTo / replace 时 uni.redirectTo） */
+		url?: string
+		/** 是否在跳转时替换当前页面历史 */
+		replace?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		text: '',
+		icon: null,
+		iconColor: '',
+		dot: false,
+		badge: '',
+		url: '',
+		replace: false,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{ click: [event: MouseEvent] }>()
+
+	const slots = useSlots()
+
+	/**
+	 * 宫格上下文：在 grid 内时注入；setup 同步注册自身 id（注册顺序即渲染顺序，
+	 * 首帧即为正确下标），onUnmounted 注销；无 grid 父级时独立使用（单列铺满、无边框联动）
+	 */
+	const gridContext = inject<GridContext | null>(GRID_KEY, null)
+	const itemId = generateGridItemId()
+	if (gridContext != null) {
+		gridContext.register(itemId)
+	}
+	onUnmounted(() => {
+		if (gridContext != null) {
+			gridContext.unregister(itemId)
+		}
+	})
+
+	/** grid props 快照（grid 侧 computed 挂入 ctx，变化实时下发；独立使用时回退默认值） */
+	type GridSnapshot = {
+		columnNum: number
+		gutter: number
+		iconSize: string
+		border: boolean
+		center: boolean
+		square: boolean
+		clickable: boolean
+		direction: string
+		reverse: boolean
+	}
+
+	const snap = computed<GridSnapshot>(() => {
+		const c = gridContext
+		return {
+			columnNum: c == null || c.columnNum == null ? 1 : c.columnNum.value,
+			gutter: c == null || c.gutter == null ? 0 : c.gutter.value,
+			iconSize: c == null || c.iconSize == null ? '' : c.iconSize.value,
+			border: c == null || c.border == null ? true : c.border.value,
+			center: c == null || c.center == null ? true : c.center.value,
+			square: c == null || c.square == null ? false : c.square.value,
+			clickable: c == null || c.clickable == null ? false : c.clickable.value,
+			direction: c == null || c.direction == null ? 'vertical' : c.direction.value,
+			reverse: c == null || c.reverse == null ? false : c.reverse.value
+		} as GridSnapshot
+	})
+
+	/** 自身下标（动态增删后随 reactive 注册表重算） */
+	const selfIndex = computed<number>(() => {
+		return gridContext == null ? 0 : gridContext.indexOf(itemId)
+	})
+
+	/** 格子总数 */
+	const selfTotal = computed<number>(() => {
+		return gridContext == null ? 1 : gridContext.total()
+	})
+
+	/** 行位信息：行内位置（0 起）/ 该行实际格数（最后一行可能不满）/ 首行 / 末行判定 */
+	type ItemRowInfo = {
+		rowPos: number
+		rowLen: number
+		isFirstRow: boolean
+		isLastRow: boolean
+	}
+
+	const rowInfo = computed<ItemRowInfo>(() => {
+		const total = selfTotal.value
+		const col = snap.value.columnNum
+		const idx = selfIndex.value
+		if (total <= 0) {
+			return { rowPos: 0, rowLen: col, isFirstRow: true, isLastRow: true } as ItemRowInfo
+		}
+		const lastRowCount = ((total - 1) % col) + 1
+		const lastRowStart = total - lastRowCount
+		if (idx >= lastRowStart) {
+			return {
+				rowPos: idx - lastRowStart,
+				rowLen: lastRowCount,
+				isFirstRow: lastRowStart == 0,
+				isLastRow: true
+			} as ItemRowInfo
+		}
+		return {
+			rowPos: idx % col,
+			rowLen: col,
+			isFirstRow: idx < col,
+			isLastRow: false
+		} as ItemRowInfo
+	})
+
+	/**
+	 * 根节点内联样式：width 百分比定宽（100/列数%）；
+	 * square 时 padding-top 同百分比撑出正方形（相对容器宽，与定宽同基准）；
+	 * gutter 时行内精确平均分配（行首无左、行尾无右、中间各半）+ 非首行 margin-top
+	 */
+	const itemStyle = computed<string>(() => {
+		let style = ''
+		const col = snap.value.columnNum
+		const percent = (100 / col).toString() + '%'
+		style += 'width: ' + percent + ';'
+		if (snap.value.square) {
+			style += 'padding-top: ' + percent + ';'
+		}
+		const g = snap.value.gutter
+		if (g > 0) {
+			const info = rowInfo.value
+			const half = (g / 2).toString()
+			if (info.rowLen > 1) {
+				if (info.rowPos == 0) {
+					style += 'padding-right: ' + half + 'px;'
+				} else if (info.rowPos == info.rowLen - 1) {
+					style += 'padding-left: ' + half + 'px;'
+				} else {
+					style += 'padding-left: ' + half + 'px; padding-right: ' + half + 'px;'
+				}
+			}
+			if (!info.isFirstRow) {
+				style += 'margin-top: ' + g.toString() + 'px;'
+			}
+		}
+		if (props.customStyle != '') {
+			style += props.customStyle.endsWith(';') ? props.customStyle : props.customStyle + ';'
+		}
+		return style
+	})
+
+	/** 根节点类名：基础类 + customClass */
+	const itemClass = computed<string>(() => {
+		let cls = 'm-grid-item'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 内容区类名：正方形绝对定位 / 横排 / 反向（纵 column-reverse、横 row-reverse）/ 不居中 */
+	const contentClass = computed<string>(() => {
+		let cls = 'm-grid-item__content'
+		if (snap.value.square) cls += ' m-grid-item__content--square'
+		const horizontal = snap.value.direction == 'horizontal'
+		if (horizontal) cls += ' m-grid-item__content--horizontal'
+		if (snap.value.reverse) {
+			cls += horizontal
+				? ' m-grid-item__content--reverse-horizontal'
+				: ' m-grid-item__content--reverse-vertical'
+		}
+		if (!snap.value.center) cls += ' m-grid-item__content--uncentered'
+		return cls
+	})
+
+	/** 按压态类名：由 view 的 hover-class 在按压期间挂载（"none" 为官方约定的无点击态值） */
+	const hoverClass = computed<string>(() => {
+		return snap.value.clickable ? 'm-grid-item__content--active' : 'none'
+	})
+
+	/** 是否渲染图标区（icon prop 或 icon 插槽任一存在） */
+	const hasIconArea = computed<boolean>(() => {
+		return props.icon != null || slots.icon != null
+	})
+
+	/** 图标名（hasIconArea 为 true 且 icon prop 非空时才渲染，断言安全） */
+	const iconName = computed<IconName>(() => {
+		return props.icon as IconName
+	})
+
+	/** 图标区类名：横排时图标右距文字 8px（纵排为下距） */
+	const iconAreaClass = computed<string>(() => {
+		let cls = 'm-grid-item__icon'
+		if (snap.value.direction == 'horizontal') cls += ' m-grid-item__icon--horizontal'
+		return cls
+	})
+
+	/** 传给 m-icon 的图标大小：icon-size prop 显式时生效（inline 最高优先），空值走 custom-class 主题变量 */
+	const iconSizeResolved = computed<string>(() => {
+		return snap.value.iconSize
+	})
+
+	/** 是否渲染文字区（text prop 或 text 插槽任一存在） */
+	const hasTextArea = computed<boolean>(() => {
+		return props.text != '' || slots.text != null
+	})
+
+	/** 文字区类名：横排时占剩余宽度（文本左对齐） */
+	const textAreaClass = computed<string>(() => {
+		let cls = 'm-grid-item__text'
+		if (snap.value.direction == 'horizontal') cls += ' m-grid-item__text--horizontal'
+		return cls
+	})
+
+	/** 右线显隐：边框开启即显示（格子右线与容器左/顶线拼出完整表格边框，含外框右边） */
+	const showLineRight = computed<boolean>(() => {
+		return snap.value.border
+	})
+
+	/** 下线显隐：边框开启即显示（最后一行格子的下线即外框底边） */
+	const showLineBottom = computed<boolean>(() => {
+		return snap.value.border
+	})
+
+	/**
+	 * 点击派发：向使用者派发原生 click 事件；url 非空时按 replace 选择跳转方式
+	 */
+	function handleClick(event: MouseEvent) {
+		emit('click', event)
+		if (props.url == '') return
+		if (props.replace) {
+			uni.redirectTo({ url: props.url })
+		} else {
+			uni.navigateTo({ url: props.url })
+		}
+	}
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根节点（定宽 / 正方形撑高 / gutter 间距全走 inline itemStyle） ========== */
+	.m-grid-item {
+		position: relative;
+		box-sizing: border-box;
+	}
+
+	/* ========== 内容区（背景与按压反馈承载；纵排居中为默认形态） ========== */
+	.m-grid-item__content {
+		position: relative;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: $m-grid-item-content-padding;
+		background-color: $m-grid-item-content-background;
+		color: $m-grid-item-text-color;
+	}
+	.m-grid-item__content--square {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+	}
+	.m-grid-item__content--horizontal {
+		flex-direction: row;
+		justify-content: flex-start;
+	}
+	.m-grid-item__content--reverse-vertical {
+		flex-direction: column-reverse;
+	}
+	.m-grid-item__content--reverse-horizontal {
+		flex-direction: row-reverse;
+	}
+	.m-grid-item__content--uncentered {
+		justify-content: flex-start;
+		align-items: flex-start;
+	}
+	/* 按压态（hover-class 按压期间挂载） */
+	.m-grid-item__content--active {
+		background-color: $m-grid-item-content-active-color;
+	}
+
+	/* ========== 图标区（收缩贴内容，徽标定位由 m-badge 自理） ========== */
+	.m-grid-item__icon {
+		margin-bottom: 8px;
+	}
+	.m-grid-item__icon--horizontal {
+		margin-bottom: 0;
+		margin-right: 8px;
+	}
+	/* 图标字号：custom-class 落在 m-icon 的 text 类上（uni text 默认字号会截断继承链，须显式落类） */
+	.m-grid-item__icon-text {
+		font-size: $m-grid-item-icon-size;
+	}
+
+	/* ========== 文字区 ========== */
+	.m-grid-item__text {
+		/* 纵排时宽度由 content 交叉轴对齐决定（居中 / 起始） */
+	}
+	.m-grid-item__text--horizontal {
+		flex: 1;
+	}
+	.m-grid-item__text-inner {
+		font-size: $m-grid-item-text-font-size;
+		color: $m-grid-item-text-color;
+	}
+
+	/* ========== 内容区右线 / 下线 0.5px（缩放层，贴边原点与边重合） ========== */
+	.m-grid-item__line-right {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		width: 1px;
+		background-color: $m-grid-item-border-color;
+		transform: scaleX(0.5);
+		transform-origin: 100% 0;
+	}
+	.m-grid-item__line-bottom {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 1px;
+		background-color: $m-grid-item-border-color;
+		transform: scaleY(0.5);
+		transform-origin: 0 100%;
+	}
+</style>

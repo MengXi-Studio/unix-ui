@@ -20,5 +20,6 @@ export const routes: RouteConfig[] = [
 	{ path: 'pages-sub/layout/layout', name: 'layout', meta: { title: '布局 Layout' } },
 	{ path: 'pages-sub/overlay/overlay', name: 'overlay', meta: { title: '遮罩层 Overlay' } },
 	{ path: 'pages-sub/popup/popup', name: 'popup', meta: { title: '弹出层 Popup' } },
-	{ path: 'pages-sub/divider/divider', name: 'divider', meta: { title: '分割线 Divider' } }
+	{ path: 'pages-sub/divider/divider', name: 'divider', meta: { title: '分割线 Divider' } },
+	{ path: 'pages-sub/grid/grid', name: 'grid', meta: { title: '宫格 Grid' } }
 ]

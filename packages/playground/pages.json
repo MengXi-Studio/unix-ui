@@ -82,6 +82,12 @@
 				"style": {
 					"navigationBarTitleText": "分割线 Divider"
 				}
+			},
+			{
+				"path": "grid/grid",
+				"style": {
+					"navigationBarTitleText": "宫格 Grid"
+				}
 			}
 		]
 		}

@@ -74,6 +74,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Button', link: '/en/components/button' },
 						{ text: 'Cell', link: '/en/components/cell' },
 						{ text: 'Divider', link: '/en/components/divider' },
+						{ text: 'Grid', link: '/en/components/grid' },
 						{ text: 'Icon', link: '/en/components/icon' },
 						{ text: 'Image', link: '/en/components/image' },
 						{ text: 'Layout', link: '/en/components/layout' },

@@ -86,6 +86,12 @@ export const demoGroups: DemoGroup[] = [
 				desc: '分隔内容区域，支持虚线、0.5px 细线、内容位置与垂直形态。'
 			},
 			{
+				name: 'grid',
+				zhName: '宫格',
+				enName: 'Grid',
+				desc: '水平方向分隔等宽区块，支持自定义列数、正方形格子、间距、横排反向、徽标与点击跳转。'
+			},
+			{
 				name: 'text',
 				zhName: '文本',
 				enName: 'Text',

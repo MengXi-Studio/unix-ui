@@ -218,3 +218,16 @@
 - 断言方案：文本继承样式（color / font-size / line-height）断言落在**父元素** getComputedStyle 上（继承在父级 computed 可见）；「slot 是否有内容」用 `childNodes` 过滤 `nodeType === 3` 计数（bareTextCount）
 - 现象 2：外部 `:style="'color: #1989fa'"` 透传到组件根节点后，style attribute 中色值被规范化为 `rgb(25, 137, 250)`——`styleAttr.includes('#1989fa')` / `includes('1989fa')` 永不命中，改用 rgb 形式匹配
 - 推论（style / class 透传）：组件根节点无 v-if 时外部 style 直达根（LESSONS #32 仅覆盖根节点 v-if 场景），`color` / `font-size` / `line-height` 经继承到达 slot 裸文本——m-divider 单实例文本色定制可用；但线是子节点不吃继承，单实例线色走 `$m-divider-border-color` 主题变量（ucss 无 inherit）
+
+## 2026-10-28 m-grid（Grid 宫格，运行实测）
+
+### 37. uni text Web 端默认 16px 截断 font-size 继承链，跨组件字号 / 颜色联动必须走 custom-class 落类
+- 现象：m-grid-item 在 icon 区外层 view 上设 font-size，内部 m-icon 字号不跟随——Web 端 uni-text 元素自带 16px 默认字号，继承链在 text 节点被截断
+- 根因：m-icon 基类无 font-size 声明，浏览器对 uni-text 的 UA / 默认样式（16px）直接生效，优先于继承（继承只在无任何声明时兜底）
+- 修复：宿主组件定义字号类（`.m-grid-item__icon-text { font-size: $m-grid-item-icon-size }`）经 `custom-class` 挂到 m-icon 根 text；m-cell__icon-text 先例同构。字号 prop 显式传入时再以 `:size` inline 覆盖主题类
+- 规约：凡「宿主组件包 m-icon 且想用 `$m-*` 变量控制其字号 / 颜色」的场景一律 custom-class 落类（关联 #13：color / size 是运行时字符串 prop，SCSS 变量是编译期替换，两者打不通）
+
+### 38. 容器 + 格子拼完整表格边框：外框线必须有人承担，「行尾 / 末行去线」逻辑反而漏边
+- 场景：宫格 border 需要「格子间内线 + 外框整圈」。Vant 靠格子 `::after` 画右线 + 下线、行尾格去右线 / 末行格去下线；照搬去线逻辑在**单行 / 单格** grid 下会把外框右边与底边全部去掉（每格都是行尾 + 末行），无线可承担——首跑截图定性
+- 正确方案：**去线改拼线**——容器无条件画 top + left 两条线，全部格子无条件画 right + bottom（border=true 即显示）：内线由相邻格共享，外框由行尾格 / 末行格承担，任意行列数下完整表格自然拼出
+- 规约：拼线类方案的显隐矩阵必须包含「单行 / 单格」边界用例；「某侧线由谁承担」先列出全部线段归属表再写显隐条件，禁止只对齐参照实现的去线规则

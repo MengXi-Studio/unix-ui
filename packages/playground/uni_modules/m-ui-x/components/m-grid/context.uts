@@ -1,0 +1,73 @@
+/**
+ * m-grid 与 m-grid-item 的宫格上下文（跨组件共享，独立 .uts）
+ *
+ * grid provide 本上下文，item 在 setup 中同步注册自身 id（注册顺序即渲染顺序，
+ * 首帧即为正确下标），onUnmounted 注销；item 据此拿到自身下标与格子总数，
+ * 驱动定宽百分比、gutter 平均分配与边框线显隐。
+ * grid 侧 props 快照以 computed 赋入（m-row ctx.spaces 先例），
+ * props 变化经 reactive 依赖实时下发全部 item 重算。
+ * class 实现：非蒸汽（Kotlin/Swift）端不支持「含方法的对象字面量 type」。
+ */
+import { reactive, ComputedRef } from 'vue'
+
+/** provide / inject 配对 key（字符串 key，App 原生端无需 Symbol 支持） */
+export const GRID_KEY: string = '__mxi_grid__'
+
+/**
+ * grid 注入上下文：item 注册表 + grid props computed 快照。
+ * 快照字段由 grid setup 赋值，item 侧以 ctx.xxx.value 消费（null 判空后解包）。
+ */
+export class GridContext {
+	/** item id 有序集合（reactive 数组，注册 / 注销自动触发依赖它的 computed 重算） */
+	ids: string[] = reactive<string[]>([])
+	/** 列数快照（已归一化，最小 1） */
+	columnNum: ComputedRef<number> | null = null
+	/** 格子间距快照（px，已归一化，0 不产生间距） */
+	gutter: ComputedRef<number> | null = null
+	/** 图标大小快照（空串表示不覆盖，走主题变量 $m-grid-item-icon-size） */
+	iconSize: ComputedRef<string> | null = null
+	/** 是否显示边框快照 */
+	border: ComputedRef<boolean> | null = null
+	/** 是否内容居中快照 */
+	center: ComputedRef<boolean> | null = null
+	/** 是否正方形格子快照 */
+	square: ComputedRef<boolean> | null = null
+	/** 是否开启点击反馈快照 */
+	clickable: ComputedRef<boolean> | null = null
+	/** 内容排列方向快照（'vertical' | 'horizontal'） */
+	direction: ComputedRef<string> | null = null
+	/** 是否调换图标与文本位置快照 */
+	reverse: ComputedRef<boolean> | null = null
+
+	/** 注册 item（item setup 中同步调用，push 顺序即渲染顺序） */
+	register(id: string): void {
+		this.ids.push(id)
+	}
+
+	/** 注销 item（onUnmounted 调用，其余 item 下标自动前移并重算） */
+	unregister(id: string): void {
+		const index = this.ids.indexOf(id)
+		if (index != -1) {
+			this.ids.splice(index, 1)
+		}
+	}
+
+	/** 查询 item 当前下标（动态增删后随 reactive 注册表重算） */
+	indexOf(id: string): number {
+		return this.ids.indexOf(id)
+	}
+
+	/** 查询格子总数 */
+	total(): number {
+		return this.ids.length
+	}
+}
+
+/** item id 自增计数器（模块级） */
+let gridItemIdCounter = 0
+
+/** 生成全局唯一 item id（item setup 中调用一次） */
+export function generateGridItemId(): string {
+	gridItemIdCounter++
+	return 'mxi_grid_item_' + gridItemIdCounter
+}

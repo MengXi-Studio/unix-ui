@@ -87,6 +87,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Button 按钮', link: '/components/button' },
 						{ text: 'Cell 单元格', link: '/components/cell' },
 						{ text: 'Divider 分割线', link: '/components/divider' },
+						{ text: 'Grid 宫格', link: '/components/grid' },
 						{ text: 'Icon 图标', link: '/components/icon' },
 						{ text: 'Image 图片', link: '/components/image' },
 						{ text: 'Layout 布局', link: '/components/layout' },

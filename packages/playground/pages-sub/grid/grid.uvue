@@ -1,0 +1,208 @@
+<template>
+	<view class="page">
+		<demo-navbar title="宫格" subtitle="Grid" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-grid>
+						<m-grid-item icon="location-o" text="文字" />
+						<m-grid-item icon="like-o" text="文字" />
+						<m-grid-item icon="star-o" text="文字" />
+						<m-grid-item icon="phone-o" text="文字" />
+					</m-grid>
+					<text class="caption">默认一行展示四个格子，icon 设置图标、text 设置文字，边框默认开启（容器顶/左线 + 格子右/下线拼出完整表格）</text>
+				</view>
+
+				<text class="section" id="column-num">自定义列数</text>
+				<view class="card">
+					<m-grid :column-num="3">
+						<m-grid-item v-for="(item, i) in columnItems" :key="i" :icon="item.icon" :text="item.text" />
+					</m-grid>
+					<text class="caption">column-num 自定义列数（3 列 6 格），格子宽度按 100/列数% 自动定宽换行</text>
+				</view>
+
+				<text class="section" id="custom-content">自定义内容</text>
+				<view class="card">
+					<m-grid :border="false" :column-num="3">
+						<m-grid-item v-for="(src, i) in contentImages" :key="i">
+							<m-image :src="src" width="100%" height="80px" />
+						</m-grid-item>
+					</m-grid>
+					<text class="caption">默认插槽自定义格子全部内容（icon / text 不渲染），border=false 关闭边框</text>
+				</view>
+
+				<text class="section" id="square">正方形格子</text>
+				<view class="card">
+					<m-grid square>
+						<m-grid-item icon="fire-o" text="文字" />
+						<m-grid-item icon="gift-o" text="文字" />
+						<m-grid-item icon="smile-o" text="文字" />
+						<m-grid-item icon="music-o" text="文字" />
+						<m-grid-item icon="video-o" text="文字" />
+						<m-grid-item icon="shop-o" text="文字" />
+					</m-grid>
+					<text class="caption">square 使格子高度与宽度一致（padding-top 百分比撑高 + 内容区绝对定位铺满）</text>
+				</view>
+
+				<text class="section" id="gutter">格子间距</text>
+				<view class="card">
+					<!-- 浅灰内衬：格子与卡片同为白底，间隙需深色环境衬托（Vant 官网 demo 同为灰底） -->
+					<view class="gutter-stage">
+						<m-grid :gutter="10">
+							<m-grid-item icon="cart-o" text="文字" />
+							<m-grid-item icon="friends-o" text="文字" />
+							<m-grid-item icon="coupon-o" text="文字" />
+							<m-grid-item icon="setting-o" text="文字" />
+							<m-grid-item icon="clock-o" text="文字" />
+							<m-grid-item icon="question-o" text="文字" />
+							<m-grid-item icon="star-o" text="文字" />
+							<m-grid-item icon="gift-o" text="文字" />
+						</m-grid>
+					</view>
+					<text class="caption">gutter 设置格子间距（行间与列间同值）：行内平均分配（行首无左、行尾无右）、非首行 margin-top，整行铺满</text>
+				</view>
+
+				<text class="section" id="direction">内容横排</text>
+				<view class="card">
+					<m-grid direction="horizontal" :column-num="3">
+						<m-grid-item icon="location-o" text="横排文字" />
+						<m-grid-item icon="like-o" text="横排文字" />
+						<m-grid-item icon="star-o" text="横排文字" />
+					</m-grid>
+					<m-grid direction="horizontal" reverse :column-num="3">
+						<m-grid-item icon="phone-o" text="反向文字" />
+						<m-grid-item icon="fire-o" text="反向文字" />
+						<m-grid-item icon="gift-o" text="反向文字" />
+					</m-grid>
+					<text class="caption">direction=horizontal 内容横向排列（图标左文字右），reverse 调换图标和文本位置（row-reverse）</text>
+				</view>
+
+				<text class="section" id="reverse-vertical">纵向反向</text>
+				<view class="card">
+					<m-grid reverse>
+						<m-grid-item icon="smile-o" text="文字在上" />
+						<m-grid-item icon="music-o" text="文字在上" />
+						<m-grid-item icon="video-o" text="文字在上" />
+						<m-grid-item icon="shop-o" text="文字在上" />
+					</m-grid>
+					<text class="caption">vertical 形态下 reverse 用 column-reverse 调换顺序（文字上、图标下）</text>
+				</view>
+
+				<text class="section" id="navigation">页面导航</text>
+				<view class="card">
+					<m-grid clickable :column-num="2">
+						<m-grid-item icon="arrow" text="跳转分割线页" url="/pages-sub/divider/divider" />
+						<m-grid-item icon="arrow" text="替换历史跳转布局页" url="/pages-sub/layout/layout" :replace="true" />
+					</m-grid>
+					<text class="caption">url 设置点击跳转的应用内页面路径（navigateTo），replace 时走 redirectTo 替换当前历史记录</text>
+				</view>
+
+				<text class="section" id="badge">徽标提示</text>
+				<view class="card">
+					<m-grid :column-num="2">
+						<m-grid-item icon="friends-o" text="小红点" dot />
+						<m-grid-item icon="comment-o" text="徽标 99+" badge="99+" />
+						<m-grid-item icon="todo-list-o" text="徽标 8" badge="8" />
+						<m-grid-item icon="service-o" text="无徽标" />
+					</m-grid>
+					<text class="caption">dot 在图标右上角展示小红点，badge 展示徽标内容（数字用字符串表达，内部由 m-badge 包裹渲染）</text>
+				</view>
+
+				<text class="section" id="border">边框对比</text>
+				<view class="card">
+					<m-grid :border="false">
+						<m-grid-item icon="gold-coin-o" text="文字" />
+						<m-grid-item icon="add-o" text="文字" />
+						<m-grid-item icon="info-o" text="文字" />
+						<m-grid-item icon="warning-o" text="文字" />
+					</m-grid>
+					<text class="caption">border=false 关闭全部边框线（容器顶/左线与格子右/下线一并关闭）</text>
+				</view>
+
+				<text class="section" id="click">点击事件与按压反馈</text>
+				<view class="card">
+					<m-grid clickable :column-num="2">
+						<m-grid-item icon="thumb-circle-o" text="格子 A" @click="logClick('格子 A')" />
+						<m-grid-item icon="comment-circle-o" text="格子 B" @click="logClick('格子 B')" />
+						<m-grid-item icon="play-circle-o" text="格子 C" @click="logClick('格子 C')" />
+						<m-grid-item icon="pause-circle-o" text="格子 D" @click="logClick('格子 D')" />
+					</m-grid>
+					<view class="log-area">
+						<text v-for="(log, i) in clickLogs" :key="i" class="log-text">{{ log }}</text>
+					</view>
+					<text class="caption">clickable 开启按压反馈（hover-class 按压期间切换背景色），click 事件在点击格子时派发</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { IconName } from '@/uni_modules/m-ui-x/components/m-icon/icons.uts'
+
+	/** 自定义列数演示项：图标 + 文字 */
+	type DemoGridItem = {
+		icon: IconName
+		text: string
+	}
+
+	/** 3 列 6 格演示数据 */
+	const columnItems = [
+		{ icon: 'location-o', text: '文字' },
+		{ icon: 'like-o', text: '文字' },
+		{ icon: 'star-o', text: '文字' },
+		{ icon: 'phone-o', text: '文字' },
+		{ icon: 'fire-o', text: '文字' },
+		{ icon: 'gift-o', text: '文字' }
+	] as DemoGridItem[]
+
+	/** 自定义内容演示图（与 image 演示页同源） */
+	const contentImages = [
+		'https://raw.githubusercontent.com/MengXi-Studio/unix-ui/master/packages/playground/static/demo/demo-cat.jpg',
+		'https://raw.githubusercontent.com/MengXi-Studio/unix-ui/master/packages/playground/static/demo/demo-fruit.jpg',
+		'https://raw.githubusercontent.com/MengXi-Studio/unix-ui/master/packages/playground/static/demo/demo-mountain.jpg'
+	]
+
+	/** 点击事件日志（最近 4 条，新事件置顶） */
+	const clickLogs = reactive<string[]>([])
+
+	/**
+	 * 点击事件演示：记录最近 4 次点击的格子名称
+	 */
+	function logClick(name: string) {
+		clickLogs.unshift('点击了「' + name + '」')
+		if (clickLogs.length > 4) {
+			clickLogs.splice(clickLogs.length - 1, 1)
+		}
+	}
+</script>
+
+<style lang="scss">
+	/* 格子间距演示的内衬底：白格间隙需要非白环境才可见 */
+	.gutter-stage {
+		background-color: #f7f8fa;
+		border-radius: 8px;
+		padding: 12px;
+	}
+
+	/* 点击日志区 */
+	.log-area {
+		margin-top: 12px;
+		padding: 8px 12px;
+		background-color: #f7f8fa;
+		border-radius: 8px;
+		min-height: 24px;
+	}
+	.log-text {
+		font-size: 12px;
+		color: #646566;
+		line-height: 20px;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

@@ -78,10 +78,11 @@
 			<view class="card">
 				<view class="wrap-box">
 					<m-space wrap>
-						<m-button v-for="i in 10" :key="i" type="primary">按钮{{ i }}</m-button>
+						<!-- 文本补零等宽：Space 元素宽度随内容自适应（按钮10 三字天然更宽），补零便于观察纯间距行为 -->
+						<m-button v-for="i in 10" :key="i" type="primary">按钮{{ i < 10 ? '0' + i : i }}</m-button>
 					</m-space>
 				</view>
-				<text class="caption">wrap 换行，默认 8px 行间距</text>
+				<text class="caption">wrap 换行，默认 8px 行间距；间距为固定 gap（无末行漂移），元素宽度随内容自适应，等宽网格对齐用 m-grid / m-row</text>
 			</view>
 
 			<text class="section">组合</text>
@@ -115,9 +116,9 @@
 		height: 48px;
 		background-color: #ffffff;
 	}
-	/* 换行演示容器宽度约束 */
+	/* 换行演示容器宽度约束（272 容纳 3 列等宽按钮 81.8×3 + gap 16） */
 	.wrap-box {
-		max-width: 260px;
+		max-width: 272px;
 	}
 	.caption {
 		font-size: 12px;

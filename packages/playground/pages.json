@@ -76,6 +76,12 @@
 				"style": {
 					"navigationBarTitleText": "弹出层 Popup"
 				}
+			},
+			{
+				"path": "divider/divider",
+				"style": {
+					"navigationBarTitleText": "分割线 Divider"
+				}
 			}
 		]
 		}

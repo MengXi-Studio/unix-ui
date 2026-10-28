@@ -210,3 +210,11 @@
   ```
 - 关键优势：`locator.click` 走 CDP 真实输入（trusted event，等价人工点击）；CSS 选择器 + hasText 文案定位不依赖 a11y 快照；`page.mouse.click(x, y)` 坐标点击可测遮罩空白区；`page.evaluate` 全量探针（computed 样式 / borderRadius / elementFromPoint）原始数据可复核；`page.on('console' / 'pageerror')` 捕获运行日志与业务日志（POPUP-EVENT）
 - 断言细节：uni-app x Web 端页面 body 的 overflow 基线可能是 `hidden auto`（页面自身样式），滚动锁断言必须与 T0 基线对比，不能硬编码 `''` / `'visible'`；transition 后的断言等待 ≥ 2×duration（本例 300ms 动画等 600–700ms）
+
+## 2026-10-28 m-divider（Divider 分割线，运行实测）
+
+### 36. Web 端 slot 裸 text 编译为纯文本节点 + style attr 色值规范化（自动化探针两连坑）
+- 现象 1：slot 内无样式 `<text>文本</text>` 在 Web 端编译产物中不是 uni-text 元素，而是**纯文本节点**（DOM 形如 `</uni-view>文本<uni-view>`）——querySelector('uni-text') / 类选择器探针扑空，texts=[]
+- 断言方案：文本继承样式（color / font-size / line-height）断言落在**父元素** getComputedStyle 上（继承在父级 computed 可见）；「slot 是否有内容」用 `childNodes` 过滤 `nodeType === 3` 计数（bareTextCount）
+- 现象 2：外部 `:style="'color: #1989fa'"` 透传到组件根节点后，style attribute 中色值被规范化为 `rgb(25, 137, 250)`——`styleAttr.includes('#1989fa')` / `includes('1989fa')` 永不命中，改用 rgb 形式匹配
+- 推论（style / class 透传）：组件根节点无 v-if 时外部 style 直达根（LESSONS #32 仅覆盖根节点 v-if 场景），`color` / `font-size` / `line-height` 经继承到达 slot 裸文本——m-divider 单实例文本色定制可用；但线是子节点不吃继承，单实例线色走 `$m-divider-border-color` 主题变量（ucss 无 inherit）

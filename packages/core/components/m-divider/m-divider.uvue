@@ -1,0 +1,128 @@
+<template>
+	<!-- 分割线：水平为「before 线 + 默认插槽 + after 线」，垂直为「单线 + 默认插槽」并排（flex 子项形态） -->
+	<view :class="rootClass">
+		<view v-if="!vertical" :class="lineBeforeClass" />
+		<view v-else :class="vlineClass" />
+		<slot />
+		<view v-if="!vertical" :class="lineAfterClass" />
+	</view>
+</template>
+
+<script setup lang="uts">
+	type DividerContentPosition = 'left' | 'center' | 'right'
+
+	type Props = {
+		/** 虚线 */
+		dashed?: boolean
+		/** 是否使用 0.5px 细线（border 1px + 单轴缩放 0.5 实现，App 端安全） */
+		hairline?: boolean
+		/** 内容位置（仅水平分割线使用默认插槽时有效） */
+		contentPosition?: DividerContentPosition
+		/** 是否垂直分割线（flex 子项形态：外层容器需 flex-direction: row + align-items: center） */
+		vertical?: boolean
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		dashed: false,
+		hairline: true,
+		contentPosition: 'center',
+		vertical: false
+	})
+
+	/** 根节点类名：基础类 + 垂直修饰类 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-divider'
+		if (props.vertical) cls += ' m-divider--vertical'
+		return cls
+	})
+
+	/** 前置线类名：基础 + hairline 缩放 + 虚线 + 内容居左时限宽（margin 类在 --before 上） */
+	const lineBeforeClass = computed<string>(() => {
+		let cls = 'm-divider__line m-divider__line--before'
+		if (props.hairline) cls += ' m-divider__line--hairline'
+		if (props.dashed) cls += ' m-divider__line--dashed'
+		if (props.contentPosition == 'left') cls += ' m-divider__line--content-left'
+		return cls
+	})
+
+	/** 后置线类名：基础 + hairline 缩放 + 虚线 + 内容居右时限宽 */
+	const lineAfterClass = computed<string>(() => {
+		let cls = 'm-divider__line m-divider__line--after'
+		if (props.hairline) cls += ' m-divider__line--hairline'
+		if (props.dashed) cls += ' m-divider__line--dashed'
+		if (props.contentPosition == 'right') cls += ' m-divider__line--content-right'
+		return cls
+	})
+
+	/** 垂直线类名：基础 + hairline 缩放 + 虚线 */
+	const vlineClass = computed<string>(() => {
+		let cls = 'm-divider__vline'
+		if (props.hairline) cls += ' m-divider__vline--hairline'
+		if (props.dashed) cls += ' m-divider__vline--dashed'
+		return cls
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根节点（水平：before 线 + 插槽 + after 线；垂直：单线 + 插槽） ========== */
+	.m-divider {
+		flex-direction: row;
+		align-items: center;
+		margin: $m-divider-margin;
+		color: $m-divider-text-color;
+		font-size: $m-divider-font-size;
+		line-height: $m-divider-line-height;
+	}
+	/* 垂直形态：flex 子项（外层容器需 flex-direction: row + align-items: center），高 32px 对齐 Vant */
+	.m-divider--vertical {
+		margin: $m-divider-vertical-margin;
+		height: 32px;
+	}
+
+	/* ========== 水平线（flex:1 撑满，border 1px，hairline 时中心原点单轴缩放 0.5） ========== */
+	.m-divider__line {
+		flex: 1;
+		height: 0;
+		border-top: 1px solid $m-divider-border-color;
+	}
+	.m-divider__line--before {
+		margin-right: $m-divider-content-padding;
+	}
+	.m-divider__line--after {
+		margin-left: $m-divider-content-padding;
+	}
+	.m-divider__line--hairline {
+		transform: scaleY(0.5);
+	}
+	.m-divider__line--dashed {
+		border-style: dashed;
+	}
+	/* 内容位置：一侧线限宽 10%，另一侧线 flex:1 占满剩余空间 */
+	.m-divider__line--content-left {
+		max-width: $m-divider-content-left-width;
+	}
+	.m-divider__line--content-right {
+		max-width: $m-divider-content-right-width;
+	}
+
+	/* ========== 垂直线（宽 0 + border-left，hairline 时 scaleX(0.5)） ========== */
+	.m-divider__vline {
+		width: 0;
+		height: 100%;
+		border-left: 1px solid $m-divider-border-color;
+	}
+	.m-divider__vline--hairline {
+		transform: scaleX(0.5);
+	}
+	.m-divider__vline--dashed {
+		border-style: dashed;
+	}
+</style>

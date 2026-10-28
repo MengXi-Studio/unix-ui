@@ -80,6 +80,12 @@ export const demoGroups: DemoGroup[] = [
 				desc: '弹出层容器，支持五种弹出方位、圆角、关闭图标、遮罩开关、显示事件回调与内容销毁重建，是弹窗类组件的基座。'
 			},
 			{
+				name: 'divider',
+				zhName: '分割线',
+				enName: 'Divider',
+				desc: '分隔内容区域，支持虚线、0.5px 细线、内容位置与垂直形态。'
+			},
+			{
 				name: 'text',
 				zhName: '文本',
 				enName: 'Text',

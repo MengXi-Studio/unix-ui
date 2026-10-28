@@ -68,16 +68,50 @@ export const demoGroups: DemoGroup[] = [
 				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
 			},
 			{
-				name: 'overlay',
-				zhName: '遮罩层',
-				enName: 'Overlay',
-				desc: '创建全屏遮罩层，支持淡入淡出、层级、嵌入内容与 Web 端滚动锁定，是弹窗类组件的基础。'
-			},
-			{
 				name: 'popup',
 				zhName: '弹出层',
 				enName: 'Popup',
 				desc: '弹出层容器，支持五种弹出方位、圆角、关闭图标、遮罩开关、显示事件回调与内容销毁重建，是弹窗类组件的基座。'
+			},
+			{
+				name: 'space',
+				zhName: '间距',
+				enName: 'Space',
+				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
+			},
+			{
+				name: 'text',
+				zhName: '文本',
+				enName: 'Text',
+				desc: '文本样式快捷封装，支持语义色、三档字号、单行与多行省略、文本可选。'
+			}
+		]
+	},
+	{
+		title: '反馈组件',
+		components: [
+			{
+				name: 'loading',
+				zhName: '加载',
+				enName: 'Loading',
+				desc: '加载中状态提示，支持弧段圆环与花瓣两种类型、自定义颜色大小、加载文案与自定义图标插槽。'
+			},
+			{
+				name: 'overlay',
+				zhName: '遮罩层',
+				enName: 'Overlay',
+				desc: '创建全屏遮罩层，支持淡入淡出、层级、嵌入内容与 Web 端滚动锁定，是弹窗类组件的基础。'
+			}
+		]
+	},
+	{
+		title: '展示组件',
+		components: [
+			{
+				name: 'badge',
+				zhName: '徽标',
+				enName: 'Badge',
+				desc: '出现在图标或文字右上角，支持数字、文案、红点、最大值截断、四角位置、偏移量与自定义内容插槽。'
 			},
 			{
 				name: 'divider',
@@ -90,40 +124,6 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '宫格',
 				enName: 'Grid',
 				desc: '水平方向分隔等宽区块，支持自定义列数、正方形格子、间距、横排反向、徽标与点击跳转。'
-			},
-			{
-				name: 'text',
-				zhName: '文本',
-				enName: 'Text',
-				desc: '文本样式快捷封装，支持语义色、三档字号、单行与多行省略、文本可选。'
-			},
-			{
-				name: 'space',
-				zhName: '间距',
-				enName: 'Space',
-				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
-			}
-		]
-	},
-	{
-		title: '反馈组件',
-		components: [
-			{
-				name: 'loading',
-				zhName: '加载',
-				enName: 'Loading',
-				desc: '加载中状态提示，支持弧段圆环与花瓣两种类型、自定义颜色大小、加载文案与自定义图标插槽。'
-			}
-		]
-	},
-	{
-		title: '展示组件',
-		components: [
-			{
-				name: 'badge',
-				zhName: '徽标',
-				enName: 'Badge',
-				desc: '出现在图标或文字右上角，支持数字、文案、红点、最大值截断、四角位置、偏移量与自定义内容插槽。'
 			}
 		]
 	}

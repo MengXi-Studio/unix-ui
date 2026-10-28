@@ -86,24 +86,28 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					items: [
 						{ text: 'Button 按钮', link: '/components/button' },
 						{ text: 'Cell 单元格', link: '/components/cell' },
-						{ text: 'Divider 分割线', link: '/components/divider' },
-						{ text: 'Grid 宫格', link: '/components/grid' },
 						{ text: 'Icon 图标', link: '/components/icon' },
 						{ text: 'Image 图片', link: '/components/image' },
 						{ text: 'Layout 布局', link: '/components/layout' },
-						{ text: 'Overlay 遮罩层', link: '/components/overlay' },
 						{ text: 'Popup 弹出层', link: '/components/popup' },
-						{ text: 'Text 文本', link: '/components/text' },
-						{ text: 'Space 间距', link: '/components/space' }
+						{ text: 'Space 间距', link: '/components/space' },
+						{ text: 'Text 文本', link: '/components/text' }
 					]
 				},
 				{
 					text: '反馈组件',
-					items: [{ text: 'Loading 加载', link: '/components/loading' }]
+					items: [
+						{ text: 'Loading 加载', link: '/components/loading' },
+						{ text: 'Overlay 遮罩层', link: '/components/overlay' }
+					]
 				},
 				{
 					text: '展示组件',
-					items: [{ text: 'Badge 徽标', link: '/components/badge' }]
+					items: [
+						{ text: 'Badge 徽标', link: '/components/badge' },
+						{ text: 'Divider 分割线', link: '/components/divider' },
+						{ text: 'Grid 宫格', link: '/components/grid' }
+					]
 				}
 			]
 		}

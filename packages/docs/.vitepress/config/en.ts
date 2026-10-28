@@ -73,24 +73,28 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					items: [
 						{ text: 'Button', link: '/en/components/button' },
 						{ text: 'Cell', link: '/en/components/cell' },
-						{ text: 'Divider', link: '/en/components/divider' },
-						{ text: 'Grid', link: '/en/components/grid' },
 						{ text: 'Icon', link: '/en/components/icon' },
 						{ text: 'Image', link: '/en/components/image' },
 						{ text: 'Layout', link: '/en/components/layout' },
-						{ text: 'Overlay', link: '/en/components/overlay' },
 						{ text: 'Popup', link: '/en/components/popup' },
-						{ text: 'Text', link: '/en/components/text' },
-						{ text: 'Space', link: '/en/components/space' }
+						{ text: 'Space', link: '/en/components/space' },
+						{ text: 'Text', link: '/en/components/text' }
 					]
 				},
 				{
 					text: 'Feedback Components',
-					items: [{ text: 'Loading', link: '/en/components/loading' }]
+					items: [
+						{ text: 'Loading', link: '/en/components/loading' },
+						{ text: 'Overlay', link: '/en/components/overlay' }
+					]
 				},
 				{
 					text: 'Display Components',
-					items: [{ text: 'Badge', link: '/en/components/badge' }]
+					items: [
+						{ text: 'Badge', link: '/en/components/badge' },
+						{ text: 'Divider', link: '/en/components/divider' },
+						{ text: 'Grid', link: '/en/components/grid' }
+					]
 				}
 			]
 		}

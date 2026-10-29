@@ -94,6 +94,12 @@
 				"style": {
 					"navigationBarTitleText": "轻提示 Toast"
 				}
+			},
+			{
+				"path": "compact/compact",
+				"style": {
+					"navigationBarTitleText": "紧凑布局 Compact"
+				}
 			}
 		]
 		}

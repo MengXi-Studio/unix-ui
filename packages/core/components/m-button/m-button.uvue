@@ -14,6 +14,7 @@
 
 <script setup lang="uts">
 	import { LoadingType } from '../m-loading/loading.uts'
+	import { COMPACT_KEY, CompactContext, generateCompactId } from '../m-compact/context.uts'
 
 	/** 按钮类型：default 默认 / primary 主要 / success 成功 / warning 警告 / danger 危险 */
 	type ButtonType = 'default' | 'primary' | 'success' | 'warning' | 'danger'
@@ -71,6 +72,42 @@
 	const emit = defineEmits<{ click: [event: MouseEvent] }>()
 
 	/**
+	 * compact 紧凑布局上下文：位于 m-compact 内时注入（setup 同步注册，首帧即为正确位置）；
+	 * 独立使用为 null，行为与常规按钮完全一致
+	 */
+	const compact = inject<CompactContext | null>(COMPACT_KEY, null)
+	const compactId = generateCompactId()
+	if (compact != null) {
+		compact.register(compactId)
+	}
+	onUnmounted(() => {
+		if (compact != null) {
+			compact.unregister(compactId)
+		}
+	})
+
+	/**
+	 * compact 位置标记（reactive 注册序驱动自动重算）：
+	 * h-first / h-last / h-middle / v-first / v-last / v-middle；单项或未注册为 'single'（不清理圆角）
+	 */
+	const compactPosition = computed<string>(() => {
+		if (compact == null) return 'single'
+		const idx = compact.indexOf(compactId)
+		const count = compact.ids.length
+		if (count <= 1 || idx < 0) return 'single'
+		const vertical = compact.direction == 'vertical'
+		if (idx == 0) return vertical ? 'v-first' : 'h-first'
+		if (idx == count - 1) return vertical ? 'v-last' : 'h-last'
+		return vertical ? 'v-middle' : 'h-middle'
+	})
+
+	/** compact 非首项标记：清相邻侧边框，与邻项边框合并为 1px 分隔 */
+	const compactNotFirst = computed<boolean>(() => {
+		if (compact == null) return false
+		return compact.indexOf(compactId) > 0
+	})
+
+	/**
 	 * 加载图标颜色：实色按钮为白图标、朴素 + 自定义色用色值（inline 传递）、其余随按钮类型走语义色名
 	 * （语义色名由 m-loading 编译期绑定 $m-color-* 主题变量，用户覆盖 uni.scss 变量即生效）
 	 */
@@ -101,6 +138,17 @@
 		if (props.disabled) cls += ' m-button--disabled'
 		if (props.loading) cls += ' m-button--loading'
 		if (props.color != '') cls += ' m-button--colored'
+		// compact 组内：位置衔接圆角 + 非首项去相邻边框 + 块级撑满（方向 / 块级为上下文只读快照）
+		if (compact != null) {
+			const pos = compactPosition.value
+			if (pos != 'single') cls += ' m-button--compact-' + pos
+			if (compactNotFirst.value) {
+				cls += ' m-button--compact-' + (compact.direction == 'vertical' ? 'v-not-first' : 'h-not-first')
+			}
+			if (compact.block) {
+				cls += ' m-button--compact-' + (compact.direction == 'vertical' ? 'vblock' : 'hblock')
+			}
+		}
 		if (props.customClass != '') cls += ' ' + props.customClass
 		return cls
 	})
@@ -152,6 +200,14 @@
 		let cls = 'm-button__hairline'
 		if (props.square) cls += ' m-button__hairline--square'
 		else if (props.round) cls += ' m-button__hairline--round'
+		// compact 组内：hairline 缩放层（几何为根节点两倍）同步清理对应侧圆角与边框，块级类不作用于该层
+		if (compact != null) {
+			const pos = compactPosition.value
+			if (pos != 'single') cls += ' m-button__hairline--compact-' + pos
+			if (compactNotFirst.value) {
+				cls += ' m-button__hairline--compact-' + (compact.direction == 'vertical' ? 'v-not-first' : 'h-not-first')
+			}
+		}
 		if (props.color != '') return cls + ' m-button__hairline--colored'
 		return cls + ' m-button__hairline--' + props.type
 	})
@@ -343,5 +399,74 @@
 	}
 	.m-button__hairline--danger {
 		border-color: $m-color-danger;
+	}
+
+	/* ========== compact 紧凑布局修饰（m-compact 组内按位置自动挂载） ========== */
+	/* 位于样式末尾：同特异性下覆盖 round / square / hairline 的圆角声明 */
+	.m-button--compact-h-first {
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+	.m-button--compact-h-last {
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+	.m-button--compact-h-middle {
+		border-radius: 0;
+	}
+	/* 非首项清左边框：分隔线由前一项右边框承担，相邻边框合并为 1px */
+	.m-button--compact-h-not-first {
+		border-left-width: 0;
+	}
+	.m-button--compact-v-first {
+		border-bottom-right-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+	.m-button--compact-v-last {
+		border-top-right-radius: 0;
+		border-top-left-radius: 0;
+	}
+	.m-button--compact-v-middle {
+		border-radius: 0;
+	}
+	.m-button--compact-v-not-first {
+		border-top-width: 0;
+	}
+	/* 块级撑满：水平 flex:1 等分（uvue 子项默认 flex-shrink: 0，禁用 width:100% 溢出方案）；垂直满宽 */
+	.m-button--compact-hblock {
+		flex: 1;
+	}
+	.m-button--compact-vblock {
+		align-self: stretch;
+	}
+
+	/* ========== compact hairline 缩放层同步（几何为根节点两倍，基于 ×2 圆角清零对应角） ========== */
+	.m-button__hairline--compact-h-first {
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+	.m-button__hairline--compact-h-last {
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+	.m-button__hairline--compact-h-middle {
+		border-radius: 0;
+	}
+	.m-button__hairline--compact-h-not-first {
+		border-left-width: 0;
+	}
+	.m-button__hairline--compact-v-first {
+		border-bottom-right-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+	.m-button__hairline--compact-v-last {
+		border-top-right-radius: 0;
+		border-top-left-radius: 0;
+	}
+	.m-button__hairline--compact-v-middle {
+		border-radius: 0;
+	}
+	.m-button__hairline--compact-v-not-first {
+		border-top-width: 0;
 	}
 </style>

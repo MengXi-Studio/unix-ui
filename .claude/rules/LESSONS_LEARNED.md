@@ -260,3 +260,8 @@
 - 根因：uvue 规范 `flex-shrink` 默认 **0**（对齐原生渲染端，与标准 CSS 的 1 不同）——flex 子项文本永远保持内容单行宽度，不会被父容器压窄，软换行（自动 wrap）的前提「元素宽度受限」不成立
 - 修复：文本子项显式 `flex-shrink: 1`，实测收缩到父宽内、clientHeight 20→40 两行
 - 规约：**任何「希望文本在 flex 子项内自动换行」的场景必须显式 `flex-shrink: 1`**（m-toast message 先例）；审查存量组件时凡 flex row 内放文本且依赖换行的都要核对。断言方法论：`white-space` / `word-break` 的 computed 值断言 ≠ 换行行为——**必须断言 clientHeight 跨行**（≥ 2×line-height）或 scrollWidth ≤ clientWidth
+
+### 44. macOS 端 HBuilderX CLI 可执行文件在 Contents/MacOS/cli，不在 Contents/HBuilderX/cli
+- 现象：`/Applications/HBuilderX.app/Contents/HBuilderX/cli launch web` 报 `no such file or directory`（exit 127）——按 Windows 端目录结构（`D:\HBuilderX\cli.exe`）直觉推断的路径不存在
+- 实测：macOS 端真实位置为 `/Applications/HBuilderX.app/Contents/MacOS/cli`（应用主可执行目录），调用形如 `/Applications/HBuilderX.app/Contents/MacOS/cli launch web --project <playground 绝对路径>`
+- 规约：先 `find /Applications/HBuilderX.app -maxdepth 3 -name "cli*"` 定位再调用，勿按记忆拼路径；dev server 遗留进程（node uni.js -p h5）占用 5174 时先 kill 再 CLI 拉起，pages.json 新增页面必须重启 dev server

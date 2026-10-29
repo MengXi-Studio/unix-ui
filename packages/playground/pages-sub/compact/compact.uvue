@@ -1,0 +1,134 @@
+<template>
+	<view class="page">
+		<demo-navbar title="紧凑布局" subtitle="Compact" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础使用</text>
+				<view class="card">
+					<m-compact>
+						<m-button>按钮一</m-button>
+						<m-button>按钮二</m-button>
+						<m-button>按钮三</m-button>
+					</m-compact>
+					<m-compact custom-style="margin-top: 16px;">
+						<m-button plain>按钮一</m-button>
+						<m-button plain>按钮二</m-button>
+						<m-button plain>按钮三</m-button>
+					</m-compact>
+					<m-compact custom-style="margin-top: 16px;">
+						<m-button type="primary">主要</m-button>
+						<m-button plain type="primary">朴素</m-button>
+						<m-button type="danger">危险</m-button>
+						<m-button plain type="danger">朴素</m-button>
+					</m-compact>
+					<text class="caption">包裹 m-button 即为紧凑布局：相邻项圆角衔接、相邻边框合并为 1px，支持变体混排</text>
+				</view>
+
+				<text class="section" id="block">块级元素</text>
+				<view class="card">
+					<m-compact block>
+						<m-button>按钮一</m-button>
+						<m-button>按钮二</m-button>
+						<m-button>按钮三</m-button>
+					</m-compact>
+					<m-compact block custom-style="margin-top: 16px;">
+						<m-button plain>按钮一</m-button>
+						<m-button plain>按钮二</m-button>
+						<m-button plain>按钮三</m-button>
+					</m-compact>
+					<text class="caption">block 使组内按钮撑满父元素宽度：水平方向 flex: 1 等分（子项无需逐个设置 block）</text>
+				</view>
+
+				<text class="section" id="vertical">垂直排列</text>
+				<view class="card">
+					<view class="h-row">
+						<m-compact direction="vertical">
+							<m-button>按钮一</m-button>
+							<m-button>按钮二</m-button>
+							<m-button>按钮三</m-button>
+						</m-compact>
+						<m-compact direction="vertical">
+							<m-button plain>按钮一</m-button>
+							<m-button plain>按钮二</m-button>
+							<m-button plain>按钮三</m-button>
+						</m-compact>
+					</view>
+					<text class="caption">direction="vertical" 切换为垂直方向的紧凑布局，非块级时按钮收缩内容宽</text>
+				</view>
+
+				<text class="section" id="vertical-block">垂直排列块级元素</text>
+				<view class="card">
+					<m-compact direction="vertical" block>
+						<m-button>按钮一</m-button>
+						<m-button>按钮二</m-button>
+						<m-button>按钮三</m-button>
+					</m-compact>
+					<m-compact direction="vertical" block custom-style="margin-top: 16px;">
+						<m-button plain>按钮一</m-button>
+						<m-button plain>按钮二</m-button>
+						<m-button plain>按钮三</m-button>
+					</m-compact>
+					<text class="caption">垂直 + 块级：按钮满宽排列，圆角与边框沿纵向衔接合并</text>
+				</view>
+
+				<text class="section" id="dynamic">动态增删</text>
+				<view class="card">
+					<m-compact>
+						<m-button v-for="item in dynList" :key="item">第{{ item }}项</m-button>
+					</m-compact>
+					<view class="dyn-actions">
+						<m-space>
+							<m-button size="small" @click="addDynItem">追加一项</m-button>
+							<m-button size="small" @click="removeDynItem">移除末项</m-button>
+						</m-space>
+					</view>
+					<text class="caption">v-for 动态增删子项：追加 / 移除后首、中、尾位置自动重排（末项恢复右圆角等）</text>
+				</view>
+
+				<text class="section" id="hairline">细边框按钮</text>
+				<view class="card">
+					<m-compact>
+						<m-button plain :hairline="true">按钮一</m-button>
+						<m-button plain :hairline="true">按钮二</m-button>
+						<m-button plain :hairline="true">按钮三</m-button>
+					</m-compact>
+					<text class="caption">0.5px 细边框层同步清理对应侧圆角与边框，合并效果与常规 1px 边框按钮一致</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 动态增删演示：数组驱动 v-for，验证 compact 内按钮首 / 中 / 尾位置自动重排
+	const dynList = ref<number[]>([1, 2, 3])
+	let dynSeed = 3
+
+	/** 追加一项（新项成为末位，右侧圆角恢复） */
+	function addDynItem() {
+		dynSeed++
+		dynList.value.push(dynSeed)
+	}
+
+	/** 移除末项（前一项成为新末位，位置类自动重算） */
+	function removeDynItem() {
+		if (dynList.value.length <= 1) return
+		dynList.value.pop()
+	}
+</script>
+
+<style lang="scss">
+	/* 垂直紧凑组并排演示容器 */
+	.h-row {
+		flex-direction: row;
+	}
+	.dyn-actions {
+		margin-top: 12px;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

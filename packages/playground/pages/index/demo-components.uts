@@ -27,7 +27,7 @@ export type DemoGroup = {
 }
 
 /**
- * 组件演示分组表（分组体系：基础 / 表单 / 反馈 / 展示 / 导航）
+ * 组件演示分组表（标准 UI 库分类体系：基础 / 反馈 / 布局 / 数据展示，组内按字母序）
  *
  * 新增组件时在对应分组的 components 中登记一条即可，
  * 首页分组列表与搜索过滤自动生效；演示页路由需另行在
@@ -44,12 +44,6 @@ export const demoGroups: DemoGroup[] = [
 				desc: '用于触发一个操作，支持类型、尺寸、朴素、圆角、细边框、加载状态等特性。'
 			},
 			{
-				name: 'cell',
-				zhName: '单元格',
-				enName: 'Cell',
-				desc: '列表单项展示，支持标题、值、描述、左侧图标、四向箭头、必填星号、圆角卡片分组与组内末线自动隐藏。'
-			},
-			{
 				name: 'icon',
 				zhName: '图标',
 				enName: 'Icon',
@@ -60,24 +54,6 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '图片',
 				enName: 'Image',
 				desc: '原生 image 增强封装，mode 直通，扩展加载/失败占位、淡入动画、圆角圆形与懒加载。'
-			},
-			{
-				name: 'layout',
-				zhName: '布局',
-				enName: 'Layout',
-				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
-			},
-			{
-				name: 'popup',
-				zhName: '弹出层',
-				enName: 'Popup',
-				desc: '弹出层容器，支持五种弹出方位、圆角、关闭图标、遮罩开关、显示事件回调与内容销毁重建，是弹窗类组件的基座。'
-			},
-			{
-				name: 'space',
-				zhName: '间距',
-				enName: 'Space',
-				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
 			},
 			{
 				name: 'text',
@@ -103,6 +79,12 @@ export const demoGroups: DemoGroup[] = [
 				desc: '创建全屏遮罩层，支持淡入淡出、层级、嵌入内容与 Web 端滚动锁定，是弹窗类组件的基础。'
 			},
 			{
+				name: 'popup',
+				zhName: '弹出层',
+				enName: 'Popup',
+				desc: '弹出层容器，支持五种弹出方位、圆角、关闭图标、遮罩开关、显示事件回调与内容销毁重建，是弹窗类组件的基座。'
+			},
+			{
 				name: 'toast',
 				zhName: '轻提示',
 				enName: 'Toast',
@@ -111,13 +93,13 @@ export const demoGroups: DemoGroup[] = [
 		]
 	},
 	{
-		title: '展示组件',
+		title: '布局组件',
 		components: [
 			{
-				name: 'badge',
-				zhName: '徽标',
-				enName: 'Badge',
-				desc: '出现在图标或文字右上角，支持数字、文案、红点、最大值截断、四角位置、偏移量与自定义内容插槽。'
+				name: 'compact',
+				zhName: '紧凑布局',
+				enName: 'Compact',
+				desc: '让按钮等组件紧凑连接且合并边框，支持水平垂直方向与块级撑满。'
 			},
 			{
 				name: 'divider',
@@ -130,6 +112,35 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '宫格',
 				enName: 'Grid',
 				desc: '水平方向分隔等宽区块，支持自定义列数、正方形格子、间距、横排反向、徽标与点击跳转。'
+			},
+			{
+				name: 'layout',
+				zhName: '布局',
+				enName: 'Layout',
+				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
+			},
+			{
+				name: 'space',
+				zhName: '间距',
+				enName: 'Space',
+				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
+			}
+		]
+	},
+	{
+		title: '数据展示',
+		components: [
+			{
+				name: 'badge',
+				zhName: '徽标',
+				enName: 'Badge',
+				desc: '出现在图标或文字右上角，支持数字、文案、红点、最大值截断、四角位置、偏移量与自定义内容插槽。'
+			},
+			{
+				name: 'cell',
+				zhName: '单元格',
+				enName: 'Cell',
+				desc: '列表单项展示，支持标题、值、描述、左侧图标、四向箭头、必填星号、圆角卡片分组与组内末线自动隐藏。'
 			}
 		]
 	}

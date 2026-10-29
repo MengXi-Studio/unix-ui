@@ -1,0 +1,52 @@
+/**
+ * m-compact 与 m-button 的紧凑布局上下文（跨组件共享，独立 .uts）
+ *
+ * uvue 无 $children、ucss 无 :first-child / :not() 结构选择器，父组件无法修饰子项；
+ * 由 compact provide 本上下文，button 在 setup 中同步注册自身 id、onUnmounted 注销，
+ * 按注册序（即渲染顺序）计算首 / 中 / 尾位置，自动衔接圆角并合并相邻边框。
+ * class 实现：非蒸汽（Kotlin/Swift）端不支持「含方法的对象字面量 type」。
+ */
+import { reactive } from 'vue'
+
+/** provide / inject 配对 key（字符串 key，App 原生端无需 Symbol 支持） */
+export const COMPACT_KEY: string = '__mxi_compact__'
+
+/** 排列方向：horizontal 水平 / vertical 垂直 */
+export type CompactDirection = 'horizontal' | 'vertical'
+
+/** compact 注入上下文：维护组内已挂载 button 的有序 id 集合与排列状态 */
+export class CompactContext {
+	/** 组内 button id 有序集合（reactive 数组，注册 / 注销自动触发位置重算） */
+	ids: string[] = reactive<string[]>([])
+	/** 排列方向（props 只读快照，创建后不变） */
+	direction: CompactDirection = 'horizontal'
+	/** 块级：子项撑满父元素宽度（props 只读快照，创建后不变） */
+	block: boolean = false
+
+	/** 注册 button（button setup 中同步调用，注册顺序即渲染顺序，首帧即为正确位置） */
+	register(id: string): void {
+		this.ids.push(id)
+	}
+
+	/** 注销 button（onUnmounted 调用，v-if 动态增删后位置自动重算） */
+	unregister(id: string): void {
+		const index = this.ids.indexOf(id)
+		if (index != -1) {
+			this.ids.splice(index, 1)
+		}
+	}
+
+	/** 查询 id 的注册序位（-1 表示未注册） */
+	indexOf(id: string): number {
+		return this.ids.indexOf(id)
+	}
+}
+
+/** button id 自增计数器（模块级） */
+let compactIdCounter = 0
+
+/** 生成全局唯一 button id（button setup 中调用一次） */
+export function generateCompactId(): string {
+	compactIdCounter++
+	return 'mxi_compact_' + compactIdCounter
+}

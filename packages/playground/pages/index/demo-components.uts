@@ -137,6 +137,12 @@ export const demoGroups: DemoGroup[] = [
 				desc: '出现在图标或文字右上角，支持数字、文案、红点、最大值截断、四角位置、偏移量与自定义内容插槽。'
 			},
 			{
+				name: 'calendar',
+				zhName: '日历',
+				enName: 'Calendar',
+				desc: '日历面板，支持单选、多选、范围选择、弹层与平铺双形态、年月切换导航、formatter 定制与超限提示。'
+			},
+			{
 				name: 'cell',
 				zhName: '单元格',
 				enName: 'Cell',

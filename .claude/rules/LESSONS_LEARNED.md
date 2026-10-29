@@ -265,3 +265,26 @@
 - 现象：`/Applications/HBuilderX.app/Contents/HBuilderX/cli launch web` 报 `no such file or directory`（exit 127）——按 Windows 端目录结构（`D:\HBuilderX\cli.exe`）直觉推断的路径不存在
 - 实测：macOS 端真实位置为 `/Applications/HBuilderX.app/Contents/MacOS/cli`（应用主可执行目录），调用形如 `/Applications/HBuilderX.app/Contents/MacOS/cli launch web --project <playground 绝对路径>`
 - 规约：先 `find /Applications/HBuilderX.app -maxdepth 3 -name "cli*"` 定位再调用，勿按记忆拼路径；dev server 遗留进程（node uni.js -p h5）占用 5174 时先 kill 再 CLI 拉起，pages.json 新增页面必须重启 dev server
+
+## 2026-10-29 m-calendar（Calendar 日历，运行实测）
+
+### 45. Props 类型漏声明的 prop 在 Web 端静默 undefined：模板分支恒走错误路径，无任何报错
+- 现象：`switchMode` 只写在模板与逻辑里、漏了 Props type 与 withDefaults 声明，Web 端运行时恒为 undefined——`switchMode != 'none'` 恒 true，所有日历走 switch-mode 渲染（只渲染 1 个月、year-month 只有 2 钮、无 header-title），无编译报错无控制台警告，Playwright 断言月份数量时才暴露
+- 根因：uvue 编译器对「模板引用了但类型未声明」的 prop 不报错（Web 端运行时按 undefined 传播）；UTS 红线「不支持 undefined」在 prop 传递这条路径上没有静态检查兜底
+- 规约：**新增 prop 必须三处同步——Props type 声明、withDefaults 默认值、模板/逻辑消费**；code review 清单项：grep 模板中所有 `xxx.` / `cfg.xxx` 引用回溯到类型声明；凡「结构分支全错但无报错」的现象优先怀疑 prop 静默 undefined
+
+### 46. relative + z-index:1 的内容层会压过 fixed + z-index:1 的弹层 overlay：同层级下 DOM 序靠后者绘制在上
+- 现象：平铺日历的 `.m-calendar__days` 带 `z-index: 1`，与 fixed 弹层 overlay（z-index: 1）处于同一层叠层级；同页面平铺内容 DOM 顺序更靠后，绘制压过弹层——Playwright 点击弹层确认按钮超时，报 `.m-calendar__day intercepts pointer events`
+- 修复：删除 `.m-calendar__days` 的 z-index（水印与日格的层级靠 DOM 顺序保证，水印节点放在日格之前）；`.m-calendar__days` 仅保留 `position: relative` 承载水印与格内绝对定位
+- 规约：**内容层一律不加 z-index**——层叠上下文一旦建立就参与全局比较；弹层类组件 z-index 收敛为 1（overlay/panel 同值，层级靠 DOM 树序），页面内容与弹层同屏时前者必须保持 auto
+
+### 47. NodeList 没有 indexOf 方法：browser evaluate 里对 NodeList 直接调 indexOf 恒 TypeError → 走 fallback 分支静默返回 -1
+- 现象：验证脚本 `all.indexOf ? Array.prototype.indexOf.call(all, el) : -1` 的存在性判断恒 falsy（NodeList 原型上无 indexOf），点击定位永远返回 -1、脚本从未真正点击，全部断言在「未点击」状态下假 PASS
+- 修复：无条件 `return Array.prototype.indexOf.call(all, cells[i])`（类数组转借 Array 方法）
+- 规约：浏览器 evaluate 内对类数组（NodeList / HTMLCollection）一律直接 `Array.prototype.indexOf.call` / `Array.from`，不要做方法存在性探测；**点击类断言必须先断言「点击确实发生」**（如点击后日志文本变化），否则定位失败会让整组交互断言空转
+
+### 48. Chrome 在 fixed 弹层面板内的合成滚动区会绘制溢出裁剪区（鬼影）：isolation: isolate 建立层叠上下文即愈
+- 现象：m-calendar 弹层截图（headless / headed、dsf 1/2 均复现）中月份网格出现第二份偏移 136px（恰 2 行）的重复绘制、小号数字鬼影、内容溢出裁剪区压到 footer 确认按钮、月标题与日行乱序；DOM 几何完全正确（offsetTop / 间距 / 唯一归属全对），scrollTop 恒 0 无振荡；平铺形态（body 高=内容高、无实际裁剪滚动）从不复现
+- 排除项（均无效）：清除 scroll-into-view 属性 / 源码移除绑定、禁面板 transform、隐藏月水印（addStyleTag）、排除 headless 伪影、隐藏平铺日历排除透出、确认无 DOM 重复渲染——差异收敛为「fixed 面板 + 限高裁剪的可滚动 scroll-view」的 Chrome 合成层绘制缺陷
+- 修复：`.m-calendar__body { isolation: isolate; }`（`/* #ifdef WEB */` 条件编译隔离，原生端 scroll-view 无此问题、也避免 ucss 引入未知属性），滚动内容被封闭进独立层叠上下文后鬼影消失；`contain: paint` 同样有效（备选）
+- 规约：**fixed 弹层内放可滚动 scroll-view 的组件，Web 端截图出现「DOM 对但画错」的鬼影/溢出，首选给滚动区加 `isolation: isolate`**（层叠上下文封闭绘制，无布局副作用）；排查顺序：先验 DOM 几何（offsetTop/唯一性）→ 再验滚动状态 → 最后收敛合成层，每项排除实验单独截图留证

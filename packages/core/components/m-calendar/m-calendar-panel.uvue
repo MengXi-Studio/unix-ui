@@ -1,0 +1,543 @@
+<template>
+	<!-- 表现层子组件：不注册 easycom，仅供 m-calendar.uvue 相对路径导入。
+	     全部渲染参数由宿主经 panel 配置（纯数据）下发，交互经事件上抛，自身无选择状态。 -->
+	<view :class="panelClass" :style="panelStyle">
+		<!-- 头部：none 模式为常规标题 + 副标题；switch-mode 模式为导航行（年 / 月切换 + 当前月标题） -->
+		<view class="m-calendar__header">
+			<template v-if="cfg.switchMode == 'none'">
+				<view v-if="cfg.showTitle" class="m-calendar__header-title">
+					<slot name="title"></slot>
+				</view>
+				<view v-if="cfg.showSubtitle" class="m-calendar__header-subtitle" @click="onSubtitleClick">
+					<slot name="subtitle"></slot>
+				</view>
+			</template>
+			<template v-else>
+				<view class="m-calendar__nav">
+					<view v-if="cfg.switchMode == 'year-month'" class="m-calendar__nav-btn" @click="onNavClick('prev-year')">
+						<slot name="prev-year"></slot>
+					</view>
+					<view class="m-calendar__nav-btn" @click="onNavClick('prev-month')">
+						<slot name="prev-month"></slot>
+					</view>
+					<view class="m-calendar__nav-title" @click="onSubtitleClick">
+						<slot name="subtitle"></slot>
+					</view>
+					<view class="m-calendar__nav-btn" @click="onNavClick('next-month')">
+						<slot name="next-month"></slot>
+					</view>
+					<view v-if="cfg.switchMode == 'year-month'" class="m-calendar__nav-btn" @click="onNavClick('next-year')">
+						<slot name="next-year"></slot>
+					</view>
+				</view>
+			</template>
+			<view class="m-calendar__weekdays">
+				<text v-for="(weekday, index) in cfg.weekdays" :key="index" class="m-calendar__weekday">{{ weekday }}</text>
+			</view>
+		</view>
+
+		<!-- 月份滚动区：锚点 id 由宿主下发（scroll-into-view），滚动上报当前月（仅弹层 + none 模式） -->
+		<scroll-view
+			class="m-calendar__body"
+			:scroll-y="true"
+			:scroll-into-view="cfg.scrollAnchor"
+			@scroll="onBodyScroll"
+		>
+			<view
+				v-for="(month, monthIndex) in cfg.months"
+				:id="'m-calendar-month-' + monthIndex"
+				:key="monthIndex"
+				class="m-calendar__month"
+			>
+				<view class="m-calendar__month-title">
+					<slot name="month-title" :month="month.date" :text="getMonthTitle(month.date)"></slot>
+				</view>
+				<view class="m-calendar__days">
+					<text v-if="cfg.showMark" class="m-calendar__month-mark">{{ monthMarkText(month.date) }}</text>
+					<view
+						v-for="(day, dayIndex) in month.days"
+						:key="monthIndex + '-' + dayIndex"
+						:class="dayClass(day)"
+						:style="dayStyle(day)"
+						@click="onDayClick(day)"
+					>
+						<view v-if="hasBar(day.type)" :class="barClass(day.type)" :style="barStyle"></view>
+						<view
+							v-if="isRealDay(day) && (day.topInfo != '' || cfg.hasTopInfoSlot)"
+							class="m-calendar__day-info m-calendar__day-info--top"
+						>
+							<slot name="top-info" :day="day"></slot>
+						</view>
+						<view v-if="isRealDay(day)" :class="dayCenterClass(day)" :style="dayCenterStyle(day)">
+							<slot name="text" :day="day"></slot>
+						</view>
+						<view
+							v-if="isRealDay(day) && (day.bottomInfo != '' || cfg.hasBottomInfoSlot)"
+							class="m-calendar__day-info m-calendar__day-info--bottom"
+						>
+							<slot name="bottom-info" :day="day"></slot>
+						</view>
+					</view>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 底部区（scroll-view 之外固定于面板底部）：确认按钮 / 自定义 footer 由宿主插槽内容决定 -->
+		<slot name="footer"></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { CalendarPanelConfig, CalendarMonth, CalendarDayItem, CalendarDayType, CALENDAR_WEEKDAYS, getMonthTitle, hexToRgba, isCircularDayType } from './calendar.uts'
+
+	type Props = {
+		/** 面板配置（宿主计算后整体下发；null 时按空配置渲染，避免首帧崩溃） */
+		panel?: CalendarPanelConfig | null
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		panel: null
+	})
+
+	const emit = defineEmits<{
+		/** 日期格点击（含 disabled，由宿主区分处理；placeholder 不上抛） */
+		'day-click': [day: CalendarDayItem]
+		/** 点击副标题 / 导航行当前月标题 */
+		'click-subtitle': []
+		/** 导航按钮点击：'prev-year' | 'prev-month' | 'next-month' | 'next-year' */
+		nav: [direction: string]
+		/** 滚动后新月份进入视口（仅弹层 + none 模式上报） */
+		'month-show': [date: Date]
+	}>()
+
+	/** 空配置兜底：panel 未下发或首帧 null 时按此渲染 */
+	const cfg = computed<CalendarPanelConfig>(() => {
+		const p = props.panel
+		if (p != null) {
+			return p
+		}
+		const empty: CalendarPanelConfig = {
+			panelMode: 'flat',
+			panelHeight: '',
+			months: [],
+			weekdays: CALENDAR_WEEKDAYS,
+			title: '',
+			subtitle: '',
+			showTitle: true,
+			showSubtitle: true,
+			showMark: true,
+			color: '',
+			rowHeight: 0,
+			readonly: false,
+			switchMode: 'none',
+			scrollAnchor: '',
+			hasTopInfoSlot: false,
+			hasBottomInfoSlot: false
+		}
+		return empty
+	})
+
+	/* 与主题变量同步的布局常量（滚动偏移估算用，双方注释互指） */
+	/** 月标题高度（与 $m-calendar-month-title-height 同步） */
+	const MONTH_TITLE_HEIGHT = 24
+	/** 默认日格高度（与 $m-calendar-day-height 同步） */
+	const DEFAULT_DAY_HEIGHT = 64
+	/** 日格纵向间距（与 $m-calendar-day-margin-bottom 同步） */
+	const DAY_MARGIN_BOTTOM = 4
+
+	/** 当前滚动所在月索引（月标题变化时上报 month-show） */
+	const activeIndex = ref(0)
+
+	/**
+	 * 月偏移累计表：第 i 月顶部在滚动内容中的偏移 = 月标题高 + 此前行数 ×（行高 + 行间距）。
+	 * 纯前端估算（无 DOM 测量依赖），行高取 rowHeight 或默认常量
+	 */
+	const monthOffsets = computed<number[]>(() => {
+		const offsets: number[] = []
+		let acc = 0
+		const rowH = cfg.value.rowHeight > 0 ? cfg.value.rowHeight : DEFAULT_DAY_HEIGHT
+		for (let i = 0; i < cfg.value.months.length; i++) {
+			offsets.push(acc)
+			const rows = Math.ceil(cfg.value.months[i].days.length / 7)
+			acc += MONTH_TITLE_HEIGHT + rows * (rowH + DAY_MARGIN_BOTTOM)
+		}
+		return offsets
+	})
+
+	/** 面板根类名（m-calendar 基类即样式钩子） */
+	const panelClass = computed<string>(() => {
+		return 'm-calendar'
+	})
+
+	/** 面板高度：弹层形态由宿主换算下发（px），平铺形态空串自然生长 */
+	const panelStyle = computed<string>(() => {
+		if (cfg.value.panelHeight != '') {
+			return 'height: ' + cfg.value.panelHeight + ';'
+		}
+		return ''
+	})
+
+	/** 范围 bar 底色：宿主 color 非空时按 10% 透明度派生（非法色回退默认变量） */
+	const barStyle = computed<string>(() => {
+		const color = cfg.value.color
+		if (color != '') {
+			const rgba = hexToRgba(color, 0.1)
+			if (rgba != '') {
+				return 'background-color: ' + rgba + ';'
+			}
+		}
+		return ''
+	})
+
+	/**
+	 * 是否真实日期格（非周首占位）：占位格仅渲染空壳撑起网格位
+	 */
+	function isRealDay(day: CalendarDayItem): boolean {
+		return day.type != 'placeholder'
+	}
+
+	/**
+	 * 范围连接 bar 是否存在：范围端点与中段（start-end 为起止同日，两端各半连接）
+	 */
+	function hasBar(type: CalendarDayType): boolean {
+		return type == 'start' || type == 'end' || type == 'middle' || type == 'start-end' || type == 'multiple-middle'
+	}
+
+	/**
+	 * bar 类名：start 右半 / end 左半 / middle 全宽（基类）
+	 */
+	function barClass(type: CalendarDayType): string {
+		let cls = 'm-calendar__day-bar'
+		if (type == 'start') {
+			cls += ' m-calendar__day-bar--start'
+		} else if (type == 'end') {
+			cls += ' m-calendar__day-bar--end'
+		}
+		return cls
+	}
+
+	/**
+	 * 日期格容器类名：占位格仅基类（空壳不可见），formatter 的 className 追加其后
+	 */
+	function dayClass(day: CalendarDayItem): string {
+		let cls = 'm-calendar__day'
+		if (day.type == 'placeholder') {
+			return cls
+		}
+		if (day.className != '') {
+			cls += ' ' + day.className
+		}
+		return cls
+	}
+
+	/**
+	 * 日期格容器 inline 样式：rowHeight > 0 时以行高覆盖默认变量高度
+	 */
+	function dayStyle(day: CalendarDayItem): string {
+		if (day.type == 'placeholder') {
+			return ''
+		}
+		if (cfg.value.rowHeight > 0) {
+			return 'height: ' + cfg.value.rowHeight.toString() + 'px;'
+		}
+		return ''
+	}
+
+	/**
+	 * 中央容器类名：圆点标记用圆形反白容器，常规用无背景容器
+	 */
+	function dayCenterClass(day: CalendarDayItem): string {
+		if (isCircularDayType(day.type)) {
+			return 'm-calendar__day-selected'
+		}
+		return 'm-calendar__day-value'
+	}
+
+	/**
+	 * 中央容器 inline 样式：宿主 color 非空时覆盖选中圆底色（bar 同步派生 10% 透明度）
+	 */
+	function dayCenterStyle(day: CalendarDayItem): string {
+		if (isCircularDayType(day.type) && cfg.value.color != '') {
+			return 'background-color: ' + cfg.value.color + ';'
+		}
+		return ''
+	}
+
+	/**
+	 * 月水印文本：月份数字（如 10）
+	 */
+	function monthMarkText(date: Date): string {
+		return (date.getMonth() + 1).toString()
+	}
+
+	/**
+	 * 月份滚动：找最大满足「偏移 <= scrollTop + 1」的月索引；仅弹层 + none 模式驱动上报
+	 * （平铺无内部滚动语义；switch-mode 单月视图无滚动）
+	 */
+	function onBodyScroll(event: UniScrollEvent) {
+		if (cfg.value.panelMode != 'poppable' || cfg.value.switchMode != 'none') {
+			return
+		}
+		const scrollTop = event.detail.scrollTop
+		const offsets = monthOffsets.value
+		let index = 0
+		for (let i = 0; i < offsets.length; i++) {
+			if (offsets[i] <= scrollTop + 1) {
+				index = i
+			}
+		}
+		if (index != activeIndex.value) {
+			activeIndex.value = index
+			if (index < cfg.value.months.length) {
+				emit('month-show', cfg.value.months[index].date)
+			}
+		}
+	}
+
+	/**
+	 * 日期格点击：占位格与只读面板不响应，其余一律上抛（disabled 由宿主区分处理）
+	 */
+	function onDayClick(day: CalendarDayItem) {
+		if (day.type == 'placeholder') {
+			return
+		}
+		if (cfg.value.readonly) {
+			return
+		}
+		emit('day-click', day)
+	}
+
+	/**
+	 * 导航按钮点击（switch-mode）
+	 */
+	function onNavClick(direction: string) {
+		emit('nav', direction)
+	}
+
+	/**
+	 * 副标题 / 导航行标题点击
+	 */
+	function onSubtitleClick(e: MouseEvent) {
+		emit('click-subtitle')
+	}
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 面板根 ========== */
+	.m-calendar {
+		position: relative;
+		flex-direction: column;
+		background-color: $m-calendar-background;
+	}
+
+	/* ========== 头部（常规标题 + 副标题 / 导航行 + 星期表头） ========== */
+	.m-calendar__header {
+		flex-direction: column;
+	}
+	.m-calendar__header-title {
+		height: $m-calendar-header-title-height;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-calendar__header-title-text {
+		font-size: $m-calendar-header-title-font-size;
+		font-weight: bold;
+		color: $m-calendar-header-title-color;
+	}
+	.m-calendar__header-subtitle {
+		height: $m-calendar-header-subtitle-height;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-calendar__header-subtitle-text {
+		font-size: $m-calendar-header-subtitle-font-size;
+		color: $m-calendar-header-subtitle-color;
+	}
+
+	/* ========== switch-mode 导航行 ========== */
+	.m-calendar__nav {
+		flex-direction: row;
+		align-items: center;
+		height: $m-calendar-header-subtitle-height;
+	}
+	.m-calendar__nav-btn {
+		height: $m-calendar-header-subtitle-height;
+		padding-left: 8px;
+		padding-right: 8px;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-calendar__nav-title {
+		flex: 1;
+		height: $m-calendar-header-subtitle-height;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-calendar__nav-title-text {
+		font-size: $m-calendar-header-subtitle-font-size;
+		font-weight: bold;
+		color: $m-calendar-header-title-color;
+	}
+	.m-calendar__nav-icon {
+		color: $m-calendar-nav-icon-color;
+		font-size: $m-calendar-nav-icon-size;
+	}
+	.m-calendar__nav-double {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	/* ========== 星期表头 ========== */
+	.m-calendar__weekdays {
+		flex-direction: row;
+		align-items: center;
+		height: $m-calendar-weekdays-height;
+	}
+	.m-calendar__weekday {
+		flex: 1;
+		text-align: center;
+		font-size: $m-calendar-weekdays-font-size;
+		color: $m-calendar-weekdays-color;
+	}
+
+	/* ========== 月份滚动区 ========== */
+	.m-calendar__body {
+		flex: 1;
+	}
+
+	/* #ifdef WEB */
+	/* Web 端鬼影修复：弹层（fixed 面板）内的合成滚动区在 Chrome 下绘制溢出裁剪区
+	   （重复行 / 数字鬼影 / 内容压到 footer），建立独立层叠上下文封闭绘制后消失。
+	   原生端 scroll-view 无此问题，条件编译隔离避免 ucss 引入未知属性。 */
+	.m-calendar__body {
+		isolation: isolate;
+	}
+	/* #endif */
+	.m-calendar__month {
+		flex-direction: column;
+	}
+	.m-calendar__month-title {
+		height: $m-calendar-month-title-height;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-calendar__month-title-text {
+		font-size: $m-calendar-month-title-font-size;
+		font-weight: bold;
+		color: $m-calendar-header-title-color;
+	}
+
+	/* 日期网格：7 列等宽换行布局；relative 承载月水印与格内绝对定位元素
+	   禁止加 z-index：会以同级 z:1 上下文压过 z:1 的弹层 overlay（DOM 顺序更靠后） */
+	.m-calendar__days {
+		position: relative;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	/* 月水印：超大字号低透明度数字，右上角对齐（文字压于日期格之下） */
+	.m-calendar__month-mark {
+		position: absolute;
+		top: 2px;
+		right: 12px;
+		font-size: $m-calendar-month-mark-font-size;
+		color: $m-calendar-month-mark-color;
+		z-index: 0;
+	}
+
+	/* ========== 日期格 ========== */
+	/* 宽度 7 等分（7 × 14.2857% < 100%，换行边界稳定） */
+	.m-calendar__day {
+		width: 14.28571428571%;
+		height: $m-calendar-day-height;
+		margin-bottom: $m-calendar-day-margin-bottom;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		position: relative;
+	}
+
+	/* 范围连接 bar：绝对定位半高通栏，start 右半 / end 左半 / middle 全宽 */
+	.m-calendar__day-bar {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background-color: $m-calendar-range-middle-background;
+		z-index: 0;
+	}
+	.m-calendar__day-bar--start {
+		left: 50%;
+	}
+	.m-calendar__day-bar--end {
+		right: 50%;
+	}
+
+	/* 日期上 / 下信息：绝对定位于格顶 / 格底 */
+	.m-calendar__day-info {
+		position: absolute;
+		left: 0;
+		right: 0;
+		z-index: 1;
+		flex-direction: row;
+		justify-content: center;
+	}
+	.m-calendar__day-info--top {
+		top: 6px;
+	}
+	.m-calendar__day-info--bottom {
+		bottom: 6px;
+	}
+	.m-calendar__day-info-text {
+		font-size: $m-calendar-info-font-size;
+		color: $m-calendar-info-color;
+	}
+	.m-calendar__day-info-text--light {
+		color: $m-calendar-selected-day-color;
+	}
+
+	/* 中央容器：常规无背景 / 圆点标记圆形反白 */
+	.m-calendar__day-value {
+		position: relative;
+		z-index: 1;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-calendar__day-selected {
+		position: relative;
+		z-index: 1;
+		width: $m-calendar-selected-day-size;
+		height: $m-calendar-selected-day-size;
+		border-radius: $m-radius-max;
+		background-color: $m-calendar-selected-day-background;
+		justify-content: center;
+		align-items: center;
+	}
+
+	/* 日期数字文本：常规 / 圆点反白 / 禁用 */
+	.m-calendar__day-text {
+		font-size: $m-calendar-day-font-size;
+		color: $m-text-color;
+	}
+	.m-calendar__day-text--selected {
+		color: $m-calendar-selected-day-color;
+	}
+	.m-calendar__day-text--disabled {
+		color: $m-calendar-day-disabled-color;
+	}
+
+	/* ========== 底部区（确认按钮容器，安全区由弹层 padding 承担） ========== */
+	.m-calendar__footer {
+		flex-direction: column;
+		padding: 8px 16px;
+	}
+</style>

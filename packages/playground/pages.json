@@ -106,6 +106,12 @@
 				"style": {
 					"navigationBarTitleText": "输入框 Input"
 				}
+			},
+			{
+				"path": "calendar/calendar",
+				"style": {
+					"navigationBarTitleText": "日历 Calendar"
+				}
 			}
 		]
 		}

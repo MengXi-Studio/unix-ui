@@ -14,6 +14,8 @@
   紧凑布局组件：包裹 `m-button` 使相邻项圆角衔接、相邻边框合并为 1px，支持变体混排；`block` 块级撑满（水平 `flex: 1` 等分 / 垂直满宽，子按钮无需逐个设置）、`direction` 水平 / 垂直排列；组内子项 `v-if` / `v-for` 动态增删时首、中、尾位置自动重排；0.5px 细边框（hairline）按钮的缩放层同步清理对应侧圆角与边框；基于 provide/inject + reactive 注册序实现位置感知（ucss 无 `:first-child` 结构选择器），无专属主题变量（圆角 / 边框复用 `$m-button-*` 系列）
 - 新增 `m-input`
   输入框组件：六种类型（text / tel / digit / number / password / textarea）、`clearable` + `clear-trigger` 两时机（focus / always）、`show-word-limit` 字数统计、`border` / `inlaid`（清边框内边距嵌入单元格）、`disabled` / `readonly`、textarea `auto-height`；`formatter` + `format-trigger`（onChange / onBlur）、`precision`（保留尾零）、`min` / `max` 失焦数字收敛、`show-eye` 明文切换；prepend / append 插槽、`v-model` 与 input / change / focus / blur / clear 事件、expose `focus()` / `blur()` 方法；注入 m-compact 上下文，可与 m-button 混排
+- 新增 `m-calendar`
+  日历组件：对标 Vant Calendar，single / multiple / range 三种选择类型、弹层（m-popup 组合，`poppable` 切换平铺面板）与平铺双形态、`switch-mode` 年月切换导航（month / year-month，导航 clamp 到可选范围）、`formatter` 日期格式化（topInfo / bottomInfo / className / 禁用态）、`first-day-of-week` 周起始日、`row-height` 行高、月份背景水印（`show-mark`，右上角对齐）、`color` 主题色派生选中圆与范围 bar（支持渐变）、`min-date` / `max-date` 界外禁用、`max-range` 范围与多选通用超限限制（拒绝 + `over-range` 事件 + m-toast 提示）、`allow-same-day` 起止同日、`default-date` 预选；`v-model:show` 与 select / confirm / unselect / over-range / month-show / panel-change / click-subtitle / click-disabled-date / open / opened / close / closed / click-overlay 全事件；title / subtitle / month-title / text / top-info / bottom-info / footer / confirm-text 与四个导航图标插槽；expose `reset()` / `scrollToDate()` / `getSelectedDate()` 方法
 
 ## 0.1.0（2026-10-27）
 

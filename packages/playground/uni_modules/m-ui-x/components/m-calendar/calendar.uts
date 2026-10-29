@@ -1,0 +1,207 @@
+/**
+ * m-calendar 共享类型与工具（跨文件共享，独立 .uts）
+ *
+ * m-calendar.uvue（状态机宿主）与 m-calendar-panel.uvue（表现层子组件）共用：
+ * 面板配置 CalendarPanelConfig 为纯数据 type（禁函数字段，App 原生端不支持含方法的对象字面量），
+ * 宿主计算后整体下发给面板渲染。
+ */
+
+/** 一天的毫秒数（月内天数计算用） */
+export const CALENDAR_DAY_MS: number = 86400000
+
+/** 星期表头（固定中文单字，周日起始；firstDayOfWeek 由此旋转） */
+export const CALENDAR_WEEKDAYS: string[] = ['日', '一', '二', '三', '四', '五', '六']
+
+/** 选择类型：single 单选 / multiple 多选 / range 范围 */
+export type CalendarType = 'single' | 'multiple' | 'range'
+
+/** 弹出方位（与 m-popup 的 position 取值一致） */
+export type CalendarPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'
+
+/** 面板头部形态：none 常规标题 / month 逐月切换 / year-month 逐年+逐月切换 */
+export type CalendarSwitchMode = 'none' | 'month' | 'year-month'
+
+/**
+ * 日期格标记类型：
+ * '' 常规 / selected 单选选中 / start / end / start-end（同日首尾）/ middle 范围中间 /
+ * multiple-selected 多选选中 / multiple-middle 多选中段（保留扩展）/ disabled 禁用 / placeholder 周首占位
+ */
+export type CalendarDayType = '' | 'selected' | 'start' | 'middle' | 'end' | 'start-end' | 'multiple-selected' | 'multiple-middle' | 'disabled' | 'placeholder'
+
+/** 单个日期格数据（formatter 的入参与返回值） */
+export type CalendarDayItem = {
+	/** 对应日期（placeholder 占位格为 epoch 零值，禁止使用） */
+	date: Date
+	/** 标记类型（formatter 可改写以自定义样式语义） */
+	type: CalendarDayType
+	/** 日期数字文本（占位格为空串） */
+	text: string
+	/** 顶部信息（配合 top-info 插槽 / 样式展示） */
+	topInfo: string
+	/** 底部信息（配合 bottom-info 插槽 / 样式展示） */
+	bottomInfo: string
+	/** 附加类名（formatter 注入，追加在 m-calendar__day 之后） */
+	className: string
+}
+
+/** 单月数据 */
+export type CalendarMonth = {
+	/** 当月 1 号零点 */
+	date: Date
+	/** 周首占位 + 全月日期格 */
+	days: CalendarDayItem[]
+}
+
+/** 日期格格式化函数：入参为构建完成的日期格，返回修改后的同一对象（最后统一应用，可覆盖内置标记） */
+export type CalendarFormatter = (day: CalendarDayItem) => CalendarDayItem
+
+/** 面板渲染配置（纯数据，宿主 computed 计算后整体下发） */
+export type CalendarPanelConfig = {
+	/** 面板形态：'poppable' 弹层（驱动滚动副标题上报）/ 'flat' 平铺 */
+	panelMode: string
+	/** 面板高度 inline 值（弹层形态为换算后的 px；平铺为空串自然生长） */
+	panelHeight: string
+	/** 待渲染月份（switch-mode 非 none 时仅单月） */
+	months: CalendarMonth[]
+	/** 星期表头（已按 firstDayOfWeek 旋转） */
+	weekdays: string[]
+	/** 常规标题 */
+	title: string
+	/** 副标题（none 模式为滚动所在月标题，switch-mode 为当前月标题） */
+	subtitle: string
+	showTitle: boolean
+	showSubtitle: boolean
+	showMark: boolean
+	/** 主题色（选中圆点与范围 bar 的派生基色，空串用默认变量） */
+	color: string
+	/** 日格行高 px（0 用默认变量值） */
+	rowHeight: number
+	readonly: boolean
+	switchMode: CalendarSwitchMode
+	/** scroll-into-view 锚点（月 id） */
+	scrollAnchor: string
+	/** 宿主是否传入 top-info 插槽（决定占位 wrapper 是否渲染） */
+	hasTopInfoSlot: boolean
+	/** 宿主是否传入 bottom-info 插槽 */
+	hasBottomInfoSlot: boolean
+}
+
+/**
+ * 归一当日零点（消除时分秒与跨月比较的干扰）
+ */
+export function getDayStart(date: Date): Date {
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+}
+
+/**
+ * 同月判断（年 + 月相等，不比日）
+ */
+export function isSameMonth(a: Date, b: Date): boolean {
+	return a.getFullYear() == b.getFullYear() && a.getMonth() == b.getMonth()
+}
+
+/**
+ * 月标题文本：YYYY年M月（固定中文格式，月历组件整体为中文语境）
+ */
+export function getMonthTitle(date: Date): string {
+	return date.getFullYear().toString() + '年' + (date.getMonth() + 1).toString() + '月'
+}
+
+/**
+ * 加 n 个月（返回目标月 1 号零点；跨年自动进位，月溢出由 Date 构造器归一）
+ */
+export function addMonths(date: Date, n: number): Date {
+	return new Date(date.getFullYear(), date.getMonth() + n, 1)
+}
+
+/**
+ * 天数差：a - b（按当日零点计，含符号；Math.round 消除夏令时整点漂移）
+ */
+export function getDayDiff(a: Date, b: Date): number {
+	const ta = getDayStart(a).getTime()
+	const tb = getDayStart(b).getTime()
+	return Math.round((ta - tb) / CALENDAR_DAY_MS)
+}
+
+/**
+ * 单个十六进制位转数值（0-15，非法返回 -1；不依赖 parseInt 以规避原生端 radix 解析差异）
+ */
+function hexDigitValue(ch: string): number {
+	const code = ch.charCodeAt(0)
+	if (code >= 48 && code <= 57) {
+		return code - 48
+	}
+	if (code >= 65 && code <= 70) {
+		return code - 55
+	}
+	if (code >= 97 && code <= 102) {
+		return code - 87
+	}
+	return -1
+}
+
+/**
+ * #hex 颜色转 rgba() 字符串（仅 #RGB / #RRGGBB；非法或带 alpha 的输入返回 ''，调用方回退默认变量色）
+ */
+export function hexToRgba(color: string, alpha: number): string {
+	let r = -1
+	let g = -1
+	let b = -1
+	if (color.length == 4) {
+		const rv = hexDigitValue(color.substring(1, 2))
+		const gv = hexDigitValue(color.substring(2, 3))
+		const bv = hexDigitValue(color.substring(3, 4))
+		if (rv >= 0 && gv >= 0 && bv >= 0) {
+			r = rv * 17
+			g = gv * 17
+			b = bv * 17
+		}
+	} else if (color.length == 7) {
+		const r1 = hexDigitValue(color.substring(1, 2))
+		const r2 = hexDigitValue(color.substring(2, 3))
+		const g1 = hexDigitValue(color.substring(3, 4))
+		const g2 = hexDigitValue(color.substring(4, 5))
+		const b1 = hexDigitValue(color.substring(5, 6))
+		const b2 = hexDigitValue(color.substring(6, 7))
+		if (r1 >= 0 && r2 >= 0 && g1 >= 0 && g2 >= 0 && b1 >= 0 && b2 >= 0) {
+			r = r1 * 16 + r2
+			g = g1 * 16 + g2
+			b = b1 * 16 + b2
+		}
+	}
+	if (r < 0 || g < 0 || b < 0) {
+		return ''
+	}
+	return 'rgba(' + r.toString() + ', ' + g.toString() + ', ' + b.toString() + ', ' + alpha.toString() + ')'
+}
+
+/**
+ * 圆点标记类 day type（选中圆 / 范围端点圆，文字反白展示）
+ */
+export function isCircularDayType(type: CalendarDayType): boolean {
+	return type == 'selected' || type == 'start' || type == 'end' || type == 'start-end' || type == 'multiple-selected' || type == 'multiple-middle'
+}
+
+/**
+ * 日期数字文本类名：disabled 灰、圆点标记反白、常规主色
+ */
+export function dayTextClass(day: CalendarDayItem): string {
+	let cls = 'm-calendar__day-text'
+	if (day.type == 'disabled') {
+		cls += ' m-calendar__day-text--disabled'
+	} else if (isCircularDayType(day.type)) {
+		cls += ' m-calendar__day-text--selected'
+	}
+	return cls
+}
+
+/**
+ * 日期上 / 下信息文本类名：圆点标记内反白，其余灰
+ */
+export function dayInfoTextClass(day: CalendarDayItem): string {
+	let cls = 'm-calendar__day-info-text'
+	if (isCircularDayType(day.type)) {
+		cls += ' m-calendar__day-info-text--light'
+	}
+	return cls
+}

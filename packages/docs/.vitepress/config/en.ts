@@ -100,6 +100,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					text: 'Data Display',
 					items: [
 						{ text: 'Badge', link: '/en/components/badge' },
+						{ text: 'Calendar', link: '/en/components/calendar' },
 						{ text: 'Cell', link: '/en/components/cell' },
 						{ text: 'Input', link: '/en/components/input' }
 					]

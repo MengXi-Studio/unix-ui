@@ -182,3 +182,31 @@ $m-input-eye-color: $m-text-color-fourth !default;
 $m-input-count-font-size: 12px !default;
 $m-input-count-color: $m-text-color-tertiary !default;
 $m-input-textarea-min-height: 60px !default;
+
+/* ========== Calendar 日历 ========== */
+$m-calendar-background: $m-white !default;
+$m-calendar-header-title-height: 44px !default;
+$m-calendar-header-title-font-size: 16px !default;
+$m-calendar-header-title-color: $m-text-color !default;
+$m-calendar-header-subtitle-height: 32px !default;
+$m-calendar-header-subtitle-font-size: 14px !default;
+$m-calendar-header-subtitle-color: $m-text-color !default;
+$m-calendar-weekdays-height: 30px !default;
+$m-calendar-weekdays-font-size: 12px !default;
+$m-calendar-weekdays-color: $m-text-color-tertiary !default;
+$m-calendar-nav-icon-size: 20px !default;
+$m-calendar-nav-icon-color: $m-text-color-tertiary !default;
+$m-calendar-month-title-height: 24px !default;      /* 与 m-calendar-panel 常量 MONTH_TITLE_HEIGHT 同步（滚动偏移估算） */
+$m-calendar-month-title-font-size: 14px !default;
+$m-calendar-month-mark-color: rgba($m-text-color, 0.06) !default;
+$m-calendar-month-mark-font-size: 160px !default;
+$m-calendar-day-height: 64px !default;              /* 与 m-calendar-panel 常量 DEFAULT_DAY_HEIGHT 同步（滚动偏移估算） */
+$m-calendar-day-font-size: 16px !default;
+$m-calendar-day-margin-bottom: 4px !default;        /* 与 m-calendar-panel 常量 DAY_MARGIN_BOTTOM 同步（滚动偏移估算） */
+$m-calendar-day-disabled-color: $m-text-color-fourth !default;
+$m-calendar-info-font-size: 10px !default;
+$m-calendar-info-color: $m-text-color-tertiary !default;
+$m-calendar-selected-day-size: 54px !default;
+$m-calendar-selected-day-color: $m-white !default;
+$m-calendar-selected-day-background: $m-color-primary !default;
+$m-calendar-range-middle-background: rgba($m-color-primary, 0.1) !default;

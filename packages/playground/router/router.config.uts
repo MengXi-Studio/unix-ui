@@ -24,5 +24,6 @@ export const routes: RouteConfig[] = [
 	{ path: 'pages-sub/grid/grid', name: 'grid', meta: { title: '宫格 Grid' } },
 	{ path: 'pages-sub/toast/toast', name: 'toast', meta: { title: '轻提示 Toast' } },
 	{ path: 'pages-sub/compact/compact', name: 'compact', meta: { title: '紧凑布局 Compact' } },
-	{ path: 'pages-sub/input/input', name: 'input', meta: { title: '输入框 Input' } }
+	{ path: 'pages-sub/input/input', name: 'input', meta: { title: '输入框 Input' } },
+	{ path: 'pages-sub/calendar/calendar', name: 'calendar', meta: { title: '日历 Calendar' } }
 ]

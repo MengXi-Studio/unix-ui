@@ -5,7 +5,7 @@ demo: pages-sub/compact/compact
 
 ## Introduction
 
-Makes form components connect compactly with merged borders. When `m-compact` wraps `m-button`, buttons inside automatically sense their position: adjacent items join corner radii and merge neighboring borders into 1px, supporting horizontal / vertical directions and block-level filling.
+Makes form components connect compactly with merged borders. When `m-compact` wraps `m-button` / `m-input`, inner components automatically sense their position: adjacent items join corner radii and merge neighboring borders into 1px, supporting horizontal / vertical directions and block-level filling.
 
 ## Examples
 
@@ -35,7 +35,7 @@ Set the `block` attribute to make buttons fill the parent element width: horizon
 
 ### Vertical Layout {#demo-vertical}
 
-Set `direction="vertical"` for a vertical compact layout; without block, buttons shrink to content width. Currently only `Button` combinations are supported.
+Set `direction="vertical"` for a vertical compact layout; without block, buttons shrink to content width. Both `Button` and `Input` combinations are supported.
 
 ```vue
 <m-compact direction="vertical">
@@ -79,29 +79,44 @@ When children are added or removed dynamically via `v-if` / `v-for`, first / mid
 </m-compact>
 ```
 
+### Input Combinations {#demo-input}
+
+`m-input` registers into the injected context as well: mixing with `m-button` forms a search bar, vertical stacking forms a login form — adjacent items join corner radii and merge borders into 1px.
+
+```vue
+<m-compact block>
+	<m-input v-model="keyword" placeholder="Enter keywords" />
+	<m-button type="primary">Search</m-button>
+</m-compact>
+<m-compact direction="vertical" block>
+	<m-input v-model="username" placeholder="Username" />
+	<m-input v-model="password" type="password" placeholder="Password" />
+</m-compact>
+```
+
 ## API
 
 ### Props
 
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
-| block | Block-level element, making inner buttons fill the parent element width | boolean | `false` |
+| block | Block-level element, making inner items fill the parent element width | boolean | `false` |
 | direction | Layout direction, optional values `horizontal` `vertical` | CompactDirection | `horizontal` |
 
 ### Slots
 
 | Name | Description |
 | --- | --- |
-| default | Custom default content (currently only m-button combinations are supported) |
+| default | Custom default content (m-button / m-input combinations are supported) |
 
 ## Theming
 
-The compact layout has no dedicated SCSS variables: radii and border styles are entirely carried by the inner `m-button` itself — overriding the `$m-button-*` variables (e.g. `$m-button-radius`, `$m-border-width`) applies to the compact form as well.
+The compact layout has no dedicated SCSS variables: radii and border styles are entirely carried by the inner `m-button` / `m-input` themselves — overriding the `$m-button-*` / `$m-input-*` variables (e.g. `$m-button-radius`, `$m-input-border-color`) applies to the compact form as well.
 
 See [Theming](/en/guide/theming) for all variables and how to override them.
 
 ## Differences from Sard
 
-- Currently only `m-button` combinations are supported: uni-app x cannot style arbitrary children with CSS structural selectors (`:first-child`, etc.) as on the Web. Instead, m-compact provides an injected context and m-button registers to sense its position and apply modifier classes automatically; input components will be supported once m-input lands
+- Currently `m-button` / `m-input` combinations are supported: uni-app x cannot style arbitrary children with CSS structural selectors (`:first-child`, etc.) as on the Web. Instead, m-compact provides an injected context and inner components (m-button / m-input) register to sense their position and apply modifier classes automatically
 - `direction` / `block` are creation-time snapshots: runtime dynamic switching has no effect; rebuild the component instead
 - Border merging strategy: non-first items clear the adjacent-side border and the previous item's border serves as the divider — visually identical to Sard's negative-margin overlap approach

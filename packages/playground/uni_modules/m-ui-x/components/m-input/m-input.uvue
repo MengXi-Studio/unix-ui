@@ -1,0 +1,590 @@
+<template>
+	<!-- 根节点：纵向容器（边框容器 + 字数统计行），无根节点 v-if -->
+	<view :class="rootClass">
+		<!-- 边框容器：视觉主体（边框 / 圆角 / 内边距 / 背景与 compact 位置类都画在此层） -->
+		<view :class="bodyClass" :style="bodyStyle">
+			<view v-if="hasPrependSlot" class="m-input__prepend">
+				<slot name="prepend"></slot>
+			</view>
+			<!-- 输入区：单行 input / 多行 textarea 按类型切换（内部节点，非根节点） -->
+			<input
+				v-if="props.type != 'textarea'"
+				:class="controlClass"
+				:value="props.modelValue"
+				:type="nativeType"
+				:password="props.type == 'password' && !eyeOpen"
+				:placeholder="props.placeholder"
+				placeholder-class="m-input__placeholder"
+				:placeholder-style="props.placeholderStyle"
+				:maxlength="props.maxlength"
+				:disabled="props.disabled || props.readonly"
+				:focus="focusState"
+				:confirm-type="nativeConfirmType"
+				@input="onInput"
+				@focus="onFocusInput"
+				@blur="onBlurInput"
+			/>
+			<textarea
+				v-else
+				:class="controlClass"
+				:value="props.modelValue"
+				:auto-height="props.autoHeight"
+				:placeholder="props.placeholder"
+				placeholder-class="m-input__placeholder"
+				:placeholder-style="props.placeholderStyle"
+				:maxlength="props.maxlength"
+				:disabled="props.disabled || props.readonly"
+				@input="onInput"
+				@focus="onFocusTextarea"
+				@blur="onBlurTextarea"
+			/>
+			<!-- 清除图标：clearable 且有值且（always 或聚焦中）且非只读禁用 -->
+			<view v-if="showClear" class="m-input__clear" @click="onClear">
+				<m-icon name="clear" custom-class="m-input__clear-icon"></m-icon>
+			</view>
+			<!-- 明文切换图标：仅 type=password 且 show-eye 时渲染，位于 append 插槽之前 -->
+			<view v-if="showEyeIcon" class="m-input__eye" @click="onToggleEye">
+				<m-icon :name="eyeIconName" custom-class="m-input__eye-icon"></m-icon>
+			</view>
+			<view v-if="hasAppendSlot" class="m-input__append">
+				<slot name="append"></slot>
+			</view>
+		</view>
+		<!-- 字数统计行：容器外下方右对齐（与 Vant 的容器内计数展示为已知差异） -->
+		<view v-if="showCount" class="m-input__count">
+			<text class="m-input__count-text">{{ countText }}</text>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { COMPACT_KEY, CompactContext, generateCompactId } from '../m-compact/context.uts'
+	import { IconName } from '../m-icon/icons.uts'
+
+	/** 输入框类型：text / tel / digit / number / password / textarea（uni-app x 原生支持集） */
+	type InputType = 'text' | 'tel' | 'digit' | 'number' | 'password' | 'textarea'
+	/** 清除图标显示时机：focus 聚焦中（默认）/ always 常驻 */
+	type ClearTrigger = 'focus' | 'always'
+	/** formatter 生效时机：onChange 输入时（默认）/ onBlur 失焦时 */
+	type FormatTrigger = 'onChange' | 'onBlur'
+
+	type Props = {
+		/** 输入框内容（v-model），统一 string 类型 */
+		modelValue?: string
+		/** 输入框类型 */
+		type?: InputType
+		/** 占位符 */
+		placeholder?: string
+		/** 占位符内联样式（直通原生） */
+		placeholderStyle?: string
+		/** 占位符额外样式类（直通原生，追加在内置占位符类之后） */
+		placeholderClass?: string
+		/** 最大输入长度，-1 不限制（原生语义） */
+		maxlength?: number
+		/** 展示字数统计，需配合 maxlength > 0 */
+		showWordLimit?: boolean
+		/** 是否启用清除图标 */
+		clearable?: boolean
+		/** 清除图标显示时机 */
+		clearTrigger?: ClearTrigger
+		/** 是否显示边框容器（对齐 Vant 正向语义） */
+		border?: boolean
+		/** 嵌入式形态：清边框 / 圆角 / 内边距 / 背景，用于嵌入 m-cell 等 */
+		inlaid?: boolean
+		/** 是否禁用：不触发输入与聚焦 */
+		disabled?: boolean
+		/** 是否只读：不可编辑但外观正常（uni-app x 无原生 readonly，以原生 disabled 模拟） */
+		readonly?: boolean
+		/** 键盘右下角按钮文字：done / search / send / go / next，仅单行生效 */
+		confirmType?: string
+		/** 多行时是否自动增高，仅 type=textarea 生效 */
+		autoHeight?: boolean
+		/** 输入内容格式化函数；配合 format-trigger 指定生效时机 */
+		formatter?: ((value: string) => string) | null
+		/** formatter 生效时机 */
+		formatTrigger?: FormatTrigger
+		/** 小数位数：type 为 number / digit 时失焦按 precision 取舍 */
+		precision?: number | null
+		/** 数值下限：type 为 number / digit 时失焦收敛 */
+		min?: number | null
+		/** 数值上限：type 为 number / digit 时失焦收敛 */
+		max?: number | null
+		/** 内置明文切换图标，仅 type=password 生效（位于 append 插槽之前） */
+		showEye?: boolean
+		/** 自定义输入框容器（边框层）类名 */
+		customClass?: string.ClassString
+		/** 自定义输入框容器（边框层）内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		modelValue: '',
+		type: 'text',
+		placeholder: '',
+		placeholderStyle: '',
+		placeholderClass: '',
+		maxlength: -1,
+		showWordLimit: false,
+		clearable: false,
+		clearTrigger: 'focus',
+		border: true,
+		inlaid: false,
+		disabled: false,
+		readonly: false,
+		confirmType: '',
+		autoHeight: false,
+		formatter: null,
+		formatTrigger: 'onChange',
+		precision: null,
+		min: null,
+		max: null,
+		showEye: false,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		'update:modelValue': [value: string]
+		input: [value: string]
+		change: [value: string]
+		focus: [event: UniEvent]
+		blur: [event: UniEvent]
+		clear: []
+	}>()
+
+	const slots = useSlots()
+
+	/** 是否传入 prepend 插槽内容 */
+	const hasPrependSlot = computed<boolean>(() => slots.prepend != null)
+
+	/** 是否传入 append 插槽内容 */
+	const hasAppendSlot = computed<boolean>(() => slots.append != null)
+
+	/** 聚焦视觉状态（边框高亮 / 清除图标展示），失焦走宽限期延迟撤出（等待清除图标 click） */
+	const focused = ref<boolean>(false)
+
+	/** :focus 属性驱动状态：与原生 focus / blur 事件双向同步，供 expose 的 focus() / blur() 驱动原生聚焦 */
+	const focusState = ref<boolean>(false)
+
+	/** 聚焦时刻的值快照：失焦比对是否变化，模拟 change 语义 */
+	const focusSnapshot = ref<string>('')
+
+	/** 失焦宽限期定时器句柄（-1 表示无挂起定时） */
+	let blurTimer = -1
+
+	/** 明文切换状态：false 密文（默认）/ true 明文 */
+	const eyeOpen = ref<boolean>(false)
+
+	/**
+	 * compact 紧凑布局上下文：位于 m-compact 内时注入（setup 同步注册，首帧即为正确位置）；
+	 * 独立使用为 null，行为与常规输入框完全一致
+	 */
+	const compact = inject<CompactContext | null>(COMPACT_KEY, null)
+	const compactId = generateCompactId()
+	if (compact != null) {
+		compact.register(compactId)
+	}
+	onUnmounted(() => {
+		if (compact != null) {
+			compact.unregister(compactId)
+		}
+		if (blurTimer != -1) {
+			clearTimeout(blurTimer)
+		}
+	})
+
+	/**
+	 * compact 位置标记（reactive 注册序驱动自动重算）：
+	 * h-first / h-last / h-middle / v-first / v-last / v-middle；单项或未注册为 'single'（不清理圆角）
+	 */
+	const compactPosition = computed<string>(() => {
+		if (compact == null) return 'single'
+		const idx = compact.indexOf(compactId)
+		const count = compact.ids.length
+		if (count <= 1 || idx < 0) return 'single'
+		const vertical = compact.direction == 'vertical'
+		if (idx == 0) return vertical ? 'v-first' : 'h-first'
+		if (idx == count - 1) return vertical ? 'v-last' : 'h-last'
+		return vertical ? 'v-middle' : 'h-middle'
+	})
+
+	/** compact 非首项标记：清相邻侧边框，与邻项边框合并为 1px 分隔 */
+	const compactNotFirst = computed<boolean>(() => {
+		if (compact == null) return false
+		return compact.indexOf(compactId) > 0
+	})
+
+	/**
+	 * 原生 type 值：uni-app x 无 password 类型（password 为独立属性），
+	 * type=password 映射原生 text 并由 :password 属性控制显隐
+	 */
+	const nativeType = computed<string>(() => {
+		return props.type == 'password' ? 'text' : props.type
+	})
+
+	/** 原生 confirm-type 值：未指定时回落原生默认 done */
+	const nativeConfirmType = computed<string>(() => {
+		return props.confirmType == '' ? 'done' : props.confirmType
+	})
+
+	/** 明文切换图标名：密文展示 closed-eye，明文展示 eye */
+	const eyeIconName = computed<IconName>(() => {
+		return eyeOpen.value ? 'eye' : 'closed-eye'
+	})
+
+	/** 清除图标可见性：clearable 且有值且（always 或聚焦中）且非禁用只读 */
+	const showClear = computed<boolean>(() => {
+		if (!props.clearable) return false
+		if (props.disabled || props.readonly) return false
+		if (props.modelValue == '') return false
+		return props.clearTrigger == 'always' || focused.value
+	})
+
+	/** 明文切换图标可见性：仅 type=password 且 show-eye */
+	const showEyeIcon = computed<boolean>(() => {
+		return props.showEye && props.type == 'password'
+	})
+
+	/** 字数统计可见性：show-word-limit 且 maxlength 有限 */
+	const showCount = computed<boolean>(() => {
+		return props.showWordLimit && props.maxlength > 0
+	})
+
+	/** 字数统计文案：当前长度 / 最大长度 */
+	const countText = computed<string>(() => {
+		return props.modelValue.length.toString() + '/' + props.maxlength.toString()
+	})
+
+	/**
+	 * 更新值：同步 v-model 与 input 事件（唯一出口，保证两条事件始终一致）
+	 */
+	function updateValue(value: string): void {
+		emit('update:modelValue', value)
+		emit('input', value)
+	}
+
+	/**
+	 * 按时机应用 formatter：trigger 与 formatTrigger 匹配时执行格式化，否则原样返回
+	 */
+	function applyFormat(value: string, trigger: FormatTrigger): string {
+		if (props.formatTrigger != trigger) return value
+		const formatter = props.formatter
+		if (formatter == null) return value
+		return formatter(value)
+	}
+
+	/**
+	 * 数字修正（仅 type 为 number / digit 且失焦时调用）：
+	 * parseFloat 解析 → min / max 收敛 → precision 按位取舍（保留尾零）；解析失败或空值原样返回
+	 */
+	function applyNumeric(value: string): string {
+		if (props.type != 'number' && props.type != 'digit') return value
+		if (value == '') return value
+		let n = parseFloat(value)
+		if (isNaN(n)) return value
+		const min = props.min
+		if (min != null && n < min) n = min
+		const max = props.max
+		if (max != null && n > max) n = max
+		const precision = props.precision
+		if (precision != null) return n.toFixed(precision)
+		return n.toString()
+	}
+
+	/**
+	 * 原生 input 事件：先按 onChange 时机格式化，再同步 v-model 与 input 事件
+	 */
+	function onInput(event: UniInputEvent): void {
+		let value = event.detail.value
+		value = applyFormat(value, 'onChange')
+		if (value != props.modelValue) updateValue(value)
+	}
+
+	/** 单行聚焦事件桥接（input 与 textarea 原生事件类型不同，各自桥接后走公共处理） */
+	function onFocusInput(event: UniInputFocusEvent): void {
+		handleFocus(event)
+	}
+
+	/** 多行聚焦事件桥接 */
+	function onFocusTextarea(event: UniTextareaFocusEvent): void {
+		handleFocus(event)
+	}
+
+	/** 单行失焦事件桥接 */
+	function onBlurInput(event: UniInputBlurEvent): void {
+		handleBlur(event)
+	}
+
+	/** 多行失焦事件桥接 */
+	function onBlurTextarea(event: UniTextareaBlurEvent): void {
+		handleBlur(event)
+	}
+
+	/**
+	 * 聚焦公共处理：清除失焦宽限期、点亮聚焦视觉、记录值快照、同步 :focus 属性状态
+	 */
+	function handleFocus(event: UniEvent): void {
+		if (blurTimer != -1) {
+			clearTimeout(blurTimer)
+			blurTimer = -1
+		}
+		focused.value = true
+		focusState.value = true
+		focusSnapshot.value = props.modelValue
+		emit('focus', event)
+	}
+
+	/**
+	 * 失焦公共处理：先派发 blur（对齐 Vant 时序），再做 onBlur 格式化 / 数字修正，
+	 * 最终值与聚焦快照不同才触发 change 事件；:focus 状态立即复位，
+	 * 聚焦视觉走 200ms 宽限期再撤出（等待清除图标 click）
+	 */
+	function handleBlur(event: UniEvent): void {
+		emit('blur', event)
+		focusState.value = false
+		if (blurTimer != -1) {
+			clearTimeout(blurTimer)
+		}
+		blurTimer = setTimeout(() => {
+			focused.value = false
+			blurTimer = -1
+		}, 200)
+		let value = props.modelValue
+		value = applyFormat(value, 'onBlur')
+		value = applyNumeric(value)
+		if (value != props.modelValue) updateValue(value)
+		if (value != focusSnapshot.value) emit('change', value)
+	}
+
+	/**
+	 * 清除图标点击：清空内容并派发 clear 事件
+	 */
+	function onClear(): void {
+		updateValue('')
+		emit('clear')
+	}
+
+	/**
+	 * 明文切换图标点击：切换密文 / 明文（经 :password 属性驱动原生显隐）
+	 */
+	function onToggleEye(): void {
+		eyeOpen.value = !eyeOpen.value
+	}
+
+	/**
+	 * 聚焦输入框（经 :focus 属性驱动原生聚焦，与原生 focus 事件同步状态）
+	 */
+	function focus(): void {
+		focusState.value = true
+		focused.value = true
+		focusSnapshot.value = props.modelValue
+	}
+
+	/**
+	 * 失焦输入框（经 :focus 属性驱动原生失焦）
+	 */
+	function blur(): void {
+		focusState.value = false
+		focused.value = false
+	}
+
+	defineExpose({
+		focus,
+		blur
+	})
+
+	/** 根节点类名：纵向容器 + compact 块级撑满（flex:1 / stretch 必须作用于 m-compact 的直接子项，即根节点） */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-input'
+		if (compact != null && compact.block) {
+			cls += ' m-input--compact-' + (compact.direction == 'vertical' ? 'vblock' : 'hblock')
+		}
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 边框容器类名：变体类 + compact 位置衔接类（边框与圆角都画在该层，扁平类按序覆盖） */
+	const bodyClass = computed<string>(() => {
+		const bordered = props.border && !props.inlaid
+		let cls = 'm-input__body'
+		if (!bordered) cls += ' m-input--borderless'
+		if (props.inlaid) cls += ' m-input--inlaid'
+		if (focused.value && bordered) cls += ' m-input--focus'
+		if (props.disabled) cls += ' m-input--disabled'
+		if (compact != null) {
+			const pos = compactPosition.value
+			if (pos != 'single') cls += ' m-input--compact-' + pos
+			if (compactNotFirst.value) {
+				cls += ' m-input--compact-' + (compact.direction == 'vertical' ? 'v-not-first' : 'h-not-first')
+			}
+		}
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 边框容器内联样式：customStyle 补分号后拼接 */
+	const bodyStyle = computed<string>(() => {
+		let style = props.customStyle
+		if (style != '' && !style.endsWith(';')) style += ';'
+		return style
+	})
+
+	/** 输入控件类名：禁用文本色 / textarea 高度形态（min-height 与 auto-height 互斥） */
+	const controlClass = computed<string>(() => {
+		let cls = 'm-input__control'
+		if (props.disabled) cls += ' m-input__control--disabled'
+		if (props.type == 'textarea') {
+			cls += ' m-input__textarea'
+			if (props.autoHeight) cls += ' m-input__textarea--auto'
+		}
+		return cls
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），用户零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss——
+	 * uni.scss 会注入每个组件样式，与组件内引入同一文件将触发循环导入）。
+	 * !default 语义保证用户定义值优先于默认值，与注入先后顺序无关。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根节点（纵向容器：边框容器 + 字数统计行） ========== */
+	.m-input {
+		flex-direction: column;
+	}
+
+	/* ========== 边框容器（视觉主体） ========== */
+	.m-input__body {
+		flex-direction: row;
+		align-items: center;
+		box-sizing: border-box;
+		border-width: $m-border-width;
+		border-style: solid;
+		border-color: $m-input-border-color;
+		border-radius: $m-input-border-radius;
+		padding: $m-input-padding-y $m-input-padding-x;
+		background-color: $m-input-bg;
+	}
+	.m-input--borderless {
+		border-width: 0;
+	}
+	.m-input--inlaid {
+		border-width: 0;
+		border-radius: 0;
+		padding: 0;
+		background-color: transparent;
+	}
+	/* 聚焦态边框高亮：仅 bordered 时挂载，样式位于 borderless 之后按序覆盖 */
+	.m-input--focus {
+		border-color: $m-input-border-color-focus;
+	}
+	.m-input--disabled {
+		background-color: $m-input-bg-disabled;
+		opacity: $m-disabled-opacity;
+	}
+
+	/* ========== 前后插槽容器（间距收在插槽侧，无插槽时不产生空隙） ========== */
+	.m-input__prepend {
+		margin-right: $m-input-gap;
+	}
+	.m-input__append {
+		margin-left: $m-input-gap;
+	}
+
+	/* ========== 输入控件（单行 / 多行共用基础类） ========== */
+	.m-input__control {
+		flex: 1;
+		min-width: 0;
+		font-size: $m-input-font-size;
+		color: $m-input-text-color;
+		background-color: transparent;
+	}
+	.m-input__control--disabled {
+		color: $m-input-text-color-disabled;
+	}
+	/* 多行固定高度形态：min-height 抬升基准高度（uni-app x 无 rows 属性，高度经此变量控制） */
+	.m-input__textarea {
+		min-height: $m-input-textarea-min-height;
+	}
+	/* 多行自适应形态：高度随内容自然生长 */
+	.m-input__textarea--auto {
+		min-height: 0;
+	}
+
+	/* ========== 占位符（经原生 placeholder-class 挂载） ========== */
+	.m-input__placeholder {
+		color: $m-input-placeholder-color;
+	}
+
+	/* ========== 清除 / 明文切换图标（padding 扩大点击热区） ========== */
+	.m-input__clear {
+		margin-left: $m-input-gap;
+		padding: 2px;
+	}
+	.m-input__clear-icon {
+		font-size: $m-input-clear-icon-size;
+		color: $m-input-clear-color;
+	}
+	.m-input__eye {
+		margin-left: $m-input-gap;
+		padding: 2px;
+	}
+	.m-input__eye-icon {
+		font-size: $m-input-eye-icon-size;
+		color: $m-input-eye-color;
+	}
+
+	/* ========== 字数统计行（容器外下方右对齐） ========== */
+	.m-input__count {
+		flex-direction: row;
+		justify-content: flex-end;
+		margin-top: 4px;
+	}
+	.m-input__count-text {
+		font-size: $m-input-count-font-size;
+		color: $m-input-count-color;
+		line-height: 1.4;
+	}
+
+	/* ========== compact 紧凑布局修饰（m-compact 组内按位置自动挂载，作用于边框容器） ========== */
+	/* 位于样式末尾：同特异性下覆盖基础圆角与边框声明 */
+	.m-input--compact-h-first {
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+	.m-input--compact-h-last {
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+	.m-input--compact-h-middle {
+		border-radius: 0;
+	}
+	/* 非首项清左边框：分隔线由前一项右边框承担，相邻边框合并为 1px */
+	.m-input--compact-h-not-first {
+		border-left-width: 0;
+	}
+	.m-input--compact-v-first {
+		border-bottom-right-radius: 0;
+		border-bottom-left-radius: 0;
+	}
+	.m-input--compact-v-last {
+		border-top-right-radius: 0;
+		border-top-left-radius: 0;
+	}
+	.m-input--compact-v-middle {
+		border-radius: 0;
+	}
+	.m-input--compact-v-not-first {
+		border-top-width: 0;
+	}
+	/* 块级撑满（作用于根节点，水平 flex:1 等分 / 垂直满宽） */
+	.m-input--compact-hblock {
+		flex: 1;
+	}
+	.m-input--compact-vblock {
+		align-self: stretch;
+	}
+</style>

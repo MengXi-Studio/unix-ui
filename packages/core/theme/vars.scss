@@ -161,3 +161,24 @@ $m-toast-default-padding: 16px !default;
 $m-toast-top-distance: 20% !default;
 $m-toast-bottom-distance: 20% !default;
 $m-toast-overlay-background: rgba(0, 0, 0, 0.7) !default;
+
+/* ========== Input 输入框 ========== */
+$m-input-font-size: 14px !default;                        /* 输入控件基准字号 */
+$m-input-padding-y: 7px !default;                         /* 边框容器纵向内边距 */
+$m-input-padding-x: 10px !default;                        /* 边框容器横向内边距 */
+$m-input-gap: 6px !default;                               /* 控件与前后部（插槽 / 图标）间距 */
+$m-input-border-radius: $m-radius-md !default;
+$m-input-border-color: #ebedf0 !default;                  /* 常态边框色 */
+$m-input-border-color-focus: $m-color-primary !default;   /* 聚焦态边框色 */
+$m-input-bg: $m-white !default;
+$m-input-bg-disabled: #f7f8fa !default;
+$m-input-text-color: $m-text-color !default;
+$m-input-text-color-disabled: $m-text-color-tertiary !default;
+$m-input-placeholder-color: $m-text-color-fourth !default;
+$m-input-clear-icon-size: 16px !default;
+$m-input-clear-color: $m-text-color-fourth !default;
+$m-input-eye-icon-size: 16px !default;
+$m-input-eye-color: $m-text-color-fourth !default;
+$m-input-count-font-size: 12px !default;
+$m-input-count-color: $m-text-color-tertiary !default;
+$m-input-textarea-min-height: 60px !default;

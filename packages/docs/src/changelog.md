@@ -2,7 +2,7 @@
 
 ## [0.2.0] - 2026-10-28
 
-新增弹窗类基础组件（m-overlay / m-popup）、分割线组件（m-divider）、宫格组件（m-grid / m-grid-item）、轻提示组件（m-toast，反馈组件）与紧凑布局组件（m-compact，布局组件），基础组件数量达到 14 个。
+新增弹窗类基础组件（m-overlay / m-popup）、分割线组件（m-divider）、宫格组件（m-grid / m-grid-item）、轻提示组件（m-toast，反馈组件）、紧凑布局组件（m-compact，布局组件）与输入框组件（m-input，数据展示），基础组件数量达到 15 个。
 
 ### 新增
 
@@ -12,6 +12,7 @@
 - **m-grid / m-grid-item 宫格**：`column-num` 自定义列数、`square` 正方形格子（padding-top 百分比 + 内容绝对定位）、`gutter` 格子间距（行 / 列同值，平均分配对齐 m-row 先例）、`border` 完整表格边框（容器承担顶线 + 左线，格子承担右线 + 下线拼线）、`center` 内容居中、`direction` 横排、`reverse` 图标文本换位、`clickable` 按压反馈（view 原生 hover-class）；格子 `text` / `icon` / `icon-color`、`dot` / `badge` 徽标（m-badge 联动）、`click` 事件与 `url` 应用内页面跳转，default / icon / text 三插槽
 - **m-toast 轻提示**：函数式 API（`showToast` / `showSuccessToast` / `showFailToast` / `showLoadingToast` / `closeToast`，string 简写与 ToastOptions 对象双入参，单例语义）与组件式（`v-model:show` + default 插槽）双形态；`type`（text / loading / success / fail）、`position`（top / middle / bottom）、`icon` 自定义图标、`overlay` / `forbidClick` 遮罩与点击拦截、`closeOnClick` / `closeOnClickOverlay`、`duration`（loading 型默认 0 不自动关）、`wordBreak` 换行控制（normal / break-all / break-word，对齐 Vant，App 端 Vapor 5.31+ 生效）、`onOpened` / `onClose` 回调与 opened / close 事件；采用「全局函数 + 页面预置容器 + 全局单例桥」方案（uni-app x 无运行时动态挂载能力），API 手感对齐 Vant
 - **m-compact 紧凑布局**：包裹 m-button 使相邻项圆角衔接、相邻边框合并为 1px，支持变体混排；`block` 块级撑满（水平 `flex: 1` 等分 / 垂直满宽，子按钮无需逐个设置）、`direction` 水平 / 垂直排列；组内子项 `v-if` / `v-for` 动态增删时首、中、尾位置自动重排；0.5px 细边框（hairline）按钮的缩放层同步清理对应侧圆角与边框；基于 provide/inject + reactive 注册序实现位置感知（ucss 无 `:first-child` 结构选择器），无专属主题变量（圆角 / 边框复用 `$m-button-*` 系列，详见 [Compact](/components/compact)）
+- **m-input 输入框**：六种类型（text / tel / digit / number / password / textarea）、`clearable` + `clear-trigger` 两时机（focus / always，对齐 Vant）、`maxlength`（-1 不限制）+ `show-word-limit` 字数统计、`border` / `inlaid`（清边框内边距嵌入单元格）、`disabled` / `readonly`（无原生 readonly 以 disabled 模拟）、`confirm-type`、textarea `auto-height`；`formatter` + `format-trigger`（onChange / onBlur）、`precision` 精度保留尾零、`min` / `max` 失焦数字收敛、`show-eye` 明文切换（对齐 Sard）；prepend / append 插槽、`v-model` 统一 string 与 input / change（失焦快照比对，模拟 Vant 语义）/ focus / blur / clear 事件、expose `focus()` / `blur()` 方法；provide/inject 注入 m-compact 上下文，可与 m-button 混排（详见 [Input](/components/input)）
 
 ## [0.1.0] - 2026-10-27
 

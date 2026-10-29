@@ -113,7 +113,8 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					text: '数据展示',
 					items: [
 						{ text: 'Badge 徽标', link: '/components/badge' },
-						{ text: 'Cell 单元格', link: '/components/cell' }
+						{ text: 'Cell 单元格', link: '/components/cell' },
+						{ text: 'Input 输入框', link: '/components/input' }
 					]
 				}
 			]

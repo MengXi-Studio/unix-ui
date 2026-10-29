@@ -141,6 +141,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '单元格',
 				enName: 'Cell',
 				desc: '列表单项展示，支持标题、值、描述、左侧图标、四向箭头、必填星号、圆角卡片分组与组内末线自动隐藏。'
+			},
+			{
+				name: 'input',
+				zhName: '输入框',
+				enName: 'Input',
+				desc: '文本输入框，支持六种类型、清除图标、明文切换、格式化与数字精度收敛、字数统计、多行自适应、前后插槽与紧凑布局联动。'
 			}
 		]
 	}

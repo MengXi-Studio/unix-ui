@@ -203,7 +203,7 @@ $m-calendar-month-mark-color: rgba(242, 243, 245, 0.8) !default;
 $m-calendar-month-mark-font-size: 160px !default;
 $m-calendar-day-height: 64px !default;              /* 与 calendar.uts 常量 CALENDAR_DEFAULT_DAY_HEIGHT 同步（滚动驱动副标题的月高估算） */
 $m-calendar-day-font-size: 16px !default;
-$m-calendar-day-margin-bottom: 4px !default;        /* 与 calendar.uts 常量 CALENDAR_DAY_MARGIN_BOTTOM 同步（月高估算） */
+$m-calendar-day-margin-bottom: 0px !default;         /* Vant 行距即行高无额外间距；与 calendar.uts 常量 CALENDAR_DAY_MARGIN_BOTTOM 同步（月高估算） */
 $m-calendar-day-disabled-color: $m-text-color-fourth !default;
 $m-calendar-info-font-size: 10px !default;
 $m-calendar-info-color: $m-text-color-tertiary !default;

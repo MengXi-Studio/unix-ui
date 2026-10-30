@@ -14,10 +14,10 @@ This is a pure inline panel: the popup form is composed by [CalendarPopup](/en/c
 
 ### Basic {#demo-basic}
 
-Rendered inline (defaults to 6 months from today). Clicking a day triggers `select`; with `show-confirm` (default `true`) a confirm button is rendered at the bottom, and clicking it triggers `confirm`.
+Rendered inline (defaults to 6 months from today), pick-and-done: clicking a day triggers `select` and syncs `v-model:value` (no confirm button by default, matching the pure-panel semantics; with `show-confirm` enabled a confirm button is rendered at the bottom, and when disabled `confirm` fires automatically once the selection is complete — the popup form enables it by default via m-calendar-popup).
 
 ```vue
-<m-calendar @select="onSelect" @confirm="onConfirm" />
+<m-calendar v-model:value="selected" @select="onSelect" />
 ```
 
 ### Multiple and over-range {#demo-multiple}
@@ -37,7 +37,7 @@ Set `type` to `multiple` to toggle selection (canceling fires `unselect` before 
 
 ### Range selection {#demo-range}
 
-Set `type` to `range` and pick a start day then an end day; `allow-same-day` allows the same day as both ends; with `show-confirm` set to `false`, `confirm` fires automatically once the range is complete.
+Set `type` to `range` and pick a start day then an end day; `allow-same-day` allows the same day as both ends; with `show-confirm` enabled the confirm button must be clicked to fire `confirm` (disabled by default, `confirm` fires automatically once the range is complete).
 
 ```vue
 <m-calendar
@@ -78,6 +78,8 @@ By default the panel grows with its content (6 months from today). Pass a length
 
 With a fixed height the subtitle follows scrolling in real time and switches to the month in the viewport (aligned with Vant); when the panel grows with content (page scrolling) the subtitle stays on the initial focus month.
 
+Note: in uvue an outer `:style` binding is not forwarded to the component root (Vant is a standard Vue component and accepts outer height limits directly); use the `height` prop or `custom-style` instead.
+
 ```vue
 <m-calendar height="400px" />
 ```
@@ -112,7 +114,7 @@ const dayFormatter = (day: CalendarDayItem): CalendarDayItem => {
 
 ### Slots {#demo-slots}
 
-Supports `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` plus confirm text and nav icon slots; `text` is a scoped slot where `day` is the cell data. The in-month title row is rendered by default (aligned with Vant, alongside the subtitle); pass the `month-title` slot to customize it.
+Supports `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` plus confirm text and nav icon slots; `text` is a scoped slot where `day` is the cell data. The in-month title row is rendered by default (aligned with Vant: the first month omits it since the subtitle already shows the month, the rest render it); pass the `month-title` slot to customize it.
 
 ```vue
 <m-calendar :show-mark="false" :max-date="maxDate">
@@ -158,7 +160,8 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 | show-mark | Whether to show the month watermark | boolean | `true` |
 | show-title | Whether to show the title | boolean | `true` |
 | show-subtitle | Whether to show the subtitle | boolean | `true` |
-| show-confirm | Whether to show the confirm button (auto-confirm when complete if `false`) | boolean | `true` |
+| show-confirm | Whether to show the confirm button (auto-confirm when complete if `false`) | boolean | `false` |
+| value | Selected value (`v-model:value`; single is `Date\|null`, range / multiple is `Date[]`; takes precedence over `default-date` as the initial value) | Date \| Date[] \| null | - |
 | confirm-text | Confirm button text | string | `确认` |
 | confirm-disabled-text | Confirm button text in disabled state (range incomplete) | string | `确认` |
 | readonly | Read-only mode (ignores day clicks) | boolean | `false` |
@@ -202,7 +205,7 @@ Call via a template ref (uvue components use `$callMethod`).
 | --- | --- |
 | title | Regular title |
 | subtitle | Subtitle / nav row current month title (in none mode the subtitle follows inner scrolling and switches to the viewport month) |
-| month-title | In-month title row (rendered by default, pass the slot to customize; scoped: `month` the first day of the month as Date, `text` the title text) |
+| month-title | In-month title row (rendered by default, first month omits it since the subtitle shows the month; pass the slot to customize; scoped: `month` the first day of the month as Date, `text` the title text) |
 | text | Day text (scoped: `day`) |
 | top-info | Day top info (scoped: `day`) |
 | bottom-info | Day bottom info (scoped: `day`) |
@@ -235,7 +238,7 @@ Calendar styles can be customized with the following SCSS variables (define them
 | $m-calendar-month-mark-font-size | Month watermark font size | 160px |
 | $m-calendar-day-height | Day cell height | 64px |
 | $m-calendar-day-font-size | Day cell font size | 16px |
-| $m-calendar-day-margin-bottom | Day cell vertical gap | 4px |
+| $m-calendar-day-margin-bottom | Day cell vertical gap | 0px |
 | $m-calendar-day-disabled-color | Disabled day text color | #c8c9cc |
 | $m-calendar-info-font-size | Day top/bottom info font size | 10px |
 | $m-calendar-info-color | Day top/bottom info color | #969799 |
@@ -258,5 +261,5 @@ See [Theming](/en/guide/theming) for the full variable list and override instruc
 - Date props only accept `Date` instances: `min-date` / `max-date` / `default-date` must be constructed numerically (`new Date(2026, 9, 29)`, months 0-based); Vant's string dates are not supported
 - `formatter` only supports synchronous functions (UTS has no promise-based formatter)
 - `min-date` / `max-date` default to "today ~ today + 6 months" (same as Vant)
-- Weekday headers and month titles are built-in Chinese (`2026年10月` format) with no locale mechanism; the in-month title row is rendered by default (aligned with Vant, alongside the subtitle) and can be customized via the `month-title` slot, weekdays have no slot yet
+- Weekday headers and month titles are built-in Chinese (`2026年10月` format) with no locale mechanism; the in-month title row is rendered by default and the first month omits it since the subtitle already shows the month (aligned with Vant), customizable via the `month-title` slot, weekdays have no slot yet
 - With gradient or non-`#hex` `color` values, the selected block follows the gradient while the range bar falls back to the default theme color (derived alpha only supports `#hex`)

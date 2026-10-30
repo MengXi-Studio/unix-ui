@@ -337,3 +337,8 @@
 ### 57. 本库 m-icon 无 arrow-right 图标：右箭头用 arrow（Vant 同款命名）
 - 现象：`[m-icon] 无效的图标名：arrow-right` 运行时警告，图标不渲染；icons.uts 类型与 codepoints 只有 `arrow`（朝右）、`arrow-left` / `arrow-up` / `arrow-down`
 - 规约：**用 m-icon 前先查 icons.uts 的类型清单**，右向箭头一律 `arrow`；console_messages 返回 tab 全程累积日志，破缓存刷新后仍见旧 warn 时用「dev server 模块内容（curl）+ 运行时 DOM 图标 codepoint」双重证据判定是否历史残留
+
+### 58. uvue Web 端外部 :style 绑定不透传到组件根节点：限高/限位一律走显式 prop 或 custom-style
+- 现象：演示页 `<m-calendar :style="{ height: '500px' }" />` 后组件根节点 getAttribute('style') 为 null、按内容自然生长（2738px），根 overflow:hidden 裁剪出「限高但不滚动」的假象；Vant（标准 Vue 组件）同写法直接落 DOM 可行，造成对齐错觉
+- 对照证据：组件 height prop（panelStyle → panel 根 inline height）同场景 rootStyle "height: 500px"、body flex:1 受限、scrollHeight > clientHeight 可滚动——组件内部滚动链（flex:1 + scroll-view content 层 overflow hidden auto）本身正常
+- 规约：**uvue 组件的尺寸/定位干预不要依赖外部 :style 透传**（框架行为不保证落 DOM），用组件显式 API（height prop / custom-style prop）；文档对 Vant 用户需显式标注此差异

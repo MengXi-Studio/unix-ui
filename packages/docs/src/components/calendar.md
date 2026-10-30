@@ -14,10 +14,10 @@ demo: pages-sub/calendar/calendar
 
 ### 基础用法 {#demo-basic}
 
-直接平铺展示（默认今天起 6 个月），点击日期即触发 `select`；`show-confirm` 为 `true` 时底部渲染确认按钮，点击后触发 `confirm`。
+直接平铺展示（默认今天起 6 个月），选择即所得：点击日期即触发 `select` 并同步 `v-model:value`（默认不渲染确认按钮，对齐纯面板语义；`show-confirm` 开启后底部渲染确认按钮、关闭时选满自动触发 `confirm`——弹层场景由 m-calendar-popup 默认开启）。
 
 ```vue
-<m-calendar @select="onSelect" @confirm="onConfirm" />
+<m-calendar v-model:value="selected" @select="onSelect" />
 ```
 
 ### 多选与超限 {#demo-multiple}
@@ -37,7 +37,7 @@ demo: pages-sub/calendar/calendar
 
 ### 范围选择 {#demo-range}
 
-`type` 设为 `range` 后先点起点再点终点；`allow-same-day` 允许起止同日；`show-confirm` 设为 `false` 时选满即自动触发 `confirm`。
+`type` 设为 `range` 后先点起点再点终点；`allow-same-day` 允许起止同日；`show-confirm` 开启时选满后需点击确认按钮触发 `confirm`（默认关闭，选满即自动触发）。
 
 ```vue
 <m-calendar
@@ -78,6 +78,8 @@ demo: pages-sub/calendar/calendar
 
 固定高度产生内部滚动后，顶部副标题随滚动实时切换为视口所在月份（对齐 Vant）；面板由内容撑开（页面滚动）时副标题保持初始聚焦月。
 
+注意：uvue 下外部 `:style` 绑定不会透传到组件根节点（Vant 为标准 Vue 组件可直接外部限高），限高请使用 `height` prop 或 `custom-style`。
+
 ```vue
 <m-calendar height="400px" />
 ```
@@ -112,7 +114,7 @@ const dayFormatter = (day: CalendarDayItem): CalendarDayItem => {
 
 ### 插槽 {#demo-slots}
 
-支持 `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` 及确认按钮文字、导航图标等插槽；`text` 为作用域插槽，`day` 为该格数据。月块内标题默认内置渲染（对齐 Vant，与副标题并存），传入 `month-title` 插槽可自定义。
+支持 `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` 及确认按钮文字、导航图标等插槽；`text` 为作用域插槽，`day` 为该格数据。月块内标题默认内置渲染（对齐 Vant：首月由副标题承担当月标题故不显示，其余月显示），传入 `month-title` 插槽可自定义。
 
 ```vue
 <m-calendar :show-mark="false" :max-date="maxDate">
@@ -158,7 +160,8 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 | show-mark | 是否显示月份背景水印 | boolean | `true` |
 | show-title | 是否显示标题 | boolean | `true` |
 | show-subtitle | 是否显示副标题 | boolean | `true` |
-| show-confirm | 是否显示确认按钮（`false` 时选满自动确认） | boolean | `true` |
+| show-confirm | 是否显示确认按钮（`false` 时选满自动确认） | boolean | `false` |
+| value | 选中值（`v-model:value`；single 为 `Date\|null`，range / multiple 为 `Date[]`；优先于 `default-date` 作初始值） | Date \| Date[] \| null | - |
 | confirm-text | 确认按钮文字 | string | `确认` |
 | confirm-disabled-text | 确认按钮禁用态文字（范围未选满时） | string | `确认` |
 | readonly | 只读模式（不响应日期点击） | boolean | `false` |
@@ -235,7 +238,7 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 | $m-calendar-month-mark-font-size | 月水印字号 | 160px |
 | $m-calendar-day-height | 日格高度 | 64px |
 | $m-calendar-day-font-size | 日格字号 | 16px |
-| $m-calendar-day-margin-bottom | 日格纵向间距 | 4px |
+| $m-calendar-day-margin-bottom | 日格纵向间距 | 0px |
 | $m-calendar-day-disabled-color | 禁用日文字色 | #c8c9cc |
 | $m-calendar-info-font-size | 日期上下信息字号 | 10px |
 | $m-calendar-info-color | 日期上下信息颜色 | #969799 |
@@ -251,6 +254,8 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 
 - 组件拆分：Vant 为单组件双形态（`poppable` 切换弹层 / 平铺），本项目拆为三个组件——`m-calendar` 纯面板、`m-calendar-popup` 弹出层、`m-calendar-input` 表单输入框，各司其职
 - `height` 为本项目扩展 prop：Vant 平铺面板由内容撑开，本项目可传 px 等长度值固定面板高度、内部滚动（弹层场景由 `m-calendar-popup` 的 `popup-height` 接管）
+- `show-confirm` 默认值与 Vant 不同：纯面板 `m-calendar` 默认 `false`（选择即所得，选满自动 `confirm`），弹层组合 `m-calendar-popup` 默认开启确认按钮；Vant props 默认 `true`
+- `value`（`v-model:value`）为本项目扩展：Vant 仅 `default-date` 进 + 事件出，本项目选中值可双向绑定（single 为 `Date|null`，range / multiple 为 `Date[]`，优先于 `default-date`）
 - `max-range` 扩展至 multiple 类型：Vant 中仅 range 生效，本项目 range 与 multiple 均适用；超限语义为「拒绝本次选择 + over-range 事件 +（可选）toast 提示」
 - `allow-same-day` 为扩展 prop：Vant range 不支持起止同日，本项目可配置开启，起止同日时两端各半连接 bar
 - multiple 取消选中为「unselect 后紧跟 select」的事件序列：`select` 在每次点击均派发（含取消选中后，Vant 同语义），`unselect` 为本项目扩展事件用于区分取消动作
@@ -258,5 +263,5 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 - 日期 prop 仅接受 `Date` 实例：`min-date` / `max-date` / `default-date` 等需用数值形式构造（`new Date(2026, 9, 29)`，月份 0 基），不支持 Vant 的字符串日期形态
 - `formatter` 仅支持同步函数（UTS 无 Promise 化 formatter），不支持返回 Promise 的异步形态
 - `min-date` / `max-date` 默认值收窄为「今天 ~ 今天 + 6 个月」（Vant 同为今天起 6 个月）
-- 星期表头与月标题文案内置中文（月标题「2026年10月」格式），无 Vant 的 locale 国际化机制；月块标题内置渲染（对齐 Vant，与副标题并存），可经 `month-title` 插槽自定义，星期表头暂无插槽
+- 星期表头与月标题文案内置中文（月标题「2026年10月」格式），无 Vant 的 locale 国际化机制；月块标题内置渲染且首月由副标题承担（对齐 Vant），可经 `month-title` 插槽自定义，星期表头暂无插槽
 - `color` 传渐变等非 `#hex` 值时选中方块跟随渐变、范围 bar 底色回退默认主题色（派生透明度仅支持 `#hex`）

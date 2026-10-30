@@ -69,7 +69,7 @@
 				:key="monthIndex"
 				class="m-calendar__month"
 			>
-				<view class="m-calendar__month-title">
+				<view v-if="month.showTitle" class="m-calendar__month-title">
 					<slot name="month-title" :month="month.date" :text="getMonthTitle(month.date)">
 						<text class="m-calendar__month-title-text">{{ getMonthTitle(month.date) }}</text>
 					</slot>

@@ -9,11 +9,11 @@
 
 			<text class="section" id="basic">基础面板</text>
 			<view class="card">
-				<m-calendar @select="onBasicSelect" @month-show="onBasicMonthShow" :style="{ height: '500px' }" />
+				<m-calendar v-model:value="basicValue" @select="onBasicSelect" @month-show="onBasicMonthShow" height="500px" />
 				<view class="event-log">
 					<text class="event-text">最近事件：{{ basicLog }}</text>
 				</view>
-				<text class="caption">纯面板形态（poppable 拆分至 m-calendar-popup）；single 默认选中今天；月块内标题与副标题并存（对齐 Vant），副标题随内部滚动切换为视口月份（需 height 限高产生内部滚动）；month-show 挂载时触发一次</text>
+				<text class="caption">纯面板形态（poppable 拆分至 m-calendar-popup）；single 默认选中今天；选择即所得（默认无确认按钮，show-confirm 可开启，show-confirm=false 时选满自动 confirm）；v-model:value 双向绑定选中值（优先于 default-date）；首月月内标题由副标题承担（对齐 Vant），后续月渲染月内标题；副标题随内部滚动切换为视口月份；month-show 挂载时触发一次</text>
 			</view>
 
 			<text class="section" id="multiple">多选与超限</text>
@@ -112,7 +112,7 @@
 						</view>
 					</template>
 				</m-calendar>
-				<text class="caption">title / subtitle / month-title / text / footer 插槽自定义；month-title 自定义月块内标题（默认内置渲染，与副标题并存）；max-date 收窄到本月内便于观察；day 为作用域插槽参数</text>
+				<text class="caption">title / subtitle / month-title / text / footer 插槽自定义；month-title 自定义月块内标题（默认内置渲染，首月由副标题承担故不显示）；max-date 收窄到本月内便于观察；day 为作用域插槽参数</text>
 			</view>
 
 			<text class="section" id="methods">面板高度与 Methods 实例方法</text>
@@ -157,10 +157,12 @@
 
 	// ========== 1 基础面板 ==========
 	const basicLog = ref<string>('（点击日期试试）')
+	/** v-model:value 双向绑定选中值（single 为 Date|null） */
+	const basicValue = ref<Date | null>(null)
 
 	/** 基础面板 select 记录 */
 	function onBasicSelect(value: Date | Date[]) {
-		basicLog.value = 'select → ' + fmtValue(value)
+		basicLog.value = 'select → ' + fmtValue(value) + '；v-model → ' + fmtValue(basicValue.value as Date | Date[])
 	}
 
 	/** 基础面板 month-show 记录（挂载一次） */

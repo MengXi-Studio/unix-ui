@@ -103,6 +103,8 @@
 		maxDate?: Date | null
 		/** 默认选中日期（单值或数组，随 type 语义消费） */
 		defaultDate?: Date | Date[] | null
+		/** 选中值（v-model:value；类型随 type：single 为 Date|null，range/multiple 为 Date[]；优先于 defaultDate 作初始值） */
+		value?: Date | Date[] | null
 		/** 日格行高 px（0 用默认变量值） */
 		rowHeight?: number
 		/** 日期格格式化函数（最后统一应用，可覆盖内置标记与文案） */
@@ -148,12 +150,13 @@
 		minDate: null,
 		maxDate: null,
 		defaultDate: null,
+		value: null,
 		rowHeight: 0,
 		formatter: null,
 		showMark: true,
 		showTitle: true,
 		showSubtitle: true,
-		showConfirm: true,
+		showConfirm: false,
 		confirmText: '确认',
 		confirmDisabledText: '确认',
 		readonly: false,
@@ -175,6 +178,8 @@
 		confirm: [value: Date | Date[]]
 		/** 多选取消选中某日 */
 		unselect: [date: Date]
+		/** 选中值变化（v-model:value；类型随 type，single 未选理论态为 null） */
+		'update:value': [value: Date | Date[] | null]
 		/** 选择超出 max-range 限制 */
 		'over-range': []
 		/** 聚焦月进入视口（挂载时触发一次；面板滚动不再驱动，对齐 Vant 平铺语义） */
@@ -307,10 +312,42 @@
 				days[i] = formatter(days[i])
 			}
 		}
-		return { date: monthStart, days: days } as CalendarMonth
+		return { date: monthStart, days: days, showTitle: true } as CalendarMonth
 	}
 
-	/** 初始化选择：defaultDate（单值 / 数组，随 type 消费）→ single 无默认时取今天，range / multiple 无默认为空 */
+	/** v-model:value 优先于 defaultDate 的初始值来源 */
+	function currentInitDate(): Date | Date[] | null {
+		return props.value != null ? props.value : props.defaultDate
+	}
+
+	/** 选择快照等值判断（v-model 回环抑制：外部值与内部选择语义相同时不重置） */
+	function isSameSelection(a: Date | Date[] | null, b: Date | Date[] | null): boolean {
+		if (a == null && b == null) {
+			return true
+		}
+		if (a instanceof Date && b instanceof Date) {
+			return getDayStart(a).getTime() == getDayStart(b).getTime()
+		}
+		if (a instanceof Date || b instanceof Date) {
+			return false
+		}
+		const arrA = a as Date[] | null
+		const arrB = b as Date[] | null
+		if (arrA == null || arrB == null) {
+			return false
+		}
+		if (arrA.length != arrB.length) {
+			return false
+		}
+		for (let i = 0; i < arrA.length; i++) {
+			if (getDayStart(arrA[i]).getTime() != getDayStart(arrB[i]).getTime()) {
+				return false
+			}
+		}
+		return true
+	}
+
+	/** 初始化选择：入参（单值 / 数组，随 type 消费）→ single 无默认时取今天，range / multiple 无默认为空 */
 	function initSelection(defaultDate: Date | Date[] | null) {
 		if (defaultDate instanceof Date) {
 			const d = getDayStart(defaultDate)
@@ -357,14 +394,22 @@
 		}
 	}
 
-	/** 清空全部选择状态后按 defaultDate 重建（type 变更 / reset 时用，防跨类型残留） */
+	/** 清空全部选择状态后按初始值来源重建（type 变更 / reset / v-model 外部变更时用，防跨类型残留） */
 	function resetSelection() {
 		singleTs.value = null
 		multipleTs.value = []
 		rangeStart.value = null
 		rangeEnd.value = null
-		initSelection(props.defaultDate)
+		initSelection(currentInitDate())
 	}
+
+	// v-model:value 外部变更：与内部选择语义相同则忽略（内部回写防回环），不同则重置
+	watch(() => props.value, (nv) => {
+		if (isSameSelection(getSelectedDate(), nv)) {
+			return
+		}
+		resetSelection()
+	})
 
 	/** 初始聚焦月：首个选中月 → 范围内的今天 → min 月（返回当月 1 号，clamp 到可选范围） */
 	function focusMonth(): Date {
@@ -432,20 +477,24 @@
 		const max = currentMaxDate()
 		let cursor = new Date(min.getFullYear(), min.getMonth(), 1)
 		while (cursor.getTime() <= max.getTime()) {
-			list.push(buildMonth(cursor, min, max))
+			const m = buildMonth(cursor, min, max)
+			// Vant 同款规则：首月月内标题由副标题承担（index !== 0 || !showSubtitle）
+			m.showTitle = list.length > 0 || !props.showSubtitle
+			list.push(m)
 			cursor = addMonths(cursor, 1)
 		}
 		return list
 	})
 
-	/** 月高度表（滚动驱动副标题的视口月估算用）：标题行 + 行数 ×（日格高 + 底距）；用户覆盖行高变量时存在月粒度偏差 */
+	/** 月高度表（滚动驱动副标题的视口月估算用）：标题行（首月隐藏时不计）+ 行数 ×（日格高 + 底距）；用户覆盖行高变量时存在月粒度偏差 */
 	const monthHeights = computed<number[]>(() => {
 		const rowHeight = props.rowHeight > 0 ? props.rowHeight : CALENDAR_DEFAULT_DAY_HEIGHT
 		const rowTotal = rowHeight + CALENDAR_DAY_MARGIN_BOTTOM
 		const list: number[] = []
 		const ms = months.value
 		for (let i = 0; i < ms.length; i++) {
-			list.push(CALENDAR_MONTH_TITLE_HEIGHT + Math.ceil(ms[i].days.length / 7) * rowTotal)
+			const titleTotal = ms[i].showTitle ? CALENDAR_MONTH_TITLE_HEIGHT : 0
+			list.push(titleTotal + Math.ceil(ms[i].days.length / 7) * rowTotal)
 		}
 		return list
 	})
@@ -543,6 +592,7 @@
 	/** 清空选择并回到初始聚焦月 */
 	function reset() {
 		resetSelection()
+		emit('update:value', getSelectedDate())
 		scrollToDate(focusMonth())
 	}
 
@@ -590,10 +640,12 @@
 
 	// ========== 交互处理（依赖上方 computed） ==========
 
-	/** 派发 select（点击后必有值，null 仅 single 未选的理论态） */
+	/** 派发 select 并同步 v-model:value（点击后必有值，null 仅 single 未选的理论态） */
 	function emitSelect() {
 		const value = getSelectedDate()
 		if (value != null) {
+			// 先同步 v-model:value 再派发 select：保证 @select 回调内读到的是最新绑定值
+			emit('update:value', value)
 			emit('select', value)
 		}
 	}
@@ -690,6 +742,8 @@
 			const idx = multipleTs.value.indexOf(ts)
 			if (idx != -1) {
 				multipleTs.value.splice(idx, 1)
+				// 先同步 v-model:value 再派发 unselect（与 select 同一语义：值先变、事件后通知）
+				emit('update:value', getSelectedDate())
 				emit('unselect', date)
 			} else {
 				if (props.maxRange > 0 && multipleTs.value.length + 1 > props.maxRange) {

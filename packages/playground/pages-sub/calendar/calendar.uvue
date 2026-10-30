@@ -69,11 +69,11 @@
 
 			<text class="section" id="switch-mode">年月切换导航</text>
 			<view class="card">
-				<m-calendar switch-mode="month" height="500px" @panel-change="onPanelChange1" @click-subtitle="onSubtitle1" />
+				<m-calendar switch-mode="month" @panel-change="onPanelChange1" @click-subtitle="onSubtitle1" />
 				<view class="event-log">
 					<text class="event-text">month 模式：{{ panelLog1 }}</text>
 				</view>
-				<m-calendar switch-mode="year-month" height="500px" custom-style="margin-top: 16px;" @panel-change="onPanelChange2" />
+				<m-calendar switch-mode="year-month" custom-style="margin-top: 16px;" @panel-change="onPanelChange2" />
 				<view class="event-log">
 					<text class="event-text">year-month 模式：{{ panelLog2 }}</text>
 				</view>
@@ -97,7 +97,7 @@
 
 			<text class="section" id="slots">插槽</text>
 			<view class="card">
-				<m-calendar :show-mark="false" :max-date="slotsMax" height="500px">
+				<m-calendar :show-mark="false" :max-date="slotsMax">
 					<template #title>
 						<text class="demo-slot-title">选择入住日期</text>
 					</template>
@@ -108,7 +108,7 @@
 						<text class="demo-slot-subtitle">{{ text }}</text>
 					</template>
 					<template #text="{ day }">
-						<text class="demo-slot-text">{{ day.text }}</text>
+						<text :class="day.type == 'disabled' ? 'demo-slot-text-disabled' : (day.type == 'selected' ? 'demo-slot-text-selected' : 'demo-slot-text')">{{ day.text }}</text>
 					</template>
 					<template #footer>
 						<view class="demo-slot-footer">
@@ -121,7 +121,7 @@
 
 			<text class="section" id="methods">面板高度与 Methods 实例方法</text>
 			<view class="card">
-				<m-calendar ref="methodCal" type="single" :max-date="slotsMax" height="500px" />
+				<m-calendar ref="methodCal" type="single" :max-date="methodMax" height="400px" />
 				<view class="demo-btn-row">
 					<m-button size="small" @click="callReset">reset</m-button>
 					<m-button size="small" custom-style="margin-left: 8px;" @click="callScroll">scrollToDate</m-button>
@@ -130,7 +130,7 @@
 				<view class="event-log">
 					<text class="event-text">最近调用：{{ methodLog }}</text>
 				</view>
-				<text class="caption">height=500px 限高内部滚动；reset 清空选择回到聚焦月；scrollToDate 定位 2026-11-15（超出 max-date 时 clamp 到范围末月）；getSelectedDate 读取当前选择</text>
+				<text class="caption">height=400px 限高内部滚动；reset 清空选择回到聚焦月；scrollToDate 定位 2026-11-15（视图跳至 11 月）；getSelectedDate 读取当前选择</text>
 			</view>
 
 		</view>
@@ -283,6 +283,7 @@
 	const slotsMax = new Date(2026, 9, 31)
 
 	// ========== 8 Methods 实例方法 ==========
+	const methodMax = new Date(2026, 11, 31)
 	const methodCal = ref<ComponentPublicInstance | null>(null)
 	const methodLog = ref<string>('（点击按钮调用实例方法）')
 
@@ -355,6 +356,15 @@
 	.demo-slot-text {
 		font-size: 15px;
 		color: #1989fa;
+	}
+	/* text 插槽自定义时需按 day.type 处理选中反白 / 禁用灰显（否则覆盖组件内置状态色） */
+	.demo-slot-text-selected {
+		font-size: 15px;
+		color: #ffffff;
+	}
+	.demo-slot-text-disabled {
+		font-size: 15px;
+		color: #c8c9cc;
 	}
 	.demo-slot-footer {
 		flex-direction: row;

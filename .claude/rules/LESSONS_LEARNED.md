@@ -342,3 +342,22 @@
 - 现象：演示页 `<m-calendar :style="{ height: '500px' }" />` 后组件根节点 getAttribute('style') 为 null、按内容自然生长（2738px），根 overflow:hidden 裁剪出「限高但不滚动」的假象；Vant（标准 Vue 组件）同写法直接落 DOM 可行，造成对齐错觉
 - 对照证据：组件 height prop（panelStyle → panel 根 inline height）同场景 rootStyle "height: 500px"、body flex:1 受限、scrollHeight > clientHeight 可滚动——组件内部滚动链（flex:1 + scroll-view content 层 overflow hidden auto）本身正常
 - 规约：**uvue 组件的尺寸/定位干预不要依赖外部 :style 透传**（框架行为不保证落 DOM），用组件显式 API（height prop / custom-style prop）；文档对 Vant 用户需显式标注此差异
+
+## 2026-10-30 m-calendar-popup 补齐 v-model:value 透传（受控链路实测 + 测试假象四连）
+
+### 59. Playwright CDP 点击自动居中被点元素：scrollTop「跳变」是工具行为不是组件 bug
+- 现象：m-calendar 点击日格后内层 scroll-view scrollTop 恒定落到某值（如 208 = 目标格在 505px 视口内的正中心），疑似「选中后滚动跳回首月」bug；五组实验（节点身份探针 / overflow-anchor:none / scrollTop setter 劫持（uni 实例属性不可重定义，`Cannot redefine property`）/ 逐帧采样）证明是 CDP scrollIntoViewIfNeeded 的点击前自动居中
+- 规约：**滚动容器内点击后断言滚动位置时，坐标基准要算「目标格居中」的期望值**；验证滚动逻辑本身用 mouse.wheel 真实滚动 + 逐帧采样，不要用 click 后的 scrollTop 反推组件滚动行为
+
+### 60. 日历月块水印文本即月份数字：getByText(月日) 会先命中水印被日格拦截
+- 现象：点 11 月 11 日，`getByText('11', exact).first()` 命中 DOM 序靠前的月块水印「11」，点击其中心被上层日格（如 18）拦截，日格「互相遮挡」假象；真实用户点击不受影响
+- 规约：**日历类组件的日格点击定位必须在月块作用域内匹配 `.m-calendar__day` 格子容器**（`month.filter({ hasText: 月标题 }).locator('.m-calendar__day').filter({ has: getByText(日) })`），不能裸 getByText 数字——水印、序号、其他月份同数字都会抢匹配
+
+### 61. 多弹层 DOM 并存时 isVisible 只查首个匹配 + translateY 关闭态 isVisible 仍 true：可见性断言须逐个 bbox 视口判定
+- 现象一：验证受控选中态，`locator.filter().isVisible()` 恒 false——演示页 7 个弹层 DOM 常驻（v-show），DOM 序靠前的关闭态弹层的同名选中格抢了「首个匹配」；现象二：改逐个 isVisible 后仍误报——m-popup 关闭态面板是 `translateY(100%)` 移出视口而非 display:none，isVisible 仍 true（box 在视口外 y≈844+）
+- 修复：`anyVisibleSelected` 逐个 isVisible + boundingBox 视口内（0 ≤ y ≤ 844）双重判定
+- 规约：**演示页多实例并存是本库既定形态，弹层内元素的可见性断言一律「逐个 isVisible + bbox 视口内」**，禁止单 locator.isVisible 一票定夺；m-popup 系组件的关闭态判定看类名（--bottom-out / --bottom-in）比看 isVisible 更可靠
+
+### 62. min-date 默认今天：点击「今天之前」日格无 select 是组件正确行为，测试选日必须避开禁用格
+- 现象：受控弹层点击 10-29 无回写（受控值不变），误判 v-model:value 断链；实际组件未设 min-date 默认今天（对齐 Vant），10-29 是禁用格，点击只派发 click-disabled-date 不选择。同族语义：value/default-date 均未设时 single 默认选中今天（数据层 value 仍 null 不回写，confirm 值经 confirm 参数给出）
+- 规约：**日历弹层测试的「再点一格验证回写」必须选 min/max 区间内的可选日**（今天之后）；「未选状态」断言区分数据层（绑定值为 null）与 UI 层（single 默认选中今天），两者并存是既定设计不是 bug

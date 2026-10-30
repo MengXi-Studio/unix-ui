@@ -21,6 +21,15 @@ Toggle with `v-model:show`; after confirm, the `confirm` event fires and the pop
 <m-calendar-popup v-model:show="show" @confirm="onConfirm" @closed="onClosed" />
 ```
 
+### Controlled value {#demo-controlled}
+
+Control the selected value via `v-model:value` (Date for single, Date[] for multiple / range): in-calendar select writes back in real time (with no preset value, single defaults to selecting today, matching the calendar panel semantics); after assigning from outside, the popup selection follows the controlled value when opened.
+
+```vue
+<m-button block @click="show = true">Open calendar</m-button>
+<m-calendar-popup v-model:show="show" v-model:value="value" />
+```
+
 ### Multiple selection {#demo-multiple}
 
 Set `type` to `multiple` to toggle selection (canceling fires `unselect`); with `max-range=3`, picks beyond the limit are rejected with a toast (`over-range`).
@@ -103,6 +112,7 @@ All calendar panel slots are supported (title / subtitle / footer / nav icons), 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
 | v-model:show | Whether to show the popup | boolean | `false` |
+| v-model:value | Selected value, Date for single, Date[] for multiple / range, `null` for none | Date \| Date[] \| null | `null` |
 | popup-height | Popup panel height (px passes through; `%` converts against the window height) | string | `80%` |
 | position | Popup position, one of `center` `top` `bottom` `left` `right` | CalendarPosition | `bottom` |
 | round | Whether to show rounded corners | boolean | `true` |
@@ -112,13 +122,14 @@ All calendar panel slots are supported (title / subtitle / footer / nav icons), 
 | z-index | Popup z-index | number | `1` |
 | duration | Popup animation duration in seconds (`0` disables animation) | number | `0.3` |
 
-**Calendar props** (forwarded to [m-calendar](/en/components/calendar), all identical except `height` — the panel height is taken over by `popup-height`): `type` / `title` / `color` / `min-date` / `max-date` / `default-date` / `row-height` / `formatter` / `show-mark` / `show-title` / `show-subtitle` / `show-confirm` / `confirm-text` / `confirm-disabled-text` / `readonly` / `first-day-of-week` / `switch-mode` / `max-range` / `range-prompt` / `show-range-prompt` / `allow-same-day` / `custom-class` / `custom-style`. See [Calendar Props](/en/components/calendar#props) for types and defaults.
+**Calendar props** (forwarded to [m-calendar](/en/components/calendar), all identical except `height` — the panel height is taken over by `popup-height`): `type` / `title` / `color` / `min-date` / `max-date` / `default-date` / `value` (v-model:value) / `row-height` / `formatter` / `show-mark` / `show-title` / `show-subtitle` / `show-confirm` / `confirm-text` / `confirm-disabled-text` / `readonly` / `first-day-of-week` / `switch-mode` / `max-range` / `range-prompt` / `show-range-prompt` / `allow-same-day` / `custom-class` / `custom-style`. See [Calendar Props](/en/components/calendar#props) for types and defaults.
 
 ### Events
 
 | Event | Description | Arguments |
 | --- | --- | --- |
 | update:show | Fires on popup visibility change (v-model binding; set to `false` internally after confirm) | value: boolean |
+| update:value | Fires on selected value change (v-model binding; written back on select; the confirmed value is given via the confirm argument) | value: Date \| Date[] \| null |
 | open | Fires when the popup opens | - |
 | opened | Fires when the opening animation ends | - |
 | close | Fires when the popup closes | - |

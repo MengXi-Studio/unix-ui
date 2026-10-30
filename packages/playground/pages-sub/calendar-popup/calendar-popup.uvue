@@ -26,6 +26,22 @@
 				<text class="caption">默认底部弹出 + 圆角 + 遮罩可关；点击确认后派发 confirm 并自动关闭；open / opened / close / closed / click-overlay 全生命周期事件</text>
 			</view>
 
+			<text class="section" id="controlled">受控选中值</text>
+			<view class="card">
+				<m-button block @click="openControlled">打开日历（受控回显）</m-button>
+				<view class="demo-btn-gap">
+					<m-button block @click="openControlledToday">外部设值为今天并打开</m-button>
+				</view>
+				<m-calendar-popup
+					v-model:show="controlledShow"
+					v-model:value="controlledValue"
+				/>
+				<view class="event-log">
+					<text class="event-text">受控值：{{ controlledText }}</text>
+				</view>
+				<text class="caption">v-model:value 受控：select 实时回写（未设值时 single 默认选中今天）；外部赋值后打开弹层选中态跟随</text>
+			</view>
+
 			<text class="section" id="multiple">多选弹层</text>
 			<view class="card">
 				<m-button block @click="openMulti">打开日历（multiple 多选）</m-button>
@@ -178,7 +194,30 @@
 		basicLog.value = 'click-overlay（遮罩已关闭）'
 	}
 
-	// ========== 2 多选弹层 ==========
+	// ========== 2 受控选中值 ==========
+	const controlledShow = ref<boolean>(false)
+	const controlledValue = ref<Date | Date[] | null>(null)
+	const controlledText = computed<string>(() => {
+		const v = controlledValue.value
+		if (v == null) {
+			return 'null（未选）'
+		}
+		return fmtValue(v as Date | Date[])
+	})
+
+	/** 打开受控弹层 */
+	function openControlled() {
+		controlledShow.value = true
+	}
+
+	/** 外部设值为今天并打开：验证 value → 弹层选中态受控同步 */
+	function openControlledToday() {
+		const now = new Date()
+		controlledValue.value = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+		controlledShow.value = true
+	}
+
+	// ========== 3 多选弹层 ==========
 	const multiShow = ref<boolean>(false)
 	const multiLog = ref<string>('（最多选 3 天）')
 	const multiEvents: string[] = []
@@ -308,6 +347,10 @@
 	/* formatter 周末底色（经 day.className 注入到日期格容器） */
 	.demo-weekend {
 		background-color: #f7f8fa;
+	}
+	/* 受控演示双按钮间距 */
+	.demo-btn-gap {
+		margin-top: 12px;
 	}
 	/* 插槽演示的自定义样式 */
 	.demo-slot-title {

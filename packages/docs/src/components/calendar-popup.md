@@ -21,6 +21,15 @@ demo: pages-sub/calendar-popup/calendar-popup
 <m-calendar-popup v-model:show="show" @confirm="onConfirm" @closed="onClosed" />
 ```
 
+### 受控选中值 {#demo-controlled}
+
+通过 `v-model:value` 受控选中值（single 为 Date，multiple / range 为 Date[]）：日历内 select 实时回写（single 未设值时默认选中今天，对齐日历面板语义）；外部赋值后打开弹层，选中态跟随受控值。
+
+```vue
+<m-button block @click="show = true">打开日历</m-button>
+<m-calendar-popup v-model:show="show" v-model:value="value" />
+```
+
 ### 多选弹层 {#demo-multiple}
 
 `type` 设为 `multiple` 点击切换选中 / 取消（取消触发 `unselect`）；`max-range=3` 超限拒绝选择并 toast（`over-range`）。
@@ -103,6 +112,7 @@ demo: pages-sub/calendar-popup/calendar-popup
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | v-model:show | 是否显示弹出层 | boolean | `false` |
+| v-model:value | 选中值，single 为 Date，multiple / range 为 Date[]，`null` 未选 | Date \| Date[] \| null | `null` |
 | popup-height | 弹层面板高度（px 原样；`%` 按窗口高换算为 px） | string | `80%` |
 | position | 弹出方位，可选值 `center` `top` `bottom` `left` `right` | CalendarPosition | `bottom` |
 | round | 是否显示圆角 | boolean | `true` |
@@ -112,13 +122,14 @@ demo: pages-sub/calendar-popup/calendar-popup
 | z-index | 弹层层级 | number | `1` |
 | duration | 弹层动画时长秒（`0` 禁用动画） | number | `0.3` |
 
-**日历 Props**（透传 [m-calendar](/components/calendar)，除 `height` 外全部一致——面板高度由 `popup-height` 接管）：`type` / `title` / `color` / `min-date` / `max-date` / `default-date` / `row-height` / `formatter` / `show-mark` / `show-title` / `show-subtitle` / `show-confirm` / `confirm-text` / `confirm-disabled-text` / `readonly` / `first-day-of-week` / `switch-mode` / `max-range` / `range-prompt` / `show-range-prompt` / `allow-same-day` / `custom-class` / `custom-style`，类型与默认值见 [Calendar Props](/components/calendar#props)。
+**日历 Props**（透传 [m-calendar](/components/calendar)，除 `height` 外全部一致——面板高度由 `popup-height` 接管）：`type` / `title` / `color` / `min-date` / `max-date` / `default-date` / `value`（v-model:value） / `row-height` / `formatter` / `show-mark` / `show-title` / `show-subtitle` / `show-confirm` / `confirm-text` / `confirm-disabled-text` / `readonly` / `first-day-of-week` / `switch-mode` / `max-range` / `range-prompt` / `show-range-prompt` / `allow-same-day` / `custom-class` / `custom-style`，类型与默认值见 [Calendar Props](/components/calendar#props)。
 
 ### Events
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
 | update:show | 弹层显隐变化时触发（v-model 绑定；确认后组件内部自动置 `false`） | value: boolean |
+| update:value | 选中值变化时触发（v-model 绑定；select 时回写，确认值以 confirm 参数为准） | value: Date \| Date[] \| null |
 | open | 打开弹层时触发 | - |
 | opened | 打开动画结束时触发 | - |
 | close | 关闭弹层时触发 | - |

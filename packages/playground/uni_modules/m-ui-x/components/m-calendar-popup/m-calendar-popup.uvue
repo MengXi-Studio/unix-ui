@@ -45,7 +45,9 @@
 			:allow-same-day="allowSameDay"
 			:custom-class="customClass"
 			:custom-style="customStyle"
+			:value="value"
 			@select="onCalSelect"
+			@update:value="onCalValueChange"
 			@confirm="onCalConfirm"
 			@unselect="onCalUnselect"
 			@over-range="onCalOverRange"
@@ -125,6 +127,8 @@
 		maxDate?: Date | null
 		/** 默认选中日期（单值或数组，随 type 语义消费） */
 		defaultDate?: Date | Date[] | null
+		/** 选中值（v-model:value）：single 为 Date，multiple / range 为 Date[]，null 未选 */
+		value?: Date | Date[] | null
 		/** 日格行高 px（0 用默认变量值） */
 		rowHeight?: number
 		/** 日期格格式化函数 */
@@ -185,6 +189,7 @@
 		minDate: null,
 		maxDate: null,
 		defaultDate: null,
+		value: null,
 		rowHeight: 0,
 		formatter: null,
 		showMark: true,
@@ -214,6 +219,8 @@
 
 	const emit = defineEmits<{
 		'update:show': [value: boolean]
+		/** 选中值变化（v-model:value；透传 m-calendar） */
+		'update:value': [value: Date | Date[] | null]
 		/** 点击日期格后触发（值形态随 type） */
 		select: [value: Date | Date[]]
 		/** 点击确认按钮 / 自动确认后触发（确认后弹层自动关闭） */
@@ -296,6 +303,11 @@
 
 	function onCalSelect(value: Date | Date[]) {
 		emit('select', value)
+	}
+
+	/** 选中值变化（v-model:value）透传 */
+	function onCalValueChange(value: Date | Date[] | null) {
+		emit('update:value', value)
 	}
 
 	/** 确认（按钮 / 自动确认）：派发 confirm 后关闭弹层 */

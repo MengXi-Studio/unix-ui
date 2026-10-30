@@ -112,7 +112,7 @@ const dayFormatter = (day: CalendarDayItem): CalendarDayItem => {
 
 ### Slots {#demo-slots}
 
-Supports `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` plus confirm text and nav icon slots; `text` is a scoped slot where `day` is the cell data. The in-month title row is not rendered by default (the subtitle follows scrolling instead); pass the `month-title` slot to restore it.
+Supports `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` plus confirm text and nav icon slots; `text` is a scoped slot where `day` is the cell data. The in-month title row is rendered by default (aligned with Vant, alongside the subtitle); pass the `month-title` slot to customize it.
 
 ```vue
 <m-calendar :show-mark="false" :max-date="maxDate">
@@ -202,7 +202,7 @@ Call via a template ref (uvue components use `$callMethod`).
 | --- | --- |
 | title | Regular title |
 | subtitle | Subtitle / nav row current month title (in none mode the subtitle follows inner scrolling and switches to the viewport month) |
-| month-title | In-month title row (not rendered by default, pass the slot to restore; scoped: `month` the first day of the month as Date, `text` the title text) |
+| month-title | In-month title row (rendered by default, pass the slot to customize; scoped: `month` the first day of the month as Date, `text` the title text) |
 | text | Day text (scoped: `day`) |
 | top-info | Day top info (scoped: `day`) |
 | bottom-info | Day bottom info (scoped: `day`) |
@@ -220,17 +220,18 @@ Calendar styles can be customized with the following SCSS variables (define them
 | $m-calendar-header-title-height | Title area height | 44px |
 | $m-calendar-header-title-font-size | Title font size | 16px |
 | $m-calendar-header-title-color | Title color | #323233 |
-| $m-calendar-header-subtitle-height | Subtitle area height | 32px |
+| $m-calendar-header-box-shadow | Header shadow (aligned with Vant) | 0 2px 10px rgba(125, 126, 128, 0.16) |
+| $m-calendar-header-subtitle-height | Subtitle area height | 44px |
 | $m-calendar-header-subtitle-font-size | Subtitle font size | 14px |
 | $m-calendar-header-subtitle-color | Subtitle color | #323233 |
 | $m-calendar-weekdays-height | Weekday header height | 30px |
 | $m-calendar-weekdays-font-size | Weekday header font size | 12px |
-| $m-calendar-weekdays-color | Weekday header color | #969799 |
+| $m-calendar-weekdays-color | Weekday header color | #323233 |
 | $m-calendar-nav-icon-size | Nav icon size | 20px |
 | $m-calendar-nav-icon-color | Nav icon color | #969799 |
-| $m-calendar-month-title-height | In-month title row height (not rendered by default, only with the month-title slot) | 24px |
+| $m-calendar-month-title-height | In-month title row height (synced with the CALENDAR_MONTH_TITLE_HEIGHT constant in calendar.uts for month-height estimation) | 44px |
 | $m-calendar-month-title-font-size | Month title font size | 14px |
-| $m-calendar-month-mark-color | Month watermark color | rgba(50, 50, 51, 0.06) |
+| $m-calendar-month-mark-color | Month watermark color | rgba(242, 243, 245, 0.8) |
 | $m-calendar-month-mark-font-size | Month watermark font size | 160px |
 | $m-calendar-day-height | Day cell height | 64px |
 | $m-calendar-day-font-size | Day cell font size | 16px |
@@ -238,7 +239,8 @@ Calendar styles can be customized with the following SCSS variables (define them
 | $m-calendar-day-disabled-color | Disabled day text color | #c8c9cc |
 | $m-calendar-info-font-size | Day top/bottom info font size | 10px |
 | $m-calendar-info-color | Day top/bottom info color | #969799 |
-| $m-calendar-day-radius | Selected block corner radius (range endpoints get a straight inner edge to join the bar) | 4px |
+| $m-calendar-day-radius | Selected block corner radius (fully rounded on endpoints, layered above the range bar) | 4px |
+| $m-calendar-selected-day-size | Selected block size | 54px |
 | $m-calendar-selected-day-color | Selected day text color | #ffffff |
 | $m-calendar-selected-day-background | Selected day background (primary) | #1989fa |
 | $m-calendar-range-middle-background | Range middle background | rgba(25, 137, 250, 0.1) |
@@ -256,5 +258,5 @@ See [Theming](/en/guide/theming) for the full variable list and override instruc
 - Date props only accept `Date` instances: `min-date` / `max-date` / `default-date` must be constructed numerically (`new Date(2026, 9, 29)`, months 0-based); Vant's string dates are not supported
 - `formatter` only supports synchronous functions (UTS has no promise-based formatter)
 - `min-date` / `max-date` default to "today ~ today + 6 months" (same as Vant)
-- Weekday headers and month titles are built-in Chinese (`2026年10月` format) with no locale mechanism; the in-month title row is not rendered by default (aligned with Vant) and can be restored via the `month-title` slot, weekdays have no slot yet
+- Weekday headers and month titles are built-in Chinese (`2026年10月` format) with no locale mechanism; the in-month title row is rendered by default (aligned with Vant, alongside the subtitle) and can be customized via the `month-title` slot, weekdays have no slot yet
 - With gradient or non-`#hex` `color` values, the selected block follows the gradient while the range bar falls back to the default theme color (derived alpha only supports `#hex`)

@@ -9,29 +9,25 @@
 			@nav="onPanelNav"
 			@body-scroll="onPanelBodyScroll"
 		>
-			<template #title>
-				<slot name="title"><text class="m-calendar__header-title-text">{{ title }}</text></slot>
+			<!-- 插槽条件转发：v-if="$slots.xxx != null" 保证未传入的插槽不覆盖 panel 的内置默认渲染
+			     （默认内容与样式同居 panel scope，宿主无条件转发 fallback 会因样式隔离不命中） -->
+			<template v-if="$slots.title != null" #title>
+				<slot name="title"></slot>
 			</template>
-			<template #subtitle>
-				<slot name="subtitle"><text class="m-calendar__header-subtitle-text">{{ subtitleText }}</text></slot>
+			<template v-if="$slots.subtitle != null" #subtitle>
+				<slot name="subtitle"></slot>
 			</template>
-			<template #month-title="{ month, text }">
+			<template v-if="$slots['month-title'] != null" #month-title="{ month, text }">
 				<slot name="month-title" :month="month" :text="text"></slot>
 			</template>
-			<template #top-info="{ day }">
-				<slot name="top-info" :day="day">
-					<text :class="dayInfoTextClass(day)">{{ day.topInfo }}</text>
-				</slot>
+			<template v-if="$slots['top-info'] != null" #top-info="{ day }">
+				<slot name="top-info" :day="day"></slot>
 			</template>
-			<template #bottom-info="{ day }">
-				<slot name="bottom-info" :day="day">
-					<text :class="dayInfoTextClass(day)">{{ day.bottomInfo }}</text>
-				</slot>
+			<template v-if="$slots['bottom-info'] != null" #bottom-info="{ day }">
+				<slot name="bottom-info" :day="day"></slot>
 			</template>
-			<template #text="{ day }">
-				<slot name="text" :day="day">
-					<text :class="dayTextClass(day)">{{ day.text }}</text>
-				</slot>
+			<template v-if="$slots.text != null" #text="{ day }">
+				<slot name="text" :day="day"></slot>
 			</template>
 			<template #footer>
 				<slot name="footer">
@@ -49,31 +45,17 @@
 					</view>
 				</slot>
 			</template>
-			<template #prev-year>
-				<slot name="prev-year">
-					<view class="m-calendar__nav-double">
-						<m-icon name="arrow-left" custom-class="m-calendar__nav-icon" />
-						<m-icon name="arrow-left" custom-class="m-calendar__nav-icon" />
-					</view>
-				</slot>
+			<template v-if="$slots['prev-year'] != null" #prev-year>
+				<slot name="prev-year"></slot>
 			</template>
-			<template #prev-month>
-				<slot name="prev-month">
-					<m-icon name="arrow-left" custom-class="m-calendar__nav-icon" />
-				</slot>
+			<template v-if="$slots['prev-month'] != null" #prev-month>
+				<slot name="prev-month"></slot>
 			</template>
-			<template #next-month>
-				<slot name="next-month">
-					<m-icon name="arrow-right" custom-class="m-calendar__nav-icon" />
-				</slot>
+			<template v-if="$slots['next-month'] != null" #next-month>
+				<slot name="next-month"></slot>
 			</template>
-			<template #next-year>
-				<slot name="next-year">
-					<view class="m-calendar__nav-double">
-						<m-icon name="arrow-right" custom-class="m-calendar__nav-icon" />
-						<m-icon name="arrow-right" custom-class="m-calendar__nav-icon" />
-					</view>
-				</slot>
+			<template v-if="$slots['next-year'] != null" #next-year>
+				<slot name="next-year"></slot>
 			</template>
 		</MCalendarPanel>
 	</view>
@@ -98,13 +80,12 @@
 		CALENDAR_WEEKDAYS,
 		CALENDAR_DEFAULT_DAY_HEIGHT,
 		CALENDAR_DAY_MARGIN_BOTTOM,
+		CALENDAR_MONTH_TITLE_HEIGHT,
 		getDayStart,
 		isSameMonth,
 		getMonthTitle,
 		addMonths,
-		getDayDiff,
-		dayTextClass,
-		dayInfoTextClass
+		getDayDiff
 	} from './calendar.uts'
 	import MCalendarPanel from './m-calendar-panel.uvue'
 	import { showToast } from '../m-toast/toast.uts'
@@ -220,7 +201,7 @@
 
 	/** switch-mode 当前面板所在月（导航 / scrollToDate 驱动；null 为挂载前瞬态） */
 	const currentPanelMonth = ref<Date | null>(null)
-	/** none 模式副标题（滚动驱动：视口所在月标题；无内部滚动时为初始聚焦月） */
+	/** none 模式副标题（滚动驱动：视口所在月标题；无内部滚动时为初始聚焦月；月块内标题与 Vant 一致并存） */
 	const subtitleScrolled = ref<string>('')
 	/** scroll-into-view 锚点（月 id：m-calendar-month-{index}） */
 	const scrollAnchor = ref<string>('')
@@ -457,14 +438,14 @@
 		return list
 	})
 
-	/** 月高度表（滚动驱动副标题的视口月估算用）：行数 ×（日格高 + 底距）；用户覆盖行高变量时存在月粒度偏差 */
+	/** 月高度表（滚动驱动副标题的视口月估算用）：标题行 + 行数 ×（日格高 + 底距）；用户覆盖行高变量时存在月粒度偏差 */
 	const monthHeights = computed<number[]>(() => {
 		const rowHeight = props.rowHeight > 0 ? props.rowHeight : CALENDAR_DEFAULT_DAY_HEIGHT
 		const rowTotal = rowHeight + CALENDAR_DAY_MARGIN_BOTTOM
 		const list: number[] = []
 		const ms = months.value
 		for (let i = 0; i < ms.length; i++) {
-			list.push(Math.ceil(ms[i].days.length / 7) * rowTotal)
+			list.push(CALENDAR_MONTH_TITLE_HEIGHT + Math.ceil(ms[i].days.length / 7) * rowTotal)
 		}
 		return list
 	})
@@ -521,8 +502,7 @@
 			switchMode: props.switchMode,
 			scrollAnchor: scrollAnchor.value,
 			hasTopInfoSlot: slots['top-info'] != null,
-			hasBottomInfoSlot: slots['bottom-info'] != null,
-			hasMonthTitleSlot: slots['month-title'] != null
+			hasBottomInfoSlot: slots['bottom-info'] != null
 		} as CalendarPanelConfig
 	})
 
@@ -802,3 +782,17 @@
 		refreshView
 	})
 </script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明：footer 容器节点渲染在宿主 scope，样式须同居于此
+	 * （panel scope 的同名定义无法命中转发内容，见组件注释）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 底部区（确认按钮容器，安全区由弹层 padding 承担） ========== */
+	.m-calendar__footer {
+		flex-direction: column;
+		padding: 8px 16px;
+	}
+</style>

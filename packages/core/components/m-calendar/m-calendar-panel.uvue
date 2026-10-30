@@ -6,28 +6,48 @@
 		<view class="m-calendar__header">
 			<template v-if="cfg.switchMode == 'none'">
 				<view v-if="cfg.showTitle" class="m-calendar__header-title">
-					<slot name="title"></slot>
+					<slot name="title">
+						<text class="m-calendar__header-title-text">{{ cfg.title }}</text>
+					</slot>
 				</view>
 				<view v-if="cfg.showSubtitle" class="m-calendar__header-subtitle" @click="onSubtitleClick">
-					<slot name="subtitle"></slot>
+					<slot name="subtitle">
+						<text class="m-calendar__header-subtitle-text">{{ cfg.subtitle }}</text>
+					</slot>
 				</view>
 			</template>
 			<template v-else>
 				<view class="m-calendar__nav">
 					<view v-if="cfg.switchMode == 'year-month'" class="m-calendar__nav-btn" @click="onNavClick('prev-year')">
-						<slot name="prev-year"></slot>
+						<slot name="prev-year">
+							<view class="m-calendar__nav-double">
+								<MIcon name="arrow-left" custom-class="m-calendar__nav-icon" />
+								<MIcon name="arrow-left" custom-class="m-calendar__nav-icon" />
+							</view>
+						</slot>
 					</view>
 					<view class="m-calendar__nav-btn" @click="onNavClick('prev-month')">
-						<slot name="prev-month"></slot>
+						<slot name="prev-month">
+							<MIcon name="arrow-left" custom-class="m-calendar__nav-icon" />
+						</slot>
 					</view>
 					<view class="m-calendar__nav-title" @click="onSubtitleClick">
-						<slot name="subtitle"></slot>
+						<slot name="subtitle">
+							<text class="m-calendar__header-subtitle-text">{{ cfg.subtitle }}</text>
+						</slot>
 					</view>
 					<view class="m-calendar__nav-btn" @click="onNavClick('next-month')">
-						<slot name="next-month"></slot>
+						<slot name="next-month">
+							<MIcon name="arrow" custom-class="m-calendar__nav-icon" />
+						</slot>
 					</view>
 					<view v-if="cfg.switchMode == 'year-month'" class="m-calendar__nav-btn" @click="onNavClick('next-year')">
-						<slot name="next-year"></slot>
+						<slot name="next-year">
+							<view class="m-calendar__nav-double">
+								<MIcon name="arrow" custom-class="m-calendar__nav-icon" />
+								<MIcon name="arrow" custom-class="m-calendar__nav-icon" />
+							</view>
+						</slot>
 					</view>
 				</view>
 			</template>
@@ -49,8 +69,10 @@
 				:key="monthIndex"
 				class="m-calendar__month"
 			>
-				<view v-if="cfg.hasMonthTitleSlot" class="m-calendar__month-title">
-					<slot name="month-title" :month="month.date" :text="getMonthTitle(month.date)"></slot>
+				<view class="m-calendar__month-title">
+					<slot name="month-title" :month="month.date" :text="getMonthTitle(month.date)">
+						<text class="m-calendar__month-title-text">{{ getMonthTitle(month.date) }}</text>
+					</slot>
 				</view>
 				<view class="m-calendar__days">
 					<text v-if="cfg.showMark" class="m-calendar__month-mark">{{ monthMarkText(month.date) }}</text>
@@ -66,16 +88,22 @@
 							v-if="isRealDay(day) && (day.topInfo != '' || cfg.hasTopInfoSlot)"
 							class="m-calendar__day-info m-calendar__day-info--top"
 						>
-							<slot name="top-info" :day="day"></slot>
+							<slot name="top-info" :day="day">
+								<text :class="dayInfoTextClass(day)">{{ day.topInfo }}</text>
+							</slot>
 						</view>
 						<view v-if="isRealDay(day)" :class="dayCenterClass(day)" :style="dayCenterStyle(day)">
-							<slot name="text" :day="day"></slot>
+							<slot name="text" :day="day">
+								<text :class="dayTextClass(day)">{{ day.text }}</text>
+							</slot>
 						</view>
 						<view
 							v-if="isRealDay(day) && (day.bottomInfo != '' || cfg.hasBottomInfoSlot)"
 							class="m-calendar__day-info m-calendar__day-info--bottom"
 						>
-							<slot name="bottom-info" :day="day"></slot>
+							<slot name="bottom-info" :day="day">
+								<text :class="dayInfoTextClass(day)">{{ day.bottomInfo }}</text>
+							</slot>
 						</view>
 					</view>
 				</view>
@@ -88,7 +116,8 @@
 </template>
 
 <script setup lang="uts">
-	import { CalendarPanelConfig, CalendarDayItem, CalendarDayType, CALENDAR_WEEKDAYS, getMonthTitle, hexToRgba, isCircularDayType } from './calendar.uts'
+	import { CalendarPanelConfig, CalendarDayItem, CalendarDayType, CALENDAR_WEEKDAYS, dayTextClass, dayInfoTextClass, getMonthTitle, hexToRgba, isCircularDayType } from './calendar.uts'
+	import MIcon from '../m-icon/m-icon.uvue'
 
 	type Props = {
 		/** 面板配置（宿主计算后整体下发；null 时按空配置渲染，避免首帧崩溃） */
@@ -132,8 +161,7 @@
 			switchMode: 'none',
 			scrollAnchor: '',
 			hasTopInfoSlot: false,
-			hasBottomInfoSlot: false,
-			hasMonthTitleSlot: false
+			hasBottomInfoSlot: false
 		}
 		return empty
 	})
@@ -218,17 +246,11 @@
 	}
 
 	/**
-	 * 中央容器类名：选中标记用满格圆角方块容器（端点单侧直角衔接 bar），常规用无背景容器
+	 * 中央容器类名：选中标记用 54px 圆角方块容器（端点全圆角，盖于范围 bar 之上），常规用无背景容器
 	 */
 	function dayCenterClass(day: CalendarDayItem): string {
 		if (isCircularDayType(day.type)) {
-			let cls = 'm-calendar__day-selected'
-			if (day.type == 'start') {
-				cls += ' m-calendar__day-selected--start'
-			} else if (day.type == 'end') {
-				cls += ' m-calendar__day-selected--end'
-			}
-			return cls
+			return 'm-calendar__day-selected'
 		}
 		return 'm-calendar__day-value'
 	}
@@ -304,6 +326,8 @@
 	/* ========== 头部（常规标题 + 副标题 / 导航行 + 星期表头） ========== */
 	.m-calendar__header {
 		flex-direction: column;
+		box-shadow: $m-calendar-header-box-shadow;
+		z-index: 1;
 	}
 	.m-calendar__header-title {
 		height: $m-calendar-header-title-height;
@@ -406,15 +430,17 @@
 		flex-wrap: wrap;
 	}
 
-	/* 月水印：超大字号低透明度数字，水平居中于月块顶部（文字压于日期格之下，对齐 Vant） */
+	/* 月水印：超大字号低透明度数字，水平垂直双居中于月块（文字压于日期格之下，对齐 Vant）
+	   垂直居中经 translateY 实现（text-align 承担水平居中，避免依赖双向 translate 的跨端差异） */
 	.m-calendar__month-mark {
 		position: absolute;
-		top: 2px;
+		top: 50%;
 		left: 0;
 		right: 0;
 		text-align: center;
 		font-size: $m-calendar-month-mark-font-size;
 		color: $m-calendar-month-mark-color;
+		transform: translateY(-50%);
 		z-index: 0;
 	}
 
@@ -470,7 +496,7 @@
 		color: $m-calendar-selected-day-color;
 	}
 
-	/* 中央容器：常规无背景 / 选中标记满格圆角方块（对齐 Vant，端点单侧直角衔接范围 bar） */
+	/* 中央容器：常规无背景 / 选中标记 54px 圆角方块（对齐 Vant，格宽 ≈54 的移动端下近满格，端点盖于范围 bar 之上） */
 	.m-calendar__day-value {
 		position: relative;
 		z-index: 1;
@@ -478,24 +504,14 @@
 		align-items: center;
 	}
 	.m-calendar__day-selected {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
+		position: relative;
+		z-index: 1;
+		width: $m-calendar-selected-day-size;
+		height: $m-calendar-selected-day-size;
 		border-radius: $m-calendar-day-radius;
 		background-color: $m-calendar-selected-day-background;
-		z-index: 0;
 		justify-content: center;
 		align-items: center;
-	}
-	.m-calendar__day-selected--start {
-		border-top-right-radius: 0;
-		border-bottom-right-radius: 0;
-	}
-	.m-calendar__day-selected--end {
-		border-top-left-radius: 0;
-		border-bottom-left-radius: 0;
 	}
 
 	/* 日期数字文本：常规 / 选中反白 / 禁用 */
@@ -510,9 +526,4 @@
 		color: $m-calendar-day-disabled-color;
 	}
 
-	/* ========== 底部区（确认按钮容器，安全区由弹层 padding 承担） ========== */
-	.m-calendar__footer {
-		flex-direction: column;
-		padding: 8px 16px;
-	}
 </style>

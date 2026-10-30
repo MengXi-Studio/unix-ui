@@ -112,7 +112,7 @@ const dayFormatter = (day: CalendarDayItem): CalendarDayItem => {
 
 ### 插槽 {#demo-slots}
 
-支持 `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` 及确认按钮文字、导航图标等插槽；`text` 为作用域插槽，`day` 为该格数据。月块内标题默认不渲染（副标题随滚动切换视口月），传入 `month-title` 插槽即恢复月块标题行。
+支持 `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` 及确认按钮文字、导航图标等插槽；`text` 为作用域插槽，`day` 为该格数据。月块内标题默认内置渲染（对齐 Vant，与副标题并存），传入 `month-title` 插槽可自定义。
 
 ```vue
 <m-calendar :show-mark="false" :max-date="maxDate">
@@ -202,7 +202,7 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 | --- | --- |
 | title | 常规标题 |
 | subtitle | 副标题 / 导航行当前月标题（none 模式副标题随内部滚动切换为视口月份） |
-| month-title | 月块内标题（默认不渲染，传入即恢复；作用域：`month` 该月首日 Date、`text` 标题文案） |
+| month-title | 月块内标题（默认内置渲染，传入可自定义；作用域：`month` 该月首日 Date、`text` 标题文案） |
 | text | 日期文字（作用域：`day` 该格数据） |
 | top-info | 日期顶部信息（作用域：`day`） |
 | bottom-info | 日期底部信息（作用域：`day`） |
@@ -220,17 +220,18 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 | $m-calendar-header-title-height | 标题区高度 | 44px |
 | $m-calendar-header-title-font-size | 标题字号 | 16px |
 | $m-calendar-header-title-color | 标题颜色 | #323233 |
-| $m-calendar-header-subtitle-height | 副标题区高度 | 32px |
+| $m-calendar-header-box-shadow | 头部投影（对齐 Vant） | 0 2px 10px rgba(125, 126, 128, 0.16) |
+| $m-calendar-header-subtitle-height | 副标题区高度 | 44px |
 | $m-calendar-header-subtitle-font-size | 副标题字号 | 14px |
 | $m-calendar-header-subtitle-color | 副标题颜色 | #323233 |
 | $m-calendar-weekdays-height | 星期表头高度 | 30px |
 | $m-calendar-weekdays-font-size | 星期表头字号 | 12px |
-| $m-calendar-weekdays-color | 星期表头颜色 | #969799 |
+| $m-calendar-weekdays-color | 星期表头颜色 | #323233 |
 | $m-calendar-nav-icon-size | 导航图标大小 | 20px |
 | $m-calendar-nav-icon-color | 导航图标颜色 | #969799 |
-| $m-calendar-month-title-height | 月块内标题高度（默认不渲染，仅 month-title 插槽生效） | 24px |
+| $m-calendar-month-title-height | 月块内标题高度（与 calendar.uts 常量 CALENDAR_MONTH_TITLE_HEIGHT 同步，月高估算用） | 44px |
 | $m-calendar-month-title-font-size | 月标题字号 | 14px |
-| $m-calendar-month-mark-color | 月水印颜色 | rgba(50, 50, 51, 0.06) |
+| $m-calendar-month-mark-color | 月水印颜色 | rgba(242, 243, 245, 0.8) |
 | $m-calendar-month-mark-font-size | 月水印字号 | 160px |
 | $m-calendar-day-height | 日格高度 | 64px |
 | $m-calendar-day-font-size | 日格字号 | 16px |
@@ -238,7 +239,8 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 | $m-calendar-day-disabled-color | 禁用日文字色 | #c8c9cc |
 | $m-calendar-info-font-size | 日期上下信息字号 | 10px |
 | $m-calendar-info-color | 日期上下信息颜色 | #969799 |
-| $m-calendar-day-radius | 选中方块圆角（范围端点单侧直角衔接 bar） | 4px |
+| $m-calendar-day-radius | 选中方块圆角（端点全圆角，盖于范围 bar 之上） | 4px |
+| $m-calendar-selected-day-size | 选中方块尺寸 | 54px |
 | $m-calendar-selected-day-color | 选中日文字色 | #ffffff |
 | $m-calendar-selected-day-background | 选中日背景色（主色） | #1989fa |
 | $m-calendar-range-middle-background | 范围中段底色 | rgba(25, 137, 250, 0.1) |
@@ -256,5 +258,5 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 - 日期 prop 仅接受 `Date` 实例：`min-date` / `max-date` / `default-date` 等需用数值形式构造（`new Date(2026, 9, 29)`，月份 0 基），不支持 Vant 的字符串日期形态
 - `formatter` 仅支持同步函数（UTS 无 Promise 化 formatter），不支持返回 Promise 的异步形态
 - `min-date` / `max-date` 默认值收窄为「今天 ~ 今天 + 6 个月」（Vant 同为今天起 6 个月）
-- 星期表头与月标题文案内置中文（月标题「2026年10月」格式），无 Vant 的 locale 国际化机制；月块标题默认不渲染（对齐 Vant），可经 `month-title` 插槽恢复，星期表头暂无插槽
+- 星期表头与月标题文案内置中文（月标题「2026年10月」格式），无 Vant 的 locale 国际化机制；月块标题内置渲染（对齐 Vant，与副标题并存），可经 `month-title` 插槽自定义，星期表头暂无插槽
 - `color` 传渐变等非 `#hex` 值时选中方块跟随渐变、范围 bar 底色回退默认主题色（派生透明度仅支持 `#hex`）

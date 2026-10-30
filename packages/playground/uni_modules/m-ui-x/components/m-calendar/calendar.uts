@@ -18,6 +18,9 @@ export const CALENDAR_DEFAULT_DAY_HEIGHT: number = 64
 /** 日格纵向间距 px（与 vars.scss $m-calendar-day-margin-bottom 同步，月高估算用） */
 export const CALENDAR_DAY_MARGIN_BOTTOM: number = 4
 
+/** 月块内标题行高 px（与 vars.scss $m-calendar-month-title-height 同步，月高估算用） */
+export const CALENDAR_MONTH_TITLE_HEIGHT: number = 44
+
 /** 选择类型：single 单选 / multiple 多选 / range 范围 */
 export type CalendarType = 'single' | 'multiple' | 'range'
 
@@ -88,8 +91,6 @@ export type CalendarPanelConfig = {
 	hasTopInfoSlot: boolean
 	/** 宿主是否传入 bottom-info 插槽 */
 	hasBottomInfoSlot: boolean
-	/** 宿主是否传入 month-title 插槽（默认月块内不渲染标题行，副标题随滚动切换为视口月份） */
-	hasMonthTitleSlot: boolean
 }
 
 /**

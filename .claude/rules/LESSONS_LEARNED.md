@@ -325,3 +325,15 @@
 ### 55. 跨样式/脚本的「同一数值」双源维护：SCSS 变量与 UTS 常量互指注释 + 运行时估算只做月粒度
 - 背景：滚动驱动副标题需要 UTS 侧知道日格行高（SCSS 变量运行时不可读），新增 CALENDAR_DEFAULT_DAY_HEIGHT / CALENDAR_DAY_MARGIN_BOTTOM 常量与 $m-calendar-day-height / $m-calendar-day-margin-bottom 双源同步；用户覆盖变量时估算漂移
 - 规约：**双源数值在两侧注释互指对方文件与常量名**；估算逻辑（视口月定位）只做到「月粒度」消费（定位所在月），不做像素级依赖，把漂移影响压到最小并写入文档差异节
+
+### 56. uni-app x 组件样式隔离下，slot 转发链的 fallback 内容渲染在定义它的组件 scope：跨组件转发默认内容必然样式不命中
+- 现象：m-calendar（宿主）把 title/subtitle/text 等十个 slot 无条件转发给 m-calendar-panel（表现层）且宿主模板写 fallback（如 `<slot name="text"><text class="m-calendar__day-text">…`），用户未传插槽时渲染宿主 fallback——编译产物 `.m-calendar__day-text[data-v-panel] { font-size: 16px; color: #323233 }` 规则正确，但 DOM 节点只有宿主 data-v 无 panel data-v，全部文字样式失效（16px/400/纯黑变默认）
+- 根因：uvue 编译样式带 `[data-v-xxx]` scope 属性选择器；slot 内容的 scope id 归属**定义它的模板**，转发节点不携带目标组件的 data-v。宿主 fallback 的类规则写在 panel 样式表 → 永不命中
+- 修复模式（与 m-calendar-popup 既有模式对齐）：**默认内容全部内置到渲染层组件自身**（panel 内每个 slot 写 fallback，与样式同 scope），宿主改条件转发 `<template v-if="$slots.xxx != null" #xxx><slot name="xxx"></slot></template>` 删除自身 fallback——用户未传时 panel 的 slot 为空走自身 fallback（命中），传了经条件链转发（用户内容自担样式）
+- 附带修正：footer wrapper 的 `.m-calendar__footer` 类同理随渲染节点迁回宿主 style 段（panel scope 的同名定义删除）；作用域插槽转发保留参数（`#month-title="{ month, text }"` → `<slot name="month-title" :month="month" :text="text">`）
+- 规约：**「宿主模板 + 子组件样式表」的类名组合天然 scope 错位**，写转发 slot 前先问「这个 fallback 的类规则在哪份样式表」；默认内容一律放样式所在组件，宿主只条件转发
+- 排查手法：编译产物 grep 类名规则看 data-v 归属 → DOM 对比节点的 data-v 属性 → 二者不一致即 scope 错位（勿先怀疑热更新）
+
+### 57. 本库 m-icon 无 arrow-right 图标：右箭头用 arrow（Vant 同款命名）
+- 现象：`[m-icon] 无效的图标名：arrow-right` 运行时警告，图标不渲染；icons.uts 类型与 codepoints 只有 `arrow`（朝右）、`arrow-left` / `arrow-up` / `arrow-down`
+- 规约：**用 m-icon 前先查 icons.uts 的类型清单**，右向箭头一律 `arrow`；console_messages 返回 tab 全程累积日志，破缓存刷新后仍见旧 warn 时用「dev server 模块内容（curl）+ 运行时 DOM 图标 codepoint」双重证据判定是否历史残留

@@ -9,11 +9,11 @@
 
 			<text class="section" id="basic">基础面板</text>
 			<view class="card">
-				<m-calendar @select="onBasicSelect" @month-show="onBasicMonthShow" />
+				<m-calendar @select="onBasicSelect" @month-show="onBasicMonthShow" :style="{ height: '500px' }" />
 				<view class="event-log">
 					<text class="event-text">最近事件：{{ basicLog }}</text>
 				</view>
-				<text class="caption">纯面板形态（poppable 拆分至 m-calendar-popup）；single 默认选中今天；月块内默认无标题（对齐 Vant），副标题随内部滚动切换为视口月份（需 height 限高产生内部滚动）；month-show 挂载时触发一次</text>
+				<text class="caption">纯面板形态（poppable 拆分至 m-calendar-popup）；single 默认选中今天；月块内标题与副标题并存（对齐 Vant），副标题随内部滚动切换为视口月份（需 height 限高产生内部滚动）；month-show 挂载时触发一次</text>
 			</view>
 
 			<text class="section" id="multiple">多选与超限</text>
@@ -112,7 +112,7 @@
 						</view>
 					</template>
 				</m-calendar>
-				<text class="caption">title / subtitle / month-title / text / footer 插槽自定义；month-title 默认不渲染（副标题随滚动切换视口月），传入插槽即恢复月块标题；max-date 收窄到本月内便于观察；day 为作用域插槽参数</text>
+				<text class="caption">title / subtitle / month-title / text / footer 插槽自定义；month-title 自定义月块内标题（默认内置渲染，与副标题并存）；max-date 收窄到本月内便于观察；day 为作用域插槽参数</text>
 			</view>
 
 			<text class="section" id="methods">面板高度与 Methods 实例方法</text>

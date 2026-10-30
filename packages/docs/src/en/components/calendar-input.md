@@ -8,7 +8,7 @@ demo: pages-sub/calendar-input/calendar-input
 
 Calendar input component composed of [Input](/en/components/input) (read-only trigger) and [CalendarPopup](/en/components/calendar-popup) (calendar popup): clicking the trigger opens the popup, and the confirmed value is written back via `v-model:value` and displayed; a self-drawn clear button appears when a value exists.
 
-The value is one-way controlled: the external `value` syncs the inner calendar's initial selection via `default-date`, and the confirmed value is written back via `update:value`. The display text derives from `value` (single value / range / multiple joined text).
+The value is one-way controlled: the external `value` syncs the inner calendar's initial selection via `default-date`, and the confirmed value is written back via `update:value`. The display text derives from `value` (single value / range / multiple joined text). The popup resets its inner selection to the current `value` on every open (via the inner popup's `reset-on-open`), so unconfirmed selections do not linger.
 
 ## Usage
 
@@ -124,6 +124,7 @@ Set `type` to `range` to display a "start ~ end" span; `multiple` displays a com
 - **Trigger implementation**: m-input's readonly is simulated via native disabled (native disabled controls swallow click events), so a transparent overlay layer catches clicks across the whole area to open the popup; the trigger is not rendered in the `disabled` state
 - **Clear button**: m-input's built-in clearable icon sits under the trigger layer and would be blocked, so the clear button is self-drawn
 - **z-index stacking**: trigger (1) < clear button (2) < popup overlay (3, fixed `:z-index="3"` passed internally) so the overlay covers the component's own floating layers; when raising `z-index` externally, check this in sync
+- **Reset on open**: the inner selection resets to the current `value` every time the popup opens (implemented via [CalendarPopup](/en/components/calendar-popup)'s `reset-on-open`); unconfirmed selections do not linger, and the focus month resets to the month of `value`
 
 ## Theming
 

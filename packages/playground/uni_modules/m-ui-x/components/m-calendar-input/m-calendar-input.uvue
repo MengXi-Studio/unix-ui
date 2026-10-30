@@ -30,6 +30,7 @@
 			:default-date="value"
 			:max-range="maxRange"
 			:allow-same-day="allowSameDay"
+			:reset-on-open="true"
 			:popup-height="popupHeight"
 			:position="position"
 			:round="round"
@@ -119,9 +120,11 @@
 	/** 弹层显隐（内部状态；confirm 后由 m-calendar-popup 派发 update:show 关闭） */
 	const popupShow = ref<boolean>(false)
 
-	/** 根类名 */
+	/** 根类名：基础类 + customClass 透传（对齐 m-input 拼接惯例） */
 	const rootClass = computed<string>(() => {
-		return 'm-calendar-input'
+		let cls = 'm-calendar-input'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
 	})
 
 	/** 是否有值（single 有 Date / 数组非空） */

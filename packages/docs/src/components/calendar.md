@@ -195,6 +195,7 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 | 方法名 | 说明 | 参数 |
 | --- | --- | --- |
 | reset | 清空选择并回到聚焦月 | - |
+| resetSelection | 静默重置选择为 value / default-date 初始来源（不回写 update:value、不滚动） | - |
 | scrollToDate | 滚动定位到指定日期所在月（即时定位，无滚动动画） | date: Date |
 | getSelectedDate | 读取当前选择（single 为单值，multiple / range 为数组） | - |
 | refreshView | 重算尺寸并复位聚焦月（弹层组合组件复开时调用） | - |

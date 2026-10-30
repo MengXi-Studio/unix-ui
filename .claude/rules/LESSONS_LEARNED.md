@@ -361,3 +361,9 @@
 ### 62. min-date 默认今天：点击「今天之前」日格无 select 是组件正确行为，测试选日必须避开禁用格
 - 现象：受控弹层点击 10-29 无回写（受控值不变），误判 v-model:value 断链；实际组件未设 min-date 默认今天（对齐 Vant），10-29 是禁用格，点击只派发 click-disabled-date 不选择。同族语义：value/default-date 均未设时 single 默认选中今天（数据层 value 仍 null 不回写，confirm 值经 confirm 参数给出）
 - 规约：**日历弹层测试的「再点一格验证回写」必须选 min/max 区间内的可选日**（今天之后）；「未选状态」断言区分数据层（绑定值为 null）与 UI 层（single 默认选中今天），两者并存是既定设计不是 bug
+
+## 2026-10-30 m-calendar-input 验证修复（customClass / reset-on-open / 界外预选）
+
+### 63. 滚动列表裁剪区元素 bbox 在窗口视口内：Playwright 会强行回滚列表点击之并破坏聚焦位置
+- 现象：弹层日历复开聚焦 11 月后点击「8」，confirm 值仍是 11-05——点击目标实为 10-08 禁用格（位于滚动列表可视区上方被裁剪，bbox y=31 在窗口视口内但 < 面板可视顶 ≈253）；Playwright click 对裁剪区元素 scrollIntoViewIfNeeded 把列表回滚到顶部并点击禁用格（无效果），同时聚焦月位置被破坏（选中格 y 从 336 漂移到 656）
+- 规约：**日历类点击断言的 bbox 判定须限「面板可视区内」而非仅窗口视口内**（bottom 弹层 `y >= 170`，center 弹层以面板顶为准）——裁剪区元素 isVisible=true + bbox 在窗口内，但点击会触发工具级滚动污染现场；「选日无效」排查先核对被点格的身份（class 含 --disabled 即禁用格）

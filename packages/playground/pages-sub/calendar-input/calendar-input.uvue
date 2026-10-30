@@ -9,7 +9,7 @@
 
 			<text class="section" id="basic">基础用法</text>
 			<view class="card">
-				<m-calendar-input v-model:value="basicValue" @confirm="onBasicConfirm" @clear="onBasicClear" />
+				<m-calendar-input v-model:value="basicValue" custom-class="demo-cal-input" @confirm="onBasicConfirm" @clear="onBasicClear" />
 				<view class="event-log">
 					<text class="event-text">当前值：{{ fmtBasic }}；最近事件：{{ basicLog }}</text>
 				</view>
@@ -110,8 +110,8 @@
 	}
 
 	// ========== 1 基础用法 ==========
-	const basicValue = ref<Date | Date[] | null>(new Date(2026, 9, 29))
-	const basicLog = ref<string>('（初始预选 2026-10-29）')
+	const basicValue = ref<Date | Date[] | null>(new Date(2026, 10, 5))
+	const basicLog = ref<string>('（初始预选 2026-11-05）')
 
 	/** 基础 confirm 记录 */
 	function onBasicConfirm(value: Date | Date[]) {
@@ -159,7 +159,7 @@
 	}
 
 	// ========== 4 禁用与形态 ==========
-	const stateValue = ref<Date | Date[] | null>(new Date(2026, 9, 29))
+	const stateValue = ref<Date | Date[] | null>(new Date(2026, 10, 5))
 	const stateValue2 = ref<Date | Date[] | null>(null)
 	const stateValue3 = ref<Date | Date[] | null>(null)
 
@@ -177,6 +177,10 @@
 	/* 基础使用节的事件日志展示行 */
 	.event-log {
 		margin-top: 12px;
+	}
+	/* custom-class 透传示例（基础用法块根节点淡蓝底） */
+	.demo-cal-input {
+		background-color: #eef4ff;
 	}
 	.event-text {
 		font-size: 12px;

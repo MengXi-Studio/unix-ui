@@ -836,6 +836,7 @@
 
 	defineExpose({
 		reset,
+		resetSelection,
 		scrollToDate,
 		getSelectedDate,
 		refreshView

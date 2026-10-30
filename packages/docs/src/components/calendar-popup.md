@@ -117,6 +117,7 @@ demo: pages-sub/calendar-popup/calendar-popup
 | position | 弹出方位，可选值 `center` `top` `bottom` `left` `right` | CalendarPosition | `bottom` |
 | round | 是否显示圆角 | boolean | `true` |
 | close-on-click-overlay | 点击遮罩后是否关闭 | boolean | `true` |
+| reset-on-open | 弹层打开时是否重置选择为 value / default-date（默认保留复开时上次选择） | boolean | `false` |
 | safe-area-inset-top | 顶部安全区间距 | boolean | `false` |
 | safe-area-inset-bottom | 底部安全区间距 | boolean | `true` |
 | z-index | 弹层层级 | number | `1` |

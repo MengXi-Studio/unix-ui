@@ -8,7 +8,7 @@ demo: pages-sub/calendar-input/calendar-input
 
 日历输入框组件，基于 [Input](/components/input)（只读触发器）与 [CalendarPopup](/components/calendar-popup)（日历弹出框）组合实现：点击触发器整区打开弹层，确认后经 `v-model:value` 回写选中值并展示；有值时展示自绘清空按钮。
 
-值单向受控：外部 `value` 经内部日历 `default-date` 同步初始选择，确认后经 `update:value` 回写。展示文本由 `value` 派生（single 单值 / range 区间 / multiple 顿号串）。
+值单向受控：外部 `value` 经内部日历 `default-date` 同步初始选择，确认后经 `update:value` 回写。展示文本由 `value` 派生（single 单值 / range 区间 / multiple 顿号串）。弹层每次打开会将内部选择重置为当前 `value`（内部启用弹层的 `reset-on-open`），未确认的选择不残留。
 
 ## 代码演示
 
@@ -124,6 +124,7 @@ demo: pages-sub/calendar-input/calendar-input
 - **触发层实现**：m-input 的 readonly 以原生 disabled 模拟（原生 disabled 控件吞点击事件），组件以透明覆盖层接住整区点击打开弹层；`disabled` 态不渲染触发层
 - **清空按钮**：m-input 内置 clearable 的图标位于触发层之下会被挡住，清空为组件自绘按钮
 - **z-index 层叠**：触发层（1）< 清空钮（2）< 弹层遮罩（3，组件内部固定传 `:z-index="3"`），保证弹层打开时遮罩盖住自身浮层；外部放大 `z-index` 时注意同步检查
+- **弹层打开重置**：弹层每次打开将内部选择重置为当前 `value`（经 [CalendarPopup](/components/calendar-popup) 的 `reset-on-open` 实现），未确认的选择不残留，聚焦月同步复位到 `value` 所在月
 
 ## 主题定制
 

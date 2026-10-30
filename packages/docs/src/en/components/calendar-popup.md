@@ -117,6 +117,7 @@ All calendar panel slots are supported (title / subtitle / footer / nav icons), 
 | position | Popup position, one of `center` `top` `bottom` `left` `right` | CalendarPosition | `bottom` |
 | round | Whether to show rounded corners | boolean | `true` |
 | close-on-click-overlay | Whether to close on overlay click | boolean | `true` |
+| reset-on-open | Whether to reset the selection to value / default-date when the popup opens (keeps the last selection on reopen by default) | boolean | `false` |
 | safe-area-inset-top | Top safe area inset | boolean | `false` |
 | safe-area-inset-bottom | Bottom safe area inset | boolean | `true` |
 | z-index | Popup z-index | number | `1` |

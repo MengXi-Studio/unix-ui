@@ -159,6 +159,8 @@
 		round?: boolean
 		/** 点击遮罩后是否关闭（透传 m-popup） */
 		closeOnClickOverlay?: boolean
+		/** 弹层打开时是否重置选择为 value / default-date（默认 false，保留复开时上次选择的语义） */
+		resetOnOpen?: boolean
 		/** 顶部安全区（透传 m-popup） */
 		safeAreaInsetTop?: boolean
 		/** 底部安全区（透传 m-popup） */
@@ -205,6 +207,7 @@
 		position: 'bottom',
 		round: true,
 		closeOnClickOverlay: true,
+		resetOnOpen: false,
 		safeAreaInsetTop: false,
 		safeAreaInsetBottom: true,
 		zIndex: 1,
@@ -274,11 +277,14 @@
 		emit('update:show', value)
 	}
 
-	/** 弹层打开：派发 open；复开场景日历不重挂，调用 refreshView 复位到聚焦月 */
+	/** 弹层打开：派发 open；resetOnOpen 时先重置选择为 value / default-date，再经 refreshView 复位到聚焦月 */
 	function onPopupOpen() {
 		emit('open')
 		const inst = cal.value
 		if (inst != null) {
+			if (props.resetOnOpen) {
+				inst.$callMethod('resetSelection')
+			}
 			inst.$callMethod('refreshView')
 		}
 	}

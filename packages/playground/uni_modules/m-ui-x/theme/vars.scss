@@ -212,6 +212,7 @@ $m-calendar-selected-day-size: 54px !default;
 $m-calendar-selected-day-color: $m-white !default;
 $m-calendar-selected-day-background: $m-color-primary !default;
 $m-calendar-range-middle-background: rgba($m-color-primary, 0.1) !default;
+$m-calendar-range-middle-color: $m-color-primary !default;
 
 /* ========== m-calendar-input（日历输入框：触发层与自绘清空按钮） ==========
  * 层叠关系：触发层 1 < 清空钮 2 < 弹层遮罩 3（m-calendar-input 内部固定传 :z-index="3"，

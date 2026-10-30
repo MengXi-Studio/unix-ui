@@ -247,6 +247,7 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 | $m-calendar-selected-day-color | 选中日文字色 | #ffffff |
 | $m-calendar-selected-day-background | 选中日背景色（主色） | #1989fa |
 | $m-calendar-range-middle-background | 范围中段底色 | rgba(25, 137, 250, 0.1) |
+| $m-calendar-range-middle-color | 范围中段文字色 | #1989fa |
 
 完整变量与覆盖方式见[主题定制](/guide/theming)。
 

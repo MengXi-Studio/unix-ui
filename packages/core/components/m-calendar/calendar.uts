@@ -185,21 +185,30 @@ export function hexToRgba(color: string, alpha: number): string {
 }
 
 /**
- * 圆角方块标记 day type（选中块 / 范围端点块，文字反白展示；middle 仅 bar 无块）
+ * 圆角方块标记 day type（选中块：single 选中 / multiple 选中与中段；range 端点为全格着色，不在此列）
  */
 export function isCircularDayType(type: CalendarDayType): boolean {
-	return type == 'selected' || type == 'start' || type == 'end' || type == 'start-end' || type == 'multiple-selected' || type == 'multiple-middle'
+	return type == 'selected' || type == 'multiple-selected' || type == 'multiple-middle'
 }
 
 /**
- * 日期数字文本类名：disabled 灰、圆角方块标记反白、常规主色
+ * 范围端点格（全格着色 day type）：格子本身为主题蓝端块，仅外侧两角圆（对齐 Vant range-edge）
+ */
+export function isEdgeDayType(type: CalendarDayType): boolean {
+	return type == 'start' || type == 'end' || type == 'start-end'
+}
+
+/**
+ * 日期数字文本类名：disabled 灰、方块标记与范围端点反白、range 中段主题色（对齐 Vant range-middle-color）、常规主色
  */
 export function dayTextClass(day: CalendarDayItem): string {
 	let cls = 'm-calendar__day-text'
 	if (day.type == 'disabled') {
 		cls += ' m-calendar__day-text--disabled'
-	} else if (isCircularDayType(day.type)) {
+	} else if (isCircularDayType(day.type) || isEdgeDayType(day.type)) {
 		cls += ' m-calendar__day-text--selected'
+	} else if (day.type == 'middle') {
+		cls += ' m-calendar__day-text--middle'
 	}
 	return cls
 }

@@ -271,7 +271,10 @@
 			return ''
 		}
 		if (ts == start) {
-			return end == null ? 'start' : 'start-end'
+			if (end == null) {
+				return 'start'
+			}
+			return ts == end ? 'start-end' : 'start'
 		}
 		if (end == null) {
 			return ''
@@ -806,7 +809,8 @@
 	watch(
 		() => props.defaultDate,
 		(_new: Date | Date[] | null, _old: Date | Date[] | null) => {
-			initSelection(props.defaultDate)
+			// 与挂载一致走 currentInitDate：value 存在时 default-date 变化不覆盖 v-model 选择
+			initSelection(currentInitDate())
 		}
 	)
 
@@ -818,7 +822,8 @@
 	)
 
 	onMounted(() => {
-		initSelection(props.defaultDate)
+		// 初始值来源统一走 currentInitDate：v-model:value 优先于 default-date（均未传时 single 默认今天）
+		initSelection(currentInitDate())
 		const month = focusMonth()
 		if (props.switchMode != 'none') {
 			currentPanelMonth.value = month

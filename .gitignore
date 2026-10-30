@@ -28,3 +28,6 @@ packages/playground/unpackage
 
 # HBuilderX CLI 运行日志
 cli-*.log
+
+# Trae 浏览器工具截图暂存（agent 自动产生，与项目代码无关）
+.screenshots

@@ -81,12 +81,12 @@ Two ways to plug in your own icon font:
 
 ### Icon Set
 
-257 icons in total, organized into three groups: basic (10), outline (139) and filled (108). Full list:
+259 icons in total, organized into three groups: basic (12), outline (139) and filled (108). Full list:
 
 <details>
-<summary>Basic（10）</summary>
+<summary>Basic（12）</summary>
 
-`arrow`, `arrow-left`, `arrow-up`, `arrow-down`, `success`, `cross`, `plus`, `minus`, `fail`, `circle`
+`arrow`, `arrow-left`, `arrow-double-left`, `arrow-double-right`, `arrow-up`, `arrow-down`, `success`, `cross`, `plus`, `minus`, `fail`, `circle`
 
 </details>
 

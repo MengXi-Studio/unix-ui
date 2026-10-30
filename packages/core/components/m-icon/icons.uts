@@ -9,6 +9,8 @@
 export type IconName =
   | 'arrow'
   | 'arrow-left'
+  | 'arrow-double-left'
+  | 'arrow-double-right'
   | 'arrow-up'
   | 'arrow-down'
   | 'success'
@@ -269,6 +271,9 @@ export type IconName =
 export const iconCodepoints: Map<string, string> = new Map()
 iconCodepoints.set('arrow', '\ue660')
 iconCodepoints.set('arrow-left', '\ue668')
+// 双箭头（连体字形）：码点与 Vant 官方字体一致（e653/e654），随字体文件更新生效
+iconCodepoints.set('arrow-double-left', '\ue653')
+iconCodepoints.set('arrow-double-right', '\ue654')
 iconCodepoints.set('arrow-up', '\ue65f')
 iconCodepoints.set('arrow-down', '\ue65e')
 iconCodepoints.set('success', '\ue728')
@@ -525,10 +530,10 @@ iconCodepoints.set('enlarge', '\ue6b1')
 iconCodepoints.set('photo-fail', '\ue6fe')
 iconCodepoints.set('sort', '\ue721')
 
-/** 基础图标（10 个） */
+/** 基础图标（12 个） */
 export const iconBasicNames: IconName[] = [
-  'arrow', 'arrow-left', 'arrow-up', 'arrow-down', 'success',
-  'cross', 'plus', 'minus', 'fail', 'circle',
+  'arrow', 'arrow-left', 'arrow-double-left', 'arrow-double-right', 'arrow-up', 'arrow-down',
+  'success', 'cross', 'plus', 'minus', 'fail', 'circle',
 ]
 
 /** 线性图标（139 个） */

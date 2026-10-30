@@ -247,6 +247,7 @@ Calendar styles can be customized with the following SCSS variables (define them
 | $m-calendar-selected-day-color | Selected day text color | #ffffff |
 | $m-calendar-selected-day-background | Selected day background (primary) | #1989fa |
 | $m-calendar-range-middle-background | Range middle background | rgba(25, 137, 250, 0.1) |
+| $m-calendar-range-middle-color | Range middle text color | #1989fa |
 
 See [Theming](/en/guide/theming) for the full variable list and override instructions.
 

@@ -20,10 +20,7 @@
 				<view class="m-calendar__nav">
 					<view v-if="cfg.switchMode == 'year-month'" class="m-calendar__nav-btn" @click="onNavClick('prev-year')">
 						<slot name="prev-year">
-							<view class="m-calendar__nav-double">
-								<MIcon name="arrow-left" custom-class="m-calendar__nav-icon" />
-								<MIcon name="arrow-left" custom-class="m-calendar__nav-icon" />
-							</view>
+							<MIcon name="arrow-double-left" custom-class="m-calendar__nav-icon" />
 						</slot>
 					</view>
 					<view class="m-calendar__nav-btn" @click="onNavClick('prev-month')">
@@ -43,10 +40,7 @@
 					</view>
 					<view v-if="cfg.switchMode == 'year-month'" class="m-calendar__nav-btn" @click="onNavClick('next-year')">
 						<slot name="next-year">
-							<view class="m-calendar__nav-double">
-								<MIcon name="arrow" custom-class="m-calendar__nav-icon" />
-								<MIcon name="arrow" custom-class="m-calendar__nav-icon" />
-							</view>
+							<MIcon name="arrow-double-right" custom-class="m-calendar__nav-icon" />
 						</slot>
 					</view>
 				</view>
@@ -116,7 +110,7 @@
 </template>
 
 <script setup lang="uts">
-	import { CalendarPanelConfig, CalendarDayItem, CalendarDayType, CALENDAR_WEEKDAYS, dayTextClass, dayInfoTextClass, getMonthTitle, hexToRgba, isCircularDayType } from './calendar.uts'
+	import { CalendarPanelConfig, CalendarDayItem, CalendarDayType, CALENDAR_WEEKDAYS, dayTextClass, dayInfoTextClass, getMonthTitle, hexToRgba, isCircularDayType, isEdgeDayType } from './calendar.uts'
 	import MIcon from '../m-icon/m-icon.uvue'
 
 	type Props = {
@@ -199,32 +193,37 @@
 	}
 
 	/**
-	 * 范围连接 bar 是否存在：范围端点与中段（start-end 为起止同日，两端各半连接）
+	 * 范围连接 bar 是否存在：仅中段（端点为全格着色端块，自身即 bar 边界，对齐 Vant range-edge）
 	 */
 	function hasBar(type: CalendarDayType): boolean {
-		return type == 'start' || type == 'end' || type == 'middle' || type == 'start-end' || type == 'multiple-middle'
+		return type == 'middle' || type == 'multiple-middle'
 	}
 
 	/**
-	 * bar 类名：start 右半 / end 左半 / middle 全宽（基类）
+	 * bar 类名：中段全宽基类（端点为全格着色端块，不再需要半宽 bar）
 	 */
 	function barClass(type: CalendarDayType): string {
-		let cls = 'm-calendar__day-bar'
-		if (type == 'start') {
-			cls += ' m-calendar__day-bar--start'
-		} else if (type == 'end') {
-			cls += ' m-calendar__day-bar--end'
-		}
-		return cls
+		return 'm-calendar__day-bar'
 	}
 
 	/**
-	 * 日期格容器类名：占位格仅基类（空壳不可见），formatter 的 className 追加其后
+	 * 日期格容器类名：占位格仅基类（空壳不可见），范围端点加全格着色端块类（外侧两角圆），
+	 * formatter 的 className 追加其后
 	 */
 	function dayClass(day: CalendarDayItem): string {
 		let cls = 'm-calendar__day'
 		if (day.type == 'placeholder') {
 			return cls
+		}
+		if (isEdgeDayType(day.type)) {
+			cls += ' m-calendar__day--edge'
+			if (day.type == 'start') {
+				cls += ' m-calendar__day--start'
+			} else if (day.type == 'end') {
+				cls += ' m-calendar__day--end'
+			} else {
+				cls += ' m-calendar__day--start-end'
+			}
 		}
 		if (day.className != '') {
 			cls += ' ' + day.className
@@ -233,16 +232,21 @@
 	}
 
 	/**
-	 * 日期格容器 inline 样式：rowHeight > 0 时以行高覆盖默认变量高度
+	 * 日期格容器 inline 样式：rowHeight > 0 时以行高覆盖默认变量高度；
+	 * 范围端点在宿主 color 非空时覆盖全格着色（端块即 bar 边界）
 	 */
 	function dayStyle(day: CalendarDayItem): string {
 		if (day.type == 'placeholder') {
 			return ''
 		}
+		let style = ''
 		if (cfg.value.rowHeight > 0) {
-			return 'height: ' + cfg.value.rowHeight.toString() + 'px;'
+			style += 'height: ' + cfg.value.rowHeight.toString() + 'px;'
 		}
-		return ''
+		if (isEdgeDayType(day.type) && cfg.value.color != '') {
+			style += 'background-color: ' + cfg.value.color + ';'
+		}
+		return style
 	}
 
 	/**
@@ -377,10 +381,6 @@
 		color: $m-calendar-nav-icon-color;
 		font-size: $m-calendar-nav-icon-size;
 	}
-	.m-calendar__nav-double {
-		flex-direction: row;
-		align-items: center;
-	}
 
 	/* ========== 星期表头 ========== */
 	.m-calendar__weekdays {
@@ -456,7 +456,21 @@
 		position: relative;
 	}
 
-	/* 范围连接 bar：绝对定位半高通栏，start 右半 / end 左半 / middle 全宽 */
+	/* 范围端点：格子本身为主题色端块（全格高宽，仅外侧两角圆，与中段 bar 无缝衔接，对齐 Vant range-edge） */
+	.m-calendar__day--edge {
+		background-color: $m-calendar-selected-day-background;
+	}
+	.m-calendar__day--start {
+		border-radius: $m-calendar-day-radius 0 0 $m-calendar-day-radius;
+	}
+	.m-calendar__day--end {
+		border-radius: 0 $m-calendar-day-radius $m-calendar-day-radius 0;
+	}
+	.m-calendar__day--start-end {
+		border-radius: $m-calendar-day-radius;
+	}
+
+	/* 范围连接 bar：绝对定位全高通栏（中段铺满整格，两端与端点格边界衔接） */
 	.m-calendar__day-bar {
 		position: absolute;
 		top: 0;
@@ -465,12 +479,6 @@
 		right: 0;
 		background-color: $m-calendar-range-middle-background;
 		z-index: 0;
-	}
-	.m-calendar__day-bar--start {
-		left: 50%;
-	}
-	.m-calendar__day-bar--end {
-		right: 50%;
 	}
 
 	/* 日期上 / 下信息：绝对定位于格顶 / 格底 */
@@ -521,6 +529,9 @@
 	}
 	.m-calendar__day-text--selected {
 		color: $m-calendar-selected-day-color;
+	}
+	.m-calendar__day-text--middle {
+		color: $m-calendar-range-middle-color;
 	}
 	.m-calendar__day-text--disabled {
 		color: $m-calendar-day-disabled-color;

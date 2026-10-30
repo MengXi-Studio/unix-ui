@@ -16,6 +16,7 @@ import type { Router } from '../../types'
 import { getPlatform } from '../../utils'
 import { parseUrl } from '../../utils'
 import { warn } from '../../utils'
+import { findFirstTabRoutePath } from '../../router/location'
 import { INTERCEPTED_APIS } from '../../constants/interceptor'
 
 /**
@@ -107,6 +108,14 @@ function dispatch(api: string, url: string | null, delta: number | null): void {
 	const safeUrl = url === null ? '' : url
 	const parsed = parseUrl(safeUrl)
 	if (parsed.path.length <= 1) {
+		// 根路径 reLaunch（H5 返回箭头在栈深=1 时框架会调 uni.reLaunch({ url: '/' })，见 uni-h5 onPageHeadBackButton）：
+		// 语义为「回首页」，转交入口页（首个 tabBar 路由）兜底，避免返回无效
+		if (api === 'reLaunch') {
+			const entryPath = findFirstTabRoutePath(router.getRoutes())
+			if (entryPath !== null) {
+				void router.relaunch('/' + entryPath)
+			}
+		}
 		return // 无可跳转的有效页面路径
 	}
 	const q = parsed.query

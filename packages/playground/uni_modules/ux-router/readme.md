@@ -1,14 +1,14 @@
 # ux-router
 
-为 **uni-app x** 提供的路由管理库，内置路由表、导航守卫、组合式 API 与插件体系。以 **UTS** 源码（`.uts`）形式随 uni_modules 分发，由 uni-app x 编译链按平台现场编译（Web / 小程序 → JS，Android → Kotlin，iOS → Swift），无需预编译。
+为 **uni-app x** 提供的、API 对标 **vue-router 4** 的路由管理库。以 **UTS** 源码（`.uts`）形式随 uni_modules 分发，由 uni-app x 编译链按平台现场编译（Web / 小程序 → JS，Android → Kotlin，iOS → Swift），无需预编译。
 
 ## 简介
 
-uni-app x 原生提供 `uni.navigateTo / redirectTo / reLaunch / navigateBack / switchTab`，但当页面增多后「无路由表、无守卫、无统一路由状态、参数传递繁琐」成为痛点。ux-router 用统一的路由 API 抹平这些差异，并提供登录鉴权、导航控制、参数传递等能力。
+uni-app x 原生提供 `uni.navigateTo / redirectTo / reLaunch / navigateBack / switchTab`，但当页面增多后「无路由表、无守卫、无统一路由状态、参数传递繁琐」成为痛点。ux-router 用一套与 vue-router 一致的 API 抹平这些差异，并提供登录鉴权、导航控制、参数传递等能力。
 
 ## 特性
 
-- **统一导航 API**：`createRouter`、`push` / `replace` / `relaunch` / `back`，自动根据 `meta.isTab` 切换 `switchTab`
+- **vue-router 风格 API**：`createRouter`、`push` / `replace` / `relaunch` / `back`，自动根据 `meta.isTab` 切换 `switchTab`
 - **路由匹配**：path / name 双索引，字符串 / 对象 / 命名三种解析，`strict` 严格模式
 - **路由守卫**：`beforeEach` / `beforeResolve` / `afterEach` / `beforeEnter` / 组件内守卫，支持重定向、守卫超时与重定向深度上限
 - **组合式 API**：`useRouter()` / `useRoute()` / `useLink()`，响应式 `currentRoute`

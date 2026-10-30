@@ -1,8 +1,8 @@
 {
 	"id": "ux-router",
-	"displayName": "基于 uni-app x 的路由管理库",
-	"version": "0.8.0",
-	"description": "为 uni-app x 提供路由表、导航守卫与组合式 API 的路由管理库",
+	"displayName": "基于 uni-app x 路由管理，提供 vue-router 风格的 API",
+	"version": "0.8.1",
+	"description": "为 uni-app x 提供类似 vue-router 风格的路由库",
 	"keywords": [
         "ux-router",
         "router",
@@ -13,7 +13,7 @@
 	"engines": {
 		"HBuilderX": "^3.6.8",
 		"uni-app": "",
-		"uni-app-x": "^3.8.4"
+		"uni-app-x": "^3.8.10"
 	},
 	"dcloudext": {
 		"type": "uts",

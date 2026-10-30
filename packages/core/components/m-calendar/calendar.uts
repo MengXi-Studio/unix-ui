@@ -12,6 +12,12 @@ export const CALENDAR_DAY_MS: number = 86400000
 /** 星期表头（固定中文单字，周日起始；firstDayOfWeek 由此旋转） */
 export const CALENDAR_WEEKDAYS: string[] = ['日', '一', '二', '三', '四', '五', '六']
 
+/** 日格默认行高 px（与 vars.scss $m-calendar-day-height 同步，滚动驱动副标题的月高估算用；用户覆盖变量时存在月粒度偏差） */
+export const CALENDAR_DEFAULT_DAY_HEIGHT: number = 64
+
+/** 日格纵向间距 px（与 vars.scss $m-calendar-day-margin-bottom 同步，月高估算用） */
+export const CALENDAR_DAY_MARGIN_BOTTOM: number = 4
+
 /** 选择类型：single 单选 / multiple 多选 / range 范围 */
 export type CalendarType = 'single' | 'multiple' | 'range'
 
@@ -57,9 +63,7 @@ export type CalendarFormatter = (day: CalendarDayItem) => CalendarDayItem
 
 /** 面板渲染配置（纯数据，宿主 computed 计算后整体下发） */
 export type CalendarPanelConfig = {
-	/** 面板形态：'poppable' 弹层（驱动滚动副标题上报）/ 'flat' 平铺 */
-	panelMode: string
-	/** 面板高度 inline 值（弹层形态为换算后的 px；平铺为空串自然生长） */
+	/** 面板高度 inline 值（px 等长度单位原样；空串自然生长） */
 	panelHeight: string
 	/** 待渲染月份（switch-mode 非 none 时仅单月） */
 	months: CalendarMonth[]
@@ -84,6 +88,8 @@ export type CalendarPanelConfig = {
 	hasTopInfoSlot: boolean
 	/** 宿主是否传入 bottom-info 插槽 */
 	hasBottomInfoSlot: boolean
+	/** 宿主是否传入 month-title 插槽（默认月块内不渲染标题行，副标题随滚动切换为视口月份） */
+	hasMonthTitleSlot: boolean
 }
 
 /**
@@ -176,14 +182,14 @@ export function hexToRgba(color: string, alpha: number): string {
 }
 
 /**
- * 圆点标记类 day type（选中圆 / 范围端点圆，文字反白展示）
+ * 圆角方块标记 day type（选中块 / 范围端点块，文字反白展示；middle 仅 bar 无块）
  */
 export function isCircularDayType(type: CalendarDayType): boolean {
 	return type == 'selected' || type == 'start' || type == 'end' || type == 'start-end' || type == 'multiple-selected' || type == 'multiple-middle'
 }
 
 /**
- * 日期数字文本类名：disabled 灰、圆点标记反白、常规主色
+ * 日期数字文本类名：disabled 灰、圆角方块标记反白、常规主色
  */
 export function dayTextClass(day: CalendarDayItem): string {
 	let cls = 'm-calendar__day-text'
@@ -196,7 +202,7 @@ export function dayTextClass(day: CalendarDayItem): string {
 }
 
 /**
- * 日期上 / 下信息文本类名：圆点标记内反白，其余灰
+ * 日期上 / 下信息文本类名：圆角方块标记内反白，其余灰
  */
 export function dayInfoTextClass(day: CalendarDayItem): string {
 	let cls = 'm-calendar__day-info-text'

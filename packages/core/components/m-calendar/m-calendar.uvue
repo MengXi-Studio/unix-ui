@@ -1,108 +1,13 @@
 <template>
-	<!-- 根节点常驻静态（LESSONS #32）：poppable 时仅承载 m-popup（遮罩全屏自定位），flat 时直接承载面板 -->
+	<!-- 日历面板组件（三组件拆分后的基础组件）：纯平铺形态，弹层组合见 m-calendar-popup，
+	     输入框触发组合见 m-calendar-input。根节点常驻静态（LESSONS #32） -->
 	<view :class="customClass" :style="customStyle">
-		<!-- ⚠ 两处 MCalendarPanel 的属性绑定与 12 个插槽转发必须同步修改（poppable / flat 各一份） -->
-		<m-popup
-			v-if="poppable"
-			:show="show"
-			:position="position"
-			:round="round"
-			:close-on-click-overlay="closeOnClickOverlay"
-			:safe-area-inset-top="safeAreaInsetTop"
-			:safe-area-inset-bottom="safeAreaInsetBottom"
-			:z-index="zIndex"
-			:duration="duration"
-			@update:show="onPopupUpdateShow"
-			@open="onPopupOpen"
-			@opened="onPopupOpened"
-			@close="onPopupClose"
-			@closed="onPopupClosed"
-			@click-overlay="onPopupClickOverlay"
-		>
-			<MCalendarPanel
-				:panel="panelConfig"
-				@day-click="onPanelDayClick"
-				@click-subtitle="onPanelSubtitleClick"
-				@nav="onPanelNav"
-				@month-show="onPanelMonthShow"
-			>
-				<template #title>
-					<slot name="title"><text class="m-calendar__header-title-text">{{ title }}</text></slot>
-				</template>
-				<template #subtitle>
-					<slot name="subtitle"><text class="m-calendar__header-subtitle-text">{{ subtitleText }}</text></slot>
-				</template>
-				<template #month-title="{ month, text }">
-					<slot name="month-title" :month="month" :text="text">
-						<text class="m-calendar__month-title-text">{{ text }}</text>
-					</slot>
-				</template>
-				<template #top-info="{ day }">
-					<slot name="top-info" :day="day">
-						<text :class="dayInfoTextClass(day)">{{ day.topInfo }}</text>
-					</slot>
-				</template>
-				<template #bottom-info="{ day }">
-					<slot name="bottom-info" :day="day">
-						<text :class="dayInfoTextClass(day)">{{ day.bottomInfo }}</text>
-					</slot>
-				</template>
-				<template #text="{ day }">
-					<slot name="text" :day="day">
-						<text :class="dayTextClass(day)">{{ day.text }}</text>
-					</slot>
-				</template>
-				<template #footer>
-					<slot name="footer">
-						<view v-if="showConfirm" class="m-calendar__footer">
-							<m-button
-								block
-								:type="color == '' ? 'primary' : 'default'"
-								:color="color"
-								:disabled="confirmDisabled"
-								custom-style="height: 36px;"
-								@click="onConfirmButtonClick"
-							>
-								<slot name="confirm-text">{{ confirmDisabled ? confirmDisabledText : confirmText }}</slot>
-							</m-button>
-						</view>
-					</slot>
-				</template>
-				<template #prev-year>
-					<slot name="prev-year">
-						<view class="m-calendar__nav-double">
-							<m-icon name="arrow-left" custom-class="m-calendar__nav-icon" />
-							<m-icon name="arrow-left" custom-class="m-calendar__nav-icon" />
-						</view>
-					</slot>
-				</template>
-				<template #prev-month>
-					<slot name="prev-month">
-						<m-icon name="arrow-left" custom-class="m-calendar__nav-icon" />
-					</slot>
-				</template>
-				<template #next-month>
-					<slot name="next-month">
-						<m-icon name="arrow-right" custom-class="m-calendar__nav-icon" />
-					</slot>
-				</template>
-				<template #next-year>
-					<slot name="next-year">
-						<view class="m-calendar__nav-double">
-							<m-icon name="arrow-right" custom-class="m-calendar__nav-icon" />
-							<m-icon name="arrow-right" custom-class="m-calendar__nav-icon" />
-						</view>
-					</slot>
-				</template>
-			</MCalendarPanel>
-		</m-popup>
 		<MCalendarPanel
-			v-else
 			:panel="panelConfig"
 			@day-click="onPanelDayClick"
 			@click-subtitle="onPanelSubtitleClick"
 			@nav="onPanelNav"
-			@month-show="onPanelMonthShow"
+			@body-scroll="onPanelBodyScroll"
 		>
 			<template #title>
 				<slot name="title"><text class="m-calendar__header-title-text">{{ title }}</text></slot>
@@ -111,9 +16,7 @@
 				<slot name="subtitle"><text class="m-calendar__header-subtitle-text">{{ subtitleText }}</text></slot>
 			</template>
 			<template #month-title="{ month, text }">
-				<slot name="month-title" :month="month" :text="text">
-					<text class="m-calendar__month-title-text">{{ text }}</text>
-				</slot>
+				<slot name="month-title" :month="month" :text="text"></slot>
 			</template>
 			<template #top-info="{ day }">
 				<slot name="top-info" :day="day">
@@ -178,14 +81,14 @@
 
 <script setup lang="uts">
 	/**
-	 * m-calendar 日历（状态机宿主）：对标 Vant Calendar。
+	 * m-calendar 日历面板（状态机宿主）：对标 Vant Calendar 的平铺形态。
 	 * 选择状态（single / multiple / range）、月份构建、范围判定与超限提示在此，
 	 * 渲染经 CalendarPanelConfig 纯数据下发 m-calendar-panel；超限提示复用 m-toast。
+	 * 弹层形态由 m-calendar-popup 组合 m-popup + 本组件实现（panelMode 概念随拆分移除）。
 	 */
 	import {
 		CalendarType,
 		CalendarSwitchMode,
-		CalendarPosition,
 		CalendarDayType,
 		CalendarDayItem,
 		CalendarMonth,
@@ -193,6 +96,8 @@
 		CalendarFormatter,
 		CALENDAR_DAY_MS,
 		CALENDAR_WEEKDAYS,
+		CALENDAR_DEFAULT_DAY_HEIGHT,
+		CALENDAR_DAY_MARGIN_BOTTOM,
 		getDayStart,
 		isSameMonth,
 		getMonthTitle,
@@ -207,13 +112,9 @@
 	type Props = {
 		/** 选择类型 */
 		type?: CalendarType
-		/** 弹层形态（false 为平铺面板） */
-		poppable?: boolean
-		/** 是否显示弹出层（v-model:show，仅弹层形态） */
-		show?: boolean
 		/** 常规标题 */
 		title?: string
-		/** 主题色（选中圆点与范围 bar 派生色，支持 #hex 与渐变） */
+		/** 主题色（选中方块与范围 bar 派生色，支持 #hex 与渐变） */
 		color?: string
 		/** 最小日期（null 默认今天） */
 		minDate?: Date | null
@@ -243,22 +144,8 @@
 		firstDayOfWeek?: number
 		/** 面板切换模式（none 常规滚动列表 / month 单月 + 月导航 / year-month 单月 + 年月导航） */
 		switchMode?: CalendarSwitchMode
-		/** 弹出方位（透传 m-popup） */
-		position?: CalendarPosition
-		/** 弹层圆角（透传 m-popup） */
-		round?: boolean
-		/** 点击遮罩后是否关闭 */
-		closeOnClickOverlay?: boolean
-		/** 顶部安全区（透传 m-popup） */
-		safeAreaInsetTop?: boolean
-		/** 底部安全区（透传 m-popup） */
-		safeAreaInsetBottom?: boolean
-		/** z-index 层级（透传 m-popup） */
-		zIndex?: number
-		/** 动画时长秒（透传 m-popup） */
-		duration?: number
-		/** 弹层面板高度（px 原样透传；% 按窗口高换算为 px——m-popup 面板高度 auto，% 无法直接生效） */
-		popupHeight?: string
+		/** 面板高度 inline 值（px 等长度单位原样；空串自然生长；弹层组合组件经此下发换算后的高度） */
+		height?: string
 		/** 范围 / 多选最多可选天数（含两端计数；-1 不限制） */
 		maxRange?: number
 		/** 超限提示文案（空串用默认「最多选择 N 天」） */
@@ -275,8 +162,6 @@
 
 	const props = withDefaults(defineProps<Props>(), {
 		type: 'single',
-		poppable: true,
-		show: false,
 		title: '日期选择',
 		color: '',
 		minDate: null,
@@ -293,14 +178,7 @@
 		readonly: false,
 		firstDayOfWeek: 0,
 		switchMode: 'none',
-		position: 'bottom',
-		round: true,
-		closeOnClickOverlay: true,
-		safeAreaInsetTop: false,
-		safeAreaInsetBottom: true,
-		zIndex: 1,
-		duration: 0.3,
-		popupHeight: '80%',
+		height: '',
 		maxRange: -1,
 		rangePrompt: '',
 		showRangePrompt: true,
@@ -310,7 +188,6 @@
 	})
 
 	const emit = defineEmits<{
-		'update:show': [value: boolean]
 		/** 点击日期格后触发（值形态随 type） */
 		select: [value: Date | Date[]]
 		/** 点击确认按钮 / 自动确认后触发 */
@@ -319,11 +196,7 @@
 		unselect: [date: Date]
 		/** 选择超出 max-range 限制 */
 		'over-range': []
-		open: []
-		opened: []
-		close: []
-		closed: []
-		/** 月份进入视口（挂载与滚动时触发） */
+		/** 聚焦月进入视口（挂载时触发一次；面板滚动不再驱动，对齐 Vant 平铺语义） */
 		'month-show': [date: Date]
 		/** switch-mode 面板所在月变化（导航触发） */
 		'panel-change': [date: Date]
@@ -331,7 +204,6 @@
 		'click-subtitle': []
 		/** 点击禁用日期 */
 		'click-disabled-date': [date: Date]
-		'click-overlay': [event: MouseEvent]
 	}>()
 
 	const slots = useSlots()
@@ -348,10 +220,14 @@
 
 	/** switch-mode 当前面板所在月（导航 / scrollToDate 驱动；null 为挂载前瞬态） */
 	const currentPanelMonth = ref<Date | null>(null)
-	/** none 模式副标题（面板滚动上报的当前月标题；平铺形态保持挂载时静态） */
+	/** none 模式副标题（滚动驱动：视口所在月标题；无内部滚动时为初始聚焦月） */
 	const subtitleScrolled = ref<string>('')
 	/** scroll-into-view 锚点（月 id：m-calendar-month-{index}） */
 	const scrollAnchor = ref<string>('')
+	/** 副标题滚动节流时间戳（Date.now()；100ms 内只估算一次视口月） */
+	let subtitleScrollTs = 0
+	/** 副标题滚动停止兜底定时器 id（-1 无；滚动停止后按最终 scrollTop 补算，防节流丢尾） */
+	let subtitleScrollTimer = -1
 
 	// ========== 纯函数（UTS 无声明提升，被下方 computed / 处理器引用者一律先行声明） ==========
 
@@ -379,26 +255,6 @@
 			list.push(CALENDAR_WEEKDAYS[(props.firstDayOfWeek + i) % 7])
 		}
 		return list
-	}
-
-	/** 弹层面板高度：px 原样；% 按窗口高换算为 px（m-popup 面板高度 auto，% 无法直接生效）；其余单位原样透传 */
-	function currentPanelHeight(): string {
-		if (!props.poppable) {
-			return ''
-		}
-		const h = props.popupHeight
-		if (h.endsWith('px')) {
-			return h
-		}
-		if (h.endsWith('%')) {
-			const percent = parseFloat(h.substring(0, h.length - 1))
-			if (!isNaN(percent)) {
-				const win = uni.getWindowInfo()
-				return Math.round(win.windowHeight * percent / 100).toString() + 'px'
-			}
-			return ''
-		}
-		return h
 	}
 
 	/** 构建单个日期格 */
@@ -601,6 +457,18 @@
 		return list
 	})
 
+	/** 月高度表（滚动驱动副标题的视口月估算用）：行数 ×（日格高 + 底距）；用户覆盖行高变量时存在月粒度偏差 */
+	const monthHeights = computed<number[]>(() => {
+		const rowHeight = props.rowHeight > 0 ? props.rowHeight : CALENDAR_DEFAULT_DAY_HEIGHT
+		const rowTotal = rowHeight + CALENDAR_DAY_MARGIN_BOTTOM
+		const list: number[] = []
+		const ms = months.value
+		for (let i = 0; i < ms.length; i++) {
+			list.push(Math.ceil(ms[i].days.length / 7) * rowTotal)
+		}
+		return list
+	})
+
 	/** 待渲染月份：switch-mode 非 none 时仅当前月（挂载前瞬态回退全量） */
 	const visibleMonths = computed<CalendarMonth[]>(() => {
 		if (props.switchMode == 'none') {
@@ -613,7 +481,7 @@
 		return months.value.filter((m: CalendarMonth): boolean => isSameMonth(m.date, current))
 	})
 
-	/** 副标题：switch-mode 为当前面板月标题；none 为滚动所在月标题（平铺保持挂载静态） */
+	/** 副标题：switch-mode 为当前面板月标题；none 为滚动驱动的视口月标题 */
 	const subtitleText = computed<string>(() => {
 		if (props.switchMode != 'none') {
 			const current = currentPanelMonth.value
@@ -639,8 +507,7 @@
 	/** 面板渲染配置（纯数据整体下发；slots 括号访问探测插槽存在性，编译失败降级见文档差异注记） */
 	const panelConfig = computed<CalendarPanelConfig>(() => {
 		return {
-			panelMode: props.poppable ? 'poppable' : 'flat',
-			panelHeight: currentPanelHeight(),
+			panelHeight: props.height,
 			months: visibleMonths.value,
 			weekdays: currentWeekdays(),
 			title: props.title,
@@ -654,7 +521,8 @@
 			switchMode: props.switchMode,
 			scrollAnchor: scrollAnchor.value,
 			hasTopInfoSlot: slots['top-info'] != null,
-			hasBottomInfoSlot: slots['bottom-info'] != null
+			hasBottomInfoSlot: slots['bottom-info'] != null,
+			hasMonthTitleSlot: slots['month-title'] != null
 		} as CalendarPanelConfig
 	})
 
@@ -698,6 +566,48 @@
 		scrollToDate(focusMonth())
 	}
 
+	/** 视图复位：回到聚焦月（不改选择状态；弹层组合组件重开时调用） */
+	function refreshView() {
+		scrollToDate(focusMonth())
+	}
+
+	/** 滚动驱动副标题：按 scrollTop 累计月高度定位视口月（switch-mode 单月面板无滚动不触发） */
+	function updateSubtitleByScroll(top: number) {
+		const heights = monthHeights.value
+		if (heights.length == 0) {
+			return
+		}
+		let acc = 0
+		let idx = heights.length - 1
+		for (let i = 0; i < heights.length; i++) {
+			if (top < acc + heights[i]) {
+				idx = i
+				break
+			}
+			acc += heights[i]
+		}
+		const title = getMonthTitle(months.value[idx].date)
+		if (subtitleScrolled.value != title) {
+			subtitleScrolled.value = title
+		}
+	}
+
+	/** 滚动区事件：100ms 节流估算 + 滚动停止 120ms 后按最终 scrollTop 兜底补算（防节流丢尾） */
+	function onPanelBodyScroll(top: number) {
+		const now = Date.now()
+		if (now - subtitleScrollTs >= 100) {
+			subtitleScrollTs = now
+			updateSubtitleByScroll(top)
+		}
+		if (subtitleScrollTimer != -1) {
+			clearTimeout(subtitleScrollTimer)
+		}
+		subtitleScrollTimer = setTimeout(() => {
+			subtitleScrollTimer = -1
+			updateSubtitleByScroll(top)
+		}, 120)
+	}
+
 	// ========== 交互处理（依赖上方 computed） ==========
 
 	/** 派发 select（点击后必有值，null 仅 single 未选的理论态） */
@@ -716,14 +626,11 @@
 		}
 	}
 
-	/** 确认并关闭（poppable 时派发 update:show = false 走弹层关闭动画） */
-	function emitConfirmAndClose() {
+	/** 确认派发（弹层组合组件监听 confirm 后自行关闭） */
+	function emitConfirm() {
 		const value = getSelectedDate()
 		if (value != null) {
 			emit('confirm', value)
-		}
-		if (props.poppable) {
-			emit('update:show', false)
 		}
 	}
 
@@ -734,15 +641,15 @@
 		}
 		if (props.type == 'single') {
 			if (singleTs.value != null) {
-				emitConfirmAndClose()
+				emitConfirm()
 			}
 		} else if (props.type == 'multiple') {
 			if (multipleTs.value.length > 0) {
-				emitConfirmAndClose()
+				emitConfirm()
 			}
 		} else {
 			if (rangeStart.value != null && rangeEnd.value != null) {
-				emitConfirmAndClose()
+				emitConfirm()
 			}
 		}
 	}
@@ -847,12 +754,6 @@
 		emit('panel-change', next)
 	}
 
-	/** 面板滚动上报：转发 month-show 并同步 none 模式副标题 */
-	function onPanelMonthShow(date: Date) {
-		emit('month-show', date)
-		subtitleScrolled.value = getMonthTitle(date)
-	}
-
 	/** 转发 click-subtitle */
 	function onPanelSubtitleClick() {
 		emit('click-subtitle')
@@ -863,43 +764,7 @@
 		if (confirmDisabled.value) {
 			return
 		}
-		emitConfirmAndClose()
-	}
-
-	/** 应用初始滚动锚点（聚焦月） */
-	function applyInitialAnchor() {
-		scrollToDate(focusMonth())
-	}
-
-	// ========== 弹层事件转发 ==========
-
-	function onPopupUpdateShow(value: boolean) {
-		emit('update:show', value)
-	}
-
-	/** 弹层打开：清锚点后 nextTick 重设，保证 lazyRender 首开 scroll-into-view 生效 */
-	function onPopupOpen() {
-		emit('open')
-		scrollAnchor.value = ''
-		nextTick(() => {
-			applyInitialAnchor()
-		})
-	}
-
-	function onPopupOpened() {
-		emit('opened')
-	}
-
-	function onPopupClose() {
-		emit('close')
-	}
-
-	function onPopupClosed() {
-		emit('closed')
-	}
-
-	function onPopupClickOverlay(e: MouseEvent) {
-		emit('click-overlay', e)
+		emitConfirm()
 	}
 
 	// ========== 生命周期 ==========
@@ -927,12 +792,13 @@
 			subtitleScrolled.value = getMonthTitle(month)
 		}
 		emit('month-show', month)
-		applyInitialAnchor()
+		scrollToDate(month)
 	})
 
 	defineExpose({
 		reset,
 		scrollToDate,
-		getSelectedDate
+		getSelectedDate,
+		refreshView
 	})
 </script>

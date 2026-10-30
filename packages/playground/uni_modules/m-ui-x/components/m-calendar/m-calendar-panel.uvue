@@ -36,7 +36,7 @@
 			</view>
 		</view>
 
-		<!-- 月份滚动区：锚点 id 由宿主下发（scroll-into-view），滚动上报当前月（仅弹层 + none 模式） -->
+		<!-- 月份滚动区：锚点 id 由宿主下发（scroll-into-view） -->
 		<scroll-view
 			class="m-calendar__body"
 			:scroll-y="true"
@@ -49,7 +49,7 @@
 				:key="monthIndex"
 				class="m-calendar__month"
 			>
-				<view class="m-calendar__month-title">
+				<view v-if="cfg.hasMonthTitleSlot" class="m-calendar__month-title">
 					<slot name="month-title" :month="month.date" :text="getMonthTitle(month.date)"></slot>
 				</view>
 				<view class="m-calendar__days">
@@ -88,7 +88,7 @@
 </template>
 
 <script setup lang="uts">
-	import { CalendarPanelConfig, CalendarMonth, CalendarDayItem, CalendarDayType, CALENDAR_WEEKDAYS, getMonthTitle, hexToRgba, isCircularDayType } from './calendar.uts'
+	import { CalendarPanelConfig, CalendarDayItem, CalendarDayType, CALENDAR_WEEKDAYS, getMonthTitle, hexToRgba, isCircularDayType } from './calendar.uts'
 
 	type Props = {
 		/** 面板配置（宿主计算后整体下发；null 时按空配置渲染，避免首帧崩溃） */
@@ -106,8 +106,8 @@
 		'click-subtitle': []
 		/** 导航按钮点击：'prev-year' | 'prev-month' | 'next-month' | 'next-year' */
 		nav: [direction: string]
-		/** 滚动后新月份进入视口（仅弹层 + none 模式上报） */
-		'month-show': [date: Date]
+		/** 滚动区滚动（scrollTop px；面板无内部滚动时不触发，宿主滚动驱动副标题用） */
+		'body-scroll': [scrollTop: number]
 	}>()
 
 	/** 空配置兜底：panel 未下发或首帧 null 时按此渲染 */
@@ -132,36 +132,10 @@
 			switchMode: 'none',
 			scrollAnchor: '',
 			hasTopInfoSlot: false,
-			hasBottomInfoSlot: false
+			hasBottomInfoSlot: false,
+			hasMonthTitleSlot: false
 		}
 		return empty
-	})
-
-	/* 与主题变量同步的布局常量（滚动偏移估算用，双方注释互指） */
-	/** 月标题高度（与 $m-calendar-month-title-height 同步） */
-	const MONTH_TITLE_HEIGHT = 24
-	/** 默认日格高度（与 $m-calendar-day-height 同步） */
-	const DEFAULT_DAY_HEIGHT = 64
-	/** 日格纵向间距（与 $m-calendar-day-margin-bottom 同步） */
-	const DAY_MARGIN_BOTTOM = 4
-
-	/** 当前滚动所在月索引（月标题变化时上报 month-show） */
-	const activeIndex = ref(0)
-
-	/**
-	 * 月偏移累计表：第 i 月顶部在滚动内容中的偏移 = 月标题高 + 此前行数 ×（行高 + 行间距）。
-	 * 纯前端估算（无 DOM 测量依赖），行高取 rowHeight 或默认常量
-	 */
-	const monthOffsets = computed<number[]>(() => {
-		const offsets: number[] = []
-		let acc = 0
-		const rowH = cfg.value.rowHeight > 0 ? cfg.value.rowHeight : DEFAULT_DAY_HEIGHT
-		for (let i = 0; i < cfg.value.months.length; i++) {
-			offsets.push(acc)
-			const rows = Math.ceil(cfg.value.months[i].days.length / 7)
-			acc += MONTH_TITLE_HEIGHT + rows * (rowH + DAY_MARGIN_BOTTOM)
-		}
-		return offsets
 	})
 
 	/** 面板根类名（m-calendar 基类即样式钩子） */
@@ -244,17 +218,23 @@
 	}
 
 	/**
-	 * 中央容器类名：圆点标记用圆形反白容器，常规用无背景容器
+	 * 中央容器类名：选中标记用满格圆角方块容器（端点单侧直角衔接 bar），常规用无背景容器
 	 */
 	function dayCenterClass(day: CalendarDayItem): string {
 		if (isCircularDayType(day.type)) {
-			return 'm-calendar__day-selected'
+			let cls = 'm-calendar__day-selected'
+			if (day.type == 'start') {
+				cls += ' m-calendar__day-selected--start'
+			} else if (day.type == 'end') {
+				cls += ' m-calendar__day-selected--end'
+			}
+			return cls
 		}
 		return 'm-calendar__day-value'
 	}
 
 	/**
-	 * 中央容器 inline 样式：宿主 color 非空时覆盖选中圆底色（bar 同步派生 10% 透明度）
+	 * 中央容器 inline 样式：宿主 color 非空时覆盖选中方块底色（bar 同步派生 10% 透明度）
 	 */
 	function dayCenterStyle(day: CalendarDayItem): string {
 		if (isCircularDayType(day.type) && cfg.value.color != '') {
@@ -271,27 +251,10 @@
 	}
 
 	/**
-	 * 月份滚动：找最大满足「偏移 <= scrollTop + 1」的月索引；仅弹层 + none 模式驱动上报
-	 * （平铺无内部滚动语义；switch-mode 单月视图无滚动）
+	 * 滚动区滚动上抛（scrollTop px，宿主滚动驱动副标题）
 	 */
-	function onBodyScroll(event: UniScrollEvent) {
-		if (cfg.value.panelMode != 'poppable' || cfg.value.switchMode != 'none') {
-			return
-		}
-		const scrollTop = event.detail.scrollTop
-		const offsets = monthOffsets.value
-		let index = 0
-		for (let i = 0; i < offsets.length; i++) {
-			if (offsets[i] <= scrollTop + 1) {
-				index = i
-			}
-		}
-		if (index != activeIndex.value) {
-			activeIndex.value = index
-			if (index < cfg.value.months.length) {
-				emit('month-show', cfg.value.months[index].date)
-			}
-		}
+	function onBodyScroll(e: UniScrollEvent) {
+		emit('body-scroll', e.detail.scrollTop)
 	}
 
 	/**
@@ -443,11 +406,13 @@
 		flex-wrap: wrap;
 	}
 
-	/* 月水印：超大字号低透明度数字，右上角对齐（文字压于日期格之下） */
+	/* 月水印：超大字号低透明度数字，水平居中于月块顶部（文字压于日期格之下，对齐 Vant） */
 	.m-calendar__month-mark {
 		position: absolute;
 		top: 2px;
-		right: 12px;
+		left: 0;
+		right: 0;
+		text-align: center;
 		font-size: $m-calendar-month-mark-font-size;
 		color: $m-calendar-month-mark-color;
 		z-index: 0;
@@ -505,7 +470,7 @@
 		color: $m-calendar-selected-day-color;
 	}
 
-	/* 中央容器：常规无背景 / 圆点标记圆形反白 */
+	/* 中央容器：常规无背景 / 选中标记满格圆角方块（对齐 Vant，端点单侧直角衔接范围 bar） */
 	.m-calendar__day-value {
 		position: relative;
 		z-index: 1;
@@ -513,17 +478,27 @@
 		align-items: center;
 	}
 	.m-calendar__day-selected {
-		position: relative;
-		z-index: 1;
-		width: $m-calendar-selected-day-size;
-		height: $m-calendar-selected-day-size;
-		border-radius: $m-radius-max;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: $m-calendar-day-radius;
 		background-color: $m-calendar-selected-day-background;
+		z-index: 0;
 		justify-content: center;
 		align-items: center;
 	}
+	.m-calendar__day-selected--start {
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+	.m-calendar__day-selected--end {
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 0;
+	}
 
-	/* 日期数字文本：常规 / 圆点反白 / 禁用 */
+	/* 日期数字文本：常规 / 选中反白 / 禁用 */
 	.m-calendar__day-text {
 		font-size: $m-calendar-day-font-size;
 		color: $m-text-color;

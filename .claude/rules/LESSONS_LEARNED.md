@@ -288,3 +288,40 @@
 - 排除项（均无效）：清除 scroll-into-view 属性 / 源码移除绑定、禁面板 transform、隐藏月水印（addStyleTag）、排除 headless 伪影、隐藏平铺日历排除透出、确认无 DOM 重复渲染——差异收敛为「fixed 面板 + 限高裁剪的可滚动 scroll-view」的 Chrome 合成层绘制缺陷
 - 修复：`.m-calendar__body { isolation: isolate; }`（`/* #ifdef WEB */` 条件编译隔离，原生端 scroll-view 无此问题、也避免 ucss 引入未知属性），滚动内容被封闭进独立层叠上下文后鬼影消失；`contain: paint` 同样有效（备选）
 - 规约：**fixed 弹层内放可滚动 scroll-view 的组件，Web 端截图出现「DOM 对但画错」的鬼影/溢出，首选给滚动区加 `isolation: isolate`**（层叠上下文封闭绘制，无布局副作用）；排查顺序：先验 DOM 几何（offsetTop/唯一性）→ 再验滚动状态 → 最后收敛合成层，每项排除实验单独截图留证
+
+## 2026-10-29 m-calendar 拆三组件（纯面板化 + popup / input 组合）
+
+### 49. 根节点 @click 开弹层 + 遮罩点击冒泡 = 关闭即重开：开逻辑必须挂在内层触发层
+- 现象：m-calendar-input 点遮罩关闭弹层后立即重开（视觉上弹层关不掉）。根因：弹层遮罩点击关闭的事件沿 DOM 冒泡经过组合组件根节点，根节点 `@click` 处理器在同一事件派发内把 show 先由 close 置 false、又置回 true——`show=false` 与 `show=true` 同帧完成，弹层永不关闭
+- 修复：开启逻辑从根节点移到内层「透明触发层」（覆盖 m-input 整区的绝对定位 view）；遮罩点击冒泡到根时无监听器，链路断开
+- 规约：**组合「触发器 + 弹层」的组件，触发监听挂在与弹层 DOM 无祖先后代歧义的专门层，不挂根节点**；验收必测「点遮罩关闭后弹层确实关掉」而不只是「能打开」
+
+### 50. 同层叠上下文内 z-index 必须留差值：tie-break 掩盖层叠 bug，修复 z 后旧 bug 才暴露
+- 现象一：m-calendar-input 清空钮（z2）压过弹层遮罩（z1），弹层打开时清空钮在遮罩之上可点击穿透。现象二：修复 z=3 后暴露「关闭即重开」——z=1 时代遮罩与后续实例浮层同 z，浏览器按 DOM 序后者居上（tie-break），后续卡片的触发层穿透早先卡片的遮罩反而掩盖了本组件内的问题
+- 修复：m-calendar-input 内部固定传 `:z-index="3"` 给 m-calendar-popup，层叠链触发层 1 < 清空钮 2 < 弹层遮罩 3（vars.scss 注释互指说明硬编码依据）
+- 规约：**同组件内自绘浮层（触发层/清空钮）与组合弹层的 z-index 必须显式分档留差值，且弹层取最大**；层叠修复可能连锁暴露被 tie-break 掩盖的相邻 bug，修完 z 要重跑全交互断言
+
+### 51. 弹层组件的瞬态日志存活不足一帧，Playwright 断言必须锚定终态
+- 现象：m-calendar-popup confirm 派发的 `confirm → ...` 日志在同一事件派发内被后续 close → closed 日志覆盖（存活 <1 帧），`waitForFunction` 永远观测不到，断言假超时；DOM 事件链实际完美（btnBub=1/panelBub=1/overlayBub=0，9 个探针验证）
+- 修复：断言改锚定终态——弹层 `closed` 类出现 + 面板 `--bottom-out` 定位类，另加「确认前面板仍在」排除误触遮罩
+- 规约：**自动化断言事件派发时，优先断言事件引发的最终状态（类名/DOM/值），而非断言中间态日志**；确需验事件序列才上探针，且区分「断言失败」与「日志被覆盖」
+
+### 52. 类名断言与样式落点以真实渲染 DOM 为准：禁用类可能在文本子元素而非格容器
+- 现象：m-calendar 禁用日的 `--disabled` 类在**文本子元素** `m-calendar__day-text--disabled` 上，不在格容器上；断言数格容器 disabled 数恒 0，6 个用例假失败
+- 规约：**写断言/样式前先 dump 真实 DOM 确认类名挂载层**（文字样式只能设在 text/button 上，天然把文字态类推向子元素），不要按组件源码的容器结构凭记忆写
+
+### 53. 演示页漏写 prop 是型别静默降级高发区：props 穷举即型别对账清单
+- 现象：calendar-input 演示 card2 漏写 `type="range"`，组件按默认 single 消费区间数组取首日展示（「2026-10-15 ~ 2026-10-18」变成只有首日），无任何报错与警告——组件对「数组按 single 取首日」是合法静默行为
+- 修复：演示页补 `type="range"` 后展示与 confirm 日志恢复区间语义
+- 规约：**演示页每张卡片写完先对照组件 Props 清单核对型别关键 prop（type / multiple 语义开关类），再进浏览器验证**；组合组件（value 数组 + type 默认值）这类「合法但语义错」的静默降级不会报错，只能靠穷举演示页对账
+
+## 2026-10-30 m-calendar 平铺形态对齐 Vant（月标题去重 + 滚动驱动副标题 + 方块选中态）
+
+### 54. uvue Web 页面 window.scrollY 恒 0：页面滚动都在 scroll-view 内部容器，交互验证必须走 scrollIntoView(ref)
+- 现象：browser_scroll 页面级滚动后 window.scrollY 仍 0、元素 click 报坐标在视口外；uvue 页面结构是外层 scroll-view.page-body 承载滚动，window/文档级滚动不存在
+- 有效做法：browser_scroll({ ref: 目标元素ref, scrollIntoView: true }) 定位后点击；无文本的 uvue view 拿不到 snapshot ref，对有文本的父容器（如 uni-view.card）做 snapshot + includeIgnored: true 可拿到 textbox 类 ref，或用结构选择器 `标签.class:nth-of-type(n) .子类:nth-child(m)` 直达深层格子拿 ref（注意 :has-text 不被 snapshot 引擎支持，报 renderer 错误）
+- 规约：**uvue 页面的浏览器交互验证，定位一律 scrollIntoView(ref) + 结构选择器拿 ref，不要尝试页面级滚动或坐标偏移点击**（ref+offset 语义在 uvue 自定义元素上不可靠）
+
+### 55. 跨样式/脚本的「同一数值」双源维护：SCSS 变量与 UTS 常量互指注释 + 运行时估算只做月粒度
+- 背景：滚动驱动副标题需要 UTS 侧知道日格行高（SCSS 变量运行时不可读），新增 CALENDAR_DEFAULT_DAY_HEIGHT / CALENDAR_DAY_MARGIN_BOTTOM 常量与 $m-calendar-day-height / $m-calendar-day-margin-bottom 双源同步；用户覆盖变量时估算漂移
+- 规约：**双源数值在两侧注释互指对方文件与常量名**；估算逻辑（视口月定位）只做到「月粒度」消费（定位所在月），不做像素级依赖，把漂移影响压到最小并写入文档差异节

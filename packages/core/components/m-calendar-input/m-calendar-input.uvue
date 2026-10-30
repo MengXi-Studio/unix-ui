@@ -1,0 +1,246 @@
+<template>
+	<!-- 日历输入框：m-input（只读展示）+ m-calendar-popup 组合（三组件拆分后的表单触发组件）。
+	     触发器点击整区打开弹层，确认后经 v-model:value 回写选中值并展示；
+	     清空为自绘按钮（m-input 内置 clearable 的图标位于触发层之下会被挡住） -->
+	<!-- 开启逻辑挂在触发层而非根节点：弹层遮罩点击会沿 DOM 冒泡经过本组件根，
+	     若根监听 @click 会在遮罩关闭的同一事件派发内把 show 置回 true（关闭即重开） -->
+	<view :class="rootClass" :style="customStyle">
+		<m-input
+			:model-value="displayText"
+			:placeholder="placeholder"
+			:disabled="disabled"
+			:border="border"
+			:inlaid="inlaid"
+			:custom-style="inputStyle"
+		/>
+		<!-- 透明触发层：m-input 的 readonly 以原生 disabled 模拟，原生 disabled 控件吞点击事件，
+		     覆盖层接住整区点击打开弹层（disabled 态不渲染） -->
+		<view v-if="!disabled" class="m-calendar-input__trigger" @click="onTriggerClick"></view>
+		<view v-if="showClear" class="m-calendar-input__clear" @click.stop="onClearClick">
+			<m-icon name="clear" custom-class="m-calendar-input__clear-icon" />
+		</view>
+		<!-- z-index 3 高于触发层(1)/清空钮(2)：弹层遮罩须盖住本组件浮层，见 vars.scss 层叠注释 -->
+		<m-calendar-popup
+			v-model:show="popupShow"
+			:type="type"
+			:title="title"
+			:color="color"
+			:min-date="minDate"
+			:max-date="maxDate"
+			:default-date="value"
+			:max-range="maxRange"
+			:allow-same-day="allowSameDay"
+			:popup-height="popupHeight"
+			:position="position"
+			:round="round"
+			:z-index="3"
+			@confirm="onCalConfirm"
+		/>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-calendar-input 日历输入框：m-input + m-calendar-popup 组合组件。
+	 * 值单向受控：外部 value（v-model:value）经 default-date 同步日历初始选择，
+	 * 确认后经 update:value 回写；展示文本由 value 派生（single 单值 / range 区间 / multiple 顿号串）。
+	 */
+	import { CalendarType, CalendarPosition } from '../m-calendar/calendar.uts'
+
+	type Props = {
+		/** 选中值（v-model:value）：single 为 Date，multiple / range 为 Date[]，null 未选 */
+		value?: Date | Date[] | null
+		/** 选择类型 */
+		type?: CalendarType
+		/** 占位符 */
+		placeholder?: string
+		/** 是否禁用 */
+		disabled?: boolean
+		/** 是否显示清空按钮（有值且非 disabled 时可见） */
+		clearable?: boolean
+		/** 触发器是否显示边框容器（透传 m-input） */
+		border?: boolean
+		/** 触发器嵌入式形态（透传 m-input） */
+		inlaid?: boolean
+		/** 弹层常规标题 */
+		title?: string
+		/** 主题色（选中圆点与范围 bar 派生色，支持 #hex 与渐变） */
+		color?: string
+		/** 最小日期（null 默认今天） */
+		minDate?: Date | null
+		/** 最大日期（null 默认今天 + 6 个月） */
+		maxDate?: Date | null
+		/** 范围 / 多选最多可选天数（含两端计数；-1 不限制） */
+		maxRange?: number
+		/** 范围选择是否允许起止同日 */
+		allowSameDay?: boolean
+		/** 弹层面板高度（px 原样；% 按窗口高换算为 px） */
+		popupHeight?: string
+		/** 弹出方位（透传 m-popup） */
+		position?: CalendarPosition
+		/** 弹层圆角（透传 m-popup） */
+		round?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: null,
+		type: 'single',
+		placeholder: '请选择日期',
+		disabled: false,
+		clearable: true,
+		border: true,
+		inlaid: false,
+		title: '日期选择',
+		color: '',
+		minDate: null,
+		maxDate: null,
+		maxRange: -1,
+		allowSameDay: false,
+		popupHeight: '80%',
+		position: 'bottom',
+		round: true,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 确认后回写选中值 */
+		'update:value': [value: Date | Date[] | null]
+		/** 弹层确认（按钮 / 自动确认）后触发 */
+		confirm: [value: Date | Date[]]
+		/** 点击清空按钮后触发 */
+		clear: []
+	}>()
+
+	/** 弹层显隐（内部状态；confirm 后由 m-calendar-popup 派发 update:show 关闭） */
+	const popupShow = ref<boolean>(false)
+
+	/** 根类名 */
+	const rootClass = computed<string>(() => {
+		return 'm-calendar-input'
+	})
+
+	/** 是否有值（single 有 Date / 数组非空） */
+	const hasValue = computed<boolean>(() => {
+		const v = props.value
+		if (v == null) {
+			return false
+		}
+		if (v instanceof Date) {
+			return true
+		}
+		return (v as Date[]).length > 0
+	})
+
+	/** 清空按钮可见性 */
+	const showClear = computed<boolean>(() => {
+		return props.clearable && !props.disabled && hasValue.value
+	})
+
+	/**
+	 * 两位补零文本（UTS 手动补零，规避 padStart 跨端差异）
+	 */
+	function two(n: number): string {
+		return n < 10 ? '0' + n.toString() : n.toString()
+	}
+
+	/**
+	 * 日期转 YYYY-MM-DD 文本
+	 */
+	function fmtDate(d: Date): string {
+		return d.getFullYear().toString() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate())
+	}
+
+	/** 展示文本：single 单值；range「A ~ B」（未选完仅展示起点）；multiple 顿号串 */
+	const displayText = computed<string>(() => {
+		const v = props.value
+		if (v == null) {
+			return ''
+		}
+		if (v instanceof Date) {
+			return fmtDate(v)
+		}
+		const arr = v as Date[]
+		const parts: string[] = []
+		for (let i = 0; i < arr.length; i++) {
+			parts.push(fmtDate(arr[i]))
+		}
+		if (props.type == 'range') {
+			return parts.join(' ~ ')
+		}
+		return parts.join('、')
+	})
+
+	/** 触发器内联样式：清空按钮显示时为输入区右侧预留按钮宽度（与 $m-calendar-input-clear-width 同步） */
+	const inputStyle = computed<string>(() => {
+		if (showClear.value) {
+			return 'padding-right: 40px;'
+		}
+		return ''
+	})
+
+	/** 根点击：disabled 不响应，其余打开弹层 */
+	function onTriggerClick() {
+		if (props.disabled) {
+			return
+		}
+		popupShow.value = true
+	}
+
+	/** 确认回写：值经 v-model 回写外部，弹层关闭由 m-calendar-popup 内部完成 */
+	function onCalConfirm(value: Date | Date[]) {
+		emit('update:value', value)
+		emit('confirm', value)
+	}
+
+	/** 清空：回写 null 并派发 clear（.stop 阻止冒泡到根触发器） */
+	function onClearClick(e: MouseEvent) {
+		emit('update:value', null)
+		emit('clear')
+	}
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根（触发区，承载触发层与清空按钮的定位包含块） ========== */
+	.m-calendar-input {
+		position: relative;
+	}
+
+	/* ========== 透明触发层（覆盖整区接住点击，disabled 态不渲染） ========== */
+	.m-calendar-input__trigger {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: $m-calendar-input-trigger-z-index;
+	}
+
+	/* ========== 清空按钮（触发层之上，右侧定宽纵向居中） ========== */
+	.m-calendar-input__clear {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: $m-calendar-input-clear-width;
+		z-index: $m-calendar-input-clear-z-index;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-calendar-input__clear-icon {
+		font-size: $m-calendar-input-clear-icon-size;
+		color: $m-calendar-input-clear-color;
+	}
+</style>

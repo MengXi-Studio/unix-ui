@@ -7,35 +7,18 @@
 		<scroll-view class="page-body" :scroll-y="true">
 		<view class="container">
 
-			<text class="section" id="basic">基础弹层</text>
+			<text class="section" id="basic">基础面板</text>
 			<view class="card">
-				<m-button block @click="openBasic">打开日历（single 单选）</m-button>
-				<m-calendar
-					v-model:show="basicShow"
-					@select="onBasicSelect"
-					@confirm="onBasicConfirm"
-					@open="onBasicOpen"
-					@close="onBasicClose"
-				/>
+				<m-calendar @select="onBasicSelect" @month-show="onBasicMonthShow" />
 				<view class="event-log">
 					<text class="event-text">最近事件：{{ basicLog }}</text>
 				</view>
-				<text class="caption">poppable 默认 true，底部弹出 + 圆角 + 遮罩可关；点击确认后派发 confirm 并自动关闭</text>
-			</view>
-
-			<text class="section" id="flat">平铺面板</text>
-			<view class="card">
-				<m-calendar :poppable="false" @select="onFlatSelect" />
-				<view class="event-log">
-					<text class="event-text">最近事件：{{ flatLog }}</text>
-				</view>
-				<text class="caption">poppable=false 平铺展示（默认今天起 7 个月）；默认选中今天，水印月份数字压于日期层之下</text>
+				<text class="caption">纯面板形态（poppable 拆分至 m-calendar-popup）；single 默认选中今天；月块内默认无标题（对齐 Vant），副标题随内部滚动切换为视口月份（需 height 限高产生内部滚动）；month-show 挂载时触发一次</text>
 			</view>
 
 			<text class="section" id="multiple">多选与超限</text>
 			<view class="card">
 				<m-calendar
-					:poppable="false"
 					type="multiple"
 					:max-range="3"
 					range-prompt="最多选择 3 天"
@@ -52,7 +35,6 @@
 			<text class="section" id="range">范围与自动确认</text>
 			<view class="card">
 				<m-calendar
-					:poppable="false"
 					type="range"
 					:show-confirm="false"
 					:allow-same-day="true"
@@ -68,7 +50,6 @@
 			<text class="section" id="custom">自定义范围与主题色</text>
 			<view class="card">
 				<m-calendar
-					:poppable="false"
 					type="range"
 					:min-date="customMin"
 					:max-date="customMax"
@@ -80,16 +61,16 @@
 				<view class="event-log">
 					<text class="event-text">最近事件：{{ customLog }}</text>
 				</view>
-				<text class="caption">min/max 限定 2026-10-10 ~ 2026-12-20（界外禁用灰显）；default-date 预选 10-15 ~ 10-18；color 派生选中圆与范围 bar</text>
+				<text class="caption">min/max 限定 2026-10-10 ~ 2026-12-20（界外禁用灰显）；default-date 预选 10-15 ~ 10-18；color 派生选中方块与范围 bar</text>
 			</view>
 
 			<text class="section" id="switch-mode">年月切换导航</text>
 			<view class="card">
-				<m-calendar :poppable="false" switch-mode="month" @panel-change="onPanelChange1" />
+				<m-calendar switch-mode="month" @panel-change="onPanelChange1" @click-subtitle="onSubtitle1" />
 				<view class="event-log">
 					<text class="event-text">month 模式：{{ panelLog1 }}</text>
 				</view>
-				<m-calendar :poppable="false" switch-mode="year-month" custom-style="margin-top: 16px;" @panel-change="onPanelChange2" />
+				<m-calendar switch-mode="year-month" custom-style="margin-top: 16px;" @panel-change="onPanelChange2" />
 				<view class="event-log">
 					<text class="event-text">year-month 模式：{{ panelLog2 }}</text>
 				</view>
@@ -99,7 +80,6 @@
 			<text class="section" id="formatter">formatter 定制与行高</text>
 			<view class="card">
 				<m-calendar
-					:poppable="false"
 					:row-height="56"
 					:first-day-of-week="1"
 					:formatter="dayFormatter"
@@ -113,12 +93,15 @@
 
 			<text class="section" id="slots">插槽</text>
 			<view class="card">
-				<m-calendar :poppable="false" :show-mark="false" :max-date="slotsMax">
+				<m-calendar :show-mark="false" :max-date="slotsMax">
 					<template #title>
 						<text class="demo-slot-title">选择入住日期</text>
 					</template>
 					<template #subtitle>
 						<text class="demo-slot-subtitle">本月特价</text>
+					</template>
+					<template #month-title="{ text }">
+						<text class="demo-slot-subtitle">{{ text }}</text>
 					</template>
 					<template #text="{ day }">
 						<text class="demo-slot-text">{{ day.text }}</text>
@@ -129,12 +112,12 @@
 						</view>
 					</template>
 				</m-calendar>
-				<text class="caption">title / subtitle / text / footer 插槽自定义；max-date 收窄到本月内便于观察；day 为作用域插槽参数</text>
+				<text class="caption">title / subtitle / month-title / text / footer 插槽自定义；month-title 默认不渲染（副标题随滚动切换视口月），传入插槽即恢复月块标题；max-date 收窄到本月内便于观察；day 为作用域插槽参数</text>
 			</view>
 
-			<text class="section" id="methods">Methods 实例方法</text>
+			<text class="section" id="methods">面板高度与 Methods 实例方法</text>
 			<view class="card">
-				<m-calendar ref="methodCal" :poppable="false" type="single" :max-date="slotsMax" />
+				<m-calendar ref="methodCal" type="single" :max-date="slotsMax" height="400px" />
 				<view class="demo-btn-row">
 					<m-button size="small" @click="callReset">reset</m-button>
 					<m-button size="small" custom-style="margin-left: 8px;" @click="callScroll">scrollToDate</m-button>
@@ -143,7 +126,7 @@
 				<view class="event-log">
 					<text class="event-text">最近调用：{{ methodLog }}</text>
 				</view>
-				<text class="caption">reset 清空选择回到聚焦月；scrollToDate 定位到 2026-11-15；getSelectedDate 读取当前选择</text>
+				<text class="caption">height=400px 限高内部滚动；reset 清空选择回到聚焦月；scrollToDate 定位 2026-11-15（超出 max-date 时 clamp 到范围末月）；getSelectedDate 读取当前选择</text>
 			</view>
 
 		</view>
@@ -172,44 +155,20 @@
 		return parts.join(' ~ ')
 	}
 
-	// ========== 1 基础弹层 ==========
-	const basicShow = ref<boolean>(false)
-	const basicLog = ref<string>('（等待交互）')
+	// ========== 1 基础面板 ==========
+	const basicLog = ref<string>('（点击日期试试）')
 
-	/** 打开弹层 */
-	function openBasic() {
-		basicShow.value = true
-	}
-
-	/** select 事件记录 */
+	/** 基础面板 select 记录 */
 	function onBasicSelect(value: Date | Date[]) {
 		basicLog.value = 'select → ' + fmtValue(value)
 	}
 
-	/** confirm 事件记录（弹层同步关闭） */
-	function onBasicConfirm(value: Date | Date[]) {
-		basicLog.value = 'confirm → ' + fmtValue(value)
+	/** 基础面板 month-show 记录（挂载一次） */
+	function onBasicMonthShow(date: Date) {
+		basicLog.value = 'month-show → ' + fmtDate(date)
 	}
 
-	/** open 事件记录 */
-	function onBasicOpen() {
-		basicLog.value = 'open'
-	}
-
-	/** close 事件记录 */
-	function onBasicClose() {
-		basicLog.value = 'close'
-	}
-
-	// ========== 2 平铺面板 ==========
-	const flatLog = ref<string>('（点击日期试试）')
-
-	/** 平铺 select 记录 */
-	function onFlatSelect(value: Date | Date[]) {
-		flatLog.value = 'select → ' + fmtValue(value)
-	}
-
-	// ========== 3 多选与超限 ==========
+	// ========== 2 多选与超限 ==========
 	const multiLog = ref<string>('（最多选 3 天）')
 	const multiEvents: string[] = []
 
@@ -237,7 +196,7 @@
 		multiLog.value = 'over-range → 已拒绝并提示'
 	}
 
-	// ========== 4 范围与自动确认 ==========
+	// ========== 3 范围与自动确认 ==========
 	const rangeLog = ref<string>('（allow-same-day，选满自动确认）')
 
 	/** 范围 select 记录 */
@@ -250,7 +209,7 @@
 		rangeLog.value = 'confirm → ' + fmtValue(value)
 	}
 
-	// ========== 5 自定义范围与主题色 ==========
+	// ========== 4 自定义范围与主题色 ==========
 	const customMin = new Date(2026, 9, 10)
 	const customMax = new Date(2026, 11, 20)
 	const customDefault = [new Date(2026, 9, 15), new Date(2026, 9, 18)] as Date[]
@@ -266,7 +225,7 @@
 		customLog.value = 'click-disabled-date → ' + fmtDate(date)
 	}
 
-	// ========== 6 年月切换导航 ==========
+	// ========== 5 年月切换导航 ==========
 	const panelLog1 = ref<string>('（切换年月观察 panel-change）')
 	const panelLog2 = ref<string>('（切换年 / 月观察 panel-change）')
 
@@ -280,7 +239,12 @@
 		panelLog2.value = 'panel-change → ' + fmtDate(date)
 	}
 
-	// ========== 7 formatter 定制 ==========
+	/** month 模式 click-subtitle 记录 */
+	function onSubtitle1() {
+		panelLog1.value = 'click-subtitle'
+	}
+
+	// ========== 6 formatter 定制 ==========
 	const formatterLog = ref<string>('（今天标记 / 约满禁用 / 周末底色）')
 
 	/**
@@ -309,10 +273,10 @@
 		formatterLog.value = 'select → ' + fmtValue(value)
 	}
 
-	// ========== 8 插槽（无逻辑） ==========
+	// ========== 7 插槽（无逻辑） ==========
 	const slotsMax = new Date(2026, 9, 31)
 
-	// ========== 9 Methods 实例方法 ==========
+	// ========== 8 Methods 实例方法 ==========
 	const methodCal = ref<ComponentPublicInstance | null>(null)
 	const methodLog = ref<string>('（点击按钮调用实例方法）')
 
@@ -338,7 +302,7 @@
 		methodLog.value = 'scrollToDate → 2026-11-15'
 	}
 
-	/** getSelectedDate：读取当前选择（single 为单值或 null） */
+	/** getSelectedDate：读取当前选择 */
 	function callGet() {
 		const inst = methodCal.value
 		if (inst == null) {

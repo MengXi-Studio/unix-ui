@@ -1,0 +1,327 @@
+<template>
+	<view class="page">
+		<demo-navbar title="日历弹出框" subtitle="CalendarPopup" />
+		<demo-bridge />
+		<!-- 函数式 showToast 宿主（over-range 超限提示依赖） -->
+		<m-toast />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础弹层</text>
+			<view class="card">
+				<m-button block @click="openBasic">打开日历（single 单选）</m-button>
+				<m-calendar-popup
+					v-model:show="basicShow"
+					@select="onBasicSelect"
+					@confirm="onBasicConfirm"
+					@open="onBasicOpen"
+					@opened="onBasicOpened"
+					@close="onBasicClose"
+					@closed="onBasicClosed"
+					@click-overlay="onBasicOverlay"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近事件：{{ basicLog }}</text>
+				</view>
+				<text class="caption">默认底部弹出 + 圆角 + 遮罩可关；点击确认后派发 confirm 并自动关闭；open / opened / close / closed / click-overlay 全生命周期事件</text>
+			</view>
+
+			<text class="section" id="multiple">多选弹层</text>
+			<view class="card">
+				<m-button block @click="openMulti">打开日历（multiple 多选）</m-button>
+				<m-calendar-popup
+					v-model:show="multiShow"
+					type="multiple"
+					:max-range="3"
+					range-prompt="最多选择 3 天"
+					@select="onMultiSelect"
+					@unselect="onMultiUnselect"
+					@over-range="onMultiOverRange"
+					@confirm="onMultiConfirm"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近事件：{{ multiLog }}</text>
+				</view>
+				<text class="caption">type=multiple 点击切换选中 / 取消（unselect）；max-range=3 超限拒绝并 toast（over-range）</text>
+			</view>
+
+			<text class="section" id="range">范围自动确认</text>
+			<view class="card">
+				<m-button block @click="openRange">打开日历（range 范围）</m-button>
+				<m-calendar-popup
+					v-model:show="rangeShow"
+					type="range"
+					:show-confirm="false"
+					:allow-same-day="true"
+					@select="onRangeSelect"
+					@confirm="onRangeConfirm"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近事件：{{ rangeLog }}</text>
+				</view>
+				<text class="caption">show-confirm=false 选满即自动 confirm 并自动关闭；allow-same-day 允许起止同日</text>
+			</view>
+
+			<text class="section" id="shape">方位 / 圆角 / 高度</text>
+			<view class="card">
+				<m-button block @click="openShape">居中弹出（90% 高、无圆角）</m-button>
+				<m-calendar-popup
+					v-model:show="shapeShow"
+					position="center"
+					:round="false"
+					popup-height="90%"
+					:max-date="slotsMax"
+				/>
+				<text class="caption">position=center 居中弹出；round=false 关圆角；popup-height=90% 按窗口高换算</text>
+			</view>
+
+			<text class="section" id="formatter">formatter 与界外禁用</text>
+			<view class="card">
+				<m-button block @click="openFormatter">打开日历（限定本月 + formatter）</m-button>
+				<m-calendar-popup
+					v-model:show="formatterShow"
+					:min-date="formatterMin"
+					:max-date="slotsMax"
+					:formatter="dayFormatter"
+					@confirm="onFormatterConfirm"
+					@click-disabled-date="onFormatterDisabled"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近事件：{{ formatterLog }}</text>
+				</view>
+				<text class="caption">min/max 限定本月 25 日起（1~24 号界外置灰，点击派发 click-disabled-date）；formatter 标记今天与周末底色</text>
+			</view>
+
+			<text class="section" id="slots">插槽</text>
+			<view class="card">
+				<m-button block @click="openSlots">打开日历（自定义 title / footer）</m-button>
+				<m-calendar-popup v-model:show="slotsShow" :max-date="slotsMax">
+					<template #title>
+						<text class="demo-slot-title">选择入住日期</text>
+					</template>
+					<template #footer>
+						<view class="demo-slot-footer">
+							<text class="demo-slot-footer-text">自定义 footer 区域（覆盖确认按钮）</text>
+						</view>
+					</template>
+				</m-calendar-popup>
+				<text class="caption">title / footer 插槽透传到内部 m-calendar；未传入的插槽（副标题 / 日期文字等）保持默认渲染</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { CalendarDayItem, getDayDiff } from '@/uni_modules/m-ui-x/components/m-calendar/calendar.uts'
+
+	/** 日期转 YYYY-M-D 文本（演示日志用） */
+	function fmtDate(d: Date): string {
+		return d.getFullYear().toString() + '-' + (d.getMonth() + 1).toString() + '-' + d.getDate().toString()
+	}
+
+	/** 选择值转文本（single 为单值，multiple / range 为数组） */
+	function fmtValue(value: Date | Date[]): string {
+		if (value instanceof Date) {
+			return fmtDate(value)
+		}
+		const arr = value as Date[]
+		const parts: string[] = []
+		for (let i = 0; i < arr.length; i++) {
+			parts.push(fmtDate(arr[i]))
+		}
+		return parts.join(' ~ ')
+	}
+
+	// ========== 1 基础弹层 ==========
+	const basicShow = ref<boolean>(false)
+	const basicLog = ref<string>('（等待交互）')
+
+	/** 打开弹层 */
+	function openBasic() {
+		basicShow.value = true
+	}
+
+	/** select 事件记录 */
+	function onBasicSelect(value: Date | Date[]) {
+		basicLog.value = 'select → ' + fmtValue(value)
+	}
+
+	/** confirm 事件记录（弹层同步自动关闭） */
+	function onBasicConfirm(value: Date | Date[]) {
+		basicLog.value = 'confirm → ' + fmtValue(value)
+	}
+
+	/** open 事件记录 */
+	function onBasicOpen() {
+		basicLog.value = 'open'
+	}
+
+	/** opened 事件记录 */
+	function onBasicOpened() {
+		basicLog.value = 'opened'
+	}
+
+	/** close 事件记录 */
+	function onBasicClose() {
+		basicLog.value = 'close'
+	}
+
+	/** closed 事件记录 */
+	function onBasicClosed() {
+		basicLog.value = 'closed'
+	}
+
+	/** click-overlay 事件记录 */
+	function onBasicOverlay() {
+		basicLog.value = 'click-overlay（遮罩已关闭）'
+	}
+
+	// ========== 2 多选弹层 ==========
+	const multiShow = ref<boolean>(false)
+	const multiLog = ref<string>('（最多选 3 天）')
+	const multiEvents: string[] = []
+
+	/** 打开多选弹层 */
+	function openMulti() {
+		multiShow.value = true
+	}
+
+	/** 多选事件序列记录（unselect 后紧跟 select，保留最近 2 条保证两类事件均可见） */
+	function pushMultiEvent(msg: string) {
+		multiEvents.push(msg)
+		if (multiEvents.length > 2) {
+			multiEvents.splice(0, multiEvents.length - 2)
+		}
+		multiLog.value = multiEvents.join('；')
+	}
+
+	/** 多选 select 记录 */
+	function onMultiSelect(value: Date | Date[]) {
+		pushMultiEvent('select → ' + fmtValue(value))
+	}
+
+	/** 多选取消选中记录 */
+	function onMultiUnselect(date: Date) {
+		pushMultiEvent('unselect → ' + fmtDate(date))
+	}
+
+	/** 超限记录（toast 由组件内部经 m-toast 展示） */
+	function onMultiOverRange() {
+		multiLog.value = 'over-range → 已拒绝并提示'
+	}
+
+	/** 多选 confirm 记录 */
+	function onMultiConfirm(value: Date | Date[]) {
+		multiLog.value = 'confirm → ' + fmtValue(value)
+	}
+
+	// ========== 3 范围自动确认 ==========
+	const rangeShow = ref<boolean>(false)
+	const rangeLog = ref<string>('（allow-same-day，选满自动确认并关闭）')
+
+	/** 打开范围弹层 */
+	function openRange() {
+		rangeShow.value = true
+	}
+
+	/** 范围 select 记录 */
+	function onRangeSelect(value: Date | Date[]) {
+		rangeLog.value = 'select → ' + fmtValue(value)
+	}
+
+	/** 范围 confirm 记录 */
+	function onRangeConfirm(value: Date | Date[]) {
+		rangeLog.value = 'confirm → ' + fmtValue(value)
+	}
+
+	// ========== 4 方位 / 圆角 / 高度 ==========
+	const shapeShow = ref<boolean>(false)
+
+	/** 打开形态定制弹层 */
+	function openShape() {
+		shapeShow.value = true
+	}
+
+	// ========== 5 formatter 与界外禁用 ==========
+	const formatterShow = ref<boolean>(false)
+	const formatterMin = new Date(2026, 9, 25)
+	const formatterLog = ref<string>('（本月可选，界外点击观察禁用事件）')
+
+	/** 打开 formatter 弹层 */
+	function openFormatter() {
+		formatterShow.value = true
+	}
+
+	/**
+	 * 日期格格式化：今天加底部标记；周末加底色类
+	 */
+	const dayFormatter = (day: CalendarDayItem): CalendarDayItem => {
+		if (day.type == 'placeholder') {
+			return day
+		}
+		if (getDayDiff(day.date, new Date()) == 0) {
+			day.bottomInfo = '今天'
+		}
+		const weekday = day.date.getDay()
+		if (weekday == 0 || weekday == 6) {
+			day.className = 'demo-weekend'
+		}
+		return day
+	}
+
+	/** formatter 弹层 confirm 记录 */
+	function onFormatterConfirm(value: Date | Date[]) {
+		formatterLog.value = 'confirm → ' + fmtValue(value)
+	}
+
+	/** 点击禁用日期记录 */
+	function onFormatterDisabled(date: Date) {
+		formatterLog.value = 'click-disabled-date → ' + fmtDate(date)
+	}
+
+	// ========== 6 插槽 ==========
+	const slotsShow = ref<boolean>(false)
+	const slotsMax = new Date(2026, 9, 31)
+
+	/** 打开插槽演示弹层 */
+	function openSlots() {
+		slotsShow.value = true
+	}
+</script>
+
+<style lang="scss">
+	/* 基础使用节的事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	/* formatter 周末底色（经 day.className 注入到日期格容器） */
+	.demo-weekend {
+		background-color: #f7f8fa;
+	}
+	/* 插槽演示的自定义样式 */
+	.demo-slot-title {
+		font-size: 16px;
+		font-weight: bold;
+		color: #07c160;
+	}
+	.demo-slot-footer {
+		flex-direction: row;
+		justify-content: center;
+		padding: 10px 0;
+	}
+	.demo-slot-footer-text {
+		font-size: 13px;
+		color: #969799;
+	}
+</style>

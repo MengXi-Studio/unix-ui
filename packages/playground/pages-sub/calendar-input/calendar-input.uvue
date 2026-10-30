@@ -1,0 +1,190 @@
+<template>
+	<view class="page">
+		<demo-navbar title="日历输入框" subtitle="CalendarInput" />
+		<demo-bridge />
+		<!-- 函数式 showToast 宿主（over-range 超限提示依赖） -->
+		<m-toast />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-calendar-input v-model:value="basicValue" @confirm="onBasicConfirm" @clear="onBasicClear" />
+				<view class="event-log">
+					<text class="event-text">当前值：{{ fmtBasic }}；最近事件：{{ basicLog }}</text>
+				</view>
+				<text class="caption">点击触发器打开弹层，确认后回填展示（YYYY-MM-DD）；clearable=true 有值时显示清空按钮（clear 事件）</text>
+			</view>
+
+			<text class="section" id="range">范围与多选</text>
+			<view class="card">
+				<m-calendar-input
+					v-model:value="rangeValue"
+					type="range"
+					placeholder="请选择入住 / 离店日期"
+					@confirm="onRangeConfirm"
+				/>
+				<m-calendar-input
+					v-model:value="multiValue"
+					type="multiple"
+					:max-range="3"
+					placeholder="请选择多个日期（最多 3 天）"
+					custom-style="margin-top: 12px;"
+					@confirm="onMultiConfirm"
+				/>
+				<view class="event-log">
+					<text class="event-text">范围确认：{{ rangeLog }}；多选确认：{{ multiLog }}</text>
+				</view>
+				<text class="caption">range 展示「起 ~ 止」区间；multiple 顿号串展示；max-range=3 超限拒绝并 toast</text>
+			</view>
+
+			<text class="section" id="limit">限定范围与主题色</text>
+			<view class="card">
+				<m-calendar-input
+					v-model:value="limitValue"
+					type="range"
+					:min-date="limitMin"
+					:max-date="limitMax"
+					color="#07c160"
+					@confirm="onLimitConfirm"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近确认：{{ limitLog }}</text>
+				</view>
+				<text class="caption">min/max 限定 2026-10-10 ~ 2026-12-20（界外置灰不可选）；color 派生选中圆与范围 bar</text>
+			</view>
+
+			<text class="section" id="state">禁用与形态</text>
+			<view class="card">
+				<m-calendar-input v-model:value="stateValue" disabled />
+				<m-calendar-input v-model:value="stateValue2" :clearable="false" placeholder="无清空按钮" custom-style="margin-top: 12px;" />
+				<m-calendar-input v-model:value="stateValue3" :border="false" placeholder="无边框形态" custom-style="margin-top: 12px;" />
+				<text class="caption">disabled 禁用（触发层不渲染，不可打开弹层）；clearable=false 隐藏清空；border=false 无边框嵌入形态</text>
+			</view>
+
+			<text class="section" id="shape">弹层形态</text>
+			<view class="card">
+				<m-calendar-input
+					v-model:value="shapeValue"
+					title="选择入住日期"
+					popup-height="70%"
+					position="center"
+					:round="false"
+					@confirm="onShapeConfirm"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近确认：{{ shapeLog }}</text>
+				</view>
+				<text class="caption">title 自定义弹层标题；popup-height=70% + position=center + round=false 透传弹层形态</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/** 选择值转展示文本（与组件内部格式一致，供日志对照） */
+	function fmtValue(value: Date | Date[] | null): string {
+		if (value == null) {
+			return 'null'
+		}
+		if (value instanceof Date) {
+			return fmtDate(value)
+		}
+		const arr = value as Date[]
+		const parts: string[] = []
+		for (let i = 0; i < arr.length; i++) {
+			parts.push(fmtDate(arr[i]))
+		}
+		return parts.join(' ~ ')
+	}
+
+	/** 日期转 YYYY-MM-DD 文本 */
+	function fmtDate(d: Date): string {
+		const m = d.getMonth() + 1
+		const day = d.getDate()
+		const mm = m < 10 ? '0' + m.toString() : m.toString()
+		const dd = day < 10 ? '0' + day.toString() : day.toString()
+		return d.getFullYear().toString() + '-' + mm + '-' + dd
+	}
+
+	// ========== 1 基础用法 ==========
+	const basicValue = ref<Date | Date[] | null>(new Date(2026, 9, 29))
+	const basicLog = ref<string>('（初始预选 2026-10-29）')
+
+	/** 基础 confirm 记录 */
+	function onBasicConfirm(value: Date | Date[]) {
+		basicLog.value = 'confirm → ' + fmtValue(value)
+	}
+
+	/** 基础 clear 记录 */
+	function onBasicClear() {
+		basicLog.value = 'clear → 已清空'
+	}
+
+	// 基础当前值展示（computed 放在使用之后，UTS 允许声明顺序引用）
+	const fmtBasic = computed<string>(() => fmtValue(basicValue.value))
+
+	// ========== 2 范围与多选 ==========
+	const rangeValue = ref<Date | Date[] | null>(null)
+	const multiValue = ref<Date | Date[] | null>(null)
+	const rangeLog = ref<string>('（待确认）')
+	const multiLog = ref<string>('（待确认）')
+
+	/** 范围 confirm 记录 */
+	function onRangeConfirm(value: Date | Date[]) {
+		rangeLog.value = fmtValue(value)
+	}
+
+	/** 多选 confirm 记录（顿号串与组件展示格式一致） */
+	function onMultiConfirm(value: Date | Date[]) {
+		const arr = value as Date[]
+		const parts: string[] = []
+		for (let i = 0; i < arr.length; i++) {
+			parts.push(fmtDate(arr[i]))
+		}
+		multiLog.value = parts.join('、')
+	}
+
+	// ========== 3 限定范围与主题色 ==========
+	const limitMin = new Date(2026, 9, 10)
+	const limitMax = new Date(2026, 11, 20)
+	const limitValue = ref<Date | Date[] | null>([new Date(2026, 9, 15), new Date(2026, 9, 18)] as Date[])
+	const limitLog = ref<string>('（初始预选 2026-10-15 ~ 2026-10-18）')
+
+	/** 限定范围 confirm 记录 */
+	function onLimitConfirm(value: Date | Date[]) {
+		limitLog.value = fmtValue(value)
+	}
+
+	// ========== 4 禁用与形态 ==========
+	const stateValue = ref<Date | Date[] | null>(new Date(2026, 9, 29))
+	const stateValue2 = ref<Date | Date[] | null>(null)
+	const stateValue3 = ref<Date | Date[] | null>(null)
+
+	// ========== 5 弹层形态 ==========
+	const shapeValue = ref<Date | Date[] | null>(null)
+	const shapeLog = ref<string>('（待确认）')
+
+	/** 形态定制 confirm 记录 */
+	function onShapeConfirm(value: Date | Date[]) {
+		shapeLog.value = fmtValue(value)
+	}
+</script>
+
+<style lang="scss">
+	/* 基础使用节的事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

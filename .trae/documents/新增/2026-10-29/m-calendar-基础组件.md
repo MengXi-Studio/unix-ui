@@ -297,3 +297,52 @@ range / multiple 超 max-range 时提示 range-prompt：Vant 用自身 Toast。
 ### 遗留 TODO
 
 - 无功能性遗留。注记项（文档差异节已覆盖）：星期表头无国际化插槽（文案内置中文）；`scrollToDate` 即时定位无动画；Web 端弹层依赖 `isolation: isolate` 规避 Chrome 合成层绘制缺陷（uni-app x h5 scroll-view 已知渲染限制，原生端不受影响）。
+
+## 拆分实施记录（2026-10-29：m-calendar 拆三组件）
+
+### 需求与决策
+
+用户要求把 m-calendar 拆成三个组件：日历组件（基础）、日历输入框、日历弹出框，后两者在日历基础上组合其他组件。经 AskUserQuestion 定案：
+
+- **命名**：`m-calendar`（纯面板）/ `m-calendar-popup`（弹出框）/ `m-calendar-input`（输入框）
+- **拆分边界**：纯面板化——m-calendar 移除全部弹层 props / 事件，弹层职责整体归 m-calendar-popup
+
+### 方案落地形态
+
+1. **m-calendar 纯面板化**：移除 `v-model:show` / `poppable` / `position` / `round` / `close-on-click-overlay` / `safe-area-inset-*` / `z-index` / `duration` / `popup-height` props 与 `update:show` / `open` / `opened` / `close` / `closed` / `click-overlay` 事件；双份插槽转发收敛为单份；新增 `height` prop（面板高度固定 + 内部滚动，空串自然生长）；methods 新增 `refreshView`（重算尺寸并复位聚焦月）；`month-show` 语义改为挂载触发一次（参数当月 1 号，面板滚动不再驱动）。最终 API：24 props / 8 events / 4 methods / 12 slots。
+2. **m-calendar-popup（新建）**：m-popup + m-calendar 组合。弹层 props 全透传（show / position / round / close-on-click-overlay / safe-area-inset-top / safe-area-inset-bottom / z-index / duration）+ `popup-height`（% 按窗口高换算为 px 经 `height` 下发日历）；日历 props 除 `height` 外全量转发；15 events（update:show / open / opened / close / closed / click-overlay + 日历 8 事件 + select / confirm / unselect / over-range）；12 插槽**条件转发**（`v-if="$slots.xxx != null"`，未传入保持 m-calendar 默认渲染）；confirm 后自动关闭（内部置 show=false）；复开经 `$callMethod('refreshView')` 复位聚焦月（选择保留）；无 defineExpose。
+3. **m-calendar-input（新建）**：m-input（只读触发器）+ m-calendar-popup 组合。`v-model:value` 单向受控（外部 value 经 `default-date` 同步初始选择，confirm 后经 `update:value` 回写）；displayText 派生（single 单值 / range「A ~ B」/ multiple 顿号串）；**透明触发层**覆盖整区接住点击（m-input readonly 以原生 disabled 模拟，原生 disabled 控件吞点击；disabled 态不渲染触发层）；**自绘清空按钮**（m-input 内置 clearable 图标位于触发层之下被挡住）；z-index 层叠链：触发层 1 < 清空钮 2 < 弹层遮罩 3（组件内部固定传 `:z-index="3"`，vars.scss 注释互指）。API：18 props / 3 events（update:value / confirm / clear）/ 无 methods。
+
+### 运行验证发现并修复的问题
+
+1. **演示页漏 prop 型别静默降级**：calendar-input 演示 card2 漏写 `type="range"`，区间数组按 single 取首日展示——组件不报错、静默消费，演示页补 prop 后修复。
+2. **同层叠上下文 z-index 穿透**：m-calendar-input 清空钮（z2）压过弹层遮罩（z1），弹层打开时清空钮可点击穿透——popup 内部 `:z-index="3"` 修复。
+3. **关闭即重开**：m-calendar-input 根节点 `@click` 打开弹层，弹层遮罩点击关闭时事件沿 DOM 冒泡经过组件根，同一事件派发内 show 先 false 后 true——`@click` 从根移到触发层修复。注：z=1 时代同 z-index 后者居上（DOM 序 tie-break）掩盖了该 bug，z=3 修复后彻底暴露。
+
+### 变更文件清单
+
+| 文件 | 变更 |
+| --- | --- |
+| `packages/core/components/m-calendar/m-calendar.uvue` | 重构：纯面板化（24 props / 8 events / 4 methods / 12 slots） |
+| `packages/core/components/m-calendar-popup/m-calendar-popup.uvue` | 新建：弹层日历组合组件 |
+| `packages/core/components/m-calendar-input/m-calendar-input.uvue` | 新建：日历输入框组合组件 |
+| `packages/core/theme/vars.scss` | 新增 `$m-calendar-input-*` 段 5 变量（trigger/clear 层叠与尺寸，全 `!default`） |
+| `packages/playground/pages-sub/calendar-popup/` + `calendar-input/` | 新建演示页 ×2（原 calendar 演示页改为纯面板穷举）+ `pages.json` / `router/router.config.uts` / `pages/index/demo-components.uts` 三处注册 |
+| `packages/docs/src/components/calendar.md`（重写）+ `calendar-popup.md` / `calendar-input.md`（新建）+ `src/en/` 三份镜像 | 双语文档拆三份 |
+| `packages/docs/.vitepress/config/zh.ts` + `en.ts` | 侧栏数据展示组 Calendar 项拆三项（字母序） |
+| `playground/uni_modules/m-ui-x/changelog.md` + `docs/src/changelog.md` + `src/en/changelog.md` | 0.2.0 条目改写为三组件 |
+
+### 验证方式与结果
+
+| 项 | 结果 |
+| --- | --- |
+| `pnpm sync:uni-modules:check` | 通过 |
+| dev server 5174 三页实测（calendar / calendar-popup / calendar-input） | 编译通过，无报错 |
+| Playwright `verify-split.cjs` 三页全变体断言 | **94 PASS / 0 FAIL**（A 面板 9 卡 / B 弹层 10 卡 / C 输入框 10 卡，含遮罩关闭、复开保留、popup-height % 换算、条件插槽默认渲染等回归点） |
+| 截图比对 | 三页均正常（弹层打开无鬼影、⊗ 清空钮遮罩穿透消除、面板页正常） |
+| `pnpm build:docs` | 通过（死链检查无报错） |
+| `pnpm build:demo` | 通过（见构建日志） |
+
+### 拆分后遗留 TODO
+
+- 无功能性遗留。注记项：m-calendar 的 `month-show` 仅挂载触发一次（面板滚动不再驱动）；m-calendar-popup 内部日历实例方法不透出（需要方法控制时用 m-popup + m-calendar 自行组合，文档差异节已覆盖）。

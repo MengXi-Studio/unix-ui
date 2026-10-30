@@ -1,0 +1,330 @@
+<template>
+	<!-- 日历弹出框：m-popup + m-calendar 组合（三组件拆分后的弹层形态组件）。
+	     弹层 props 经 m-popup，日历 props / 事件 / 插槽逐项透传给 m-calendar；
+	     confirm（按钮确认 / show-confirm=false 自动确认）后自动关闭弹层；
+	     复开时经 refreshView 复位聚焦月（lazyRender 首开由 m-calendar 挂载锚点自动定位） -->
+	<m-popup
+		:show="show"
+		:position="position"
+		:round="round"
+		:close-on-click-overlay="closeOnClickOverlay"
+		:safe-area-inset-top="safeAreaInsetTop"
+		:safe-area-inset-bottom="safeAreaInsetBottom"
+		:z-index="zIndex"
+		:duration="duration"
+		@update:show="onPopupUpdateShow"
+		@open="onPopupOpen"
+		@opened="onPopupOpened"
+		@close="onPopupClose"
+		@closed="onPopupClosed"
+		@click-overlay="onPopupClickOverlay"
+	>
+		<m-calendar
+			ref="cal"
+			:type="type"
+			:title="title"
+			:color="color"
+			:min-date="minDate"
+			:max-date="maxDate"
+			:default-date="defaultDate"
+			:row-height="rowHeight"
+			:formatter="formatter"
+			:show-mark="showMark"
+			:show-title="showTitle"
+			:show-subtitle="showSubtitle"
+			:show-confirm="showConfirm"
+			:confirm-text="confirmText"
+			:confirm-disabled-text="confirmDisabledText"
+			:readonly="readonly"
+			:first-day-of-week="firstDayOfWeek"
+			:switch-mode="switchMode"
+			:height="panelHeight"
+			:max-range="maxRange"
+			:range-prompt="rangePrompt"
+			:show-range-prompt="showRangePrompt"
+			:allow-same-day="allowSameDay"
+			:custom-class="customClass"
+			:custom-style="customStyle"
+			@select="onCalSelect"
+			@confirm="onCalConfirm"
+			@unselect="onCalUnselect"
+			@over-range="onCalOverRange"
+			@month-show="onCalMonthShow"
+			@panel-change="onCalPanelChange"
+			@click-subtitle="onCalSubtitleClick"
+			@click-disabled-date="onCalDisabledDate"
+		>
+			<!-- 插槽条件转发：v-if="$slots.xxx != null" 保证未传入的插槽不覆盖 m-calendar
+			     的默认渲染（Vue 的 slot fallback 仅在「未传入」时生效，无条件转发空内容会吞默认） -->
+			<template v-if="$slots.title != null" #title>
+				<slot name="title"></slot>
+			</template>
+			<template v-if="$slots.subtitle != null" #subtitle>
+				<slot name="subtitle"></slot>
+			</template>
+			<template v-if="$slots['month-title'] != null" #month-title="{ month, text }">
+				<slot name="month-title" :month="month" :text="text"></slot>
+			</template>
+			<template v-if="$slots['top-info'] != null" #top-info="{ day }">
+				<slot name="top-info" :day="day"></slot>
+			</template>
+			<template v-if="$slots['bottom-info'] != null" #bottom-info="{ day }">
+				<slot name="bottom-info" :day="day"></slot>
+			</template>
+			<template v-if="$slots.text != null" #text="{ day }">
+				<slot name="text" :day="day"></slot>
+			</template>
+			<template v-if="$slots.footer != null" #footer>
+				<slot name="footer"></slot>
+			</template>
+			<template v-if="$slots['confirm-text'] != null" #confirm-text>
+				<slot name="confirm-text"></slot>
+			</template>
+			<template v-if="$slots['prev-year'] != null" #prev-year>
+				<slot name="prev-year"></slot>
+			</template>
+			<template v-if="$slots['prev-month'] != null" #prev-month>
+				<slot name="prev-month"></slot>
+			</template>
+			<template v-if="$slots['next-month'] != null" #next-month>
+				<slot name="next-month"></slot>
+			</template>
+			<template v-if="$slots['next-year'] != null" #next-year>
+				<slot name="next-year"></slot>
+			</template>
+		</m-calendar>
+	</m-popup>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-calendar-popup 日历弹出框：m-popup + m-calendar 组合组件。
+	 * 自身无选择状态与样式，弹层行为（显隐 / 方位 / 圆角 / 安全区 / 遮罩）归 m-popup，
+	 * 日历行为（选择类型 / 范围 / 格式化 / 导航）归 m-calendar，本组件仅做组合与转发。
+	 */
+	import {
+		CalendarType,
+		CalendarSwitchMode,
+		CalendarPosition,
+		CalendarFormatter
+	} from '../m-calendar/calendar.uts'
+	import MCalendar from '../m-calendar/m-calendar.uvue'
+
+	type Props = {
+		/** 是否显示弹出层（v-model:show） */
+		show?: boolean
+		/** 选择类型 */
+		type?: CalendarType
+		/** 常规标题 */
+		title?: string
+		/** 主题色（选中圆点与范围 bar 派生色，支持 #hex 与渐变） */
+		color?: string
+		/** 最小日期（null 默认今天） */
+		minDate?: Date | null
+		/** 最大日期（null 默认今天 + 6 个月） */
+		maxDate?: Date | null
+		/** 默认选中日期（单值或数组，随 type 语义消费） */
+		defaultDate?: Date | Date[] | null
+		/** 日格行高 px（0 用默认变量值） */
+		rowHeight?: number
+		/** 日期格格式化函数 */
+		formatter?: CalendarFormatter | null
+		/** 显示月份背景水印 */
+		showMark?: boolean
+		/** 显示标题 */
+		showTitle?: boolean
+		/** 显示副标题 */
+		showSubtitle?: boolean
+		/** 显示确认按钮（false 时选满自动确认） */
+		showConfirm?: boolean
+		/** 确认按钮文字 */
+		confirmText?: string
+		/** 确认按钮禁用态文字 */
+		confirmDisabledText?: string
+		/** 只读模式（不响应日期点击） */
+		readonly?: boolean
+		/** 周起始日（0 周日 - 6 周六） */
+		firstDayOfWeek?: number
+		/** 面板切换模式（none 常规滚动列表 / month 单月 + 月导航 / year-month 单月 + 年月导航） */
+		switchMode?: CalendarSwitchMode
+		/** 弹层面板高度（px 原样；% 按窗口高换算为 px——m-popup 面板高度 auto，% 无法直接生效） */
+		popupHeight?: string
+		/** 弹出方位（透传 m-popup） */
+		position?: CalendarPosition
+		/** 弹层圆角（透传 m-popup） */
+		round?: boolean
+		/** 点击遮罩后是否关闭（透传 m-popup） */
+		closeOnClickOverlay?: boolean
+		/** 顶部安全区（透传 m-popup） */
+		safeAreaInsetTop?: boolean
+		/** 底部安全区（透传 m-popup） */
+		safeAreaInsetBottom?: boolean
+		/** z-index 层级（透传 m-popup） */
+		zIndex?: number
+		/** 动画时长秒（透传 m-popup） */
+		duration?: number
+		/** 范围 / 多选最多可选天数（含两端计数；-1 不限制） */
+		maxRange?: number
+		/** 超限提示文案（空串用默认「最多选择 N 天」） */
+		rangePrompt?: string
+		/** 超限是否经 m-toast 提示 */
+		showRangePrompt?: boolean
+		/** 范围选择是否允许起止同日 */
+		allowSameDay?: boolean
+		/** 自定义日历根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义日历根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		type: 'single',
+		title: '日期选择',
+		color: '',
+		minDate: null,
+		maxDate: null,
+		defaultDate: null,
+		rowHeight: 0,
+		formatter: null,
+		showMark: true,
+		showTitle: true,
+		showSubtitle: true,
+		showConfirm: true,
+		confirmText: '确认',
+		confirmDisabledText: '确认',
+		readonly: false,
+		firstDayOfWeek: 0,
+		switchMode: 'none',
+		popupHeight: '80%',
+		position: 'bottom',
+		round: true,
+		closeOnClickOverlay: true,
+		safeAreaInsetTop: false,
+		safeAreaInsetBottom: true,
+		zIndex: 1,
+		duration: 0.3,
+		maxRange: -1,
+		rangePrompt: '',
+		showRangePrompt: true,
+		allowSameDay: false,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		'update:show': [value: boolean]
+		/** 点击日期格后触发（值形态随 type） */
+		select: [value: Date | Date[]]
+		/** 点击确认按钮 / 自动确认后触发（确认后弹层自动关闭） */
+		confirm: [value: Date | Date[]]
+		/** 多选取消选中某日 */
+		unselect: [date: Date]
+		/** 选择超出 max-range 限制 */
+		'over-range': []
+		/** 聚焦月进入视口（首开挂载时触发一次） */
+		'month-show': [date: Date]
+		/** switch-mode 面板所在月变化（导航触发） */
+		'panel-change': [date: Date]
+		/** 点击副标题 / 导航行标题 */
+		'click-subtitle': []
+		/** 点击禁用日期 */
+		'click-disabled-date': [date: Date]
+		open: []
+		opened: []
+		close: []
+		closed: []
+		/** 点击遮罩 */
+		'click-overlay': [event: MouseEvent]
+	}>()
+
+	/** 内部日历实例（复开时调用 refreshView 复位聚焦月） */
+	const cal = ref<ComponentPublicInstance | null>(null)
+
+	/**
+	 * 弹层面板高度：px 原样；% 按窗口高换算为 px（m-popup 面板高度 auto，% 无法直接生效）；
+	 * 其余单位原样透传
+	 */
+	const panelHeight = computed<string>(() => {
+		const h = props.popupHeight
+		if (h.endsWith('px')) {
+			return h
+		}
+		if (h.endsWith('%')) {
+			const percent = parseFloat(h.substring(0, h.length - 1))
+			if (!isNaN(percent)) {
+				const win = uni.getWindowInfo()
+				return Math.round(win.windowHeight * percent / 100).toString() + 'px'
+			}
+			return ''
+		}
+		return h
+	})
+
+	// ========== 弹层事件转发 ==========
+
+	function onPopupUpdateShow(value: boolean) {
+		emit('update:show', value)
+	}
+
+	/** 弹层打开：派发 open；复开场景日历不重挂，调用 refreshView 复位到聚焦月 */
+	function onPopupOpen() {
+		emit('open')
+		const inst = cal.value
+		if (inst != null) {
+			inst.$callMethod('refreshView')
+		}
+	}
+
+	function onPopupOpened() {
+		emit('opened')
+	}
+
+	function onPopupClose() {
+		emit('close')
+	}
+
+	function onPopupClosed() {
+		emit('closed')
+	}
+
+	function onPopupClickOverlay(e: MouseEvent) {
+		emit('click-overlay', e)
+	}
+
+	// ========== 日历事件转发（confirm 额外触发关闭） ==========
+
+	function onCalSelect(value: Date | Date[]) {
+		emit('select', value)
+	}
+
+	/** 确认（按钮 / 自动确认）：派发 confirm 后关闭弹层 */
+	function onCalConfirm(value: Date | Date[]) {
+		emit('confirm', value)
+		emit('update:show', false)
+	}
+
+	function onCalUnselect(date: Date) {
+		emit('unselect', date)
+	}
+
+	function onCalOverRange() {
+		emit('over-range')
+	}
+
+	function onCalMonthShow(date: Date) {
+		emit('month-show', date)
+	}
+
+	function onCalPanelChange(date: Date) {
+		emit('panel-change', date)
+	}
+
+	function onCalSubtitleClick() {
+		emit('click-subtitle')
+	}
+
+	function onCalDisabledDate(date: Date) {
+		emit('click-disabled-date', date)
+	}
+</script>

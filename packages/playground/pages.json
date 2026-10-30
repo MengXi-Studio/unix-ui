@@ -112,6 +112,18 @@
 				"style": {
 					"navigationBarTitleText": "日历 Calendar"
 				}
+			},
+			{
+				"path": "calendar-popup/calendar-popup",
+				"style": {
+					"navigationBarTitleText": "日历弹出框 CalendarPopup"
+				}
+			},
+			{
+				"path": "calendar-input/calendar-input",
+				"style": {
+					"navigationBarTitleText": "日历输入框 CalendarInput"
+				}
 			}
 		]
 		}

@@ -114,6 +114,8 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					items: [
 						{ text: 'Badge 徽标', link: '/components/badge' },
 						{ text: 'Calendar 日历', link: '/components/calendar' },
+						{ text: 'CalendarInput 日历输入框', link: '/components/calendar-input' },
+						{ text: 'CalendarPopup 日历弹出框', link: '/components/calendar-popup' },
 						{ text: 'Cell 单元格', link: '/components/cell' },
 						{ text: 'Input 输入框', link: '/components/input' }
 					]

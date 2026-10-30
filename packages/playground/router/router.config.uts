@@ -25,5 +25,7 @@ export const routes: RouteConfig[] = [
 	{ path: 'pages-sub/toast/toast', name: 'toast', meta: { title: '轻提示 Toast' } },
 	{ path: 'pages-sub/compact/compact', name: 'compact', meta: { title: '紧凑布局 Compact' } },
 	{ path: 'pages-sub/input/input', name: 'input', meta: { title: '输入框 Input' } },
-	{ path: 'pages-sub/calendar/calendar', name: 'calendar', meta: { title: '日历 Calendar' } }
+	{ path: 'pages-sub/calendar/calendar', name: 'calendar', meta: { title: '日历 Calendar' } },
+	{ path: 'pages-sub/calendar-popup/calendar-popup', name: 'calendar-popup', meta: { title: '日历弹出框 CalendarPopup' } },
+	{ path: 'pages-sub/calendar-input/calendar-input', name: 'calendar-input', meta: { title: '日历输入框 CalendarInput' } }
 ]

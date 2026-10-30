@@ -101,6 +101,8 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					items: [
 						{ text: 'Badge', link: '/en/components/badge' },
 						{ text: 'Calendar', link: '/en/components/calendar' },
+						{ text: 'CalendarInput', link: '/en/components/calendar-input' },
+						{ text: 'CalendarPopup', link: '/en/components/calendar-popup' },
 						{ text: 'Cell', link: '/en/components/cell' },
 						{ text: 'Input', link: '/en/components/input' }
 					]

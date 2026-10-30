@@ -140,7 +140,19 @@ export const demoGroups: DemoGroup[] = [
 				name: 'calendar',
 				zhName: '日历',
 				enName: 'Calendar',
-				desc: '日历面板，支持单选、多选、范围选择、弹层与平铺双形态、年月切换导航、formatter 定制与超限提示。'
+				desc: '日历面板，支持单选、多选、范围选择、年月切换导航、formatter 定制与超限提示。'
+			},
+			{
+				name: 'calendar-popup',
+				zhName: '日历弹出框',
+				enName: 'CalendarPopup',
+				desc: 'm-popup 与 m-calendar 的弹层组合，v-model 控制显隐，确认后自动关闭，支持方位、圆角、面板高度与安全区配置。'
+			},
+			{
+				name: 'calendar-input',
+				zhName: '日历输入框',
+				enName: 'CalendarInput',
+				desc: 'm-input 与日历弹出框的表单组合，点击触发选择，选中值格式化回填展示，支持清空与禁用。'
 			},
 			{
 				name: 'cell',

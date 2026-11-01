@@ -45,7 +45,7 @@
 		loadingType?: LoadingType | null
 		/** 展示时长 ms，0 不自动关闭；未传时 loading 型 0、其余 2000 */
 		duration?: number | null
-		/** message 换行控制：normal / break-all / break-word（App 端仅 Vapor 模式生效） */
+		/** message 换行控制：normal / break-all / break-word（App 端 break-word 回退 normal，其余两值原生支持） */
 		wordBreak?: ToastWordBreak | null
 		/** z-index 层级（字符串数字），默认走主题基准 */
 		zIndex?: string
@@ -101,6 +101,9 @@
 
 	/** 过渡时长（秒）：淡入淡出与 opened 回调时延共用（Q5 定案：内置淡入淡出，无 transition 定制） */
 	const TRANSITION_DURATION = 300
+
+	/** 气泡最大宽度占窗口宽比例（App 端 max-width 不支持百分比，运行时按此换算 px；与 $m-toast-max-width 默认 70% 同步） */
+	const MAX_WIDTH_RATIO = 0.7
 
 	/**
 	 * 数字或纯数字字符串补 px 单位（如 "24" → "24px"），带单位字符串原样返回
@@ -224,12 +227,18 @@
 		return style
 	})
 
-	/** 气泡动态样式：过渡透明度 + z-index + 过渡时长 + 自定义内联样式（补分号拼接） */
+	/** 气泡动态样式：过渡透明度 + z-index + 过渡时长 + App 端宽度上限 + 自定义内联样式（补分号拼接） */
 	const bubbleStyle = computed<string>(() => {
 		let style = 'opacity: ' + opacity.value.toString() + ';'
 		const z = sizeValue(active.value.zIndex, false)
 		if (z != '') style += ' z-index: ' + z + ';'
 		style += ' transition-duration: ' + (TRANSITION_DURATION / 1000.0).toString() + 's;'
+		// App 端 ucss max-width 不支持百分比，按窗口宽比例运行时换算 px（Web/小程序走 $m-toast-max-width）；
+		// 先于 customStyle 拼接，用户自定义 max-width 可覆盖
+		// #ifdef APP
+		const win = uni.getWindowInfo()
+		style += ' max-width: ' + Math.round(win.windowWidth * MAX_WIDTH_RATIO).toString() + 'px;'
+		// #endif
 		const cs = active.value.customStyle == null ? '' : active.value.customStyle!
 		if (cs != '') {
 			if (cs.endsWith(';')) style += ' ' + cs
@@ -426,7 +435,11 @@
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
+		/* App 端 max-width 不支持百分比（编译 ERROR 且属性被丢弃），由 bubbleStyle 运行时按
+		   窗口宽 70% 换算 px 注入；Web/小程序保留主题变量（覆盖 $m-toast-max-width 生效） */
+		/* #ifndef APP */
 		max-width: $m-toast-max-width;
+		/* #endif */
 		background-color: $m-toast-background;
 		border-radius: $m-toast-radius;
 		z-index: $m-toast-z-index;
@@ -474,14 +487,18 @@
 		/* 多行换行时各行水平居中（对齐 Vant） */
 		text-align: center;
 	}
-	/* ========== message 换行控制变体（word-break 三值，App 端仅 Vapor 模式生效） ========== */
+	/* ========== message 换行控制变体（word-break：normal / break-all 全端生效，break-word 仅 Web/小程序） ========== */
 	.m-toast__message--normal {
 		word-break: normal;
 	}
 	.m-toast__message--break-all {
 		word-break: break-all;
 	}
+	/* break-word 非标准值（App 端 ucss 仅支持 normal / break-all，编译 ERROR 且属性被丢弃），
+	   App 回退 normal 换行（与被丢弃的实际效果一致），Web/小程序保留 */
 	.m-toast__message--break-word {
+		/* #ifndef APP */
 		word-break: break-word;
+		/* #endif */
 	}
 </style>

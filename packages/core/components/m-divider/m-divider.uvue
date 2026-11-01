@@ -105,12 +105,16 @@
 	.m-divider__line--dashed {
 		border-style: dashed;
 	}
-	/* 内容位置：一侧线限宽 10%，另一侧线 flex:1 占满剩余空间 */
+	/* 内容位置：一侧线限宽 10%，另一侧线 flex:1 占满剩余空间
+	   （App 端 max-width 不支持百分比，改 flex:none + width 定宽——
+	   线内容为空时 flex:1 恒增长至上限，两者视觉等价） */
 	.m-divider__line--content-left {
-		max-width: $m-divider-content-left-width;
+		flex: none;
+		width: $m-divider-content-left-width;
 	}
 	.m-divider__line--content-right {
-		max-width: $m-divider-content-right-width;
+		flex: none;
+		width: $m-divider-content-right-width;
 	}
 
 	/* ========== 垂直线（宽 0 + border-left，hairline 时 scaleX(0.5)） ========== */

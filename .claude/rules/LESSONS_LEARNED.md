@@ -414,3 +414,9 @@
 - 现象：5.34 alpha 下 manifest 删除 `vapor` 键后本地导出显示「VDOM模式」（与早前「alpha 默认蒸汽」的观察不符——编译器行为随版本漂移）；`"vapor": true` 显式声明才走蒸汽，`"vapor": false` 显式走 VDOM
 - 规约：**验证打包链路前先看导出日志首行的「蒸汽模式 / VDOM模式」字样**，不要依赖「默认行为」的记忆；云打包模式由打包界面的「蒸汽模式」勾选框控制（与 manifest 键无关），本地想复现云端某种模式就用 `vapor` 键显式对齐
 - 判别：`cli publish app-android --type appResource` 不跑 kotlinc（只生成 .kt），「编译成功」仅代表代码生成成功；真正过 kotlinc 在云端 Gradle 环节
+
+### 71. ucss ERROR 清理的两种适配模式（2026-11-01 双模式导出实证）
+- **样式替换**：max-width 百分比 App 端不支持（number|pixel）——空内容 flex:1 侧线改 `flex: none` + `width: 10%`（width 百分比受支持），视觉等价（flex:1 恒增长至 max-width 上限）
+- **条件编译拆分**：非标准属性值（`word-break: break-word`）用 `/* #ifndef APP */ ... /* #endif */` 排除 App（回退 normal，与原「属性被丢弃」的实际效果一致）；百分比 max-width（m-toast 气泡）App 端改运行时 `uni.getWindowInfo().windowWidth * 比例` 换算 px 注入内联样式，Web/小程序保留 scss 变量契约（注意与 `$m-toast-max-width` 同步的比例常量加注释互链）
+- 内联样式在类样式之后拼接 → 用户 customStyle 可覆盖组件注入的 max-width
+- `gap` / `lines` 的 WARNING 是 lint 通用提示（lines 本就是 uni-app x 文档属性），不阻断编译，保留即可

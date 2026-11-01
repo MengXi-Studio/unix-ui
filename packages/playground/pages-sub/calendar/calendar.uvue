@@ -108,7 +108,7 @@
 						<text class="demo-slot-subtitle">{{ text }}</text>
 					</template>
 					<template #text="{ day }">
-						<text :class="day.type == 'disabled' ? 'demo-slot-text-disabled' : (day.type == 'selected' ? 'demo-slot-text-selected' : 'demo-slot-text')">{{ day.text }}</text>
+						<text :class="slotDayClass(day)">{{ slotDayText(day) }}</text>
 					</template>
 					<template #footer>
 						<view class="demo-slot-footer">
@@ -164,13 +164,13 @@
 	/** v-model:value 双向绑定选中值（single 为 Date|null） */
 	const basicValue = ref<Date | null>(null)
 
-	/** 基础面板 select 记录 */
-	function onBasicSelect(value: Date | Date[]) {
+	/** 基础面板 select 记录（模板绑定处理函数一律 const 箭头函数：function 声明在 VDOM 生成 Kotlin 中按裸名引用报 Function invocation expected） */
+	const onBasicSelect = (value: Date | Date[]) => {
 		basicLog.value = 'select → ' + fmtValue(value) + '；v-model → ' + fmtValue(basicValue.value as Date | Date[])
 	}
 
 	/** 基础面板 month-show 记录（挂载一次） */
-	function onBasicMonthShow(date: Date) {
+	const onBasicMonthShow = (date: Date) => {
 		basicLog.value = 'month-show → ' + fmtDate(date)
 	}
 
@@ -188,17 +188,17 @@
 	}
 
 	/** 多选 select 记录 */
-	function onMultiSelect(value: Date | Date[]) {
+	const onMultiSelect = (value: Date | Date[]) => {
 		pushMultiEvent('select → ' + fmtValue(value))
 	}
 
 	/** 多选取消选中记录 */
-	function onMultiUnselect(date: Date) {
+	const onMultiUnselect = (date: Date) => {
 		pushMultiEvent('unselect → ' + fmtDate(date))
 	}
 
 	/** 超限记录（toast 由组件内部经 m-toast 展示） */
-	function onMultiOverRange() {
+	const onMultiOverRange = () => {
 		multiLog.value = 'over-range → 已拒绝并提示'
 	}
 
@@ -206,12 +206,12 @@
 	const rangeLog = ref<string>('（allow-same-day，选满自动确认）')
 
 	/** 范围 select 记录 */
-	function onRangeSelect(value: Date | Date[]) {
+	const onRangeSelect = (value: Date | Date[]) => {
 		rangeLog.value = 'select → ' + fmtValue(value)
 	}
 
 	/** 范围 confirm 记录 */
-	function onRangeConfirm(value: Date | Date[]) {
+	const onRangeConfirm = (value: Date | Date[]) => {
 		rangeLog.value = 'confirm → ' + fmtValue(value)
 	}
 
@@ -222,12 +222,12 @@
 	const customLog = ref<string>('（已预选 10-15 ~ 10-18）')
 
 	/** 自定义范围 confirm 记录 */
-	function onCustomConfirm(value: Date | Date[]) {
+	const onCustomConfirm = (value: Date | Date[]) => {
 		customLog.value = 'confirm → ' + fmtValue(value)
 	}
 
 	/** 点击禁用日期记录（界外日期） */
-	function onCustomDisabled(date: Date) {
+	const onCustomDisabled = (date: Date) => {
 		customLog.value = 'click-disabled-date → ' + fmtDate(date)
 	}
 
@@ -236,17 +236,17 @@
 	const panelLog2 = ref<string>('（切换年 / 月观察 panel-change）')
 
 	/** month 模式 panel-change 记录 */
-	function onPanelChange1(date: Date) {
+	const onPanelChange1 = (date: Date) => {
 		panelLog1.value = 'panel-change → ' + fmtDate(date)
 	}
 
 	/** year-month 模式 panel-change 记录 */
-	function onPanelChange2(date: Date) {
+	const onPanelChange2 = (date: Date) => {
 		panelLog2.value = 'panel-change → ' + fmtDate(date)
 	}
 
 	/** month 模式 click-subtitle 记录 */
-	function onSubtitle1() {
+	const onSubtitle1 = () => {
 		panelLog1.value = 'click-subtitle'
 	}
 
@@ -275,12 +275,25 @@
 	}
 
 	/** formatter 日历 select 记录 */
-	function onFormatterSelect(value: Date | Date[]) {
+	const onFormatterSelect = (value: Date | Date[]) => {
 		formatterLog.value = 'select → ' + fmtValue(value)
 	}
 
 	// ========== 7 插槽（无逻辑） ==========
 	const slotsMax = new Date(2026, 9, 31)
+
+	// text 插槽 day 桥接：作用域插槽传参在 VDOM 生成 Kotlin 中为 Any?（slotProps["day"]），
+	// 模板内直接属性访问报 Unresolved，须经本地桥接函数显式强转 CalendarDayItem 后取值
+	/** text 插槽 day 类名：按选中 / 禁用 / 常规派生（覆盖内置渲染时需自行处理状态色） */
+	const slotDayClass = (day: any): string => {
+		const d = day as CalendarDayItem
+		return d.type == 'disabled' ? 'demo-slot-text-disabled' : (d.type == 'selected' ? 'demo-slot-text-selected' : 'demo-slot-text')
+	}
+
+	/** text 插槽 day 文本 */
+	const slotDayText = (day: any): string => {
+		return (day as CalendarDayItem).text
+	}
 
 	// ========== 8 Methods 实例方法 ==========
 	const methodMax = new Date(2026, 11, 31)
@@ -288,7 +301,7 @@
 	const methodLog = ref<string>('（点击按钮调用实例方法）')
 
 	/** reset：清空选择并回到聚焦月 */
-	function callReset() {
+	const callReset = () => {
 		const inst = methodCal.value
 		if (inst == null) {
 			methodLog.value = '实例未就绪'
@@ -299,7 +312,7 @@
 	}
 
 	/** scrollToDate：定位到 2026-11-15 所在月 */
-	function callScroll() {
+	const callScroll = () => {
 		const inst = methodCal.value
 		if (inst == null) {
 			methodLog.value = '实例未就绪'
@@ -310,7 +323,7 @@
 	}
 
 	/** getSelectedDate：读取当前选择 */
-	function callGet() {
+	const callGet = () => {
 		const inst = methodCal.value
 		if (inst == null) {
 			methodLog.value = '实例未就绪'

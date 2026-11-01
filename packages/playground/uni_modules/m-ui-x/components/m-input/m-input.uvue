@@ -155,10 +155,10 @@
 	const slots = useSlots()
 
 	/** 是否传入 prepend 插槽内容 */
-	const hasPrependSlot = computed<boolean>(() => slots.prepend != null)
+	const hasPrependSlot = computed<boolean>(() => slots['prepend'] != null)
 
 	/** 是否传入 append 插槽内容 */
-	const hasAppendSlot = computed<boolean>(() => slots.append != null)
+	const hasAppendSlot = computed<boolean>(() => slots['append'] != null)
 
 	/** 聚焦视觉状态（边框高亮 / 清除图标展示），失焦走宽限期延迟撤出（等待清除图标 click） */
 	const focused = ref<boolean>(false)

@@ -188,7 +188,7 @@
 
 	/** 是否渲染图标区（icon prop 或 icon 插槽任一存在） */
 	const hasIconArea = computed<boolean>(() => {
-		return props.icon != null || slots.icon != null
+		return props.icon != null || slots['icon'] != null
 	})
 
 	/** 图标名（hasIconArea 为 true 且 icon prop 非空时才渲染，断言安全） */
@@ -210,7 +210,7 @@
 
 	/** 是否渲染文字区（text prop 或 text 插槽任一存在） */
 	const hasTextArea = computed<boolean>(() => {
-		return props.text != '' || slots.text != null
+		return props.text != '' || slots['text'] != null
 	})
 
 	/** 文字区类名：横排时占剩余宽度（文本左对齐） */

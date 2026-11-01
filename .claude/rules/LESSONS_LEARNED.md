@@ -382,3 +382,35 @@
 ### 63. 滚动列表裁剪区元素 bbox 在窗口视口内：Playwright 会强行回滚列表点击之并破坏聚焦位置
 - 现象：弹层日历复开聚焦 11 月后点击「8」，confirm 值仍是 11-05——点击目标实为 10-08 禁用格（位于滚动列表可视区上方被裁剪，bbox y=31 在窗口视口内但 < 面板可视顶 ≈253）；Playwright click 对裁剪区元素 scrollIntoViewIfNeeded 把列表回滚到顶部并点击禁用格（无效果），同时聚焦月位置被破坏（选中格 y 从 336 漂移到 656）
 - 规约：**日历类点击断言的 bbox 判定须限「面板可视区内」而非仅窗口视口内**（bottom 弹层 `y >= 170`，center 弹层以面板顶为准）——裁剪区元素 isVisible=true + bbox 在窗口内，但点击会触发工具级滚动污染现场；「选日无效」排查先核对被点格的身份（class 含 --disabled 即禁用格）
+
+## 2026-11-01 Android 云打包闭环（vapor 模式错配定性，三轮云打包复盘）
+
+### 67. 云打包 A 类报错的真根因：manifest 未显式声明 vapor，云端按 VDOM 编译 vapor 产物（运行定性）
+- 现象：本地 CLI 导出恒显示「蒸汽模式」编译成功，云打包日志却显示「VDOM模式」，云端 kotlinc 报三类错误：watch 源 lambda `Return type mismatch: expected 'Unit'`（10 处全挂零对照组）、`$slots.xxx` 成员 unresolved（default/content/prepend/append/title/subtitle/text/footer/icon）、`Animation`/`cancel` unresolved、事件回调 `Function invocation 'onXxx(...)' expected`——全是 vapor/VDOM 两套 Vue 实现的 API 分裂点
+- 定性证据链：①本机 HBuilderX runtime 分双套——`uniapp-runextension/libVapor/`（`io.dcloud.uniappxv.*`，kotlin-stdlib 2.2.10）与 `lib2/`（VDOM，`io.dcloud.uniapp.*`）；②官方文档 manifest.json `uni-app-x.vapor` 默认 **false**；③本项目 manifest 一直没写 `vapor: true`，本地蒸汽只是 alpha 编译器默认行为，云打包编译流程按 manifest 默认走 VDOM；④云端 SDK 版本与本机同为 5.34 仍报错 → 不是版本不配套，是**产物模式与云端 runtime 模式错配**
+- 修复：manifest.json `"uni-app-x"` 节点显式加 `"vapor": true`（本地导出验证编译器接受、仍蒸汽模式）
+- 教训：**「本地编译成功」≠「Kotlin 编译成功」**——`cli publish app-android --type appResource` 只生成 .kt 不跑 kotlinc，全工程第一次真正过 kotlinc 是在云端；判别「SDK 不配套」前先核对两端渲染模式声明是否一致；早期把它归为「基座不配套」是不完整结论（云打包日志的「VDOM模式」行才是铁证）
+- 关联：LESSONS #64 的「生态标准写法全挂 = 基座不配套」判别法方向正确（确实是环境错配而非源码 bug），但归因层级差一层——根因是模式错配，watch 源 lambda 全挂仍是有效的判别特征
+
+### 68. appResource 导出的 .kt 路径与云打包报错路径的映射（定位用）
+- 本地导出：`unpackage/resources/app-android/uniappx/app-android/src/`（wgt 资源在同目录 `www/`）
+- 云端报错路径：`[PackagePath]/wgtRoot/__UNI__F1AA560/.uniappx/android/src/`——两侧行号逐行吻合（±1 行，VDOM/vapor 模板层细微差异所致），可直接映射定位
+
+## 2026-11-01 VDOM 模式兼容修复（双模式可编译，源码级适配实证）
+
+### 69. 双模式兼容的六类源码写法（本地 VDOM 导出产物逐条实证）
+- 背景：用户要求蒸汽 / 非蒸汽（VDOM）双模式都能打包。manifest `"vapor": false` 显式声明使本地 CLI 走 VDOM 编译（输出「VDOM模式」），`cli publish app-android --type appResource` 的 .kt 产物与云端报错逐行对应，可本地复现全部云端错误
+- 实证有效的写法（均以生成 .kt 为准验证）：
+  1. **watch 源加显式返回类型**：`watch((): T => props.x, cb)` → 生成 `watch(fun(): IconName { return props.name }, ...)`，消解 `Return type mismatch: expected 'Unit'`（裸 `() => props.x` 会被强转 Function0<Unit>）
+  2. **useSlots 返回 Map**：VDOM runtime `useSlots()` 返回 `Map<String, Object>`，slot 检测必须索引访问 `slots['default'] != null`（点形式 `slots.default` 报 Unresolved）；模板 `$slots.title` 同理改 `$slots['title']`
+  3. **Animation → UniAnimation**：VDOM runtime 类型是 `io.dcloud.uniapp.runtime.UniAnimation`（`Animation` unresolved）
+  4. **模板调用导入函数会被 unref() 包裹不可调用**（Function invocation expected）→ setup 内建本地 const 箭头函数桥接转发（m-calendar-panel 的 monthTitleText / dayTextCls / dayInfoTextCls）
+  5. **作用域插槽参数是 Any?**：模板 `#text="{ day }"` 中 `day.type` 直接属性访问报 Unresolved → 本地桥接函数 `(day: any) => (day as CalendarDayItem).type` 显式强转
+  6. **function 声明的模板事件处理函数不一定会挂**：function 声明实际生成 `val onXxx = ::gen_onXxx_fn`（Kotlin 可调用引用，合法）——此前「裸名传递必报错」的判断过宽；const 箭头函数生成 `val onXxx = fun(){}` 同样合法，两种写法 VDOM 均可编译（箭头函数仍是更稳的统一写法）
+- 回归：修复后蒸汽（`vapor: true`）与 VDOM（`vapor: false`）两模式本地导出均编译成功；`sync:uni-modules:check` 一致；Web 演示页 200 + text 插槽渲染实测正常
+- 关联：LESSONS #67 的定性（云端 VDOM 编译 vapor 产物）在用户明确要求双模式兼容后，转化为源码级适配完成收敛
+
+### 70. 本地 CLI 编译模式开关的真相：无键 ≠ 蒸汽（5.34 实测）
+- 现象：5.34 alpha 下 manifest 删除 `vapor` 键后本地导出显示「VDOM模式」（与早前「alpha 默认蒸汽」的观察不符——编译器行为随版本漂移）；`"vapor": true` 显式声明才走蒸汽，`"vapor": false` 显式走 VDOM
+- 规约：**验证打包链路前先看导出日志首行的「蒸汽模式 / VDOM模式」字样**，不要依赖「默认行为」的记忆；云打包模式由打包界面的「蒸汽模式」勾选框控制（与 manifest 键无关），本地想复现云端某种模式就用 `vapor` 键显式对齐
+- 判别：`cli publish app-android --type appResource` 不跑 kotlinc（只生成 .kt），「编译成功」仅代表代码生成成功；真正过 kotlinc 在云端 Gradle 环节

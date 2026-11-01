@@ -113,13 +113,13 @@
 	const basicValue = ref<Date | Date[] | null>(new Date(2026, 10, 5))
 	const basicLog = ref<string>('（初始预选 2026-11-05）')
 
-	/** 基础 confirm 记录 */
-	function onBasicConfirm(value: Date | Date[]) {
+	/** 基础 confirm 记录（模板绑定处理函数一律 const 箭头函数：function 声明在 VDOM 生成 Kotlin 中被裸名传递报 Function invocation expected） */
+	const onBasicConfirm = (value: Date | Date[]) => {
 		basicLog.value = 'confirm → ' + fmtValue(value)
 	}
 
 	/** 基础 clear 记录 */
-	function onBasicClear() {
+	const onBasicClear = () => {
 		basicLog.value = 'clear → 已清空'
 	}
 
@@ -133,12 +133,12 @@
 	const multiLog = ref<string>('（待确认）')
 
 	/** 范围 confirm 记录 */
-	function onRangeConfirm(value: Date | Date[]) {
+	const onRangeConfirm = (value: Date | Date[]) => {
 		rangeLog.value = fmtValue(value)
 	}
 
 	/** 多选 confirm 记录（顿号串与组件展示格式一致） */
-	function onMultiConfirm(value: Date | Date[]) {
+	const onMultiConfirm = (value: Date | Date[]) => {
 		const arr = value as Date[]
 		const parts: string[] = []
 		for (let i = 0; i < arr.length; i++) {
@@ -154,7 +154,7 @@
 	const limitLog = ref<string>('（初始预选 2026-10-15 ~ 2026-10-18）')
 
 	/** 限定范围 confirm 记录 */
-	function onLimitConfirm(value: Date | Date[]) {
+	const onLimitConfirm = (value: Date | Date[]) => {
 		limitLog.value = fmtValue(value)
 	}
 
@@ -168,7 +168,7 @@
 	const shapeLog = ref<string>('（待确认）')
 
 	/** 形态定制 confirm 记录 */
-	function onShapeConfirm(value: Date | Date[]) {
+	const onShapeConfirm = (value: Date | Date[]) => {
 		shapeLog.value = fmtValue(value)
 	}
 </script>

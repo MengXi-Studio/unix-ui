@@ -192,7 +192,7 @@
 	const iconLayout = computed<boolean>(() => activeType.value != 'text' || active.value.icon != null)
 
 	/** 是否使用默认插槽替代 message 文本 */
-	const hasSlot = computed<boolean>(() => slots.default != null)
+	const hasSlot = computed<boolean>(() => slots['default'] != null)
 
 	/** 遮罩是否渲染：overlay 背景遮罩或 forbidClick 透明拦截 */
 	const maskVisible = computed<boolean>(() => (active.value.overlay == true) || (active.value.forbidClick == true))
@@ -378,7 +378,7 @@
 
 	// 组件式 show 驱动显隐（flush: post 保证状态变更后的 DOM 时序一致）
 	watch(
-		() => props.show,
+		(): boolean => props.show,
 		(show: boolean) => {
 			if (show) {
 				openToast()

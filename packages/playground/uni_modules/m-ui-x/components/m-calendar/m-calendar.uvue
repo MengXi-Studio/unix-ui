@@ -11,10 +11,10 @@
 		>
 			<!-- 插槽条件转发：v-if="$slots.xxx != null" 保证未传入的插槽不覆盖 panel 的内置默认渲染
 			     （默认内容与样式同居 panel scope，宿主无条件转发 fallback 会因样式隔离不命中） -->
-			<template v-if="$slots.title != null" #title>
+			<template v-if="$slots['title'] != null" #title>
 				<slot name="title"></slot>
 			</template>
-			<template v-if="$slots.subtitle != null" #subtitle>
+			<template v-if="$slots['subtitle'] != null" #subtitle>
 				<slot name="subtitle"></slot>
 			</template>
 			<template v-if="$slots['month-title'] != null" #month-title="{ month, text }">
@@ -26,7 +26,7 @@
 			<template v-if="$slots['bottom-info'] != null" #bottom-info="{ day }">
 				<slot name="bottom-info" :day="day"></slot>
 			</template>
-			<template v-if="$slots.text != null" #text="{ day }">
+			<template v-if="$slots['text'] != null" #text="{ day }">
 				<slot name="text" :day="day"></slot>
 			</template>
 			<template #footer>
@@ -465,7 +465,7 @@
 
 	// v-model:value 外部变更：与内部选择语义相同则忽略（内部回写防回环），不同则重置
 	// （UTS 先用后声明在 Kotlin 端报 unresolved，watch 一律放在全部被调函数之后）
-	watch(() => props.value, (nv) => {
+	watch((): Date | Date[] | null => props.value, (nv) => {
 		if (isSameSelection(getSelectedDate(), nv)) {
 			return
 		}
@@ -808,7 +808,7 @@
 	// ========== 生命周期 ==========
 
 	watch(
-		() => props.defaultDate,
+		(): Date | Date[] | null => props.defaultDate,
 		(_new: Date | Date[] | null, _old: Date | Date[] | null) => {
 			// 与挂载一致走 currentInitDate：value 存在时 default-date 变化不覆盖 v-model 选择
 			initSelection(currentInitDate())
@@ -816,7 +816,7 @@
 	)
 
 	watch(
-		() => props.type,
+		(): CalendarType => props.type,
 		(_new: CalendarType, _old: CalendarType) => {
 			resetSelection()
 		}

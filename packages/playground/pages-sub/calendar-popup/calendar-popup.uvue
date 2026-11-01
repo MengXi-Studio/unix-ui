@@ -154,43 +154,45 @@
 	const basicShow = ref<boolean>(false)
 	const basicLog = ref<string>('（等待交互）')
 
+	// 模板绑定处理函数一律 const 箭头函数：function 声明在 VDOM 生成 Kotlin 中被裸名传递报 Function invocation expected（内部调用的 fmtDate / fmtValue / pushMultiEvent 不经模板绑定，保留 function 声明）
+
 	/** 打开弹层 */
-	function openBasic() {
+	const openBasic = () => {
 		basicShow.value = true
 	}
 
 	/** select 事件记录 */
-	function onBasicSelect(value: Date | Date[]) {
+	const onBasicSelect = (value: Date | Date[]) => {
 		basicLog.value = 'select → ' + fmtValue(value)
 	}
 
 	/** confirm 事件记录（弹层同步自动关闭） */
-	function onBasicConfirm(value: Date | Date[]) {
+	const onBasicConfirm = (value: Date | Date[]) => {
 		basicLog.value = 'confirm → ' + fmtValue(value)
 	}
 
 	/** open 事件记录 */
-	function onBasicOpen() {
+	const onBasicOpen = () => {
 		basicLog.value = 'open'
 	}
 
 	/** opened 事件记录 */
-	function onBasicOpened() {
+	const onBasicOpened = () => {
 		basicLog.value = 'opened'
 	}
 
 	/** close 事件记录 */
-	function onBasicClose() {
+	const onBasicClose = () => {
 		basicLog.value = 'close'
 	}
 
 	/** closed 事件记录 */
-	function onBasicClosed() {
+	const onBasicClosed = () => {
 		basicLog.value = 'closed'
 	}
 
 	/** click-overlay 事件记录 */
-	function onBasicOverlay() {
+	const onBasicOverlay = () => {
 		basicLog.value = 'click-overlay（遮罩已关闭）'
 	}
 
@@ -206,12 +208,12 @@
 	})
 
 	/** 打开受控弹层 */
-	function openControlled() {
+	const openControlled = () => {
 		controlledShow.value = true
 	}
 
 	/** 外部设值为今天并打开：验证 value → 弹层选中态受控同步 */
-	function openControlledToday() {
+	const openControlledToday = () => {
 		const now = new Date()
 		controlledValue.value = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 		controlledShow.value = true
@@ -223,7 +225,7 @@
 	const multiEvents: string[] = []
 
 	/** 打开多选弹层 */
-	function openMulti() {
+	const openMulti = () => {
 		multiShow.value = true
 	}
 
@@ -237,22 +239,22 @@
 	}
 
 	/** 多选 select 记录 */
-	function onMultiSelect(value: Date | Date[]) {
+	const onMultiSelect = (value: Date | Date[]) => {
 		pushMultiEvent('select → ' + fmtValue(value))
 	}
 
 	/** 多选取消选中记录 */
-	function onMultiUnselect(date: Date) {
+	const onMultiUnselect = (date: Date) => {
 		pushMultiEvent('unselect → ' + fmtDate(date))
 	}
 
 	/** 超限记录（toast 由组件内部经 m-toast 展示） */
-	function onMultiOverRange() {
+	const onMultiOverRange = () => {
 		multiLog.value = 'over-range → 已拒绝并提示'
 	}
 
 	/** 多选 confirm 记录 */
-	function onMultiConfirm(value: Date | Date[]) {
+	const onMultiConfirm = (value: Date | Date[]) => {
 		multiLog.value = 'confirm → ' + fmtValue(value)
 	}
 
@@ -261,17 +263,17 @@
 	const rangeLog = ref<string>('（allow-same-day，选满自动确认并关闭）')
 
 	/** 打开范围弹层 */
-	function openRange() {
+	const openRange = () => {
 		rangeShow.value = true
 	}
 
 	/** 范围 select 记录 */
-	function onRangeSelect(value: Date | Date[]) {
+	const onRangeSelect = (value: Date | Date[]) => {
 		rangeLog.value = 'select → ' + fmtValue(value)
 	}
 
 	/** 范围 confirm 记录 */
-	function onRangeConfirm(value: Date | Date[]) {
+	const onRangeConfirm = (value: Date | Date[]) => {
 		rangeLog.value = 'confirm → ' + fmtValue(value)
 	}
 
@@ -279,7 +281,7 @@
 	const shapeShow = ref<boolean>(false)
 
 	/** 打开形态定制弹层 */
-	function openShape() {
+	const openShape = () => {
 		shapeShow.value = true
 	}
 
@@ -289,7 +291,7 @@
 	const formatterLog = ref<string>('（本月可选，界外点击观察禁用事件）')
 
 	/** 打开 formatter 弹层 */
-	function openFormatter() {
+	const openFormatter = () => {
 		formatterShow.value = true
 	}
 
@@ -311,12 +313,12 @@
 	}
 
 	/** formatter 弹层 confirm 记录 */
-	function onFormatterConfirm(value: Date | Date[]) {
+	const onFormatterConfirm = (value: Date | Date[]) => {
 		formatterLog.value = 'confirm → ' + fmtValue(value)
 	}
 
 	/** 点击禁用日期记录 */
-	function onFormatterDisabled(date: Date) {
+	const onFormatterDisabled = (date: Date) => {
 		formatterLog.value = 'click-disabled-date → ' + fmtDate(date)
 	}
 
@@ -325,7 +327,7 @@
 	const slotsMax = new Date(2026, 9, 31)
 
 	/** 打开插槽演示弹层 */
-	function openSlots() {
+	const openSlots = () => {
 		slotsShow.value = true
 	}
 </script>

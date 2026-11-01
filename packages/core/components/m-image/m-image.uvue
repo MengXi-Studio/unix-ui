@@ -164,7 +164,7 @@
 
 	// 换图重进加载态：src 变更后占位层重新显示，加载完成后再次淡入
 	watch(
-		() => props.src,
+		(): string => props.src,
 		() => {
 			status.value = 'loading'
 		}

@@ -64,7 +64,7 @@
 
 	// 动态 span：上报值随 prop 更新（间距重算依赖 row 侧 reactive 注册表）
 	watch(
-		() => props.span,
+		(): number | string => props.span,
 		(v: number | string) => {
 			if (rowContext != null) {
 				rowContext.setSpan(colId, toNum(v))

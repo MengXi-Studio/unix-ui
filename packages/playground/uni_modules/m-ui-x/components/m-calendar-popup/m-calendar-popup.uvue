@@ -58,10 +58,10 @@
 		>
 			<!-- 插槽条件转发：v-if="$slots.xxx != null" 保证未传入的插槽不覆盖 m-calendar
 			     的默认渲染（Vue 的 slot fallback 仅在「未传入」时生效，无条件转发空内容会吞默认） -->
-			<template v-if="$slots.title != null" #title>
+			<template v-if="$slots['title'] != null" #title>
 				<slot name="title"></slot>
 			</template>
-			<template v-if="$slots.subtitle != null" #subtitle>
+			<template v-if="$slots['subtitle'] != null" #subtitle>
 				<slot name="subtitle"></slot>
 			</template>
 			<template v-if="$slots['month-title'] != null" #month-title="{ month, text }">
@@ -73,10 +73,10 @@
 			<template v-if="$slots['bottom-info'] != null" #bottom-info="{ day }">
 				<slot name="bottom-info" :day="day"></slot>
 			</template>
-			<template v-if="$slots.text != null" #text="{ day }">
+			<template v-if="$slots['text'] != null" #text="{ day }">
 				<slot name="text" :day="day"></slot>
 			</template>
-			<template v-if="$slots.footer != null" #footer>
+			<template v-if="$slots['footer'] != null" #footer>
 				<slot name="footer"></slot>
 			</template>
 			<template v-if="$slots['confirm-text'] != null" #confirm-text>
@@ -108,7 +108,8 @@
 		CalendarType,
 		CalendarSwitchMode,
 		CalendarPosition,
-		CalendarFormatter
+		CalendarFormatter,
+		CalendarDayItem
 	} from '../m-calendar/calendar.uts'
 	import MCalendar from '../m-calendar/m-calendar.uvue'
 
@@ -132,7 +133,7 @@
 		/** 日格行高 px（0 用默认变量值） */
 		rowHeight?: number
 		/** 日期格格式化函数 */
-		formatter?: CalendarFormatter | null
+		formatter?: ((day: CalendarDayItem) => CalendarDayItem) | null
 		/** 显示月份背景水印 */
 		showMark?: boolean
 		/** 显示标题 */
@@ -272,13 +273,14 @@
 	})
 
 	// ========== 弹层事件转发 ==========
+	// 模板绑定的组件事件处理函数一律 const 箭头函数：function 声明在 VDOM 生成 Kotlin 中被裸名传递报 Function invocation expected
 
-	function onPopupUpdateShow(value: boolean) {
+	const onPopupUpdateShow = (value: boolean) => {
 		emit('update:show', value)
 	}
 
 	/** 弹层打开：派发 open；resetOnOpen 时先重置选择为 value / default-date，再经 refreshView 复位到聚焦月 */
-	function onPopupOpen() {
+	const onPopupOpen = () => {
 		emit('open')
 		const inst = cal.value
 		if (inst != null) {
@@ -289,60 +291,60 @@
 		}
 	}
 
-	function onPopupOpened() {
+	const onPopupOpened = () => {
 		emit('opened')
 	}
 
-	function onPopupClose() {
+	const onPopupClose = () => {
 		emit('close')
 	}
 
-	function onPopupClosed() {
+	const onPopupClosed = () => {
 		emit('closed')
 	}
 
-	function onPopupClickOverlay(e: MouseEvent) {
+	const onPopupClickOverlay = (e: MouseEvent) => {
 		emit('click-overlay', e)
 	}
 
 	// ========== 日历事件转发（confirm 额外触发关闭） ==========
 
-	function onCalSelect(value: Date | Date[]) {
+	const onCalSelect = (value: Date | Date[]) => {
 		emit('select', value)
 	}
 
 	/** 选中值变化（v-model:value）透传 */
-	function onCalValueChange(value: Date | Date[] | null) {
+	const onCalValueChange = (value: Date | Date[] | null) => {
 		emit('update:value', value)
 	}
 
 	/** 确认（按钮 / 自动确认）：派发 confirm 后关闭弹层 */
-	function onCalConfirm(value: Date | Date[]) {
+	const onCalConfirm = (value: Date | Date[]) => {
 		emit('confirm', value)
 		emit('update:show', false)
 	}
 
-	function onCalUnselect(date: Date) {
+	const onCalUnselect = (date: Date) => {
 		emit('unselect', date)
 	}
 
-	function onCalOverRange() {
+	const onCalOverRange = () => {
 		emit('over-range')
 	}
 
-	function onCalMonthShow(date: Date) {
+	const onCalMonthShow = (date: Date) => {
 		emit('month-show', date)
 	}
 
-	function onCalPanelChange(date: Date) {
+	const onCalPanelChange = (date: Date) => {
 		emit('panel-change', date)
 	}
 
-	function onCalSubtitleClick() {
+	const onCalSubtitleClick = () => {
 		emit('click-subtitle')
 	}
 
-	function onCalDisabledDate(date: Date) {
+	const onCalDisabledDate = (date: Date) => {
 		emit('click-disabled-date', date)
 	}
 </script>

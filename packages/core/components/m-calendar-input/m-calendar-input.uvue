@@ -194,8 +194,8 @@
 		popupShow.value = true
 	}
 
-	/** 确认回写：值经 v-model 回写外部，弹层关闭由 m-calendar-popup 内部完成 */
-	function onCalConfirm(value: Date | Date[]) {
+	/** 确认回写：值经 v-model 回写外部，弹层关闭由 m-calendar-popup 内部完成（模板绑定的组件事件处理函数须 const 箭头函数，function 声明在 VDOM Kotlin 中报 Function invocation expected） */
+	const onCalConfirm = (value: Date | Date[]) => {
 		emit('update:value', value)
 		emit('confirm', value)
 	}

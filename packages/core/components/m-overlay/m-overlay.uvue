@@ -156,7 +156,7 @@
 
 	// show 驱动显隐（flush: post 保证状态变更后的 DOM 时序一致）
 	watch(
-		() => props.show,
+		(): boolean => props.show,
 		(show: boolean) => {
 			if (show) {
 				lockBodyScroll()

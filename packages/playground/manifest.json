@@ -2,11 +2,13 @@
 	"name": "unix-ui-playground",
 	"appid": "__UNI__F1AA560",
 	"description": "@meng-xi/unix-ui 示例项目",
-	"versionName": "0.1.0",
-	"versionCode": "001",
+	"versionName": "0.2.0",
+	"versionCode": "020",
 	"uni-app-x": {
 		"styleIsolationVersion": "2",
-		"vapor-default-script-lang": "uts"
+		"vapor-default-script-lang": "uts",
+		"vapor": true,
+		"vapor-render-target": "bytecode"
 	},
 	"quickapp": {},
 	"mp-weixin": {

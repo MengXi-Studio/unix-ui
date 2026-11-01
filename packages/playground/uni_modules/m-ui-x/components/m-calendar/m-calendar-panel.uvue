@@ -64,8 +64,8 @@
 				class="m-calendar__month"
 			>
 				<view v-if="month.showTitle" class="m-calendar__month-title">
-					<slot name="month-title" :month="month.date" :text="getMonthTitle(month.date)">
-						<text class="m-calendar__month-title-text">{{ getMonthTitle(month.date) }}</text>
+					<slot name="month-title" :month="month.date" :text="monthTitleText(month.date)">
+						<text class="m-calendar__month-title-text">{{ monthTitleText(month.date) }}</text>
 					</slot>
 				</view>
 				<view class="m-calendar__days">
@@ -83,12 +83,12 @@
 							class="m-calendar__day-info m-calendar__day-info--top"
 						>
 							<slot name="top-info" :day="day">
-								<text :class="dayInfoTextClass(day)">{{ day.topInfo }}</text>
+								<text :class="dayInfoTextCls(day)">{{ day.topInfo }}</text>
 							</slot>
 						</view>
 						<view v-if="isRealDay(day)" :class="dayCenterClass(day)" :style="dayCenterStyle(day)">
 							<slot name="text" :day="day">
-								<text :class="dayTextClass(day)">{{ day.text }}</text>
+								<text :class="dayTextCls(day)">{{ day.text }}</text>
 							</slot>
 						</view>
 						<view
@@ -96,7 +96,7 @@
 							class="m-calendar__day-info m-calendar__day-info--bottom"
 						>
 							<slot name="bottom-info" :day="day">
-								<text :class="dayInfoTextClass(day)">{{ day.bottomInfo }}</text>
+								<text :class="dayInfoTextCls(day)">{{ day.bottomInfo }}</text>
 							</slot>
 						</view>
 					</view>
@@ -133,6 +133,12 @@
 		'body-scroll': [scrollTop: number]
 	}>()
 
+	// 模板内桥接：模板表达式调用「导入函数」会被生成器包裹 unref() 后不可调用（Function invocation expected），
+	// 本地 const 箭头函数直接引用无此问题，故以本地桥接转发 calendar.uts 的工具函数
+	const monthTitleText = (date: Date): string => getMonthTitle(date)
+	const dayTextCls = (day: CalendarDayItem): string => dayTextClass(day)
+	const dayInfoTextCls = (day: CalendarDayItem): string => dayInfoTextClass(day)
+
 	/** 空配置兜底：panel 未下发或首帧 null 时按此渲染 */
 	const cfg = computed<CalendarPanelConfig>(() => {
 		const p = props.panel
@@ -140,7 +146,6 @@
 			return p
 		}
 		const empty: CalendarPanelConfig = {
-			panelMode: 'flat',
 			panelHeight: '',
 			months: [],
 			weekdays: CALENDAR_WEEKDAYS,

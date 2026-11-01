@@ -5,7 +5,7 @@
 为 uni-app x 提供功能完善的 UI 组件库（UTS + uvue 编写，一套组件多端覆盖）。
 
 **m-ui-x** 是开源项目 [unix-ui](https://github.com/MengXi-Studio/unix-ui) 的 uni_modules 插件发行版（npm 包名
-[`@meng-xi/unix-ui`](https://www.npmjs.com/package/@meng-xi/unix-ui)），内置按钮、徽标、图标、加载、单元格、栅格、图片、文本、间距等 11 个基础组件，把原生开发的交互细节（按压反馈、0.5px 细边框、文本省略、徽标截断……）与多端差异一次收敛。
+[`@meng-xi/unix-ui`](https://www.npmjs.com/package/@meng-xi/unix-ui)），内置按钮、输入框、日历、弹出层、宫格、徽标、图标、加载、单元格、栅格、图片、文本、间距等 18 个基础组件，把原生开发的交互细节（按压反馈、0.5px 细边框、文本省略、徽标截断……）与多端差异一次收敛。
 
 ## 特性
 
@@ -63,13 +63,21 @@ $m-button-normal-height: 48px;
 | --------------------- | ----------------------------------------------------------------------------------------- |
 | m-button              | 按钮：语义色 type、plain / disabled / loading、四档尺寸、block、hairline 细边框、按压反馈 |
 | m-cell / m-cell-group | 单元格与分组：title / value / label、图标、四向箭头、inset 圆角卡片分组                   |
+| m-compact             | 紧凑布局：包裹按钮 / 输入框圆角衔接与边框合并、block / direction、动态增删自动重排        |
 | m-row / m-col         | 栅格布局：gutter 间距、对齐、换行                                                         |
+| m-grid / m-grid-item  | 宫格：自定义列数、正方形格子、gutter 间距、完整边框、徽标联动、页面跳转                   |
 | m-icon                | 图标：250+ 常用图标（ttf 随包内置）、颜色尺寸、自定义图标插槽                             |
 | m-image               | 图片：mode 直通、加载 / 失败占位、淡入过渡、圆形、懒加载                                  |
 | m-text                | 文本：语义色 / 色值双模式、三档字号、单行省略、多行截断、可选中                           |
+| m-input               | 输入框：六种类型、clearable 两时机、字数统计、formatter / precision / min-max 收敛、明文切换、前后插槽 |
 | m-space               | 间距：方向 / 换行 / 对齐，size 单值或双值（行 / 列）分写                                  |
+| m-divider             | 分割线：水平 / 垂直、dashed 虚线、hairline 0.5px 细线、内容位置                           |
 | m-loading             | 加载：circular / spinner 双形态、自定义色与尺寸、带文案                                   |
+| m-overlay             | 遮罩层：show 驱动、z-index / duration、Web 端 body 滚动锁，弹窗类组件基础                 |
+| m-popup               | 弹出层：五方位、round 分侧圆角、closeable、遮罩定制、before-close 拦截、v-model:show      |
+| m-toast               | 轻提示：函数式 API（showToast 系列）+ 组件式双形态、四类型三方位、遮罩与点击拦截          |
 | m-badge               | 徽标：数字 / 点、max 截断、语义色与色值、位置偏移、独立形态                               |
+| m-calendar / m-calendar-popup / m-calendar-input | 日历三组件：单选 / 多选 / 范围选择、年月切换导航、范围限定与主题色派生，弹层与输入框组合形态 |
 
 ## 文档与演示
 
@@ -78,6 +86,12 @@ $m-button-normal-height: 48px;
 - 📱 Android 真机体验：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1793059625238-__UNI__F1AA560_1793059613497.apk)
 
 ## 更新记录
+
+### 0.2.0（2026-10-28）
+
+- 新增 11 个基础组件：遮罩层（m-overlay）、弹出层（m-popup）、分割线（m-divider）、宫格（m-grid / m-grid-item）、轻提示（m-toast）、紧凑布局（m-compact）、输入框（m-input）与日历三组件（m-calendar / m-calendar-popup / m-calendar-input），基础组件数量达到 18 个
+- 日历按「面板 / 弹出框 / 输入框」拆为三组件，支持单选 / 多选 / 范围选择、年月切换导航与主题色派生
+- 主题机制与 easycom 零注册沿用既有规范，新组件全部支持 `uni.scss` 变量覆盖
 
 ### 0.1.0（2026-10-27）
 

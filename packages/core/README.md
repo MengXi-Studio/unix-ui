@@ -80,13 +80,21 @@ $m-button-normal-height: 48px;
 | --- | --- |
 | m-button | 按钮：语义色 type、plain / disabled / loading、四档尺寸、block、hairline 细边框、按压反馈 |
 | m-cell / m-cell-group | 单元格与分组：title / value / label、图标、四向箭头、inset 圆角卡片分组 |
+| m-compact | 紧凑布局：包裹按钮 / 输入框圆角衔接与边框合并、block / direction、动态增删自动重排 |
 | m-row / m-col | 栅格布局：gutter 间距、对齐、换行 |
+| m-grid / m-grid-item | 宫格：自定义列数、正方形格子、gutter 间距、完整边框、徽标联动、页面跳转 |
 | m-icon | 图标：250+ 常用图标（ttf 随包分发）、颜色尺寸、自定义图标插槽 |
 | m-image | 图片：mode 直通、加载 / 失败占位、淡入过渡、圆形、懒加载 |
 | m-text | 文本：语义色 / 色值双模式、三档字号、单行省略、多行截断、可选中 |
+| m-input | 输入框：六种类型、clearable 两时机、字数统计、formatter / precision / min-max 收敛、明文切换、前后插槽 |
 | m-space | 间距：方向 / 换行 / 对齐，size 单值或双值（行 / 列）分写 |
+| m-divider | 分割线：水平 / 垂直、dashed 虚线、hairline 0.5px 细线、内容位置 |
 | m-loading | 加载：circular / spinner 双形态、自定义色与尺寸、带文案 |
+| m-overlay | 遮罩层：show 驱动、z-index / duration、Web 端 body 滚动锁，弹窗类组件基础 |
+| m-popup | 弹出层：五方位、round 分侧圆角、closeable、遮罩定制、before-close 拦截、v-model:show |
+| m-toast | 轻提示：函数式 API（showToast 系列）+ 组件式双形态、四类型三方位、遮罩与点击拦截 |
 | m-badge | 徽标：数字 / 点、max 截断、语义色与色值、位置偏移、独立形态 |
+| m-calendar / m-calendar-popup / m-calendar-input | 日历三组件：单选 / 多选 / 范围选择、年月切换导航、范围限定与主题色派生，弹层与输入框组合形态 |
 
 ## 在线演示
 

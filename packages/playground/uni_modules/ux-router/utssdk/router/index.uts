@@ -54,11 +54,13 @@ class UniRouter implements Router {
 	private guardTimeout: number
 	private readyTimeout: number
 	private strict: boolean
+	private backFallbackRoute: RouteLocationRaw | null = null
 
 	constructor(options: RouterOptions) {
 		this.strict = options.strict ?? true
 		this.guardTimeout = options.guardTimeout ?? DEFAULT_GUARD_TIMEOUT
 		this.readyTimeout = options.readyTimeout ?? DEFAULT_READY_TIMEOUT
+		this.backFallbackRoute = options.backFallback != null ? options.backFallback : null
 		this.guardManager = createGuardManager()
 		this.matcher = createRouteMatcher(options.routes, this.strict)
 		this.routeState = createRouteState(this.readyTimeout)
@@ -150,11 +152,17 @@ class UniRouter implements Router {
 	}
 
 	/**
-	 * back() 页面栈不足时的兜底：重载首个 tabBar 页（uni-app 官方推荐的「返回失败回首页」模式）。
+	 * back() 页面栈不足时的兜底：优先 RouterOptions.backFallback 显式配置，否则重载首个 tabBar 页
+	 * （uni-app 官方推荐的「返回失败回首页」模式）。
 	 * 场景：H5 刷新 / 冷启动直连非首页（页面栈仅 1 层），uni.navigateBack 无处可退导致返回无效。
-	 * 兜底经 relaunch 走完整守卫链（requireAuth 等拦截仍然生效）；无 tabBar 路由时维持 CANCELLED 失败。
+	 * 兜底经 relaunch 走完整守卫链（requireAuth 等拦截仍然生效）；无配置且无 tabBar 路由时维持 CANCELLED 失败。
 	 */
 	private async backWithStackFallback(from: RouteLocation): Promise<NavigationResult> {
+		// 显式配置的兜底目标优先（覆盖无 tabBar 工程，如自绘导航的组件演示应用）
+		if (this.backFallbackRoute != null) {
+			warn('back() 页面栈中无上一页（冷启动/刷新直连），按 backFallback 配置兜底重载')
+			return this.relaunch(this.backFallbackRoute)
+		}
 		const entryPath = findFirstTabRoutePath(this.matcher.getRoutes())
 		if (entryPath !== null) {
 			warn(`back() 页面栈中无上一页（冷启动/刷新直连），兜底重载入口页: /${entryPath}`)

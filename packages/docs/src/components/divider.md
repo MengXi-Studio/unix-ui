@@ -2,6 +2,7 @@
 title: Divider
 subtitle: 分割线
 demo: pages-sub/divider/divider
+added: 0.2.0
 ---
 
 ## 介绍

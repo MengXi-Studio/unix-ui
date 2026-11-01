@@ -2,6 +2,7 @@
 title: Overlay
 subtitle: 遮罩层
 demo: pages-sub/overlay/overlay
+added: 0.2.0
 ---
 
 ## 介绍

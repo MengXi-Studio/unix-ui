@@ -1,6 +1,7 @@
 ---
 title: Compact
 demo: pages-sub/compact/compact
+added: 0.2.0
 ---
 
 ## Introduction

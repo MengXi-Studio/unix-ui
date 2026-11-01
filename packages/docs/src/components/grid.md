@@ -2,6 +2,7 @@
 title: Grid
 subtitle: 宫格
 demo: pages-sub/grid/grid
+added: 0.2.0
 ---
 
 ## 介绍

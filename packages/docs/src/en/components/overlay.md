@@ -1,6 +1,7 @@
 ---
 title: Overlay
 demo: pages-sub/overlay/overlay
+added: 0.2.0
 ---
 
 ## Introduction

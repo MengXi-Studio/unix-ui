@@ -2,6 +2,7 @@
 title: Popup
 subtitle: 弹出层
 demo: pages-sub/popup/popup
+added: 0.2.0
 ---
 
 ## 介绍

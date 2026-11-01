@@ -2,6 +2,7 @@
 title: CalendarPopup
 subtitle: 日历弹出框
 demo: pages-sub/calendar-popup/calendar-popup
+added: 0.2.0
 ---
 
 ## 介绍

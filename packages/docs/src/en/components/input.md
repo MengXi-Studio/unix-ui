@@ -2,6 +2,7 @@
 title: Input
 subtitle: Input
 demo: pages-sub/input/input
+added: 0.2.0
 ---
 
 ## Introduction

@@ -2,6 +2,7 @@
 title: CalendarInput
 subtitle: CalendarInput
 demo: pages-sub/calendar-input/calendar-input
+added: 0.2.0
 ---
 
 ## Introduction

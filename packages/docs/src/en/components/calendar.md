@@ -2,6 +2,7 @@
 title: Calendar
 subtitle: Calendar
 demo: pages-sub/calendar/calendar
+added: 0.2.0
 ---
 
 ## Introduction

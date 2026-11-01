@@ -2,6 +2,7 @@
 title: CalendarInput
 subtitle: 日历输入框
 demo: pages-sub/calendar-input/calendar-input
+added: 0.2.0
 ---
 
 ## 介绍

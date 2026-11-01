@@ -1,6 +1,7 @@
 ---
 title: Divider
 demo: pages-sub/divider/divider
+added: 0.2.0
 ---
 
 ## Introduction

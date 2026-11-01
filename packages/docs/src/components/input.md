@@ -2,6 +2,7 @@
 title: Input
 subtitle: 输入框
 demo: pages-sub/input/input
+added: 0.2.0
 ---
 
 ## 介绍

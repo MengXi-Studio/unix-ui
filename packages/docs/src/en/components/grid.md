@@ -2,6 +2,7 @@
 title: Grid
 subtitle: Grid
 demo: pages-sub/grid/grid
+added: 0.2.0
 ---
 
 ## Introduction

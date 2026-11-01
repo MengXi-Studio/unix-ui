@@ -300,26 +300,6 @@
 		if (value != props.modelValue) updateValue(value)
 	}
 
-	/** 单行聚焦事件桥接（input 与 textarea 原生事件类型不同，各自桥接后走公共处理） */
-	function onFocusInput(event: UniInputFocusEvent): void {
-		handleFocus(event)
-	}
-
-	/** 多行聚焦事件桥接 */
-	function onFocusTextarea(event: UniTextareaFocusEvent): void {
-		handleFocus(event)
-	}
-
-	/** 单行失焦事件桥接 */
-	function onBlurInput(event: UniInputBlurEvent): void {
-		handleBlur(event)
-	}
-
-	/** 多行失焦事件桥接 */
-	function onBlurTextarea(event: UniTextareaBlurEvent): void {
-		handleBlur(event)
-	}
-
 	/**
 	 * 聚焦公共处理：清除失焦宽限期、点亮聚焦视觉、记录值快照、同步 :focus 属性状态
 	 */
@@ -354,6 +334,26 @@
 		value = applyNumeric(value)
 		if (value != props.modelValue) updateValue(value)
 		if (value != focusSnapshot.value) emit('change', value)
+	}
+
+	/** 单行聚焦事件桥接（input 与 textarea 原生事件类型不同，各自桥接后走公共处理） */
+	function onFocusInput(event: UniInputFocusEvent): void {
+		handleFocus(event)
+	}
+
+	/** 多行聚焦事件桥接 */
+	function onFocusTextarea(event: UniTextareaFocusEvent): void {
+		handleFocus(event)
+	}
+
+	/** 单行失焦事件桥接 */
+	function onBlurInput(event: UniInputBlurEvent): void {
+		handleBlur(event)
+	}
+
+	/** 多行失焦事件桥接 */
+	function onBlurTextarea(event: UniTextareaBlurEvent): void {
+		handleBlur(event)
 	}
 
 	/**

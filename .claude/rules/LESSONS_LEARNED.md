@@ -161,7 +161,22 @@
 - 根因：script setup 内的 `function` 声明生成 Kotlin 局部函数（`fun gen_xxx_fn` + `val xxx = ::gen_xxx_fn`），Kotlin 局部函数不允许前向引用；JS 函数提升掩盖了声明顺序问题
 - 判别法：本地生成的 `.kt`（unpackage/resources/app-android）中声明行号 > 使用行号即中招；m-badge 的 addUnit 先声明后使用故未报错，m-icon / m-loading / m-image 均先用后声明全报
 - 修复：helper 函数声明移到首次使用之前（仅调整顺序，Web 行为不变）
+- 判别法补充（2026-11-01 m-calendar 案例）：**watch / onMounted 等回调也是局部函数**，回调体内调用后声明的函数同样报 `Unresolved reference`（m-calendar 的 watch 调 getSelectedDate）；watch 整体移到全部被调函数之后即可。同批案例：m-input 四个原生事件桥接函数先于 handleFocus/handleBlur、m-toast 的 setTimeout 回调调 closeToastInternal、演示页 fmtValue 调 fmtDate
 - 关联：本地 `.kt` 与云端报错行号逐行吻合（m-badge.kt:35、demo-navbar.kt:30 精确命中），可把云端错误直接映射回本地生成产物定位
+
+### 64. 云端「生态标准写法全挂」是基座不配套的判别特征，勿改源码（2026-11-01 云打包复盘）
+- 现象：云端报 9 处 `watch` 源 lambda `Return type mismatch: expected 'Unit', actual X`（X = Date?/String/Boolean/Any 各不相同），另有大面积 slot 名 unresolved、`Animation`/`cancel` unresolved、`Function invocation 'onXxx(...)' expected`
+- 决定性证据：本地产物中**全部 10 处** `watch(fun(){ return props.X }, cb)` 在云端无一幸免、零对照组——`watch(() => props.xxx, cb)` 是 uni-app x 官方标准写法（生态通用），若基座配套不可能全挂；报错 actual 类型五花八门与写法无关，恰是运行时 watch 签名与生成代码不匹配的表现
+- 结论：与 slot unresolved、Animation/cancel 同根因——云端基座 SDK 版本与本机编译器（5.34 alpha）产物不配套，云打包勾选配套 alpha 基座即消除；**不要把 watch 源改写成 Ref 传参等「兼容形态」**（LESSONS #31 同则）
+
+### 65. String.charCodeAt 返回可空 Number?，App 端参与运算必须先空安全短路（2026-11-01 云打包实测）
+- 现象：`ch.charCodeAt(0)` 直接参与 `>=` 与 `-` 运算，云端 kotlinc 报 `Operator call is prohibited on a nullable receiver of type 'Number?'`（一处源码炸出 9 条错误）；Web 端 JS 语义无感，编译运行全正常
+- 修复：紧跟 `if (code == null) { return -1 }` 短路，后续运算自动非空；语义上空串/越界取码本就应归入「非法字符」分支
+- 关联：hexToRgba 的十六进制解析链（calendar.uts hexDigitValue）
+
+### 66. 两个 UTS→Kotlin 泛型/类型坑：嵌套数组字面量与 ClassString 传参（2026-11-01 云打包实测）
+- `[[]]` 嵌套字面量：`const result: number[][] = [[]]` 编译为 `_uA(_uA()) as UTSArray<UTSArray<Number>>`，`as` 只作用外层，内层空 `_uA()` 无类型上下文报 `Not enough information to infer type argument for 'E'`；修复：内层数组先声明带注解变量再入数组（`const firstRow: number[] = []` → `[firstRow]`，产物生成 `val firstRow: UTSArray<Number> = _uA()` 推断即有依据）
+- `string.ClassString` prop 不能隐式传给 type 定义的 `string` 字段：Kotlin 端两者类型不同（actual Any vs expected String?），报 `Argument type mismatch`；修复：显式 `props.customClass as string`（判 null 后转换）。仅当 ClassString 值流入 UTS type 结构体字段才需要，拼 class 字符串场景无此问题
 
 ### 30. UTS 接口方法参数不支持默认值，可选参数生成必填 Kotlin 参数
 - 现象：`router.back()` 报 `No value passed for parameter 'delta'`（ux-router 接口声明 `back(delta?: number | null)`，实现 `back(delta: number | null)` 无默认值）

@@ -137,6 +137,10 @@ export function getDayDiff(a: Date, b: Date): number {
  */
 function hexDigitValue(ch: string): number {
 	const code = ch.charCodeAt(0)
+	// charCodeAt 可空（Number?）：空串等场景返回 null，需先行空安全短路（Kotlin 禁可空接收者运算）
+	if (code == null) {
+		return -1
+	}
 	if (code >= 48 && code <= 57) {
 		return code - 48
 	}

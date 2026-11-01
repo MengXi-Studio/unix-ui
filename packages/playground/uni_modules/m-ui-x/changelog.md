@@ -1,3 +1,13 @@
+## 0.2.1（2026-11-01）
+
+- 修复 Android 云打包 Kotlin 编译错误（4 处 UTS 先用后声明 + 3 处类型问题，Web 端行为不变）：
+  - `m-calendar`：`v-model:value` 的 watch 回调移至 `getSelectedDate` 声明之后（Kotlin 局部函数禁前向引用）
+  - `m-input`：focus / blur 公共处理函数移至四个原生事件桥接函数之前
+  - `m-toast`：关闭流程函数移至自动关闭计时函数之前；`custom-class` prop 传入选项结构体时显式 `as string`（Kotlin 端 ClassString 与 string 类型不同）
+  - `m-calendar-input` 演示页：`fmtDate` 声明移至 `fmtValue` 之前
+  - `m-calendar` 工具：`hexDigitValue` 对 `charCodeAt` 返回的空值先行短路（Kotlin 禁可空接收者运算）
+  - `m-row`：行分组首组改为显式类型声明（嵌套空数组字面量在 Kotlin 端泛型无法推断）
+
 ## 0.2.0（2026-10-28）
 
 - 新增 `m-overlay`

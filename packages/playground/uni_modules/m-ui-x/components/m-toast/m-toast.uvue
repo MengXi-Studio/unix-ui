@@ -141,7 +141,7 @@
 			duration: props.duration == null ? (isLoading ? 0 : 2000) : props.duration,
 			wordBreak: props.wordBreak == null ? 'normal' : props.wordBreak,
 			zIndex: props.zIndex == '' ? null : props.zIndex,
-			customClass: props.customClass == '' ? '' : props.customClass,
+			customClass: props.customClass == null ? '' : (props.customClass as string),
 			customStyle: props.customStyle,
 			onOpened: null,
 			onClose: null
@@ -276,6 +276,24 @@
 	}
 
 	/**
+	 * 关闭流程：淡出 → 过渡结束解除显示 → onClose 回调；组件式同步 update:show。
+	 * 幂等：未显示时直接返回（重复 close / 从未 show 的 close 命令无副作用）
+	 */
+	function closeToastInternal() {
+		if (!visible.value) return
+		clearAllTimers()
+		emit('update:show', false)
+		opacity.value = 0
+		hideTimer = setTimeout(() => {
+			hideTimer = -1
+			visible.value = false
+			const cb = cmdState.value != null ? cmdState.value!.options.onClose : null
+			if (cb != null) cb()
+			emit('close')
+		}, TRANSITION_DURATION)
+	}
+
+	/**
 	 * 重置自动关闭计时（duration > 0 时到期自动关闭；重复 show 调用即重置）
 	 */
 	function restartAutoClose() {
@@ -306,24 +324,6 @@
 			const cb = cmdState.value != null ? cmdState.value!.options.onOpened : null
 			if (cb != null) cb()
 			emit('opened')
-		}, TRANSITION_DURATION)
-	}
-
-	/**
-	 * 关闭流程：淡出 → 过渡结束解除显示 → onClose 回调；组件式同步 update:show。
-	 * 幂等：未显示时直接返回（重复 close / 从未 show 的 close 命令无副作用）
-	 */
-	function closeToastInternal() {
-		if (!visible.value) return
-		clearAllTimers()
-		emit('update:show', false)
-		opacity.value = 0
-		hideTimer = setTimeout(() => {
-			hideTimer = -1
-			visible.value = false
-			const cb = cmdState.value != null ? cmdState.value!.options.onClose : null
-			if (cb != null) cb()
-			emit('close')
 		}, TRANSITION_DURATION)
 	}
 

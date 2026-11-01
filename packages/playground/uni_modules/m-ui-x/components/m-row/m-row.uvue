@@ -89,7 +89,9 @@
 	 * 换行本身由 flex-wrap 自然完成，分组仅用于间距的行级计算
 	 */
 	const groups = computed<number[][]>(() => {
-		const result: number[][] = [[]]
+		// 首组显式声明类型再入数组字面量：内联 [[]] 编译为无类型实参的嵌套 _uA()，Kotlin 端泛型 E 无法推断
+		const firstRow: number[] = []
+		const result: number[][] = [firstRow]
 		let totalSpan = 0
 		ctx.cols.forEach((col: ColReg, index: number) => {
 			totalSpan += col.span

@@ -84,6 +84,15 @@
 </template>
 
 <script setup lang="uts">
+	/** 日期转 YYYY-MM-DD 文本 */
+	function fmtDate(d: Date): string {
+		const m = d.getMonth() + 1
+		const day = d.getDate()
+		const mm = m < 10 ? '0' + m.toString() : m.toString()
+		const dd = day < 10 ? '0' + day.toString() : day.toString()
+		return d.getFullYear().toString() + '-' + mm + '-' + dd
+	}
+
 	/** 选择值转展示文本（与组件内部格式一致，供日志对照） */
 	function fmtValue(value: Date | Date[] | null): string {
 		if (value == null) {
@@ -98,15 +107,6 @@
 			parts.push(fmtDate(arr[i]))
 		}
 		return parts.join(' ~ ')
-	}
-
-	/** 日期转 YYYY-MM-DD 文本 */
-	function fmtDate(d: Date): string {
-		const m = d.getMonth() + 1
-		const day = d.getDate()
-		const mm = m < 10 ? '0' + m.toString() : m.toString()
-		const dd = day < 10 ? '0' + day.toString() : day.toString()
-		return d.getFullYear().toString() + '-' + mm + '-' + dd
 	}
 
 	// ========== 1 基础用法 ==========

@@ -406,14 +406,6 @@
 		initSelection(currentInitDate())
 	}
 
-	// v-model:value 外部变更：与内部选择语义相同则忽略（内部回写防回环），不同则重置
-	watch(() => props.value, (nv) => {
-		if (isSameSelection(getSelectedDate(), nv)) {
-			return
-		}
-		resetSelection()
-	})
-
 	/** 初始聚焦月：首个选中月 → 范围内的今天 → min 月（返回当月 1 号，clamp 到可选范围） */
 	function focusMonth(): Date {
 		const min = currentMinDate()
@@ -470,6 +462,15 @@
 		}
 		return rangeList
 	}
+
+	// v-model:value 外部变更：与内部选择语义相同则忽略（内部回写防回环），不同则重置
+	// （UTS 先用后声明在 Kotlin 端报 unresolved，watch 一律放在全部被调函数之后）
+	watch(() => props.value, (nv) => {
+		if (isSameSelection(getSelectedDate(), nv)) {
+			return
+		}
+		resetSelection()
+	})
 
 	// ========== computed（依赖上方函数与状态） ==========
 

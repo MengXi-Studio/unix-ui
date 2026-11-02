@@ -13,10 +13,10 @@
 			<text class="section" id="position">弹出位置</text>
 			<view class="card">
 				<m-space wrap>
-					<m-button type="primary" @click="openTop">顶部弹出</m-button>
-					<m-button type="primary" @click="openBottom">底部弹出</m-button>
-					<m-button type="primary" @click="openLeft">左侧弹出</m-button>
-					<m-button type="primary" @click="openRight">右侧弹出</m-button>
+					<m-space-item><m-button type="primary" @click="openTop">顶部弹出</m-button></m-space-item>
+					<m-space-item><m-button type="primary" @click="openBottom">底部弹出</m-button></m-space-item>
+					<m-space-item><m-button type="primary" @click="openLeft">左侧弹出</m-button></m-space-item>
+					<m-space-item><m-button type="primary" @click="openRight">右侧弹出</m-button></m-space-item>
 				</m-space>
 				<text class="caption">position 五方位：top / bottom / left / right / center（默认 center）；top/bottom 宽度撑满、left/right 高度撑满</text>
 			</view>
@@ -24,8 +24,8 @@
 			<text class="section" id="round">圆角弹窗</text>
 			<view class="card">
 				<m-space wrap>
-					<m-button type="primary" @click="openRoundCenter">居中圆角</m-button>
-					<m-button type="primary" @click="openRoundBottom">底部圆角</m-button>
+					<m-space-item><m-button type="primary" @click="openRoundCenter">居中圆角</m-button></m-space-item>
+					<m-space-item><m-button type="primary" @click="openRoundBottom">底部圆角</m-button></m-space-item>
 				</m-space>
 				<text class="caption">round 按弹出方位分侧圆角（bottom 弹出仅上侧两角圆角，center 四角全圆）</text>
 			</view>
@@ -33,11 +33,11 @@
 			<text class="section" id="closeable">关闭图标</text>
 			<view class="card">
 				<m-space wrap>
-					<m-button type="primary" @click="openCloseTR">右上角图标</m-button>
-					<m-button type="primary" @click="openCloseTL">左上角图标</m-button>
-					<m-button type="primary" @click="openCloseBR">右下角图标</m-button>
-					<m-button type="primary" @click="openCloseBL">左下角图标</m-button>
-					<m-button type="primary" @click="openCloseCustom">自定义图标</m-button>
+					<m-space-item><m-button type="primary" @click="openCloseTR">右上角图标</m-button></m-space-item>
+					<m-space-item><m-button type="primary" @click="openCloseTL">左上角图标</m-button></m-space-item>
+					<m-space-item><m-button type="primary" @click="openCloseBR">右下角图标</m-button></m-space-item>
+					<m-space-item><m-button type="primary" @click="openCloseBL">左下角图标</m-button></m-space-item>
+					<m-space-item><m-button type="primary" @click="openCloseCustom">自定义图标</m-button></m-space-item>
 				</m-space>
 				<text class="caption">closeable 显示关闭图标（m-icon 驱动），close-icon-position 四角可选；close-icon 自定义图标名（点击触发 click-close-icon 后关闭）</text>
 			</view>
@@ -69,8 +69,8 @@
 			<text class="section" id="destroy">销毁后重建</text>
 			<view class="card">
 				<m-space direction="vertical" fill>
-					<m-button type="primary" block @click="openDestroy">destroy-on-close（重开计数归零）</m-button>
-					<m-button type="primary" block @click="openKeep">默认保留（重开计数保留）</m-button>
+					<m-space-item><m-button type="primary" block @click="openDestroy">destroy-on-close（重开计数归零）</m-button></m-space-item>
+					<m-space-item><m-button type="primary" block @click="openKeep">默认保留（重开计数保留）</m-button></m-space-item>
 				</m-space>
 				<text class="caption">destroy-on-close 在关闭动画结束后销毁面板内容、重开时重建（内部状态复位）；默认仅隐藏、状态保留</text>
 			</view>

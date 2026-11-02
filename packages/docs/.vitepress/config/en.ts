@@ -78,6 +78,15 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					]
 				},
 				{
+					text: 'Form Components',
+					items: [
+						{ text: 'Calendar', link: '/en/components/calendar' },
+						{ text: 'CalendarInput', link: '/en/components/calendar-input' },
+						{ text: 'CalendarPopup', link: '/en/components/calendar-popup' },
+						{ text: 'Input', link: '/en/components/input' }
+					]
+				},
+				{
 					text: 'Feedback Components',
 					items: [
 						{ text: 'Loading', link: '/en/components/loading' },
@@ -100,11 +109,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					text: 'Data Display',
 					items: [
 						{ text: 'Badge', link: '/en/components/badge' },
-						{ text: 'Calendar', link: '/en/components/calendar' },
-						{ text: 'CalendarInput', link: '/en/components/calendar-input' },
-						{ text: 'CalendarPopup', link: '/en/components/calendar-popup' },
-						{ text: 'Cell', link: '/en/components/cell' },
-						{ text: 'Input', link: '/en/components/input' }
+						{ text: 'Cell', link: '/en/components/cell' }
 					]
 				}
 			]

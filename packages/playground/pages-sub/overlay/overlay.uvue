@@ -25,8 +25,8 @@
 			<text class="section" id="duration">动画时长</text>
 			<view class="card">
 				<m-space direction="vertical" fill>
-					<m-button type="primary" block @click="openSlow">时长 2 秒</m-button>
-					<m-button type="primary" block @click="openNone">时长 0（无动画）</m-button>
+					<m-space-item><m-button type="primary" block @click="openSlow">时长 2 秒</m-button></m-space-item>
+					<m-space-item><m-button type="primary" block @click="openNone">时长 0（无动画）</m-button></m-space-item>
 				</m-space>
 				<text class="caption">duration 单位为秒（默认 0.3）；0 表示直接切换显示，无过渡</text>
 			</view>

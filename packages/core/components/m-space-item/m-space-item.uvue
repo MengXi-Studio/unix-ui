@@ -1,0 +1,122 @@
+<template>
+	<!-- 间距子项：m-space 的子项包裹器。App 端不支持 CSS gap 且 ucss 无子级选择器，
+	     间距由本组件注入 margin（horizontal 全部子项 margin-left，配合容器等值负 margin
+	     补偿保证换行各行顶格；vertical 非首项 margin-top；wrap 时全部行间距 margin-bottom）；
+	     未在 m-space 内使用时退化为普通纵向容器（无间距） -->
+	<view :class="itemClass" :style="itemStyle">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-space-item 间距子项：包裹 m-space 的每个子项，与 m-space 经 provide/inject
+	 * 上下文协作（m-compact 同款机制）。setup 中同步注册自身 id（注册序即渲染序）。
+	 * 主轴间距：horizontal 全部子项 margin-left（容器以等值负 margin 补偿，换行各行
+	 * 行首与首行顶格——经典 gutter 技法）/ vertical 非首项 margin-top；
+	 * horizontal + wrap 时全部子项 margin-bottom 实现换行行间距。
+	 * 间距值：size 传入时用内联样式，未传走 $m-space-size 主题默认类（覆盖变量全局生效）。
+	 */
+	import { SPACE_KEY, SpaceContext, generateSpaceId } from '../m-space/context.uts'
+
+	type Props = {
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		customClass: '',
+		customStyle: ''
+	})
+
+	/** 注入 m-space 上下文（独立使用时为 null，无间距语义） */
+	const space = inject<SpaceContext | null>(SPACE_KEY, null)
+
+	/** 注册序：setup 中同步注册（顺序即渲染顺序，首帧即为正确轮位），onUnmounted 注销 */
+	const itemId = generateSpaceId()
+	if (space != null) {
+		space.register(itemId)
+	}
+	onUnmounted(() => {
+		if (space != null) {
+			space.unregister(itemId)
+		}
+	})
+
+	/** 轮位（reactive ids 驱动，v-if / v-for 动态增删自动重排） */
+	const itemIndex = computed<number>(() => {
+		if (space == null) return -1
+		return space.indexOf(itemId)
+	})
+
+	/**
+	 * 间距内联样式：size 传入时（ctx.main / ctx.cross 非空）注入 margin——
+	 * horizontal 主轴 margin 对全部子项生效（容器负 margin 补偿顶格），
+	 * vertical 仅非首项；未传 size 时返回空串，走 --left / --top / --bottom 变体类的 $m-space-size 默认
+	 */
+	const itemStyle = computed<string>(() => {
+		let style = props.customStyle
+		if (space == null) return style
+		const main = space.main.value
+		const mainApplies = space.direction == 'vertical' ? itemIndex.value > 0 : true
+		if (main != '' && mainApplies) {
+			if (style != '' && !style.endsWith(';')) style += ';'
+			style += space.direction == 'vertical'
+				? 'margin-top: ' + main + ';'
+				: 'margin-left: ' + main + ';'
+		}
+		if (space.wrap) {
+			const cross = space.cross.value
+			if (cross != '') {
+				if (style != '' && !style.endsWith(';')) style += ';'
+				style += 'margin-bottom: ' + cross + ';'
+			}
+		}
+		return style
+	})
+
+	/** 根类名：变体类承载 $m-space-size 默认间距（size 传入时被上述内联样式覆盖语义） */
+	const itemClass = computed<string>(() => {
+		let cls = 'm-space-item'
+		if (space != null) {
+			// horizontal 全部子项 margin-left（容器负 margin 补偿顶格）；vertical 仅非首项 margin-top
+			if (space.direction == 'horizontal' || itemIndex.value > 0) {
+				cls += space.direction == 'vertical' ? ' m-space-item--top' : ' m-space-item--left'
+			}
+			if (space.wrap) {
+				cls += ' m-space-item--bottom'
+			}
+		}
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 基类（子项包裹器：纵向堆叠多子元素，flex 子项默认收缩贴合内容） ========== */
+	.m-space-item {
+		flex-direction: column;
+	}
+
+	/* ========== 间距变体（$m-space-size 默认值；size 传入时由内联样式接管） ========== */
+	.m-space-item--left {
+		margin-left: $m-space-size;
+	}
+	.m-space-item--top {
+		margin-top: $m-space-size;
+	}
+	/* wrap 换行行间距：全部子项 margin-bottom，末行底部多出一段为已知限制（无法感知换行位置） */
+	.m-space-item--bottom {
+		margin-bottom: $m-space-size;
+	}
+</style>

@@ -12,6 +12,8 @@
   轻提示组件：函数式 API（`showToast` / `showSuccessToast` / `showFailToast` / `showLoadingToast` / `closeToast`，string 简写与 ToastOptions 对象双入参，单例语义）与组件式（`v-model:show` + default 插槽）双形态；`type`（text / loading / success / fail）、`position`（top / middle / bottom）、`icon` 自定义图标、`overlay` / `forbidClick` 遮罩与点击拦截、`closeOnClick` / `closeOnClickOverlay`、`duration`（loading 型默认 0 不自动关）、`wordBreak` 换行控制（normal / break-all 全端生效，break-word 仅 Web/小程序，App 回退 normal）、`onOpened` / `onClose` 回调与 opened / close 事件；采用「全局函数 + 页面预置容器 + 全局单例桥」方案（uni-app x 无运行时动态挂载能力），API 手感对齐 Vant
 - 新增 `m-compact`
   紧凑布局组件：包裹 `m-button` 使相邻项圆角衔接、相邻边框合并为 1px，支持变体混排；`block` 块级撑满（水平 `flex: 1` 等分 / 垂直满宽，子按钮无需逐个设置）、`direction` 水平 / 垂直排列；组内子项 `v-if` / `v-for` 动态增删时首、中、尾位置自动重排；0.5px 细边框（hairline）按钮的缩放层同步清理对应侧圆角与边框；基于 provide/inject + reactive 注册序实现位置感知（ucss 无 `:first-child` 结构选择器），无专属主题变量（圆角 / 边框复用 `$m-button-*` 系列）
+- 新增 `m-space-item`
+  间距子项组件：m-space 子元素的包裹组件，间距由其 margin 实现——App 端 ucss 不支持 flex `gap`（官方 CSS 属性清单无 gap，原生运行时属性表亦无），原 gap 声明被编译器静默丢弃导致 App 端间距失效；子项经 provide/inject + reactive 注册序感知自身位次（复用 m-compact 先例），horizontal 全部子项 margin-left + 容器等值负 margin 补偿（换行各行行首顶格）/ vertical 非首项 margin-top，wrap 场景行间距为子项 margin-bottom（末行底部多出一段为已知限制）；未包裹的子元素不参与间距计算，独立使用时退化为普通纵向容器
 - 新增 `m-input`
   输入框组件：六种类型（text / tel / digit / number / password / textarea）、`clearable` + `clear-trigger` 两时机（focus / always）、`show-word-limit` 字数统计、`border` / `inlaid`（清边框内边距嵌入单元格）、`disabled` / `readonly`、textarea `auto-height`；`formatter` + `format-trigger`（onChange / onBlur）、`precision`（保留尾零）、`min` / `max` 失焦数字收敛、`show-eye` 明文切换；prepend / append 插槽、`v-model` 与 input / change / focus / blur / clear 事件、expose `focus()` / `blur()` 方法；注入 m-compact 上下文，可与 m-button 混排
 - 新增 `m-calendar` / `m-calendar-popup` / `m-calendar-input`
@@ -26,6 +28,7 @@
   - `m-divider`：内容位置侧线 `max-width: 10%` → `flex: none` + `width`（App 端 max-width 不支持百分比；空线 flex:1 恒命中上限，视觉等价）
   - `m-toast`：气泡宽度上限 App 端改运行时按窗口宽 70% 换算 px 内联注入（原声明被编译器丢弃导致长文本无上限，本次顺带修复实际表现）；Web/小程序保留 `$m-toast-max-width` 覆盖契约
   - `m-toast`：`word-break: break-word` App 端条件编译排除（ucss 仅支持 normal / break-all），App 回退 normal 换行
+  - `m-space`：间距实现重构为 m-space-item 子组件 margin 方案（App 端 ucss 不支持 flex `gap`，声明被编译器静默丢弃导致间距失效），双模式云打包 gap WARNING 清零；演示页（text / image / toast / popup / overlay / compact）同步去除全部 gap 用法，改 margin 间距类实现
 - 修复 Android 云打包 Kotlin 编译错误（4 处 UTS 先用后声明 + 3 处类型问题，Web 端行为不变）：
   - `m-calendar`：`v-model:value` 的 watch 回调移至 `getSelectedDate` 声明之后（Kotlin 局部函数禁前向引用）
   - `m-input`：focus / blur 公共处理函数移至四个原生事件桥接函数之前

@@ -1,5 +1,10 @@
 <template>
-	<!-- 单 view 根节点：flex 容器，default 插槽直通，子元素间距由容器 gap 天然实现 -->
+	<!-- 间距容器：flex 容器 + m-space-item 子项组合。
+	     App 端不支持 CSS gap（官方属性清单与原生运行时属性表均无，声明被静默丢弃），
+	     ucss 又无子级选择器，插槽直通的任意子元素无法从容器侧加间距，
+	     故子项需经 m-space-item 包裹（provide/inject 注册序，m-compact 同款机制），
+	     由 item 注入主轴 margin；水平方向容器以等值负 margin-left 补偿
+	     （经典 gutter 技法），保证换行后各行行首与首行顶格。 -->
 	<view :class="rootClass" :style="rootStyle">
 		<slot></slot>
 	</view>
@@ -7,19 +12,13 @@
 
 <script setup lang="uts">
 	/**
-	 * 间距方向
+	 * m-space 间距：水平 / 垂直排列的间距容器。
+	 * 间距实现：解析 size 为主轴 / 交叉轴间距挂入 SpaceContext provide 给组内
+	 * m-space-item（horizontal 全部 item margin-left + 容器等值负 margin 补偿顶格，
+	 * vertical 非首项 margin-top，wrap 时全部 item margin-bottom 行间距）；
+	 * 未传 size 时 item 走 $m-space-size 主题默认类（覆盖变量全局生效）。
 	 */
-	type SpaceDirection = 'horizontal' | 'vertical'
-
-	/**
-	 * 子元素对齐方式
-	 */
-	type SpaceAlign = 'start' | 'end' | 'center' | 'baseline'
-
-	/**
-	 * 间距大小项：number 补 px、string 原样
-	 */
-	type SpaceSize = number | string
+	import { SPACE_KEY, SpaceContext, type SpaceDirection, type SpaceSize } from './context.uts'
 
 	type Props = {
 		/** 间距方向 */
@@ -37,6 +36,11 @@
 		/** 自定义根节点内联样式 */
 		customStyle?: string
 	}
+
+	/**
+	 * 子元素对齐方式
+	 */
+	type SpaceAlign = 'start' | 'end' | 'center' | 'baseline'
 
 	const props = withDefaults(defineProps<Props>(), {
 		direction: 'horizontal',
@@ -57,22 +61,41 @@
 	}
 
 	/**
-	 * 间距动态样式：
-	 * 单值 → gap 双向；数组 → 水平下 column-gap = 第一个值、row-gap = 第二个值 ?? 第一个值，
-	 * 垂直下 row-gap = 第一个值（第二个值忽略，Q2=A 定案）；未传返回空串走基类主题默认间距
+	 * 主轴间距（横向为列间距 / 纵向为行间距）：
+	 * 单值 → 该值；数组 → 第一个值；未传 → 空串走 item 侧 $m-space-size 默认类
 	 */
-	function buildGapStyle(): string {
+	const mainGap = computed<string>(() => {
 		const s = props.size
 		if (s == null) return ''
 		if (Array.isArray(s)) {
 			const arr = s as SpaceSize[]
-			const main = sizeValue(arr[0])
-			if (props.direction == 'vertical') return 'row-gap: ' + main + ';'
-			const cross = arr.length > 1 ? sizeValue(arr[1]) : main
-			return 'column-gap: ' + main + '; row-gap: ' + cross + ';'
+			return sizeValue(arr[0])
 		}
-		return 'gap: ' + sizeValue(s) + ';'
-	}
+		return sizeValue(s)
+	})
+
+	/**
+	 * 交叉轴间距（横向 wrap 的换行行间距）：
+	 * 单值 → 该值；数组 → 横向取第二个值（缺省同第一个值）/ 纵向忽略（Q2=A 定案）；未传 → 空串走默认类
+	 */
+	const crossGap = computed<string>(() => {
+		const s = props.size
+		if (s == null) return ''
+		if (Array.isArray(s)) {
+			const arr = s as SpaceSize[]
+			if (props.direction == 'vertical') return ''
+			return arr.length > 1 ? sizeValue(arr[1]) : sizeValue(arr[0])
+		}
+		return sizeValue(s)
+	})
+
+	// 间距上下文：direction / wrap 为 props 只读快照（m-compact 先例），间距值挂 computed 跟随 size 响应
+	const ctx = new SpaceContext()
+	ctx.direction = props.direction
+	ctx.wrap = props.wrap && props.direction == 'horizontal'
+	ctx.main = mainGap
+	ctx.cross = crossGap
+	provide(SPACE_KEY, ctx)
 
 	/** 根节点类名：direction / align / wrap / fill 变体按 props 拼接（horizontal 未传 align 默认 center；vertical 未传不设由 --vertical 类走 stretch 默认） */
 	const rootClass = computed<string>(() => {
@@ -85,15 +108,24 @@
 		}
 		if (props.wrap && props.direction == 'horizontal') cls += ' m-space--wrap'
 		if (props.fill) cls += ' m-space--fill'
+		// 水平方向主轴间距补偿类：抵消全部子项的 margin-left（默认间距走 -$m-space-size，
+		// size 传入时被下方 rootStyle 的等值内联负 margin 覆盖），保证换行行首与首行顶格
+		if (props.direction == 'horizontal') cls += ' m-space--compensate'
 		if (props.customClass != '') cls += ' ' + props.customClass
 		return cls
 	})
 
-	/** 根节点动态样式：customStyle 补分号后拼接 size 生成的 gap 系样式 */
+	/** 根节点内联样式：customStyle 补分号；水平方向 size 传入时追加等值负 margin-left 补偿（内联优先级高于补偿类） */
 	const rootStyle = computed<string>(() => {
 		let style = props.customStyle
 		if (style != '' && !style.endsWith(';')) style += ';'
-		style += buildGapStyle()
+		if (props.direction == 'horizontal') {
+			const main = mainGap.value
+			// 负值 size 不做二次取负（避免拼出 '--4px' 非法值）
+			if (main != '' && !main.startsWith('-')) {
+				style += 'margin-left: -' + main + ';'
+			}
+		}
 		return style
 	})
 </script>
@@ -107,11 +139,10 @@
 	 */
 	@import '../../theme/vars.scss';
 
-	/* ========== 基类（横向 + 收缩贴合内容 + 默认间距） ========== */
+	/* ========== 基类（横向 + 收缩贴合内容；间距由 m-space-item 的 margin 实现） ========== */
 	.m-space {
 		flex-direction: row;
 		align-self: flex-start; /* 收缩宽度贴内容，fill 时覆盖为 stretch */
-		gap: $m-space-size;
 	}
 
 	/* ========== 方向变体（vertical 未传 align 时显式走 stretch 默认） ========== */
@@ -129,6 +160,12 @@
 	.m-space--fill {
 		width: 100%;
 		align-self: stretch;
+	}
+
+	/* ========== 主轴间距补偿（仅水平方向拼接）：等值抵消全部子项的 margin-left，
+	   换行后各行行首与首行顶格（经典 gutter 负 margin 技法；size 传入时被内联等值负 margin 覆盖） ========== */
+	.m-space--compensate {
+		margin-left: -$m-space-size;
 	}
 
 	/* ========== 对齐变体（声明顺序在基类与方向类之后，覆盖生效） ========== */

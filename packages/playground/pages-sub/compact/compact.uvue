@@ -79,8 +79,8 @@
 					</m-compact>
 					<view class="dyn-actions">
 						<m-space>
-							<m-button size="small" @click="addDynItem">追加一项</m-button>
-							<m-button size="small" @click="removeDynItem">移除末项</m-button>
+							<m-space-item><m-button size="small" @click="addDynItem">追加一项</m-button></m-space-item>
+							<m-space-item><m-button size="small" @click="removeDynItem">移除末项</m-button></m-space-item>
 						</m-space>
 					</view>
 					<text class="caption">v-for 动态增删子项：追加 / 移除后首、中、尾位置自动重排（末项恢复右圆角等）</text>

@@ -91,6 +91,15 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					]
 				},
 				{
+					text: '表单组件',
+					items: [
+						{ text: 'Calendar 日历', link: '/components/calendar' },
+						{ text: 'CalendarInput 日历输入框', link: '/components/calendar-input' },
+						{ text: 'CalendarPopup 日历弹出框', link: '/components/calendar-popup' },
+						{ text: 'Input 输入框', link: '/components/input' }
+					]
+				},
+				{
 					text: '反馈组件',
 					items: [
 						{ text: 'Loading 加载', link: '/components/loading' },
@@ -113,11 +122,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					text: '数据展示',
 					items: [
 						{ text: 'Badge 徽标', link: '/components/badge' },
-						{ text: 'Calendar 日历', link: '/components/calendar' },
-						{ text: 'CalendarInput 日历输入框', link: '/components/calendar-input' },
-						{ text: 'CalendarPopup 日历弹出框', link: '/components/calendar-popup' },
-						{ text: 'Cell 单元格', link: '/components/cell' },
-						{ text: 'Input 输入框', link: '/components/input' }
+						{ text: 'Cell 单元格', link: '/components/cell' }
 					]
 				}
 			]

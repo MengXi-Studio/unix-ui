@@ -419,4 +419,14 @@
 - **样式替换**：max-width 百分比 App 端不支持（number|pixel）——空内容 flex:1 侧线改 `flex: none` + `width: 10%`（width 百分比受支持），视觉等价（flex:1 恒增长至 max-width 上限）
 - **条件编译拆分**：非标准属性值（`word-break: break-word`）用 `/* #ifndef APP */ ... /* #endif */` 排除 App（回退 normal，与原「属性被丢弃」的实际效果一致）；百分比 max-width（m-toast 气泡）App 端改运行时 `uni.getWindowInfo().windowWidth * 比例` 换算 px 注入内联样式，Web/小程序保留 scss 变量契约（注意与 `$m-toast-max-width` 同步的比例常量加注释互链）
 - 内联样式在类样式之后拼接 → 用户 customStyle 可覆盖组件注入的 max-width
-- `gap` / `lines` 的 WARNING 是 lint 通用提示（lines 本就是 uni-app x 文档属性），不阻断编译，保留即可
+- ~~`gap` / `lines` 的 WARNING 是 lint 通用提示，保留即可~~（已被推翻，见 #72）
+- **warn 但必须处理的三段证据链**（定位「WARNING 会不会真丢样式」的通用方法）：① 编译器 lint 层 `HBuilderX.app/Contents/HBuilderX/plugins/uniapp-cli-vite/node_modules/@dcloudio/uni-nvue-styler.cjs.js` 的 `normalizeDecl`——属性表外属性仅 WARNING 且保留值；② 官方文档 CSS 属性清单（doc.dcloud.net.cn/uni-app-x/css/）——有 `lines` 无 `gap`；③ 原生运行时属性表——libVapor/app-runtime-release.jar 的 `io/dcloud/uniappxv/runtime/UniCSSPropertyID.class` 常量池（python3 zipfile + regex 可解）有 `lines` / `flex-direction` 而无任何 gap 系列。三段对齐后定性：`lines` 是官方属性（WARNING 纯 lint 噪音，保留），`gap` 是 App 端真不支持（声明被静默丢弃 → 间距失效，必须重构）
+
+### 72. flex gap 在 App 端的替代方案：m-space-item 包裹重构（2026-11-02 运行验证）
+- **结论**：App 端 ucss 不支持 `gap` / `row-gap` / `column-gap`，声明被静默丢弃（不报错、间距失效），组件库内一律禁用 gap
+- **结构选择器替代思路**：ucss 无 `:first-child`，间距类（如 `margin-left`）只能加在非首项上——「首个子项不加类、其余加类」是演示页静态布局的通用模式；但 wrap 场景下该模式有副作用——换行后每行行首项仍是注册序非首项，会带 margin-left 导致各行整体缩进 8px（浏览器实测各行 +8px 一致偏移）
+- **wrap 缩进修复（经典 gutter 负 margin 技法）**：horizontal 改为**全部**子项 margin-left + 容器等值负 margin-left（默认间距走 `margin-left: -$m-space-size` 补偿类，size 传入走内联等值负值，负值 size 不二次取负）→ 换行各行行首与首行顶格（Web 实测 4 行行首 x 完全相等）；注意主轴 margin 不影响交叉轴对齐，可放心全量施加
+- **组件级方案**（m-space 复用 m-compact 先例）：uvue 无 `$children`，父组件无法修饰任意子元素；用 provide/inject + reactive ids 注册序（子项 setup 中同步 register、onUnmounted 注销），`computed(() => ctx.indexOf(id))` 驱动轮位类，v-if/v-for 动态增删自动重排。该方案要求子项显式包裹（`<m-space-item>`），API 由「插槽直通」变为「包裹式」——架构上插槽直通无法给任意子元素加 margin，包裹是全端一致的唯一解
+- **wrap 已知限制**：行间距经子项 margin-bottom 实现，末行底部多出一段（子项无法感知换行位置），文档已标注；若改为「全部子项 margin-top + 容器负 margin-top」可消除，但 margin-top 会参与交叉轴 align-items 计算使内容整体偏移，权衡后保留 margin-bottom 方案
+- **App 负 margin 支持度待验证**：Web 已实测顶格；App 端 ucss 若不支持负 margin（声明被丢弃），症状是整体左移 8px 丢失 + 每行行首缩进 8px，届时回退方案为条件编译（App 保留「非首项 margin-left」旧方案）
+- **注册序先例三件套**：context.uts（reactive ids 数组 + 模块级自增 id 生成器）· 子组件 inject + 同步 register · computed indexOf 驱动样式；`$children` / `:first-child` / `gap` 三缺一的场景均可套用

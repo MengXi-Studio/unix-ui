@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0] - 2026-10-28
+## [0.2.0] - 2026-11-03
 
 Adds the popup-family base components (m-overlay / m-popup), the divider component (m-divider), the grid components (m-grid / m-grid-item), the toast component (m-toast, feedback family), the compact layout component (m-compact, layout family), the input component (m-input, form family) and the calendar component family (m-calendar / m-calendar-popup / m-calendar-input, form family), bringing the total to 18 base components.
 

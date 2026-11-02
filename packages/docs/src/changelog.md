@@ -1,6 +1,6 @@
 # 更新日志
 
-## [0.2.0] - 2026-10-28
+## [0.2.0] - 2026-11-03
 
 新增弹窗类基础组件（m-overlay / m-popup）、分割线组件（m-divider）、宫格组件（m-grid / m-grid-item）、轻提示组件（m-toast，反馈组件）、紧凑布局组件（m-compact，布局组件）、输入框组件（m-input，表单组件）与日历三组件（m-calendar / m-calendar-popup / m-calendar-input，表单组件），基础组件数量达到 18 个。
 

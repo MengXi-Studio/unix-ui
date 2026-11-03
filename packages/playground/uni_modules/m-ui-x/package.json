@@ -13,7 +13,7 @@
 	"engines": {
 		"HBuilderX": "^5.08",
 		"uni-app": "",
-		"uni-app-x": "^3.8.7"
+		"uni-app-x": "^5.08"
 	},
 	"dcloudext": {
 		"type": "component-vue",
@@ -36,7 +36,8 @@
 		"npmurl": "https://www.npmjs.com/package/@meng-xi/unix-ui",
 		"darkmode": "√",
 		"i18n": "√",
-		"widescreen": "√"
+		"widescreen": "√",
+		"vapor": "√"
 	},
 	"uni_modules": {
 		"dependencies": [],

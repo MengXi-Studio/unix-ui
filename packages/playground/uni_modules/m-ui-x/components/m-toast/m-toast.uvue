@@ -35,8 +35,8 @@
 		iconSize?: string
 		/** 是否显示背景遮罩层 */
 		overlay?: boolean
-		/** 是否禁止背景点击（未传时 loading 型默认 true，其余 false） */
-		forbidClick?: boolean | null
+		/** 是否禁止背景点击（未传时内部为 null，loading 型默认 true，其余 false） */
+		forbidClick?: boolean
 		/** 是否点击提示后关闭 */
 		closeOnClick?: boolean
 		/** 是否点击遮罩层后关闭 */
@@ -63,7 +63,6 @@
 		icon: null,
 		iconSize: '',
 		overlay: false,
-		forbidClick: null,
 		closeOnClick: false,
 		closeOnClickOverlay: false,
 		loadingType: null,

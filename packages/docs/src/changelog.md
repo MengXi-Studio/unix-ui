@@ -1,5 +1,13 @@
 # 更新日志
 
+## [0.2.1] - 2026-11-03
+
+0.2.0 发布后的工程化清理版本，无 API 变化。
+
+### 修复
+
+- **清理 VDOM Web 构建 TS 诊断 WARNING（6 处 Prop 类型）**：可空 prop 声明 `T | null` 且默认 null 时，编译器生成 `type: [T, null]` 形态的 props（Vue Prop 类型系统不认），触发 `No overload matches this call` 诊断噪音且会出现在使用者的构建日志中；统一改为可选 prop 省略 `| null` 标注、不给 null 默认值（未传时运行时仍为 null，三态语义与行为不变）——涉及 m-input / m-calendar / m-calendar-popup 的 `formatter`、m-popup `beforeClose`、m-cell `clickable`、m-toast `forbidClick`；残余 3 条 SSRSlot WARNING 来自插槽条件转发的生成代码，属编译器类型标注噪音，不影响运行
+
 ## [0.2.0] - 2026-11-03
 
 新增弹窗类基础组件（m-overlay / m-popup）、分割线组件（m-divider）、宫格组件（m-grid / m-grid-item）、轻提示组件（m-toast，反馈组件）、紧凑布局组件（m-compact，布局组件）、输入框组件（m-input，表单组件）与日历三组件（m-calendar / m-calendar-popup / m-calendar-input，表单组件），基础组件数量达到 18 个。

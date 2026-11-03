@@ -99,8 +99,8 @@
 		confirmType?: string
 		/** 多行时是否自动增高，仅 type=textarea 生效 */
 		autoHeight?: boolean
-		/** 输入内容格式化函数；配合 format-trigger 指定生效时机 */
-		formatter?: ((value: string) => string) | null
+		/** 输入内容格式化函数；配合 format-trigger 指定生效时机（未传时内部为 null） */
+		formatter?: ((value: string) => string)
 		/** formatter 生效时机 */
 		formatTrigger?: FormatTrigger
 		/** 小数位数：type 为 number / digit 时失焦按 precision 取舍 */
@@ -133,7 +133,6 @@
 		readonly: false,
 		confirmType: '',
 		autoHeight: false,
-		formatter: null,
 		formatTrigger: 'onChange',
 		precision: null,
 		min: null,

@@ -91,6 +91,16 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					]
 				},
 				{
+					text: '布局组件',
+					items: [
+						{ text: 'Compact 紧凑布局', link: '/components/compact' },
+						{ text: 'Divider 分割线', link: '/components/divider' },
+						{ text: 'Grid 宫格', link: '/components/grid' },
+						{ text: 'Layout 布局', link: '/components/layout' },
+						{ text: 'Space 间距', link: '/components/space' }
+					]
+				},
+				{
 					text: '表单组件',
 					items: [
 						{ text: 'Calendar 日历', link: '/components/calendar' },
@@ -106,16 +116,6 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Overlay 遮罩层', link: '/components/overlay' },
 						{ text: 'Popup 弹出层', link: '/components/popup' },
 						{ text: 'Toast 轻提示', link: '/components/toast' }
-					]
-				},
-				{
-					text: '布局组件',
-					items: [
-						{ text: 'Compact 紧凑布局', link: '/components/compact' },
-						{ text: 'Divider 分割线', link: '/components/divider' },
-						{ text: 'Grid 宫格', link: '/components/grid' },
-						{ text: 'Layout 布局', link: '/components/layout' },
-						{ text: 'Space 间距', link: '/components/space' }
 					]
 				},
 				{

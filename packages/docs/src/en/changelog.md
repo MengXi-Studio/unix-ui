@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1] - 2026-11-03
+
+An engineering cleanup release after 0.2.0, with no API changes.
+
+### Fixed
+
+- **VDOM Web build TS diagnostic WARNING cleanup (6 prop types)**: a nullable prop declared `T | null` with a null default made the compiler emit props as `type: [T, null]` (rejected by Vue's Prop typings), producing `No overload matches this call` noise that also leaks into end users' build logs; nullable props now omit the `| null` annotation and the null default (runtime value is still null when omitted — three-state semantics and behavior unchanged) — covering `formatter` on m-input / m-calendar / m-calendar-popup, `beforeClose` on m-popup, `clickable` on m-cell, and `forbidClick` on m-toast; the remaining 3 SSRSlot WARNINGs come from the generated code of conditional slot forwarding and are compiler typing noise with no runtime impact
+
 ## [0.2.0] - 2026-11-03
 
 Adds the popup-family base components (m-overlay / m-popup), the divider component (m-divider), the grid components (m-grid / m-grid-item), the toast component (m-toast, feedback family), the compact layout component (m-compact, layout family), the input component (m-input, form family) and the calendar component family (m-calendar / m-calendar-popup / m-calendar-input, form family), bringing the total to 18 base components.

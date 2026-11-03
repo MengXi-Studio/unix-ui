@@ -430,3 +430,9 @@
 - **wrap 已知限制**：行间距经子项 margin-bottom 实现，末行底部多出一段（子项无法感知换行位置），文档已标注；若改为「全部子项 margin-top + 容器负 margin-top」可消除，但 margin-top 会参与交叉轴 align-items 计算使内容整体偏移，权衡后保留 margin-bottom 方案
 - **App 负 margin 支持度待验证**：Web 已实测顶格；App 端 ucss 若不支持负 margin（声明被丢弃），症状是整体左移 8px 丢失 + 每行行首缩进 8px，届时回退方案为条件编译（App 保留「非首项 margin-left」旧方案）
 - **注册序先例三件套**：context.uts（reactive ids 数组 + 模块级自增 id 生成器）· 子组件 inject + 同步 register · computed indexOf 驱动样式；`$children` / `:first-child` / `gap` 三缺一的场景均可套用
+
+### 73. 可空 prop 的编译器诊断噪音与正确写法（2026-11-03 build:demo 实证）
+- 现象：VDOM Web 构建（`pnpm build:demo`）出现 `No overload matches this call` TS 诊断——编译器把「`T | null` 类型 + `default: null`」的可空 prop 生成为 `type: [T, null]` 形态的 props 对象，Vue Prop 类型系统不接受 type 数组里的 null；**该噪音会泄漏到使用者的构建日志中**（组件库经 uni_modules 分发后用户编译即见）
+- **正确写法**：可空 prop 声明为可选并省略 `| null` 标注（`formatter?: Function` 而非 `formatter?: Function | null`），且**不给 null 默认值**（从 withDefaults 中删除 `xxx: null` 行）——uni-app x 里未传的可选 prop 运行时本来就是 null，内部 `!= null` 判断与三态语义完全不变，编译通过即验证类型通路无损
+- 判别规律：同样可空的 prop（如 m-row `gutter?: GutterValue | GutterValue[] | null` 默认 0）不触发警告，触发点是「默认值为 null」；据此先用单组件试点（m-input formatter）再全量推广，单次 build:demo 即验证假设
+- 残余不可修：SSRSlot WARNING（`Type 'number'/'Function' is not assignable to type 'SSRSlot'`，定位在生成代码 `_createSlots({ _: 2 }, ...)` / `footer: _withCtx(...)`）来自**插槽条件转发**（`<template v-if="$slots['x'] != null" #x>`）与无条件插槽转发的生成代码类型标注，属编译器噪音；规避需砍掉插槽透传 API，不值得，声明为已知噪音即可

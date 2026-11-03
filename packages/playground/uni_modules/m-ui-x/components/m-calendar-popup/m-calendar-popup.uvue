@@ -132,8 +132,8 @@
 		value?: Date | Date[] | null
 		/** 日格行高 px（0 用默认变量值） */
 		rowHeight?: number
-		/** 日期格格式化函数 */
-		formatter?: ((day: CalendarDayItem) => CalendarDayItem) | null
+		/** 日期格格式化函数（未传时内部为 null） */
+		formatter?: ((day: CalendarDayItem) => CalendarDayItem)
 		/** 显示月份背景水印 */
 		showMark?: boolean
 		/** 显示标题 */
@@ -194,7 +194,6 @@
 		defaultDate: null,
 		value: null,
 		rowHeight: 0,
-		formatter: null,
 		showMark: true,
 		showTitle: true,
 		showSubtitle: true,

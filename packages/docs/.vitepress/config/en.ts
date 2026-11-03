@@ -78,6 +78,16 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					]
 				},
 				{
+					text: 'Layout Components',
+					items: [
+						{ text: 'Compact', link: '/en/components/compact' },
+						{ text: 'Divider', link: '/en/components/divider' },
+						{ text: 'Grid', link: '/en/components/grid' },
+						{ text: 'Layout', link: '/en/components/layout' },
+						{ text: 'Space', link: '/en/components/space' }
+					]
+				},
+				{
 					text: 'Form Components',
 					items: [
 						{ text: 'Calendar', link: '/en/components/calendar' },
@@ -93,16 +103,6 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Overlay', link: '/en/components/overlay' },
 						{ text: 'Popup', link: '/en/components/popup' },
 						{ text: 'Toast', link: '/en/components/toast' }
-					]
-				},
-				{
-					text: 'Layout Components',
-					items: [
-						{ text: 'Compact', link: '/en/components/compact' },
-						{ text: 'Divider', link: '/en/components/divider' },
-						{ text: 'Grid', link: '/en/components/grid' },
-						{ text: 'Layout', link: '/en/components/layout' },
-						{ text: 'Space', link: '/en/components/space' }
 					]
 				},
 				{

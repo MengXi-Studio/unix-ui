@@ -107,8 +107,8 @@
 		value?: Date | Date[] | null
 		/** 日格行高 px（0 用默认变量值） */
 		rowHeight?: number
-		/** 日期格格式化函数（最后统一应用，可覆盖内置标记与文案） */
-		formatter?: CalendarFormatter | null
+		/** 日期格格式化函数（最后统一应用，可覆盖内置标记与文案；未传时内部为 null） */
+		formatter?: CalendarFormatter
 		/** 显示月份背景水印 */
 		showMark?: boolean
 		/** 显示标题 */
@@ -152,7 +152,6 @@
 		defaultDate: null,
 		value: null,
 		rowHeight: 0,
-		formatter: null,
 		showMark: true,
 		showTitle: true,
 		showSubtitle: true,

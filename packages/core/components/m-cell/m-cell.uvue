@@ -59,8 +59,8 @@
 		border?: boolean
 		/** 内容是否垂直居中 */
 		center?: boolean
-		/** 是否展示点击反馈（默认取 isLink 值；显式设置后以本值为准） */
-		clickable?: boolean | null
+		/** 是否展示点击反馈（未传时内部为 null，取 isLink 值并继承 m-cell-group 的 clickable；显式设置后以本值为准） */
+		clickable?: boolean
 		/** 是否展示右侧箭头 */
 		isLink?: boolean
 		/** 箭头方向 */
@@ -89,7 +89,6 @@
 		icon: null,
 		border: true,
 		center: false,
-		clickable: null,
 		isLink: false,
 		arrowDirection: 'right',
 		required: false,

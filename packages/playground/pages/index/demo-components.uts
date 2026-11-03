@@ -27,7 +27,7 @@ export type DemoGroup = {
 }
 
 /**
- * 组件演示分组表（标准 UI 库分类体系：基础 / 表单 / 反馈 / 布局 / 数据展示，组内按字母序）
+ * 组件演示分组表（标准 UI 库分类体系：基础 / 布局 / 表单 / 反馈 / 数据展示，组内按字母序）
  *
  * 新增组件时在对应分组的 components 中登记一条即可，
  * 首页分组列表与搜索过滤自动生效；演示页路由需另行在
@@ -60,6 +60,41 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '文本',
 				enName: 'Text',
 				desc: '文本样式快捷封装，支持语义色、三档字号、单行与多行省略、文本可选。'
+			}
+		]
+	},
+	{
+		title: '布局组件',
+		components: [
+			{
+				name: 'compact',
+				zhName: '紧凑布局',
+				enName: 'Compact',
+				desc: '让按钮等组件紧凑连接且合并边框，支持水平垂直方向与块级撑满。'
+			},
+			{
+				name: 'divider',
+				zhName: '分割线',
+				enName: 'Divider',
+				desc: '分隔内容区域，支持虚线、0.5px 细线、内容位置与垂直形态。'
+			},
+			{
+				name: 'grid',
+				zhName: '宫格',
+				enName: 'Grid',
+				desc: '水平方向分隔等宽区块，支持自定义列数、正方形格子、间距、横排反向、徽标与点击跳转。'
+			},
+			{
+				name: 'layout',
+				zhName: '布局',
+				enName: 'Layout',
+				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
+			},
+			{
+				name: 'space',
+				zhName: '间距',
+				enName: 'Space',
+				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
 			}
 		]
 	},
@@ -118,41 +153,6 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '轻提示',
 				enName: 'Toast',
 				desc: '在页面中间弹出黑色半透明提示，支持文字、成功失败、加载、自定义图标、位置、遮罩与函数式调用。'
-			}
-		]
-	},
-	{
-		title: '布局组件',
-		components: [
-			{
-				name: 'compact',
-				zhName: '紧凑布局',
-				enName: 'Compact',
-				desc: '让按钮等组件紧凑连接且合并边框，支持水平垂直方向与块级撑满。'
-			},
-			{
-				name: 'divider',
-				zhName: '分割线',
-				enName: 'Divider',
-				desc: '分隔内容区域，支持虚线、0.5px 细线、内容位置与垂直形态。'
-			},
-			{
-				name: 'grid',
-				zhName: '宫格',
-				enName: 'Grid',
-				desc: '水平方向分隔等宽区块，支持自定义列数、正方形格子、间距、横排反向、徽标与点击跳转。'
-			},
-			{
-				name: 'layout',
-				zhName: '布局',
-				enName: 'Layout',
-				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
-			},
-			{
-				name: 'space',
-				zhName: '间距',
-				enName: 'Space',
-				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
 			}
 		]
 	},

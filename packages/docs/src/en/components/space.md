@@ -5,7 +5,9 @@ demo: pages-sub/space/space
 
 ## Introduction
 
-The space component sets a uniform spacing between child elements, implemented with flex gap. It supports horizontal and vertical directions, custom spacing, alignment, wrapping and block filling.
+The space component sets a uniform spacing between child elements. It supports horizontal and vertical directions, custom spacing, alignment, wrapping and block filling.
+
+Spacing is implemented via the margins of the **m-space-item** child component (flex `gap` is not supported by ucss on the App platform), so each child element must be wrapped with `<m-space-item>`; unwrapped children do not participate in spacing. Used standalone, m-space-item degrades to an ordinary vertical container.
 
 ## Examples
 
@@ -15,9 +17,9 @@ Arranges horizontally by default with the theme default spacing (8px) between ch
 
 ```vue
 <m-space>
-	<m-button type="primary">Button</m-button>
-	<m-button type="primary">Button</m-button>
-	<m-button type="primary">Button</m-button>
+	<m-space-item><m-button type="primary">Button</m-button></m-space-item>
+	<m-space-item><m-button type="primary">Button</m-button></m-space-item>
+	<m-space-item><m-button type="primary">Button</m-button></m-space-item>
 </m-space>
 ```
 
@@ -27,8 +29,8 @@ Use the `direction` attribute to set the spacing direction, can be set to `horiz
 
 ```vue
 <m-space direction="vertical">
-	<m-button type="primary" block>Button</m-button>
-	<m-button type="primary" block>Button</m-button>
+	<m-space-item><m-button type="primary" block>Button</m-button></m-space-item>
+	<m-space-item><m-button type="primary" block>Button</m-button></m-space-item>
 </m-space>
 ```
 
@@ -37,9 +39,18 @@ Use the `direction` attribute to set the spacing direction, can be set to `horiz
 `size` accepts a number (px is appended), a string (used as is) and an array `[horizontal, vertical]`; the theme default spacing is used when not set, and the vertical direction takes the first array value as the main-axis spacing.
 
 ```vue
-<m-space :size="20">20px spacing</m-space>
-<m-space size="12px">12px spacing</m-space>
-<m-space :size="[20, 8]" wrap>20 horizontal / 8 vertical after wrapping</m-space>
+<m-space :size="20">
+	<m-space-item><m-button>20px spacing</m-button></m-space-item>
+	<m-space-item><m-button>20px spacing</m-button></m-space-item>
+</m-space>
+<m-space size="12px">
+	<m-space-item><m-button>12px spacing</m-button></m-space-item>
+	<m-space-item><m-button>12px spacing</m-button></m-space-item>
+</m-space>
+<m-space :size="[20, 8]" wrap>
+	<m-space-item><m-button>20 horizontal</m-button></m-space-item>
+	<m-space-item><m-button>8 vertical after wrapping</m-button></m-space-item>
+</m-space>
 ```
 
 ### Alignment {#demo-align}
@@ -47,21 +58,33 @@ Use the `direction` attribute to set the spacing direction, can be set to `horiz
 Use the `align` attribute to set the alignment of child elements, can be set to `start` `end` `center` `baseline`. When not set, the horizontal direction defaults to `center` and the vertical direction defaults to `stretch`.
 
 ```vue
-<m-space align="start">Align start</m-space>
-<m-space align="center">Align center</m-space>
-<m-space align="end">Align end</m-space>
-<m-space align="baseline">Align baseline</m-space>
+<m-space align="start">
+	<m-space-item><m-button>Align start</m-button></m-space-item>
+	<m-space-item><m-button>Align start</m-button></m-space-item>
+</m-space>
+<m-space align="center">
+	<m-space-item><m-button>Align center</m-button></m-space-item>
+	<m-space-item><m-button>Align center</m-button></m-space-item>
+</m-space>
+<m-space align="end">
+	<m-space-item><m-button>Align end</m-button></m-space-item>
+	<m-space-item><m-button>Align end</m-button></m-space-item>
+</m-space>
+<m-space align="baseline">
+	<m-space-item><m-button>Align baseline</m-button></m-space-item>
+	<m-space-item><m-button>Align baseline</m-button></m-space-item>
+</m-space>
 ```
 
 ### Wrapping {#demo-wrap}
 
-Enable the `wrap` attribute so child elements wrap automatically when exceeding the width; effective only in the horizontal direction.
+Enable the `wrap` attribute so child elements wrap automatically when exceeding the width; effective only in the horizontal direction. The main-axis spacing is implemented via each item's margin-left together with an equal negative margin on the container (all lines start flush with the first), and the line spacing is the item's margin-bottom — the last line has an extra spacing at the bottom (child components cannot detect the wrap position; a known limitation).
 
 ```vue
 <m-space wrap>
-	<m-button type="primary">Button 1</m-button>
-	<m-button type="primary">Button 2</m-button>
-	<m-button type="primary">Button 3</m-button>
+	<m-space-item><m-button type="primary">Button 1</m-button></m-space-item>
+	<m-space-item><m-button type="primary">Button 2</m-button></m-space-item>
+	<m-space-item><m-button type="primary">Button 3</m-button></m-space-item>
 </m-space>
 ```
 
@@ -71,8 +94,8 @@ The `fill` attribute makes the component fill the parent element's width as a bl
 
 ```vue
 <m-space direction="vertical" fill>
-	<m-button type="primary" block>Button</m-button>
-	<m-button type="primary" block>Button</m-button>
+	<m-space-item><m-button type="primary" block>Button</m-button></m-space-item>
+	<m-space-item><m-button type="primary" block>Button</m-button></m-space-item>
 </m-space>
 ```
 
@@ -95,6 +118,13 @@ The `fill` attribute makes the component fill the parent element's width as a bl
 | Name | Description |
 | --- | --- |
 | default | Child element content |
+
+### SpaceItem Props (m-space-item)
+
+| Prop | Description | Type | Default |
+| --- | --- | --- | --- |
+| custom-class | Custom root node class name | string.ClassString | - |
+| custom-style | Custom root node inline style | string | - |
 
 ## Theming
 

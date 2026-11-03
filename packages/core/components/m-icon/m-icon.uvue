@@ -70,7 +70,7 @@
 
 	// 无效图标名告警：联合类型已拦截绝大多数错误，此处兜底动态 string 强转等运行时场景
 	watch(
-		() => props.name,
+		(): IconName => props.name,
 		(name: IconName) => {
 			if (iconCodepoints.get(name) == null) {
 				console.warn('[m-icon] 无效的图标名：' + name)

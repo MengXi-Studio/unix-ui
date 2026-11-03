@@ -53,13 +53,13 @@
 	const spinnerRef = ref<UniElement | null>(null)
 
 	/** 当前旋转动画句柄（切换 type 时先取消旧动画再重启） */
-	let animation: Animation | null = null
+	let animation: UniAnimation | null = null
 
 	/** spinner 型辐条数量：仅 spinner 型渲染 12 条，其余类型为 0（不产生节点） */
 	const spokeCount = computed<number>(() => props.type == 'spinner' ? 12 : 0)
 
 	/** 是否传入默认插槽内容（决定文案节点是否渲染） */
-	const hasText = computed<boolean>(() => slots.default != null)
+	const hasText = computed<boolean>(() => slots['default'] != null)
 
 	/** 根节点类名：纵向排列与自定义类名按 props 拼接 */
 	const rootClass = computed<string>(() => {
@@ -190,7 +190,7 @@
 
 	// 动态切换加载类型时重启动画（flush: post 确保切换后的节点已渲染再取 ref）
 	watch(
-		() => props.type,
+		(): LoadingType => props.type,
 		(_: LoadingType) => {
 			startAnimation()
 		},

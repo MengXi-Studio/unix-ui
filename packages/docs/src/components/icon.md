@@ -82,12 +82,12 @@ demo: pages-sub/icon/icon
 
 ### 图标集合
 
-共 257 个图标，按基础（10）、线性（139）、填充（108）三组组织，完整名单如下：
+共 259 个图标，按基础（12）、线性（139）、填充（108）三组组织，完整名单如下：
 
 <details>
-<summary>基础图标（10）</summary>
+<summary>基础图标（12）</summary>
 
-`arrow`、`arrow-left`、`arrow-up`、`arrow-down`、`success`、`cross`、`plus`、`minus`、`fail`、`circle`
+`arrow`、`arrow-left`、`arrow-double-left`、`arrow-double-right`、`arrow-up`、`arrow-down`、`success`、`cross`、`plus`、`minus`、`fail`、`circle`
 
 </details>
 

@@ -1,0 +1,222 @@
+<template>
+	<view class="page">
+		<demo-navbar title="输入框" subtitle="Input" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础使用</text>
+			<view class="card">
+				<m-input
+					v-model="basicValue"
+					placeholder="请输入内容"
+					@input="onBasicInput"
+					@change="onBasicChange"
+					@focus="onBasicFocus"
+					@blur="onBasicBlur"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近事件：{{ basicLog }}</text>
+				</view>
+				<text class="caption">v-model 双向绑定；input 即时触发，change 在失焦且内容变化时触发（与原生 change 语义一致）</text>
+			</view>
+
+			<text class="section" id="type">自定义类型</text>
+			<view class="card">
+				<m-input v-model="textValue" placeholder="文本 text" />
+				<m-input v-model="telValue" type="tel" placeholder="电话 tel" custom-style="margin-top: 12px;" />
+				<m-input v-model="digitValue" type="digit" placeholder="带小数点数字键盘 digit" custom-style="margin-top: 12px;" />
+				<m-input v-model="numberValue" type="number" placeholder="整数数字键盘 number" custom-style="margin-top: 12px;" />
+				<m-input v-model="pwdValue" type="password" :show-eye="true" placeholder="密码 password（show-eye 内置明文切换）" custom-style="margin-top: 12px;" />
+				<text class="caption">type 六种类型；password 经 :password 属性驱动原生显隐，show-eye 在 append 插槽前渲染切换图标</text>
+			</view>
+
+			<text class="section" id="clearable">可清除的</text>
+			<view class="card">
+				<m-input v-model="clearFocusValue" :clearable="true" placeholder="聚焦时显示清除图标（默认）" />
+				<m-input v-model="clearAlwaysValue" :clearable="true" clear-trigger="always" placeholder="始终显示清除图标" custom-style="margin-top: 12px;" />
+				<text class="caption">clearable 且有值时展示；clear-trigger 默认 focus（聚焦中显示），always 常驻；失焦后图标保留 200ms 宽限期以保证点击生效</text>
+			</view>
+
+			<text class="section" id="readonly">只读和禁用</text>
+			<view class="card">
+				<m-input v-model="readonlyValue" :readonly="true" placeholder="只读" />
+				<m-input v-model="disabledValue" :disabled="true" placeholder="禁用" custom-style="margin-top: 12px;" />
+				<text class="caption">readonly 外观正常但不可编辑（uni-app x 无原生 readonly，经原生 disabled 模拟）；disabled 叠加禁用底色与文本色</text>
+			</view>
+
+			<text class="section" id="slots">插槽</text>
+			<view class="card">
+				<m-input v-model="slotValue" type="tel" placeholder="请输入手机号">
+					<template #prepend>
+						<m-icon name="user-o" />
+					</template>
+					<template #append>
+						<m-button size="small" type="primary">发送验证码</m-button>
+					</template>
+				</m-input>
+				<text class="caption">prepend 在输入区之前、append 在图标区之后；图标场景用 m-icon（或 show-eye 内置）实现</text>
+			</view>
+
+			<text class="section" id="borderless">无边框</text>
+			<view class="card">
+				<m-input
+					v-model="borderlessValue"
+					:border="false"
+					placeholder="无边框输入框"
+					custom-style="background-color: #f7f8fa; border-radius: 8px;"
+				/>
+				<text class="caption">border=false 去除边框容器（背景与圆角可经 custom-style 自由定制），嵌入 m-cell 用 inlaid 见下方组合示例</text>
+			</view>
+
+			<text class="section" id="textarea">多行文本</text>
+			<view class="card">
+				<m-input v-model="textareaValue" type="textarea" placeholder="请输入留言（固定高度，textarea-min-height 变量控制）" />
+				<m-input v-model="autoAreaValue" type="textarea" :auto-height="true" placeholder="自动增高（auto-height）" custom-style="margin-top: 12px;" />
+				<text class="caption">type=textarea 切换多行；auto-height 高度随内容自然生长（uni-app x 无 rows 属性，固定高度经主题变量控制）</text>
+			</view>
+
+			<text class="section" id="word-limit">字数统计</text>
+			<view class="card">
+				<m-input v-model="countValue" :maxlength="20" :show-word-limit="true" placeholder="最多 20 字" />
+				<m-input v-model="countAreaValue" type="textarea" :maxlength="50" :show-word-limit="true" placeholder="最多 50 字" custom-style="margin-top: 12px;" />
+				<text class="caption">show-word-limit 需配合 maxlength 使用；统计行展示于输入框下方右对齐（与 Vant 的容器内计数为已知差异）</text>
+			</view>
+
+			<text class="section" id="format">格式化与数字修正</text>
+			<view class="card">
+				<m-input v-model="upperValue" placeholder="输入即时转大写（onChange）" :formatter="upperFormatter" />
+				<m-input v-model="trimValue" placeholder="失焦后去除所有空格（onBlur）" :formatter="trimFormatter" format-trigger="onBlur" custom-style="margin-top: 12px;" />
+				<m-input v-model="rangeValue" type="number" placeholder="0-100 保留两位小数（失焦修正）" :precision="2" :min="0" :max="100" custom-style="margin-top: 12px;" />
+				<text class="caption">formatter 配合 format-trigger 指定生效时机；number / digit 失焦时按 precision 取舍并向 min / max 收敛（输入中不打断中间态）</text>
+			</view>
+
+			<text class="section" id="compact">紧凑布局组合</text>
+			<view class="card">
+				<m-compact block>
+					<m-input v-model="compactValue" placeholder="请输入搜索内容" />
+					<m-button type="primary">搜索</m-button>
+				</m-compact>
+				<m-compact direction="vertical" block custom-style="margin-top: 16px;">
+					<m-input v-model="compactTopValue" placeholder="用户名" />
+					<m-input v-model="compactBottomValue" type="password" placeholder="密码" />
+				</m-compact>
+				<text class="caption">与 m-button / m-input 混排：位置互相感知，相邻项圆角衔接、边框合并为 1px（垂直方向即登录表单形态）</text>
+			</view>
+
+			<text class="section" id="cell">cell 嵌入组合</text>
+			<view class="card">
+				<m-cell-group inset>
+					<m-cell title="收货人" required>
+						<template #value>
+							<m-input v-model="cellNameValue" :inlaid="true" placeholder="请输入姓名" custom-style="flex: 1; text-align: left;" />
+						</template>
+					</m-cell>
+					<m-cell title="联系电话">
+						<template #value>
+							<m-input v-model="cellPhoneValue" type="tel" :inlaid="true" placeholder="请输入手机号" custom-style="flex: 1; text-align: left;" />
+						</template>
+					</m-cell>
+				</m-cell-group>
+				<text class="caption">inlaid 清除边框与内边距后嵌入 m-cell；value 区默认右对齐，custom-style 补 text-align: left 让输入文本左对齐（label 与校验留待未来 m-form-item）</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// ========== 1 基础使用 ==========
+	const basicValue = ref<string>('')
+	const basicLog = ref<string>('（等待交互）')
+
+	/** input 事件即时记录 */
+	function onBasicInput(value: string) {
+		basicLog.value = 'input → ' + value
+	}
+
+	/** change 事件记录：失焦且内容变化时触发 */
+	function onBasicChange(value: string) {
+		basicLog.value = 'change → ' + value
+	}
+
+	/** focus 事件记录 */
+	function onBasicFocus(event: UniEvent) {
+		basicLog.value = 'focus'
+	}
+
+	/** blur 事件记录 */
+	function onBasicBlur(event: UniEvent) {
+		basicLog.value = 'blur'
+	}
+
+	// ========== 2 自定义类型 ==========
+	const textValue = ref<string>('')
+	const telValue = ref<string>('')
+	const digitValue = ref<string>('')
+	const numberValue = ref<string>('')
+	const pwdValue = ref<string>('')
+
+	// ========== 3 可清除的 ==========
+	const clearFocusValue = ref<string>('聚焦时看看右侧')
+	const clearAlwaysValue = ref<string>('我一直都在')
+
+	// ========== 4 只读和禁用 ==========
+	const readonlyValue = ref<string>('只读内容，点我也改不了')
+	const disabledValue = ref<string>('禁用内容')
+
+	// ========== 5 插槽 ==========
+	const slotValue = ref<string>('')
+
+	// ========== 6 无边框 ==========
+	const borderlessValue = ref<string>('')
+
+	// ========== 7 多行文本 ==========
+	const textareaValue = ref<string>('')
+	const autoAreaValue = ref<string>('')
+
+	// ========== 8 字数统计 ==========
+	const countValue = ref<string>('')
+	const countAreaValue = ref<string>('')
+
+	// ========== 9 格式化与数字修正 ==========
+	const upperValue = ref<string>('')
+	const trimValue = ref<string>('')
+	const rangeValue = ref<string>('')
+
+	/** 即时转大写的格式化函数（format-trigger 默认 onChange，输入过程即生效） */
+	const upperFormatter = (value: string): string => {
+		return value.toUpperCase()
+	}
+
+	/** 去除所有空格的格式化函数（format-trigger=onBlur，失焦时统一处理） */
+	const trimFormatter = (value: string): string => {
+		return value.split(' ').join('')
+	}
+
+	// ========== 10 紧凑布局组合 ==========
+	const compactValue = ref<string>('')
+	const compactTopValue = ref<string>('')
+	const compactBottomValue = ref<string>('')
+
+	// ========== 11 cell 嵌入组合 ==========
+	const cellNameValue = ref<string>('')
+	const cellPhoneValue = ref<string>('')
+</script>
+
+<style lang="scss">
+	/* 基础使用节的事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

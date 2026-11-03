@@ -1,0 +1,41 @@
+/**
+ * Web 端 body 滚动锁（m-overlay 专用，模块级计数）
+ *
+ * 为什么是独立 .uts：script setup 顶层代码按组件实例执行，无法承载跨实例共享的
+ * 模块级状态；多遮罩实例堆叠时需要计数锁保证「全部关闭才解锁」（architecture.md
+ * 允许跨实例共享的纯工具拆同级 .uts，相对路径导入）。
+ * 非 Web 平台为空实现——App 端全屏 fixed 遮罩天然拦截触摸，无滚动穿透问题。
+ */
+
+// #ifdef WEB
+/** 当前持锁实例数（0 为未锁定） */
+let lockCount = 0
+
+/**
+ * 加锁：首个实例持锁时隐藏 body 滚动（overflow hidden）
+ */
+export function lockBodyScroll(): void {
+	lockCount++
+	if (lockCount == 1) {
+		document.body.style.overflow = 'hidden'
+	}
+}
+
+/**
+ * 解锁：最后一个实例释放时还原 body 滚动
+ */
+export function unlockBodyScroll(): void {
+	if (lockCount > 0) lockCount--
+	if (lockCount == 0) {
+		document.body.style.overflow = ''
+	}
+}
+// #endif
+
+// #ifndef WEB
+/**
+ * 非 Web 平台空实现（App 端全屏 fixed 遮罩天然拦截触摸，无需锁定）
+ */
+export function lockBodyScroll(): void {}
+export function unlockBodyScroll(): void {}
+// #endif

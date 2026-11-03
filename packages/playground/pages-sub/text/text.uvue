@@ -13,14 +13,14 @@
 			<view class="card">
 				<view class="col-list">
 					<m-text color="default">default 默认文本颜色</m-text>
-					<m-text color="secondary">secondary 次要文本颜色</m-text>
-					<m-text color="tertiary">tertiary 三级文本颜色</m-text>
-					<m-text color="fourth">fourth 四级文本颜色</m-text>
-					<m-text color="primary">primary 主题文本颜色</m-text>
-					<m-text color="success">success 成功文本颜色</m-text>
-					<m-text color="warning">warning 警告文本颜色</m-text>
-					<m-text color="danger">danger 危险文本颜色</m-text>
-					<m-text color="#7232dd">自定义色值 #7232dd（兼容 CSS 色值）</m-text>
+					<m-text color="secondary" custom-class="col-list-item">secondary 次要文本颜色</m-text>
+					<m-text color="tertiary" custom-class="col-list-item">tertiary 三级文本颜色</m-text>
+					<m-text color="fourth" custom-class="col-list-item">fourth 四级文本颜色</m-text>
+					<m-text color="primary" custom-class="col-list-item">primary 主题文本颜色</m-text>
+					<m-text color="success" custom-class="col-list-item">success 成功文本颜色</m-text>
+					<m-text color="warning" custom-class="col-list-item">warning 警告文本颜色</m-text>
+					<m-text color="danger" custom-class="col-list-item">danger 危险文本颜色</m-text>
+					<m-text color="#7232dd" custom-class="col-list-item">自定义色值 #7232dd（兼容 CSS 色值）</m-text>
 				</view>
 			</view>
 
@@ -28,8 +28,8 @@
 			<view class="card">
 				<view class="col-list">
 					<m-text size="small">small 小号文本</m-text>
-					<m-text size="medium">medium 中号文本（默认）</m-text>
-					<m-text size="large">large 大号文本</m-text>
+					<m-text size="medium" custom-class="col-list-item">medium 中号文本（默认）</m-text>
+					<m-text size="large" custom-class="col-list-item">large 大号文本</m-text>
 				</view>
 			</view>
 
@@ -72,11 +72,14 @@
 </script>
 
 <style lang="scss">
-	/* 颜色 / 大小列表纵向排列间距 */
+	/* 颜色 / 大小列表纵向排列（首个子项不加类，其余经 col-list-item 加间距——
+	   App 端 ucss 不支持 gap 且无子级选择器） */
 	.col-list {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+	}
+	.col-list-item {
+		margin-top: 12px;
 	}
 	.caption {
 		font-size: 12px;

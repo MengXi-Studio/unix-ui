@@ -1,0 +1,154 @@
+<template>
+	<!-- 宫格容器：单 view 根节点，flex 换行容器，default 插槽直通；
+	     边框为容器顶线 + 左线（格子承担右线 + 下线，拼出完整表格边框） -->
+	<view :class="rootClass" :style="rootStyle">
+		<slot></slot>
+		<view v-if="props.border" class="m-grid__line-top"></view>
+		<view v-if="props.border" class="m-grid__line-left"></view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { GRID_KEY, GridContext } from './context.uts'
+
+	/**
+	 * 内容排列方向：vertical 纵向（图标上文字下）/ horizontal 横向（图标左文字右）
+	 */
+	type GridDirection = 'vertical' | 'horizontal'
+
+	/** 间距值项：number 直接取值、string 数值串 parseFloat */
+	type GutterValue = number | string
+
+	type Props = {
+		/** 列数（最小 1） */
+		columnNum?: GutterValue | null
+		/** 图标大小：纯数字自动补 px；空值走主题变量 $m-grid-item-icon-size */
+		iconSize?: GutterValue | null
+		/** 格子之间的间距（px），行间与列间同值 */
+		gutter?: GutterValue | null
+		/** 是否显示边框 */
+		border?: boolean
+		/** 是否将格子内容居中显示 */
+		center?: boolean
+		/** 是否将格子固定为正方形 */
+		square?: boolean
+		/** 是否开启格子点击反馈（按压背景色变化） */
+		clickable?: boolean
+		/** 格子内容排列方向 */
+		direction?: GridDirection
+		/** 是否调换图标和文本的位置 */
+		reverse?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		columnNum: 4,
+		iconSize: null,
+		gutter: 0,
+		border: true,
+		center: true,
+		square: false,
+		clickable: false,
+		direction: 'vertical',
+		reverse: false,
+		customClass: '',
+		customStyle: ''
+	})
+
+	/**
+	 * 数值归一：number 原样、string parseFloat、null / 非法回退 fallback
+	 */
+	function toNum(value: GutterValue | null, fallback: number): number {
+		if (value == null) return fallback
+		if (typeof value == 'number') return value
+		const n = parseFloat(value)
+		return isNaN(n) ? fallback : n
+	}
+
+	/**
+	 * 数字或纯数字字符串补 px 单位（如 "28" → "28px"），带单位字符串原样返回
+	 */
+	function toUnit(value: GutterValue | null): string {
+		if (value == null) return ''
+		if (typeof value == 'number') return value.toString() + 'px'
+		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
+		if (pattern.test(value)) return value + 'px'
+		return value
+	}
+
+	/**
+	 * 宫格上下文：item 注册表 + props computed 快照（变化实时下发），
+	 * provide 给组内 grid-item
+	 */
+	const ctx = new GridContext()
+	ctx.columnNum = computed<number>(() => {
+		const n = Math.floor(toNum(props.columnNum, 4))
+		return n < 1 ? 4 : n
+	})
+	ctx.gutter = computed<number>(() => {
+		const n = toNum(props.gutter, 0)
+		return n < 0 ? 0 : n
+	})
+	ctx.iconSize = computed<string>(() => toUnit(props.iconSize))
+	ctx.border = computed<boolean>(() => props.border)
+	ctx.center = computed<boolean>(() => props.center)
+	ctx.square = computed<boolean>(() => props.square)
+	ctx.clickable = computed<boolean>(() => props.clickable)
+	ctx.direction = computed<string>(() => props.direction as string)
+	ctx.reverse = computed<boolean>(() => props.reverse)
+	provide(GRID_KEY, ctx)
+
+	/** 根节点类名：基础类 + customClass */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-grid'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 根节点内联样式：customStyle 补分号 */
+	const rootStyle = computed<string>(() => {
+		let style = props.customStyle
+		if (style != '' && !style.endsWith(';')) style += ';'
+		return style
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明：Grid 容器为纯布局组件（flex 换行容器），
+	 * 边框线色复用 $m-grid-item-border-color，不设独立变量。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 基类（uvue view 默认 column，必须显式 row；默认换行） ========== */
+	.m-grid {
+		position: relative;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	/* ========== 容器顶线 / 左线 0.5px（绝对定位缩放层，与格子右 / 下线拼出完整表格边框） ========== */
+	.m-grid__line-top {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background-color: $m-grid-item-border-color;
+		transform: scaleY(0.5);
+		transform-origin: 0 0;
+	}
+	.m-grid__line-left {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		width: 1px;
+		background-color: $m-grid-item-border-color;
+		transform: scaleX(0.5);
+		transform-origin: 0 0;
+	}
+</style>

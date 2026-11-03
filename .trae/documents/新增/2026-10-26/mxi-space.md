@@ -213,3 +213,60 @@ uvue 的 view 默认在父容器中撑满宽，与 Vant Space（inline-flex，�
 - 修复（用户拍板：补 min-width 对齐 Vant）：vars.scss 按钮段新增 `$mxi-button-mini-min-width: 50px` / `$mxi-button-small-min-width: 60px` / `$mxi-button-normal-min-width: 76px`（均 `!default`，对齐 Vant 官方数值）；mxi-button 根类与 mini / small 变体类应用（large 无独立变量，其全宽语义由 block 承担，共用 normal 兜底）；残留：按钮10（81.8px）仍宽于其他按钮 5.8px，为 min-width 无法覆盖的内容超限差异。
 
 **复测记录**（HMR 热更后，browser 实测）：center 按钮垂直居中（按钮中心线与容器中心线重合）/ end 贴底 / start 贴顶对照正常；换行区块按钮 1-9 等宽 76px；button / cell 演示页回归正常；console 无运行时报错；`pnpm sync:uni-modules:check` 通过。
+
+## 九、m-space-item 包裹重构：App 端 gap 不支持（2026-11-02）
+
+### 9.1 背景与实证
+
+用户云打包日志反复出现 `gap is not a standard property name` WARNING（含本组件与演示页），要求彻底修复。经三段证据链实证（详见 `.claude/rules/LESSONS_LEARNED.md` #71/#72）：
+
+1. 编译器 lint 层（uni-nvue-styler）对属性表外属性仅 WARNING 且保留值——但保留不等于生效；
+2. 官方 CSS 属性清单有 `lines` 无 `gap`；
+3. 原生运行时属性表（libVapor 的 UniCSSPropertyID.class 常量池）无任何 gap 系列——**声明被静默丢弃，App 端间距失效**（8.3 中「Web 端 gap 分写 PASS」仅覆盖 Web，App 端为真 bug）。
+
+`lines`（m-cell）为官方属性，WARNING 属 lint 噪音，保留。
+
+### 9.2 方案（用户 AskUserQuestion 拍板）
+
+插槽直通结构无法给任意子元素加 margin（uvue 无 `$children`、ucss 无 `:first-child`），选定 **m-space-item 包裹重构**：复用 m-compact 的 provide/inject + reactive 注册序先例，新增 m-space-item 子组件包裹每个子项，由子项按注册序位注入 margin。
+
+API 变化：`<m-space>` 的子元素需包裹 `<m-space-item>`；未包裹子项不参与间距计算；m-space-item 独立使用退化为普通纵向容器。
+
+### 9.3 落码清单
+
+| 文件 | 变更 |
+| --- | --- |
+| `packages/core/components/m-space/context.uts` | 新建：SpaceContext（ids/direction/wrap/main/cross）+ SPACE_KEY + 自增 id 生成器 |
+| `packages/core/components/m-space/m-space.uvue` | 去 gap 基类样式与 inline gap；provide 上下文（mainGap/crossGap computed，size 未传走默认类） |
+| `packages/core/components/m-space-item/m-space-item.uvue` | 新建：inject 注册 + computed indexOf 驱动 `--left` / `--top` / `--bottom`（wrap 行距）变体类与内联覆盖 |
+| `packages/playground/pages-sub/{space,toast,popup,overlay,compact,text,image}/*.uvue` | 演示页子项全部包裹 m-space-item；静态布局 gap 改 margin 间距类（col-list / row-gap-item / custom-toast） |
+| `packages/docs/src/components/space.md` + `src/en/components/space.md` | 双语同步：m-space-item 用法 / API / wrap 末行已知限制 |
+| `uni_modules/m-ui-x/changelog.md` + 文档站双语 changelog | 0.2.0 段补 m-space-item 新增与 gap 重构条目 |
+| `.claude/rules/LESSONS_LEARNED.md` | #71 gap 结论修正 + 新增 #72 |
+
+### 9.4 验证记录
+
+| 项目 | 结果 |
+| --- | --- |
+| `pnpm sync:uni-modules` + `sync:uni-modules:check` | PASS |
+| 蒸汽模式（vapor: true）云打包导出 | PASS（编译成功，gap WARNING 清零，仅剩 lines ×3） |
+| VDOM 模式（vapor: false）导出 | PASS（编译成功） |
+| Web 演示页（space/toast/popup/overlay/compact） | 5 页均 200 |
+| space 页浏览器量化验收 | PASS：水平 / 垂直 / wrap 间距均精确 8px（boundingClientRect 实测，m-space-item margin 方案无回归） |
+| `pnpm build:docs`（死链检查） | PASS |
+
+### 9.5 换行行首缩进修复：负 margin 补偿（2026-11-02 第二轮）
+
+用户截图反馈 wrap 换行「参差不齐」。浏览器实测定性：非逐行递增，而是第 2/3/4 行行首**统一 +8px**（margin 方案固有表现——非首项 margin-left 加在了换行行首项上）。用户拍板负 margin 补偿方案：
+
+- `m-space-item`：horizontal 改为**全部**子项 margin-left（class `--left` 与内联样式均去掉 index>0 条件）；vertical 维持非首项 margin-top（无换行场景无缩进问题）
+- `m-space`：horizontal 根节点追加 `m-space--compensate` 补偿类（`margin-left: -$m-space-size`，scss 数值取负编译期得出 -8px）；size 传入时 rootStyle 追加等值内联负 margin（`'-' + mainGap`，负值 size 不二次取负）覆盖补偿类
+- 主轴 margin 不参与交叉轴 align-items 计算，全量施加安全；纵向行距仍用 margin-bottom（margin-top 方案会参与交叉轴计算使内容偏移，权衡后不动）
+- **Web 验收 PASS**：wrap 4 行行首 x 完全相等（容器 x=16、各行行首 x=24，统一偏移 8 即补偿后等值），基础间距 8px 与对齐无回归；`sync:uni-modules:check` 通过
+- **App 负 margin 支持度待云打包验证**：若声明被丢弃（症状：整体左移丢失 + 行首缩进回潮），回退条件编译保留 App 侧旧方案（详见 LESSONS #72）
+
+### 9.6 遗留
+
+- wrap 模式末行底部多出一段间距（子项无法感知换行位置），已标注为已知限制（文档 + 演示页 caption）；
+- App 端真机回归：m-space-item margin 间距与容器负 margin 补偿在 App-Android / iOS 的原生渲染（代码层已全端一致，待用户云打包验证；负 margin 若不支持按 9.5 回退）；
+- lines ×3 WARNING 为官方属性 lint 噪音，保留不处理。

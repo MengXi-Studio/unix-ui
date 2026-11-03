@@ -62,10 +62,10 @@
 	const slots = useSlots()
 
 	/** 是否传入默认插槽内容（包裹模式 / 独立模式切换依据） */
-	const hasDefaultSlot = computed<boolean>(() => slots.default != null)
+	const hasDefaultSlot = computed<boolean>(() => slots['default'] != null)
 
 	/** 是否传入 content 插槽（自定义徽标内容，优先于 content 文本） */
-	const hasContentSlot = computed<boolean>(() => slots.content != null)
+	const hasContentSlot = computed<boolean>(() => slots['content'] != null)
 
 	/** 语义色名单：命中走编译期变体类（绑定 $m-color-* 主题变量，覆盖仍生效），否则视为 CSS 色值走 inline */
 	const semanticColors: string[] = ['primary', 'success', 'warning', 'danger', 'white']

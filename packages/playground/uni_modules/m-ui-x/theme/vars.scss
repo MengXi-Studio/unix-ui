@@ -111,3 +111,119 @@ $m-text-color-fourth: #c8c9cc !default;      /* fourth 四级文本色 */
 
 /* ========== Space 间距 ========== */
 $m-space-size: 8px !default;                 /* 默认间距（未传 size 时） */
+
+/* ========== Overlay 遮罩层 ========== */
+$m-overlay-z-index: 1 !default;
+$m-overlay-background: rgba(0, 0, 0, 0.7) !default;
+
+/* ========== Popup 弹出层 ========== */
+$m-popup-background: #ffffff !default;
+$m-popup-round-radius: 16px !default;
+$m-popup-close-icon-size: 22px !default;
+$m-popup-close-icon-color: #c8c9cc !default;
+$m-popup-close-icon-margin: 16px !default;
+$m-popup-close-icon-z-index: 1 !default;
+
+/* ========== Divider 分割线 ========== */
+$m-divider-margin: 16px 0 !default;
+$m-divider-vertical-margin: 0 8px !default;
+$m-divider-text-color: #969799 !default;
+$m-divider-font-size: 14px !default;
+$m-divider-line-height: 24px !default;
+$m-divider-border-color: #ebedf0 !default;
+$m-divider-content-padding: 16px !default;
+$m-divider-content-left-width: 10% !default;
+$m-divider-content-right-width: 10% !default;
+
+/* ========== Grid 宫格 ========== */
+$m-grid-item-content-padding: 16px 8px !default;
+$m-grid-item-content-background: $m-white !default;
+$m-grid-item-content-active-color: #f2f3f5 !default;
+$m-grid-item-icon-size: 28px !default;
+$m-grid-item-text-color: #323233 !default;
+$m-grid-item-text-font-size: 12px !default;
+$m-grid-item-border-color: #ebedf0 !default;
+
+/* ========== Toast 轻提示 ========== */
+$m-toast-z-index: 2000 !default;
+$m-toast-max-width: 70% !default;
+$m-toast-background: rgba(0, 0, 0, 0.7) !default;
+$m-toast-text-color: #ffffff !default;
+$m-toast-font-size: 14px !default;
+$m-toast-line-height: 20px !default;
+$m-toast-radius: 8px !default;
+$m-toast-icon-size: 36px !default;
+$m-toast-text-min-width: 96px !default;
+$m-toast-text-padding: 8px 12px !default;
+$m-toast-default-width: 88px !default;
+$m-toast-default-min-height: 88px !default;
+$m-toast-default-padding: 16px !default;
+$m-toast-top-distance: 20% !default;
+$m-toast-bottom-distance: 20% !default;
+$m-toast-overlay-background: rgba(0, 0, 0, 0.7) !default;
+
+/* ========== Input 输入框 ========== */
+$m-input-font-size: 14px !default;                        /* 输入控件基准字号 */
+$m-input-padding-y: 7px !default;                         /* 边框容器纵向内边距 */
+$m-input-padding-x: 10px !default;                        /* 边框容器横向内边距 */
+$m-input-gap: 6px !default;                               /* 控件与前后部（插槽 / 图标）间距 */
+$m-input-border-radius: $m-radius-md !default;
+$m-input-border-color: #ebedf0 !default;                  /* 常态边框色 */
+$m-input-border-color-focus: $m-color-primary !default;   /* 聚焦态边框色 */
+$m-input-bg: $m-white !default;
+$m-input-bg-disabled: #f7f8fa !default;
+$m-input-text-color: $m-text-color !default;
+$m-input-text-color-disabled: $m-text-color-tertiary !default;
+$m-input-placeholder-color: $m-text-color-fourth !default;
+$m-input-clear-icon-size: 16px !default;
+$m-input-clear-color: $m-text-color-fourth !default;
+$m-input-eye-icon-size: 16px !default;
+$m-input-eye-color: $m-text-color-fourth !default;
+$m-input-count-font-size: 12px !default;
+$m-input-count-color: $m-text-color-tertiary !default;
+$m-input-textarea-min-height: 60px !default;
+
+/* ========== Calendar 日历 ========== */
+$m-calendar-background: $m-white !default;
+$m-calendar-header-title-height: 44px !default;
+$m-calendar-header-title-font-size: 16px !default;
+$m-calendar-header-title-color: $m-text-color !default;
+$m-calendar-header-box-shadow: 0 2px 10px rgba(125, 126, 128, 0.16) !default;
+$m-calendar-header-subtitle-height: 44px !default;
+$m-calendar-header-subtitle-font-size: 14px !default;
+$m-calendar-header-subtitle-color: $m-text-color !default;
+$m-calendar-weekdays-height: 30px !default;
+$m-calendar-weekdays-font-size: 12px !default;
+$m-calendar-weekdays-color: $m-text-color !default;
+$m-calendar-nav-icon-size: 20px !default;
+$m-calendar-nav-icon-color: $m-text-color-tertiary !default;
+$m-calendar-month-title-height: 44px !default;      /* 月块内标题行高（与 calendar.uts 常量 CALENDAR_MONTH_TITLE_HEIGHT 同步，月高估算） */
+$m-calendar-month-title-font-size: 14px !default;
+$m-calendar-month-mark-color: rgba(242, 243, 245, 0.8) !default;
+$m-calendar-month-mark-font-size: 160px !default;
+$m-calendar-day-height: 64px !default;              /* 与 calendar.uts 常量 CALENDAR_DEFAULT_DAY_HEIGHT 同步（滚动驱动副标题的月高估算） */
+$m-calendar-day-font-size: 16px !default;
+$m-calendar-day-margin-bottom: 0px !default;         /* Vant 行距即行高无额外间距；与 calendar.uts 常量 CALENDAR_DAY_MARGIN_BOTTOM 同步（月高估算） */
+$m-calendar-day-disabled-color: $m-text-color-fourth !default;
+$m-calendar-info-font-size: 10px !default;
+$m-calendar-info-color: $m-text-color-tertiary !default;
+$m-calendar-day-radius: 4px !default;               /* 选中方块圆角（对齐 Vant；端点全圆角，盖于范围 bar 之上） */
+$m-calendar-selected-day-size: 54px !default;
+$m-calendar-selected-day-color: $m-white !default;
+$m-calendar-selected-day-background: $m-color-primary !default;
+$m-calendar-range-middle-background: rgba($m-color-primary, 0.1) !default;
+$m-calendar-range-middle-color: $m-color-primary !default;
+
+/* ========== m-calendar-input（日历输入框：触发层与自绘清空按钮） ==========
+ * 层叠关系：触发层 1 < 清空钮 2 < 弹层遮罩 3（m-calendar-input 内部固定传 :z-index="3"，
+ * 保证弹层打开时遮罩盖住自身浮层；调整前两项时需同步检查该硬编码值） */
+/** 透明触发层层级（覆盖触发区接住点击，m-input readonly 以原生 disabled 模拟会吞点击） */
+$m-calendar-input-trigger-z-index: 1 !default;
+/** 清空按钮层叠（高于触发层） */
+$m-calendar-input-clear-z-index: 2 !default;
+/** 清空按钮点击区宽度（组件内 padding-right 预留值与之同步） */
+$m-calendar-input-clear-width: 40px !default;
+/** 清空图标字号（对齐 $m-input-clear-icon-size 默认值） */
+$m-calendar-input-clear-icon-size: 16px !default;
+/** 清空图标颜色（对齐 $m-input-clear-color 默认值） */
+$m-calendar-input-clear-color: #c8c9cc !default;

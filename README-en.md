@@ -80,13 +80,21 @@ For all available variables see [theme/vars.scss](./theme/vars.scss), named as `
 | --- | --- |
 | m-button | Button: semantic type, plain / disabled / loading, four sizes, block, hairline borders, pressed feedback |
 | m-cell / m-cell-group | Cell and group: title / value / label, icon, four-direction arrows, inset rounded-card grouping |
+| m-compact | Compact layout: joined corners and merged borders for wrapped buttons / inputs, block / direction, auto re-flow on dynamic add / remove |
 | m-row / m-col | Grid layout: gutter, alignment, wrapping |
+| m-grid / m-grid-item | Grid cells: custom columns, square cells, gutter, full borders, badge integration, in-app page navigation |
 | m-icon | Icon: 250+ common icons (ttf bundled), color and size, custom icon slot |
 | m-image | Image: pass-through mode, loading / error placeholders, fade-in transition, circle, lazy loading |
 | m-text | Text: semantic / custom color modes, three font sizes, single-line ellipsis, multi-line clamp, selectable |
+| m-input | Input: six types, clearable with trigger timing, word limit, formatter / precision / min-max clamping, password eye toggle, prepend / append slots |
 | m-space | Spacing: direction / wrap / alignment, single or dual (row / column) size |
+| m-divider | Divider: horizontal / vertical, dashed, hairline 0.5px line, content position |
 | m-loading | Loading: circular / spinner variants, custom color and size, with text |
+| m-overlay | Overlay: show-driven visibility, z-index / duration, Web body scroll lock, foundation for popup-family components |
+| m-popup | Popup: five positions, per-side round corners, closeable icon, overlay customization, before-close interception, v-model:show |
+| m-toast | Toast: functional API (showToast family) + component mode, four types and three positions, overlay and click blocking |
 | m-badge | Badge: number / dot, max truncation, semantic and custom colors, position offset, standalone mode |
+| m-calendar / m-calendar-popup / m-calendar-input | Calendar trio: single / multiple / range selection, year-month switching navigation, range limit and theme color derivation, popup and input combo variants |
 
 ## Live Demo
 

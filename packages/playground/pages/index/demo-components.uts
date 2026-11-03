@@ -27,7 +27,7 @@ export type DemoGroup = {
 }
 
 /**
- * 组件演示分组表（分组体系：基础 / 表单 / 反馈 / 展示 / 导航）
+ * 组件演示分组表（标准 UI 库分类体系：基础 / 表单 / 反馈 / 布局 / 数据展示，组内按字母序）
  *
  * 新增组件时在对应分组的 components 中登记一条即可，
  * 首页分组列表与搜索过滤自动生效；演示页路由需另行在
@@ -44,12 +44,6 @@ export const demoGroups: DemoGroup[] = [
 				desc: '用于触发一个操作，支持类型、尺寸、朴素、圆角、细边框、加载状态等特性。'
 			},
 			{
-				name: 'cell',
-				zhName: '单元格',
-				enName: 'Cell',
-				desc: '列表单项展示，支持标题、值、描述、左侧图标、四向箭头、必填星号、圆角卡片分组与组内末线自动隐藏。'
-			},
-			{
 				name: 'icon',
 				zhName: '图标',
 				enName: 'Icon',
@@ -62,22 +56,39 @@ export const demoGroups: DemoGroup[] = [
 				desc: '原生 image 增强封装，mode 直通，扩展加载/失败占位、淡入动画、圆角圆形与懒加载。'
 			},
 			{
-				name: 'layout',
-				zhName: '布局',
-				enName: 'Layout',
-				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
-			},
-			{
 				name: 'text',
 				zhName: '文本',
 				enName: 'Text',
 				desc: '文本样式快捷封装，支持语义色、三档字号、单行与多行省略、文本可选。'
+			}
+		]
+	},
+	{
+		title: '表单组件',
+		components: [
+			{
+				name: 'calendar',
+				zhName: '日历',
+				enName: 'Calendar',
+				desc: '日历面板，支持单选、多选、范围选择、年月切换导航、formatter 定制与超限提示。'
 			},
 			{
-				name: 'space',
-				zhName: '间距',
-				enName: 'Space',
-				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
+				name: 'calendar-popup',
+				zhName: '日历弹出框',
+				enName: 'CalendarPopup',
+				desc: 'm-popup 与 m-calendar 的弹层组合，v-model 控制显隐，确认后自动关闭，支持方位、圆角、面板高度与安全区配置。'
+			},
+			{
+				name: 'calendar-input',
+				zhName: '日历输入框',
+				enName: 'CalendarInput',
+				desc: 'm-input 与日历弹出框的表单组合，点击触发选择，选中值格式化回填展示，支持清空与禁用。'
+			},
+			{
+				name: 'input',
+				zhName: '输入框',
+				enName: 'Input',
+				desc: '文本输入框，支持六种类型、清除图标、明文切换、格式化与数字精度收敛、字数统计、多行自适应、前后插槽与紧凑布局联动。'
 			}
 		]
 	},
@@ -89,17 +100,76 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '加载',
 				enName: 'Loading',
 				desc: '加载中状态提示，支持弧段圆环与花瓣两种类型、自定义颜色大小、加载文案与自定义图标插槽。'
+			},
+			{
+				name: 'overlay',
+				zhName: '遮罩层',
+				enName: 'Overlay',
+				desc: '创建全屏遮罩层，支持淡入淡出、层级、嵌入内容与 Web 端滚动锁定，是弹窗类组件的基础。'
+			},
+			{
+				name: 'popup',
+				zhName: '弹出层',
+				enName: 'Popup',
+				desc: '弹出层容器，支持五种弹出方位、圆角、关闭图标、遮罩开关、显示事件回调与内容销毁重建，是弹窗类组件的基座。'
+			},
+			{
+				name: 'toast',
+				zhName: '轻提示',
+				enName: 'Toast',
+				desc: '在页面中间弹出黑色半透明提示，支持文字、成功失败、加载、自定义图标、位置、遮罩与函数式调用。'
 			}
 		]
 	},
 	{
-		title: '展示组件',
+		title: '布局组件',
+		components: [
+			{
+				name: 'compact',
+				zhName: '紧凑布局',
+				enName: 'Compact',
+				desc: '让按钮等组件紧凑连接且合并边框，支持水平垂直方向与块级撑满。'
+			},
+			{
+				name: 'divider',
+				zhName: '分割线',
+				enName: 'Divider',
+				desc: '分隔内容区域，支持虚线、0.5px 细线、内容位置与垂直形态。'
+			},
+			{
+				name: 'grid',
+				zhName: '宫格',
+				enName: 'Grid',
+				desc: '水平方向分隔等宽区块，支持自定义列数、正方形格子、间距、横排反向、徽标与点击跳转。'
+			},
+			{
+				name: 'layout',
+				zhName: '布局',
+				enName: 'Layout',
+				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
+			},
+			{
+				name: 'space',
+				zhName: '间距',
+				enName: 'Space',
+				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
+			}
+		]
+	},
+	{
+		title: '数据展示',
 		components: [
 			{
 				name: 'badge',
 				zhName: '徽标',
 				enName: 'Badge',
 				desc: '出现在图标或文字右上角，支持数字、文案、红点、最大值截断、四角位置、偏移量与自定义内容插槽。'
+			},
+			{
+				name: 'cell',
+				zhName: '单元格',
+				enName: 'Cell',
+				desc: '列表单项展示，支持标题、值、描述、左侧图标、四向箭头、必填星号、圆角卡片分组与组内末线自动隐藏。'
 			}
 		]
 	}

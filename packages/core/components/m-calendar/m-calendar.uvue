@@ -1,0 +1,859 @@
+<template>
+	<!-- 日历面板组件（三组件拆分后的基础组件）：纯平铺形态，弹层组合见 m-calendar-popup，
+	     输入框触发组合见 m-calendar-input。根节点常驻静态（LESSONS #32） -->
+	<view :class="customClass" :style="customStyle">
+		<MCalendarPanel
+			:panel="panelConfig"
+			@day-click="onPanelDayClick"
+			@click-subtitle="onPanelSubtitleClick"
+			@nav="onPanelNav"
+			@body-scroll="onPanelBodyScroll"
+		>
+			<!-- 插槽条件转发：v-if="$slots.xxx != null" 保证未传入的插槽不覆盖 panel 的内置默认渲染
+			     （默认内容与样式同居 panel scope，宿主无条件转发 fallback 会因样式隔离不命中） -->
+			<template v-if="$slots['title'] != null" #title>
+				<slot name="title"></slot>
+			</template>
+			<template v-if="$slots['subtitle'] != null" #subtitle>
+				<slot name="subtitle"></slot>
+			</template>
+			<template v-if="$slots['month-title'] != null" #month-title="{ month, text }">
+				<slot name="month-title" :month="month" :text="text"></slot>
+			</template>
+			<template v-if="$slots['top-info'] != null" #top-info="{ day }">
+				<slot name="top-info" :day="day"></slot>
+			</template>
+			<template v-if="$slots['bottom-info'] != null" #bottom-info="{ day }">
+				<slot name="bottom-info" :day="day"></slot>
+			</template>
+			<template v-if="$slots['text'] != null" #text="{ day }">
+				<slot name="text" :day="day"></slot>
+			</template>
+			<template #footer>
+				<slot name="footer">
+					<view v-if="showConfirm" class="m-calendar__footer">
+						<m-button
+							block
+							:type="color == '' ? 'primary' : 'default'"
+							:color="color"
+							:disabled="confirmDisabled"
+							custom-style="height: 36px;"
+							@click="onConfirmButtonClick"
+						>
+							<slot name="confirm-text">{{ confirmDisabled ? confirmDisabledText : confirmText }}</slot>
+						</m-button>
+					</view>
+				</slot>
+			</template>
+			<template v-if="$slots['prev-year'] != null" #prev-year>
+				<slot name="prev-year"></slot>
+			</template>
+			<template v-if="$slots['prev-month'] != null" #prev-month>
+				<slot name="prev-month"></slot>
+			</template>
+			<template v-if="$slots['next-month'] != null" #next-month>
+				<slot name="next-month"></slot>
+			</template>
+			<template v-if="$slots['next-year'] != null" #next-year>
+				<slot name="next-year"></slot>
+			</template>
+		</MCalendarPanel>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-calendar 日历面板（状态机宿主）：对标 Vant Calendar 的平铺形态。
+	 * 选择状态（single / multiple / range）、月份构建、范围判定与超限提示在此，
+	 * 渲染经 CalendarPanelConfig 纯数据下发 m-calendar-panel；超限提示复用 m-toast。
+	 * 弹层形态由 m-calendar-popup 组合 m-popup + 本组件实现（panelMode 概念随拆分移除）。
+	 */
+	import {
+		CalendarType,
+		CalendarSwitchMode,
+		CalendarDayType,
+		CalendarDayItem,
+		CalendarMonth,
+		CalendarPanelConfig,
+		CalendarFormatter,
+		CALENDAR_DAY_MS,
+		CALENDAR_WEEKDAYS,
+		CALENDAR_DEFAULT_DAY_HEIGHT,
+		CALENDAR_DAY_MARGIN_BOTTOM,
+		CALENDAR_MONTH_TITLE_HEIGHT,
+		getDayStart,
+		isSameMonth,
+		getMonthTitle,
+		addMonths,
+		getDayDiff
+	} from './calendar.uts'
+	import MCalendarPanel from './m-calendar-panel.uvue'
+	import { showToast } from '../m-toast/toast.uts'
+
+	type Props = {
+		/** 选择类型 */
+		type?: CalendarType
+		/** 常规标题 */
+		title?: string
+		/** 主题色（选中方块与范围 bar 派生色，支持 #hex 与渐变） */
+		color?: string
+		/** 最小日期（null 默认今天） */
+		minDate?: Date | null
+		/** 最大日期（null 默认今天 + 6 个月） */
+		maxDate?: Date | null
+		/** 默认选中日期（单值或数组，随 type 语义消费） */
+		defaultDate?: Date | Date[] | null
+		/** 选中值（v-model:value；类型随 type：single 为 Date|null，range/multiple 为 Date[]；优先于 defaultDate 作初始值） */
+		value?: Date | Date[] | null
+		/** 日格行高 px（0 用默认变量值） */
+		rowHeight?: number
+		/** 日期格格式化函数（最后统一应用，可覆盖内置标记与文案） */
+		formatter?: CalendarFormatter | null
+		/** 显示月份背景水印 */
+		showMark?: boolean
+		/** 显示标题 */
+		showTitle?: boolean
+		/** 显示副标题 */
+		showSubtitle?: boolean
+		/** 显示确认按钮（false 时选满自动确认） */
+		showConfirm?: boolean
+		/** 确认按钮文字 */
+		confirmText?: string
+		/** 确认按钮禁用态文字 */
+		confirmDisabledText?: string
+		/** 只读模式（不响应日期点击） */
+		readonly?: boolean
+		/** 周起始日（0 周日 - 6 周六） */
+		firstDayOfWeek?: number
+		/** 面板切换模式（none 常规滚动列表 / month 单月 + 月导航 / year-month 单月 + 年月导航） */
+		switchMode?: CalendarSwitchMode
+		/** 面板高度 inline 值（px 等长度单位原样；空串自然生长；弹层组合组件经此下发换算后的高度） */
+		height?: string
+		/** 范围 / 多选最多可选天数（含两端计数；-1 不限制） */
+		maxRange?: number
+		/** 超限提示文案（空串用默认「最多选择 N 天」） */
+		rangePrompt?: string
+		/** 超限是否经 m-toast 提示 */
+		showRangePrompt?: boolean
+		/** 范围选择是否允许起止同日 */
+		allowSameDay?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		type: 'single',
+		title: '日期选择',
+		color: '',
+		minDate: null,
+		maxDate: null,
+		defaultDate: null,
+		value: null,
+		rowHeight: 0,
+		formatter: null,
+		showMark: true,
+		showTitle: true,
+		showSubtitle: true,
+		showConfirm: false,
+		confirmText: '确认',
+		confirmDisabledText: '确认',
+		readonly: false,
+		firstDayOfWeek: 0,
+		switchMode: 'none',
+		height: '',
+		maxRange: -1,
+		rangePrompt: '',
+		showRangePrompt: true,
+		allowSameDay: false,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 点击日期格后触发（值形态随 type） */
+		select: [value: Date | Date[]]
+		/** 点击确认按钮 / 自动确认后触发 */
+		confirm: [value: Date | Date[]]
+		/** 多选取消选中某日 */
+		unselect: [date: Date]
+		/** 选中值变化（v-model:value；类型随 type，single 未选理论态为 null） */
+		'update:value': [value: Date | Date[] | null]
+		/** 选择超出 max-range 限制 */
+		'over-range': []
+		/** 聚焦月进入视口（挂载时触发一次；面板滚动不再驱动，对齐 Vant 平铺语义） */
+		'month-show': [date: Date]
+		/** switch-mode 面板所在月变化（导航触发） */
+		'panel-change': [date: Date]
+		/** 点击副标题 / 导航行标题 */
+		'click-subtitle': []
+		/** 点击禁用日期 */
+		'click-disabled-date': [date: Date]
+	}>()
+
+	const slots = useSlots()
+
+	// ========== 选择状态（时间戳口径，全部为当日零点） ==========
+	/** single 当前选中时间戳（null 未选） */
+	const singleTs = ref<number | null>(null)
+	/** multiple 选中时间戳集合（始终升序） */
+	const multipleTs = ref<number[]>([])
+	/** range 起点时间戳（null 未开始） */
+	const rangeStart = ref<number | null>(null)
+	/** range 终点时间戳（null 未选完） */
+	const rangeEnd = ref<number | null>(null)
+
+	/** switch-mode 当前面板所在月（导航 / scrollToDate 驱动；null 为挂载前瞬态） */
+	const currentPanelMonth = ref<Date | null>(null)
+	/** none 模式副标题（滚动驱动：视口所在月标题；无内部滚动时为初始聚焦月；月块内标题与 Vant 一致并存） */
+	const subtitleScrolled = ref<string>('')
+	/** scroll-into-view 锚点（月 id：m-calendar-month-{index}） */
+	const scrollAnchor = ref<string>('')
+	/** 副标题滚动节流时间戳（Date.now()；100ms 内只估算一次视口月） */
+	let subtitleScrollTs = 0
+	/** 副标题滚动停止兜底定时器 id（-1 无；滚动停止后按最终 scrollTop 补算，防节流丢尾） */
+	let subtitleScrollTimer = -1
+
+	// ========== 纯函数（UTS 无声明提升，被下方 computed / 处理器引用者一律先行声明） ==========
+
+	/** 有效最小日期：minDate 归一零点，null 默认今天 */
+	function currentMinDate(): Date {
+		if (props.minDate != null) {
+			return getDayStart(props.minDate!)
+		}
+		return getDayStart(new Date())
+	}
+
+	/** 有效最大日期：maxDate 归一零点，null 默认今天 + 6 个月（对齐 Vant 默认跨度） */
+	function currentMaxDate(): Date {
+		if (props.maxDate != null) {
+			return getDayStart(props.maxDate!)
+		}
+		const now = getDayStart(new Date())
+		return new Date(now.getFullYear(), now.getMonth() + 6, now.getDate())
+	}
+
+	/** 星期表头：按 firstDayOfWeek 旋转（0 周日起） */
+	function currentWeekdays(): string[] {
+		const list: string[] = []
+		for (let i = 0; i < 7; i++) {
+			list.push(CALENDAR_WEEKDAYS[(props.firstDayOfWeek + i) % 7])
+		}
+		return list
+	}
+
+	/** 构建单个日期格 */
+	function buildDay(date: Date, type: CalendarDayType): CalendarDayItem {
+		return {
+			date: date,
+			type: type,
+			text: type == 'placeholder' ? '' : date.getDate().toString(),
+			topInfo: '',
+			bottomInfo: '',
+			className: ''
+		} as CalendarDayItem
+	}
+
+	/** 单日选择标记（disabled 已前置判断，不进入本函数） */
+	function typeForDate(date: Date): CalendarDayType {
+		const ts = date.getTime()
+		if (props.type == 'single') {
+			return singleTs.value == ts ? 'selected' : ''
+		}
+		if (props.type == 'multiple') {
+			return multipleTs.value.indexOf(ts) != -1 ? 'multiple-selected' : ''
+		}
+		// range
+		const start = rangeStart.value
+		const end = rangeEnd.value
+		if (start == null) {
+			return ''
+		}
+		if (ts == start) {
+			if (end == null) {
+				return 'start'
+			}
+			return ts == end ? 'start-end' : 'start'
+		}
+		if (end == null) {
+			return ''
+		}
+		if (ts == end) {
+			return 'end'
+		}
+		if (ts > start && ts < end) {
+			return 'middle'
+		}
+		return ''
+	}
+
+	/** 构建单月数据：周首占位 + 逐日范围判定与选择打标 + formatter 收尾（占位格不过 formatter） */
+	function buildMonth(monthStart: Date, min: Date, max: Date): CalendarMonth {
+		const days: CalendarDayItem[] = []
+		// 周首占位数 =（当月 1 号星期 - firstDayOfWeek + 7）% 7
+		const firstWeekday = new Date(monthStart.getFullYear(), monthStart.getMonth(), 1).getDay()
+		const placeholderCount = (firstWeekday - props.firstDayOfWeek + 7) % 7
+		for (let i = 0; i < placeholderCount; i++) {
+			days.push(buildDay(new Date(0), 'placeholder'))
+		}
+		// 当月天数：次月 1 号回退一天（避免「第 0 日」构造的跨端差异）
+		const daysInMonth = new Date(new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1).getTime() - CALENDAR_DAY_MS).getDate()
+		for (let d = 1; d <= daysInMonth; d++) {
+			const date = new Date(monthStart.getFullYear(), monthStart.getMonth(), d)
+			let type: CalendarDayType = ''
+			if (date.getTime() < min.getTime() || date.getTime() > max.getTime()) {
+				type = 'disabled'
+			} else {
+				type = typeForDate(date)
+			}
+			days.push(buildDay(date, type))
+		}
+		const formatter = props.formatter
+		if (formatter != null) {
+			for (let i = placeholderCount; i < days.length; i++) {
+				days[i] = formatter(days[i])
+			}
+		}
+		return { date: monthStart, days: days, showTitle: true } as CalendarMonth
+	}
+
+	/** v-model:value 优先于 defaultDate 的初始值来源 */
+	function currentInitDate(): Date | Date[] | null {
+		return props.value != null ? props.value : props.defaultDate
+	}
+
+	/** 选择快照等值判断（v-model 回环抑制：外部值与内部选择语义相同时不重置） */
+	function isSameSelection(a: Date | Date[] | null, b: Date | Date[] | null): boolean {
+		if (a == null && b == null) {
+			return true
+		}
+		if (a instanceof Date && b instanceof Date) {
+			return getDayStart(a).getTime() == getDayStart(b).getTime()
+		}
+		if (a instanceof Date || b instanceof Date) {
+			return false
+		}
+		const arrA = a as Date[] | null
+		const arrB = b as Date[] | null
+		if (arrA == null || arrB == null) {
+			return false
+		}
+		if (arrA.length != arrB.length) {
+			return false
+		}
+		for (let i = 0; i < arrA.length; i++) {
+			if (getDayStart(arrA[i]).getTime() != getDayStart(arrB[i]).getTime()) {
+				return false
+			}
+		}
+		return true
+	}
+
+	/** 初始化选择：入参（单值 / 数组，随 type 消费）→ single 无默认时取今天，range / multiple 无默认为空 */
+	function initSelection(defaultDate: Date | Date[] | null) {
+		if (defaultDate instanceof Date) {
+			const d = getDayStart(defaultDate)
+			if (props.type == 'multiple') {
+				multipleTs.value = [d.getTime()]
+			} else if (props.type == 'range') {
+				rangeStart.value = d.getTime()
+				rangeEnd.value = null
+			} else {
+				singleTs.value = d.getTime()
+			}
+			return
+		}
+		if (defaultDate != null) {
+			// 非 Date 即数组（union 收窄），按 type 消费
+			const arr = defaultDate as Date[]
+			if (props.type == 'multiple') {
+				const tsList: number[] = []
+				for (let i = 0; i < arr.length; i++) {
+					tsList.push(getDayStart(arr[i]).getTime())
+				}
+				tsList.sort((a: number, b: number): number => a - b)
+				multipleTs.value = tsList
+			} else if (props.type == 'range') {
+				if (arr.length >= 2) {
+					rangeStart.value = getDayStart(arr[0]).getTime()
+					rangeEnd.value = getDayStart(arr[1]).getTime()
+				} else if (arr.length == 1) {
+					rangeStart.value = getDayStart(arr[0]).getTime()
+					rangeEnd.value = null
+				}
+			} else if (arr.length >= 1) {
+				singleTs.value = getDayStart(arr[0]).getTime()
+			}
+			return
+		}
+		if (props.type == 'single') {
+			singleTs.value = getDayStart(new Date()).getTime()
+		} else {
+			singleTs.value = null
+			multipleTs.value = []
+			rangeStart.value = null
+			rangeEnd.value = null
+		}
+	}
+
+	/** 清空全部选择状态后按初始值来源重建（type 变更 / reset / v-model 外部变更时用，防跨类型残留） */
+	function resetSelection() {
+		singleTs.value = null
+		multipleTs.value = []
+		rangeStart.value = null
+		rangeEnd.value = null
+		initSelection(currentInitDate())
+	}
+
+	/** 初始聚焦月：首个选中月 → 范围内的今天 → min 月（返回当月 1 号，clamp 到可选范围） */
+	function focusMonth(): Date {
+		const min = currentMinDate()
+		const max = currentMaxDate()
+		const minMonth = new Date(min.getFullYear(), min.getMonth(), 1)
+		const maxMonth = new Date(max.getFullYear(), max.getMonth(), 1)
+		let month = minMonth
+		let ts: number | null = null
+		if (props.type == 'single') {
+			ts = singleTs.value
+		} else if (props.type == 'multiple') {
+			if (multipleTs.value.length > 0) {
+				ts = multipleTs.value[0]
+			}
+		} else {
+			ts = rangeStart.value
+		}
+		if (ts != null) {
+			const d = new Date(ts)
+			month = new Date(d.getFullYear(), d.getMonth(), 1)
+		} else {
+			const today = getDayStart(new Date())
+			if (today.getTime() >= min.getTime() && today.getTime() <= max.getTime()) {
+				month = new Date(today.getFullYear(), today.getMonth(), 1)
+			}
+		}
+		if (month.getTime() < minMonth.getTime()) {
+			month = minMonth
+		}
+		if (month.getTime() > maxMonth.getTime()) {
+			month = maxMonth
+		}
+		return month
+	}
+
+	/** 当前选择值：single → Date | null；multiple / range → Date[]（range 未选完为 [start] 或 []） */
+	function getSelectedDate(): Date | Date[] | null {
+		if (props.type == 'single') {
+			return singleTs.value == null ? null : new Date(singleTs.value!)
+		}
+		if (props.type == 'multiple') {
+			const list: Date[] = []
+			for (let i = 0; i < multipleTs.value.length; i++) {
+				list.push(new Date(multipleTs.value[i]))
+			}
+			return list
+		}
+		const rangeList: Date[] = []
+		if (rangeStart.value != null) {
+			rangeList.push(new Date(rangeStart.value!))
+		}
+		if (rangeEnd.value != null) {
+			rangeList.push(new Date(rangeEnd.value!))
+		}
+		return rangeList
+	}
+
+	// v-model:value 外部变更：与内部选择语义相同则忽略（内部回写防回环），不同则重置
+	// （UTS 先用后声明在 Kotlin 端报 unresolved，watch 一律放在全部被调函数之后）
+	watch((): Date | Date[] | null => props.value, (nv) => {
+		if (isSameSelection(getSelectedDate(), nv)) {
+			return
+		}
+		resetSelection()
+	})
+
+	// ========== computed（依赖上方函数与状态） ==========
+
+	/** 全量月份（min 月 → max 月逐月构建；选择 / formatter 变更整体重建） */
+	const months = computed<CalendarMonth[]>(() => {
+		const list: CalendarMonth[] = []
+		const min = currentMinDate()
+		const max = currentMaxDate()
+		let cursor = new Date(min.getFullYear(), min.getMonth(), 1)
+		while (cursor.getTime() <= max.getTime()) {
+			const m = buildMonth(cursor, min, max)
+			// Vant 同款规则：首月月内标题由副标题承担（index !== 0 || !showSubtitle）
+			m.showTitle = list.length > 0 || !props.showSubtitle
+			list.push(m)
+			cursor = addMonths(cursor, 1)
+		}
+		return list
+	})
+
+	/** 月高度表（滚动驱动副标题的视口月估算用）：标题行（首月隐藏时不计）+ 行数 ×（日格高 + 底距）；用户覆盖行高变量时存在月粒度偏差 */
+	const monthHeights = computed<number[]>(() => {
+		const rowHeight = props.rowHeight > 0 ? props.rowHeight : CALENDAR_DEFAULT_DAY_HEIGHT
+		const rowTotal = rowHeight + CALENDAR_DAY_MARGIN_BOTTOM
+		const list: number[] = []
+		const ms = months.value
+		for (let i = 0; i < ms.length; i++) {
+			const titleTotal = ms[i].showTitle ? CALENDAR_MONTH_TITLE_HEIGHT : 0
+			list.push(titleTotal + Math.ceil(ms[i].days.length / 7) * rowTotal)
+		}
+		return list
+	})
+
+	/** 待渲染月份：switch-mode 非 none 时仅当前月（挂载前瞬态回退全量） */
+	const visibleMonths = computed<CalendarMonth[]>(() => {
+		if (props.switchMode == 'none') {
+			return months.value
+		}
+		const current = currentPanelMonth.value
+		if (current == null) {
+			return months.value
+		}
+		return months.value.filter((m: CalendarMonth): boolean => isSameMonth(m.date, current))
+	})
+
+	/** 副标题：switch-mode 为当前面板月标题；none 为滚动驱动的视口月标题 */
+	const subtitleText = computed<string>(() => {
+		if (props.switchMode != 'none') {
+			const current = currentPanelMonth.value
+			if (current != null) {
+				return getMonthTitle(current)
+			}
+			return ''
+		}
+		return subtitleScrolled.value
+	})
+
+	/** 确认按钮禁用：single 未选 / multiple 为空 / range 未选完 */
+	const confirmDisabled = computed<boolean>(() => {
+		if (props.type == 'range') {
+			return rangeStart.value == null || rangeEnd.value == null
+		}
+		if (props.type == 'single') {
+			return singleTs.value == null
+		}
+		return multipleTs.value.length == 0
+	})
+
+	/** 面板渲染配置（纯数据整体下发；slots 括号访问探测插槽存在性，编译失败降级见文档差异注记） */
+	const panelConfig = computed<CalendarPanelConfig>(() => {
+		return {
+			panelHeight: props.height,
+			months: visibleMonths.value,
+			weekdays: currentWeekdays(),
+			title: props.title,
+			subtitle: subtitleText.value,
+			showTitle: props.showTitle,
+			showSubtitle: props.showSubtitle,
+			showMark: props.showMark,
+			color: props.color,
+			rowHeight: props.rowHeight,
+			readonly: props.readonly,
+			switchMode: props.switchMode,
+			scrollAnchor: scrollAnchor.value,
+			hasTopInfoSlot: slots['top-info'] != null,
+			hasBottomInfoSlot: slots['bottom-info'] != null
+		} as CalendarPanelConfig
+	})
+
+	/**
+	 * 定位到某月：switch-mode 直接切当前月；none 模式先清锚点再 nextTick 重设，
+	 * 强制 scroll-into-view 重新触发（同值不触发滚动）
+	 */
+	function scrollToDate(date: Date) {
+		const min = currentMinDate()
+		const max = currentMaxDate()
+		let target = getDayStart(date)
+		if (target.getTime() < min.getTime()) {
+			target = min
+		}
+		if (target.getTime() > max.getTime()) {
+			target = max
+		}
+		if (props.switchMode != 'none') {
+			currentPanelMonth.value = new Date(target.getFullYear(), target.getMonth(), 1)
+			return
+		}
+		let index = -1
+		for (let i = 0; i < months.value.length; i++) {
+			if (isSameMonth(months.value[i].date, target)) {
+				index = i
+				break
+			}
+		}
+		if (index == -1) {
+			return
+		}
+		scrollAnchor.value = ''
+		nextTick(() => {
+			scrollAnchor.value = 'm-calendar-month-' + index.toString()
+		})
+	}
+
+	/** 清空选择并回到初始聚焦月 */
+	function reset() {
+		resetSelection()
+		emit('update:value', getSelectedDate())
+		scrollToDate(focusMonth())
+	}
+
+	/** 视图复位：回到聚焦月（不改选择状态；弹层组合组件重开时调用） */
+	function refreshView() {
+		scrollToDate(focusMonth())
+	}
+
+	/** 滚动驱动副标题：按 scrollTop 累计月高度定位视口月（switch-mode 单月面板无滚动不触发） */
+	function updateSubtitleByScroll(top: number) {
+		const heights = monthHeights.value
+		if (heights.length == 0) {
+			return
+		}
+		let acc = 0
+		let idx = heights.length - 1
+		for (let i = 0; i < heights.length; i++) {
+			if (top < acc + heights[i]) {
+				idx = i
+				break
+			}
+			acc += heights[i]
+		}
+		const title = getMonthTitle(months.value[idx].date)
+		if (subtitleScrolled.value != title) {
+			subtitleScrolled.value = title
+		}
+	}
+
+	/** 滚动区事件：100ms 节流估算 + 滚动停止 120ms 后按最终 scrollTop 兜底补算（防节流丢尾） */
+	function onPanelBodyScroll(top: number) {
+		const now = Date.now()
+		if (now - subtitleScrollTs >= 100) {
+			subtitleScrollTs = now
+			updateSubtitleByScroll(top)
+		}
+		if (subtitleScrollTimer != -1) {
+			clearTimeout(subtitleScrollTimer)
+		}
+		subtitleScrollTimer = setTimeout(() => {
+			subtitleScrollTimer = -1
+			updateSubtitleByScroll(top)
+		}, 120)
+	}
+
+	// ========== 交互处理（依赖上方 computed） ==========
+
+	/** 派发 select 并同步 v-model:value（点击后必有值，null 仅 single 未选的理论态） */
+	function emitSelect() {
+		const value = getSelectedDate()
+		if (value != null) {
+			// 先同步 v-model:value 再派发 select：保证 @select 回调内读到的是最新绑定值
+			emit('update:value', value)
+			emit('select', value)
+		}
+	}
+
+	/** 超限处理：emit over-range；show-range-prompt 时经 m-toast 提示（空文案用「最多选择 N 天」） */
+	function rejectOverRange(limit: number) {
+		emit('over-range')
+		if (props.showRangePrompt) {
+			showToast(props.rangePrompt != '' ? props.rangePrompt : '最多选择 ' + limit.toString() + ' 天')
+		}
+	}
+
+	/** 确认派发（弹层组合组件监听 confirm 后自行关闭） */
+	function emitConfirm() {
+		const value = getSelectedDate()
+		if (value != null) {
+			emit('confirm', value)
+		}
+	}
+
+	/** show-confirm=false 时选满即自动确认 */
+	function maybeAutoConfirm() {
+		if (props.showConfirm) {
+			return
+		}
+		if (props.type == 'single') {
+			if (singleTs.value != null) {
+				emitConfirm()
+			}
+		} else if (props.type == 'multiple') {
+			if (multipleTs.value.length > 0) {
+				emitConfirm()
+			}
+		} else {
+			if (rangeStart.value != null && rangeEnd.value != null) {
+				emitConfirm()
+			}
+		}
+	}
+
+	/** range 点击状态机：重开 / 前置重开 / 同日 / 超限拒绝（含两端计数）/ 完成区间 */
+	function onRangeDayClick(ts: number, date: Date) {
+		const start = rangeStart.value
+		const end = rangeEnd.value
+		if (start == null || end != null) {
+			rangeStart.value = ts
+			rangeEnd.value = null
+			emitSelect()
+			return
+		}
+		if (ts < start) {
+			rangeStart.value = ts
+			rangeEnd.value = null
+			emitSelect()
+			return
+		}
+		if (ts == start) {
+			if (props.allowSameDay) {
+				rangeEnd.value = ts
+				emitSelect()
+			} else {
+				rangeStart.value = ts
+				rangeEnd.value = null
+				emitSelect()
+			}
+			return
+		}
+		if (props.maxRange > 0) {
+			const diff = getDayDiff(date, new Date(start)) + 1
+			if (diff > props.maxRange) {
+				rejectOverRange(props.maxRange)
+				return
+			}
+		}
+		rangeEnd.value = ts
+		emitSelect()
+	}
+
+	/** 面板日期格点击（disabled 先派发 click-disabled-date 再拦截） */
+	function onPanelDayClick(day: CalendarDayItem) {
+		if (day.type == 'disabled') {
+			emit('click-disabled-date', day.date)
+			return
+		}
+		const date = getDayStart(day.date)
+		const ts = date.getTime()
+		if (props.type == 'single') {
+			singleTs.value = ts
+			emitSelect()
+			maybeAutoConfirm()
+			return
+		}
+		if (props.type == 'multiple') {
+			const idx = multipleTs.value.indexOf(ts)
+			if (idx != -1) {
+				multipleTs.value.splice(idx, 1)
+				// 先同步 v-model:value 再派发 unselect（与 select 同一语义：值先变、事件后通知）
+				emit('update:value', getSelectedDate())
+				emit('unselect', date)
+			} else {
+				if (props.maxRange > 0 && multipleTs.value.length + 1 > props.maxRange) {
+					rejectOverRange(props.maxRange)
+					return
+				}
+				multipleTs.value.push(ts)
+				multipleTs.value.sort((a: number, b: number): number => a - b)
+			}
+			emitSelect()
+			maybeAutoConfirm()
+			return
+		}
+		onRangeDayClick(ts, date)
+		maybeAutoConfirm()
+	}
+
+	/** switch-mode 导航：month 逐月、year 逐年，clamp 到可选范围月后派发 panel-change */
+	function onPanelNav(direction: string) {
+		const base = currentPanelMonth.value != null ? currentPanelMonth.value! : focusMonth()
+		let next: Date
+		if (direction == 'prev-year') {
+			next = addMonths(base, -12)
+		} else if (direction == 'next-year') {
+			next = addMonths(base, 12)
+		} else if (direction == 'prev-month') {
+			next = addMonths(base, -1)
+		} else {
+			next = addMonths(base, 1)
+		}
+		const min = currentMinDate()
+		const max = currentMaxDate()
+		const minMonth = new Date(min.getFullYear(), min.getMonth(), 1)
+		const maxMonth = new Date(max.getFullYear(), max.getMonth(), 1)
+		if (next.getTime() < minMonth.getTime()) {
+			next = minMonth
+		}
+		if (next.getTime() > maxMonth.getTime()) {
+			next = maxMonth
+		}
+		currentPanelMonth.value = next
+		emit('panel-change', next)
+	}
+
+	/** 转发 click-subtitle */
+	function onPanelSubtitleClick() {
+		emit('click-subtitle')
+	}
+
+	/** 确认按钮点击（禁用态不响应） */
+	function onConfirmButtonClick(e: MouseEvent) {
+		if (confirmDisabled.value) {
+			return
+		}
+		emitConfirm()
+	}
+
+	// ========== 生命周期 ==========
+
+	watch(
+		(): Date | Date[] | null => props.defaultDate,
+		(_new: Date | Date[] | null, _old: Date | Date[] | null) => {
+			// 与挂载一致走 currentInitDate：value 存在时 default-date 变化不覆盖 v-model 选择
+			initSelection(currentInitDate())
+		}
+	)
+
+	watch(
+		(): CalendarType => props.type,
+		(_new: CalendarType, _old: CalendarType) => {
+			resetSelection()
+		}
+	)
+
+	onMounted(() => {
+		// 初始值来源统一走 currentInitDate：v-model:value 优先于 default-date（均未传时 single 默认今天）
+		initSelection(currentInitDate())
+		const month = focusMonth()
+		if (props.switchMode != 'none') {
+			currentPanelMonth.value = month
+		} else {
+			subtitleScrolled.value = getMonthTitle(month)
+		}
+		emit('month-show', month)
+		scrollToDate(month)
+	})
+
+	defineExpose({
+		reset,
+		resetSelection,
+		scrollToDate,
+		getSelectedDate,
+		refreshView
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明：footer 容器节点渲染在宿主 scope，样式须同居于此
+	 * （panel scope 的同名定义无法命中转发内容，见组件注释）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 底部区（确认按钮容器，安全区由弹层 padding 承担） ========== */
+	.m-calendar__footer {
+		flex-direction: column;
+		padding: 8px 16px;
+	}
+</style>

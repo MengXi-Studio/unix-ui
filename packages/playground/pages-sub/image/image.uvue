@@ -8,7 +8,7 @@
 			<view class="card">
 				<view class="row-gap">
 					<m-image :src="demoBase + 'demo-cat.jpg'" width="160px" height="160px" />
-					<m-image :src="demoBase + 'demo-fruit.jpg'" :width="120" :height="120" />
+					<m-image :src="demoBase + 'demo-fruit.jpg'" :width="120" :height="120" custom-class="row-gap-item" />
 				</view>
 				<text class="caption">width / height 支持 '160px' 字符串与 120 数字（自动补 px）</text>
 				<m-image :src="demoBase + 'demo-mountain.jpg'" />
@@ -82,8 +82,8 @@
 			<view class="card">
 				<view class="row-gap">
 					<m-image :src="demoBase + 'demo-cat.jpg'" width="80px" height="80px" round />
-					<m-image :src="demoBase + 'demo-cat.jpg'" width="80px" height="80px" radius="8" />
-					<m-image :src="demoBase + 'demo-cat.jpg'" width="80px" height="80px" radius="16" />
+					<m-image :src="demoBase + 'demo-cat.jpg'" width="80px" height="80px" radius="8" custom-class="row-gap-item" />
+					<m-image :src="demoBase + 'demo-cat.jpg'" width="80px" height="80px" radius="16" custom-class="row-gap-item" />
 				</view>
 				<text class="caption">round 圆形（优先于 radius）/ radius 8 / radius 16</text>
 			</view>
@@ -158,7 +158,7 @@
 			<view class="card">
 				<view class="row-gap">
 					<m-image :src="fadeSrc" width="130px" height="130px" />
-					<m-image :src="fadeSrc" width="130px" height="130px" :fade="false" />
+					<m-image :src="fadeSrc" width="130px" height="130px" :fade="false" custom-class="row-gap-item" />
 				</view>
 				<text class="caption">左 fade 默认（加载完成 300ms 淡入）/ 右 fade false（直接显示）</text>
 				<view class="reload-btn" @click="reloadFade">
@@ -261,13 +261,15 @@
 		font-size: 13px;
 		color: #ffffff;
 	}
-	/* 图组间距 */
+	/* 图组间距（首个子项不加类，其余经 row-gap-item 加左间距——App 端 ucss 不支持 gap 且无子级选择器） */
 	.row-gap {
 		display: flex;
 		flex-direction: row;
 		flex-wrap: wrap;
-		gap: 12px;
 		margin-bottom: 8px;
+	}
+	.row-gap-item {
+		margin-left: 12px;
 	}
 	.caption {
 		font-size: 12px;

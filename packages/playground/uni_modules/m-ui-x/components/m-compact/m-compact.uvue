@@ -1,0 +1,76 @@
+<template>
+	<view :class="rootClass" :style="rootStyle">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { COMPACT_KEY, CompactContext, CompactDirection } from './context.uts'
+
+	type Props = {
+		/** 块级：让组内按钮撑满父元素宽度（水平等分、垂直满宽） */
+		block?: boolean
+		/** 排列方向 */
+		direction?: CompactDirection
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		block: false,
+		direction: 'horizontal',
+		customClass: '',
+		customStyle: ''
+	})
+
+	/**
+	 * 紧凑布局上下文：provide 给组内 m-button 注册
+	 * button 据此感知自身首 / 中 / 尾位置，自动衔接圆角并合并相邻边框；
+	 * direction / block 为 props 只读快照（不支持动态切换，文档注明）
+	 */
+	const context = new CompactContext()
+	context.direction = props.direction
+	context.block = props.block
+	provide(COMPACT_KEY, context)
+
+	/** 根节点类名：BEM 变体类按 props 状态组合（方向决定主轴，块级撑满由子项类承担） */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-compact'
+		if (props.direction == 'vertical') cls += ' m-compact--vertical'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 根节点内联样式：customStyle 补分号 */
+	const rootStyle = computed<string>(() => {
+		let style = props.customStyle
+		if (style != '' && !style.endsWith(';')) style += ';'
+		return style
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），用户零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss——
+	 * uni.scss 会注入每个组件样式，与组件内引入同一文件将触发循环导入）。
+	 * !default 语义保证用户定义值优先于默认值，与注入先后顺序无关。
+	 * 本组件无专属变量：圆角 / 边框样式全部由组内 m-button 自身承担。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根节点 ========== */
+	/* 水平：子项等高（交叉轴拉伸）；块级撑满由子项 flex: 1 承担 */
+	.m-compact {
+		flex-direction: row;
+		align-items: stretch;
+	}
+	/* 垂直：非块级时子项收缩内容宽；块级满宽由子项 align-self: stretch 承担 */
+	.m-compact--vertical {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+</style>

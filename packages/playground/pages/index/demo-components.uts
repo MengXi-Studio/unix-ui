@@ -79,6 +79,12 @@ export const demoGroups: DemoGroup[] = [
 				desc: '分隔内容区域，支持虚线、0.5px 细线、内容位置与垂直形态。'
 			},
 			{
+				name: 'flex',
+				zhName: '弹性布局',
+				enName: 'Flex',
+				desc: '弹性布局容器，支持排列方向、三档与自定义间距、主轴 / 交叉轴对齐、自动换行与 flex 简写。'
+			},
+			{
 				name: 'grid',
 				zhName: '宫格',
 				enName: 'Grid',

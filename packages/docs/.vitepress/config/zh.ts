@@ -95,6 +95,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					items: [
 						{ text: 'Compact 紧凑布局', link: '/components/compact' },
 						{ text: 'Divider 分割线', link: '/components/divider' },
+						{ text: 'Flex 弹性布局', link: '/components/flex' },
 						{ text: 'Grid 宫格', link: '/components/grid' },
 						{ text: 'Layout 布局', link: '/components/layout' },
 						{ text: 'Space 间距', link: '/components/space' }

@@ -6,7 +6,7 @@
 				<view class="brand">
 					<view class="brand-row">
 						<text class="brand-name">unix-ui</text>
-						<text class="brand-version">v0.1.0</text>
+						<text class="brand-version">v0.2.0</text>
 					</view>
 					<text class="brand-slogan">轻量、可靠的 uni-app x 组件库</text>
 				</view>

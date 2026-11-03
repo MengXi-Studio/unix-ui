@@ -60,6 +60,12 @@
 				}
 			},
 			{
+				"path": "flex/flex",
+				"style": {
+					"navigationBarTitleText": "弹性布局 Flex"
+				}
+			},
+			{
 				"path": "layout/layout",
 				"style": {
 					"navigationBarTitleText": "布局 Layout"

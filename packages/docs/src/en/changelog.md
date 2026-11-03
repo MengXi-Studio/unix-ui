@@ -1,8 +1,12 @@
 # Changelog
 
-## [0.2.1] - 2026-11-03
+## [0.3.0] - 2026-11-03
 
-An engineering cleanup release after 0.2.0, with no API changes.
+Adds the flex layout components (m-flex / m-flex-item, layout family).
+
+### Added
+
+- **m-flex / m-flex-item**: four `direction` values (row / row-reverse / column / column-reverse, equivalent to flex-direction), three built-in `gap` sizes (small / medium / large mapped to `$m-flex-gap-sm` / `$m-flex-gap` / `$m-flex-gap-lg`) plus custom sizes (number gets a px suffix / string used as is), four `align` values (equivalent to align-items; baseline falls back to flex-start on App), six `justify` values (equivalent to justify-content, adding between / around / evenly), a `flex` CSS shorthand pass-through, `wrap` auto wrapping (row / row-reverse only) and a default slot; spacing is implemented via the margins of m-flex-item (flex `gap` is not supported by ucss on App), with items sensing their position through provide/inject + reactive registration order — non-first items in row and non-last items in row-reverse get `margin-left`, non-first items in column get `margin-top`, non-last items in column-reverse get `margin-bottom` (reversed directions leave no extra space at either end); when wrapping horizontally every item gets `margin-left` with an equal negative margin on the container (all lines start flush) and the line spacing is the item's `margin-bottom` (an extra spacing below the last line is a known limitation); unwrapped children do not participate in spacing, and standalone use of m-flex-item degrades to an ordinary vertical container
 
 ### Fixed
 

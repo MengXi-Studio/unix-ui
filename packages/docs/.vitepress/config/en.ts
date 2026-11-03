@@ -82,6 +82,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					items: [
 						{ text: 'Compact', link: '/en/components/compact' },
 						{ text: 'Divider', link: '/en/components/divider' },
+						{ text: 'Flex', link: '/en/components/flex' },
 						{ text: 'Grid', link: '/en/components/grid' },
 						{ text: 'Layout', link: '/en/components/layout' },
 						{ text: 'Space', link: '/en/components/space' }

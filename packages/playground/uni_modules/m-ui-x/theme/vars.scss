@@ -112,6 +112,11 @@ $m-text-color-fourth: #c8c9cc !default;      /* fourth 四级文本色 */
 /* ========== Space 间距 ========== */
 $m-space-size: 8px !default;                 /* 默认间距（未传 size 时） */
 
+/* ========== Flex 弹性布局 ========== */
+$m-flex-gap-sm: 4px !default;                /* small 档间距 */
+$m-flex-gap: 8px !default;                   /* 默认档间距（medium） */
+$m-flex-gap-lg: 12px !default;               /* large 档间距 */
+
 /* ========== Overlay 遮罩层 ========== */
 $m-overlay-z-index: 1 !default;
 $m-overlay-background: rgba(0, 0, 0, 0.7) !default;

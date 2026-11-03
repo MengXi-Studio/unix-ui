@@ -438,3 +438,10 @@
 - **验证方式**：TS2769 只在 dev 模式（HBuilderX 运行 / `cli launch web` 非 `--compile`）逐页类型诊断时输出；`pnpm build:demo`（发行）与 `launch web --compile` 均不输出该诊断，用它们验证「警告清零」是无效验证；发行模式仅剩 SSRSlot 警告
 - 判别规律：同样可空的 prop（如 m-row `gutter?: GutterValue | GutterValue[] | null` 默认 0）不触发警告，触发点是「默认值为 null」；据此先用单组件试点（m-input formatter）再全量推广
 - 残余不可修：SSRSlot WARNING（`Type 'number'/'Function' is not assignable to type 'SSRSlot'`，定位在生成代码 `_createSlots({ _: 2 }, ...)` / `footer: _withCtx(...)`）来自**插槽条件转发**（`<template v-if="$slots['x'] != null" #x>`）与无条件插槽转发的生成代码类型标注，属编译器噪音；规避需砍掉插槽透传 API，不值得，声明为已知噪音即可
+
+### 74. 反向方向（row-reverse / column-reverse）的间距映射：轮位换边而非换 margin 边（2026-11-03 Web 实测）
+- 现象：若照搬「全部子项 margin-left + 容器负 margin 补偿」到 row-reverse，**不换行**时容器负 margin 会把内容整体左移一段（justify center / end 下右边缘差 gap 宽），因为 justify 需要容器满宽（`width: auto` 撑满 / 100%），负 margin 会改变内容盒起点
+- 规约：**间距施加的 margin 边只由「主轴方向」决定，轮位判断承担反向语义**——row / row-reverse 都用 `margin-left`（DOM 非首项即 row，DOM 非末项即 row-reverse）；column 用 `margin-top`（非首项）；column-reverse 用 `margin-bottom`（非末项）；如此首尾天然无多余留白，且不依赖负 margin
+- 例外：**水平换行（wrap）仍保留「全部子项 margin-left + 容器等值负 margin」**（#72 的行首顶格方案）；此时 justify + wrap 组合会因负 margin 整体偏 gap 宽，属可接受边角（无 wrap 时 justify 精确）
+- Web 实测证据：row-reverse 视觉顺序 三 二 一（首项 left 1048 / 末项 880）、column-reverse 自上而下 三 二 一；wrap 10 项换 4 行（3/3/3/1），各行行首 left 全等于 24px；9 个区块控制台无报错
+- 实现要点：反向方向需 `ctx.ids.length`（末项判断），`computed` 读 reactive 数组长度即响应 v-if/v-for 增删；单 item 时 `index < count - 1` 恒 false，首尾均无 margin

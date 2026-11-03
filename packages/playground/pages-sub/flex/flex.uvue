@@ -1,0 +1,205 @@
+<template>
+	<view class="page">
+		<demo-navbar title="弹性布局" subtitle="Flex" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-flex>
+					<m-flex-item><m-button type="primary">按钮</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">按钮</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">按钮</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">默认 direction row + gap medium（$m-flex-gap 8px），子项经 m-flex-item 包裹</text>
+			</view>
+
+			<text class="section" id="gap">间距大小</text>
+			<view class="card">
+				<m-flex gap="small">
+					<m-flex-item><m-button type="primary">small</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">small</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">small</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">gap small → $m-flex-gap-sm 4px</text>
+				<m-flex gap="medium">
+					<m-flex-item><m-button type="primary">medium</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">medium</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">medium</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">gap medium（默认）→ $m-flex-gap 8px</text>
+				<m-flex gap="large">
+					<m-flex-item><m-button type="primary">large</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">large</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">large</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">gap large → $m-flex-gap-lg 12px</text>
+			</view>
+
+			<text class="section" id="custom">自定义间距</text>
+			<view class="card">
+				<m-flex :gap="20">
+					<m-flex-item><m-button type="primary">按钮</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">按钮</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">按钮</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">gap 20（number 补 px）</text>
+				<m-flex gap="30px">
+					<m-flex-item><m-button type="primary">按钮</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">按钮</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">按钮</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">gap '30px'（string 原样）</text>
+			</view>
+
+			<text class="section" id="column">垂直布局</text>
+			<view class="card">
+				<m-flex direction="column" gap="medium">
+					<m-flex-item><m-button type="primary" block>按钮一</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary" block>按钮二</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary" block>按钮三</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">direction column：主轴间距为子项 margin-top（首项无间距）</text>
+			</view>
+
+			<text class="section" id="reverse">反向排列</text>
+			<view class="card">
+				<m-flex direction="row-reverse" gap="medium">
+					<m-flex-item><m-button type="primary">一</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">二</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary">三</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">row-reverse：渲染顺序反转，间距由非末项 margin-left 实现（首尾无多余留白）</text>
+				<m-flex direction="column-reverse" gap="medium">
+					<m-flex-item><m-button type="primary" block>按钮一</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary" block>按钮二</m-button></m-flex-item>
+					<m-flex-item><m-button type="primary" block>按钮三</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">column-reverse：渲染顺序反转，间距由非末项 margin-bottom 实现</text>
+			</view>
+
+			<text class="section" id="justify">主轴对齐</text>
+			<view class="card">
+				<m-flex justify="start">
+					<m-flex-item><m-button size="small" type="primary">start</m-button></m-flex-item>
+					<m-flex-item><m-button size="small" type="primary">按钮</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">justify start（默认）</text>
+				<m-flex justify="center">
+					<m-flex-item><m-button size="small" type="primary">center</m-button></m-flex-item>
+					<m-flex-item><m-button size="small" type="primary">按钮</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">justify center</text>
+				<m-flex justify="end">
+					<m-flex-item><m-button size="small" type="primary">end</m-button></m-flex-item>
+					<m-flex-item><m-button size="small" type="primary">按钮</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">justify end</text>
+				<m-flex justify="between">
+					<m-flex-item><m-button size="small" type="primary">between</m-button></m-flex-item>
+					<m-flex-item><m-button size="small" type="primary">按钮</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">justify between</text>
+				<m-flex justify="around">
+					<m-flex-item><m-button size="small" type="primary">around</m-button></m-flex-item>
+					<m-flex-item><m-button size="small" type="primary">按钮</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">justify around</text>
+				<m-flex justify="evenly">
+					<m-flex-item><m-button size="small" type="primary">evenly</m-button></m-flex-item>
+					<m-flex-item><m-button size="small" type="primary">按钮</m-button></m-flex-item>
+				</m-flex>
+				<text class="caption">justify evenly</text>
+			</view>
+
+			<text class="section" id="align">交叉轴对齐</text>
+			<view class="card">
+				<view class="align-box">
+					<m-flex align="start" gap="medium">
+						<m-flex-item><m-button size="small" type="primary">start</m-button></m-flex-item>
+						<m-flex-item><view class="tall-block"></view></m-flex-item>
+					</m-flex>
+				</view>
+				<view class="align-box">
+					<m-flex align="center" gap="medium">
+						<m-flex-item><m-button size="small" type="primary">center</m-button></m-flex-item>
+						<m-flex-item><view class="tall-block"></view></m-flex-item>
+					</m-flex>
+				</view>
+				<view class="align-box">
+					<m-flex align="end" gap="medium">
+						<m-flex-item><m-button size="small" type="primary">end</m-button></m-flex-item>
+						<m-flex-item><view class="tall-block"></view></m-flex-item>
+					</m-flex>
+				</view>
+				<view class="align-box">
+					<m-flex align="baseline" gap="medium">
+						<m-flex-item><m-button size="small" type="primary">baseline</m-button></m-flex-item>
+						<m-flex-item><m-text size="large">基线文本</m-text></m-flex-item>
+					</m-flex>
+				</view>
+				<text class="caption">align start / center / end / baseline；未传时沿用 view 默认 stretch</text>
+			</view>
+
+			<text class="section" id="wrap">自动换行</text>
+			<view class="card">
+				<view class="wrap-box">
+					<m-flex wrap gap="medium">
+						<m-flex-item v-for="i in 10" :key="i"><m-button type="primary">按钮{{ i < 10 ? '0' + i : i }}</m-button></m-flex-item>
+					</m-flex>
+				</view>
+				<text class="caption">wrap（仅 row / row-reverse 生效）：主轴间距为全部子项 margin-left + 容器等值负 margin 补偿（各行行首顶格），行间距为子项 margin-bottom（末行底部多出一段为已知限制）</text>
+			</view>
+
+			<text class="section" id="flex">flex 简写</text>
+			<view class="card">
+				<view class="flex-row">
+					<m-flex flex="1" gap="small">
+						<m-flex-item><m-button size="small" type="primary">左</m-button></m-flex-item>
+						<m-flex-item><m-button size="small" type="primary">左</m-button></m-flex-item>
+					</m-flex>
+					<m-flex flex="1" justify="end" gap="small">
+						<m-flex-item><m-button size="small" type="primary">右</m-button></m-flex-item>
+						<m-flex-item><m-button size="small" type="primary">右</m-button></m-flex-item>
+					</m-flex>
+				</view>
+				<text class="caption">flex "1" 作用于容器自身（等分父容器），配合 justify 控制组内排布</text>
+			</view>
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/** 演示页无动态逻辑：所有场景均为静态穷举（v-for 仅生成按钮序列） */
+</script>
+
+<style lang="scss">
+	/* 对齐演示容器：灰底对照块 */
+	.align-box {
+		padding: 12px;
+		background-color: #f3f2f5;
+		margin-bottom: 12px;
+	}
+	/* 高矮对照色块（align 顶端/居中/末端对齐差异） */
+	.tall-block {
+		width: 80px;
+		height: 48px;
+		background-color: #ffffff;
+	}
+	/* 换行演示容器宽度约束（容纳 3 列按钮后强制换行） */
+	.wrap-box {
+		max-width: 272px;
+	}
+	/* flex 简写演示：父容器水平排布 */
+	.flex-row {
+		flex-direction: row;
+		width: 100%;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+		margin-bottom: 12px;
+	}
+</style>

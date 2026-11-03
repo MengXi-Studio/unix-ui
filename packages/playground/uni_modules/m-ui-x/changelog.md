@@ -1,7 +1,7 @@
-## 0.2.1 (2026-11-03)
+## 0.3.0 (2026-11-03)
 
-0.2.0 发布后的工程化清理版本，无 API 变化。
-
+- 新增 `m-flex` / `m-flex-item` 弹性布局组件：`direction` 四值（row / row-reverse / column / column-reverse）、`gap` 三档内置（small / medium / large，对应 `$m-flex-gap-sm` / `$m-flex-gap` / `$m-flex-gap-lg`）与自定义尺寸（number 补 px / string 原样）、`align` 四值（App 端 baseline 降级 flex-start）、`justify` 六值（start / end / center / between / around / evenly）、`flex` CSS 简写透传、`wrap` 自动换行（仅 row / row-reverse）；间距由 m-flex-item 的 margin 实现（App 端 ucss 不支持 flex
+  `gap`），子项经 provide/inject + reactive 注册序感知轮位——row 非首项 / row-reverse 非末项 margin-left、column 非首项 margin-top、column-reverse 非末项 margin-bottom（反向方向首尾无多余留白），水平换行时全部子项 margin-left + 容器等值负 margin 补偿（各行行首顶格）、行间距为子项 margin-bottom（末行底部多出一段为已知限制）；未包裹的子元素不参与间距计算，独立使用时退化为普通纵向容器
 - 清理 VDOM Web 运行时 TS 诊断 WARNING（32 处 Prop 类型）：可空 prop 声明 `T | null` 且默认 null 时，编译器生成 `type: [T, null]` 形态的 props（Vue Prop 类型系统不接受 type 数组中的 null），触发 `No overload matches this call` 诊断噪音并会泄漏到使用者的运行日志；统一去掉类型标注中的 `| null` 并**保留 `default: null`**（未传时运行时仍为 null，三态语义与行为不变）——覆盖 `m-calendar` / `m-calendar-popup` / `m-calendar-input` 的日期与 `formatter` 类可空 prop、`m-col` `offset`、`m-row` `justify` / `align`、`m-grid` `gutter` / `columnNum` / `iconSize`、`m-grid-item` `icon` / `gutter`、`m-image` `width` / `height` / `radius`、`m-space` `size` / `align`、`m-input` `formatter` / `precision` / `min` / `max`、`m-cell` `icon` / `clickable`、`m-toast` 七个可空 prop、`m-popup` `beforeClose`；残余 3 条 SSRSlot WARNING 来自插槽条件转发的生成代码，属编译器类型标注噪音，不影响运行
 
 ## 0.2.0 (2026-11-03)

@@ -12,7 +12,7 @@
 		/** 列元素宽度（24 栅格份数）；0 / 未设置时宽度由内容决定 */
 		span?: number | string
 		/** 左侧偏移份数（计算方式同 span） */
-		offset?: number | string | null
+		offset?: number | string
 		/** 自定义根节点类名 */
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */

@@ -2,7 +2,7 @@
 
 0.2.0 发布后的工程化清理版本，无 API 变化。
 
-- 清理 VDOM Web 构建 TS 诊断 WARNING（6 处 Prop 类型）：可空 prop 声明 `T | null` 且默认 null 时，编译器生成 `type: [T, null]` 形态的 props（Vue Prop 类型系统不认），触发 `No overload matches this call` 诊断噪音且会出现在使用者的构建日志中；统一改为可选 prop 省略 `| null` 标注、不给 null 默认值（未传时运行时仍为 null，三态语义与行为不变）——涉及 `m-input` / `m-calendar` / `m-calendar-popup` 的 `formatter`、`m-popup` 的 `beforeClose`、`m-cell` 的 `clickable`、`m-toast` 的 `forbidClick`；残余 3 条 SSRSlot WARNING 来自插槽条件转发的生成代码，属编译器类型标注噪音，不影响运行
+- 清理 VDOM Web 运行时 TS 诊断 WARNING（32 处 Prop 类型）：可空 prop 声明 `T | null` 且默认 null 时，编译器生成 `type: [T, null]` 形态的 props（Vue Prop 类型系统不接受 type 数组中的 null），触发 `No overload matches this call` 诊断噪音并会泄漏到使用者的运行日志；统一去掉类型标注中的 `| null` 并**保留 `default: null`**（未传时运行时仍为 null，三态语义与行为不变）——覆盖 `m-calendar` / `m-calendar-popup` / `m-calendar-input` 的日期与 `formatter` 类可空 prop、`m-col` `offset`、`m-row` `justify` / `align`、`m-grid` `gutter` / `columnNum` / `iconSize`、`m-grid-item` `icon` / `gutter`、`m-image` `width` / `height` / `radius`、`m-space` `size` / `align`、`m-input` `formatter` / `precision` / `min` / `max`、`m-cell` `icon` / `clickable`、`m-toast` 七个可空 prop、`m-popup` `beforeClose`；残余 3 条 SSRSlot WARNING 来自插槽条件转发的生成代码，属编译器类型标注噪音，不影响运行
 
 ## 0.2.0 (2026-11-03)
 

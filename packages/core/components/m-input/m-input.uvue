@@ -104,11 +104,11 @@
 		/** formatter 生效时机 */
 		formatTrigger?: FormatTrigger
 		/** 小数位数：type 为 number / digit 时失焦按 precision 取舍 */
-		precision?: number | null
+		precision?: number
 		/** 数值下限：type 为 number / digit 时失焦收敛 */
-		min?: number | null
+		min?: number
 		/** 数值上限：type 为 number / digit 时失焦收敛 */
-		max?: number | null
+		max?: number
 		/** 内置明文切换图标，仅 type=password 生效（位于 append 插槽之前） */
 		showEye?: boolean
 		/** 自定义输入框容器（边框层）类名 */
@@ -133,6 +133,7 @@
 		readonly: false,
 		confirmType: '',
 		autoHeight: false,
+		formatter: null,
 		formatTrigger: 'onChange',
 		precision: null,
 		min: null,

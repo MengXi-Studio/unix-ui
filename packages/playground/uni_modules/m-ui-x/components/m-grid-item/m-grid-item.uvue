@@ -34,7 +34,7 @@
 		/** 文字内容 */
 		text?: string
 		/** 图标名称（IconName 联合类型，null 表示无图标；icon 插槽可替代） */
-		icon?: IconName | null
+		icon?: IconName
 		/** 图标颜色：支持 CSS 色值；为空时继承内容色（主题变量 $m-grid-item-text-color） */
 		iconColor?: string
 		/** 是否显示图标右上角小红点 */

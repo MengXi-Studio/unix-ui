@@ -79,7 +79,8 @@
 		lazyRender: true,
 		destroyOnClose: false,
 		safeAreaInsetTop: false,
-		safeAreaInsetBottom: false
+		safeAreaInsetBottom: false,
+		beforeClose: null
 	})
 
 	const emit = defineEmits<{

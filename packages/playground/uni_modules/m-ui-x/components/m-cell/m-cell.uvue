@@ -53,8 +53,8 @@
 		label?: string
 		/** 尺寸 */
 		size?: CellSize
-		/** 左侧图标名称（IconName 联合类型，null 表示无图标） */
-		icon?: IconName | null
+		/** 左侧图标名称（IconName 联合类型，未传时为 null 表示无图标） */
+		icon?: IconName
 		/** 是否显示分隔线（组内末线自动隐藏，手动传 false 可强制关闭） */
 		border?: boolean
 		/** 内容是否垂直居中 */
@@ -89,6 +89,7 @@
 		icon: null,
 		border: true,
 		center: false,
+		clickable: null,
 		isLink: false,
 		arrowDirection: 'right',
 		required: false,

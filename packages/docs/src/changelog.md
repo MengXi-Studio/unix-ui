@@ -2,11 +2,12 @@
 
 ## [0.3.0] - 2026-11-03
 
-新增弹性布局组件（m-flex / m-flex-item，布局组件）。
+新增弹性布局组件（m-flex / m-flex-item）与状态栏占位组件（m-status-bar），均为布局组件。
 
 ### 新增
 
 - **m-flex / m-flex-item 弹性布局**：`direction` 四值（row / row-reverse / column / column-reverse，等价 flex-direction）、`gap` 三档内置（small / medium / large，对应 `$m-flex-gap-sm` / `$m-flex-gap` / `$m-flex-gap-lg`）与自定义尺寸（number 补 px / string 原样）、`align` 四值（等价 align-items，App 端 baseline 降级 flex-start）、`justify` 六值（等价 justify-content，新增 between / around / evenly）、`flex` CSS 简写透传、`wrap` 自动换行（仅 row / row-reverse）与 default 插槽；间距由 m-flex-item 的 margin 实现（App 端 ucss 不支持 flex `gap`），子项经 provide/inject + reactive 注册序感知轮位——row 非首项 `margin-left`、row-reverse 非末项 `margin-left`、column 非首项 `margin-top`、column-reverse 非末项 `margin-bottom`（反向方向首尾无多余留白），水平换行时全部子项 `margin-left` + 容器等值负 margin 补偿（各行行首顶格）、行间距为子项 `margin-bottom`（末行底部多出一段为已知限制）；未包裹的子元素不参与间距计算，m-flex-item 独立使用时退化为普通纵向容器
+- **m-status-bar 状态栏占位**：为 Navbar / Notify 等贴顶元素预留系统状态栏高度；`height` prop（px，大于 0 时直接使用）优先，否则 App 端自动读取 `uni.getWindowInfo().statusBarHeight`，Web / 小程序无系统状态栏保持 0（不占位）；`custom-class` / `custom-style` 样式直达（背景色等），无专属主题变量；playground 的 demo-navbar 同步改为消费该组件
 
 ### 修复
 

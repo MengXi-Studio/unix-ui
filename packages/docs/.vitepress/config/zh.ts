@@ -98,7 +98,8 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Flex 弹性布局', link: '/components/flex' },
 						{ text: 'Grid 宫格', link: '/components/grid' },
 						{ text: 'Layout 布局', link: '/components/layout' },
-						{ text: 'Space 间距', link: '/components/space' }
+						{ text: 'Space 间距', link: '/components/space' },
+						{ text: 'StatusBar 状态栏', link: '/components/status-bar' }
 					]
 				},
 				{

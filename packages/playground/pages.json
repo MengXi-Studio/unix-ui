@@ -66,6 +66,12 @@
 				}
 			},
 			{
+				"path": "status-bar/status-bar",
+				"style": {
+					"navigationBarTitleText": "状态栏 StatusBar"
+				}
+			},
+			{
 				"path": "layout/layout",
 				"style": {
 					"navigationBarTitleText": "布局 Layout"

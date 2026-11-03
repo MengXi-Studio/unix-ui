@@ -1,0 +1,81 @@
+<template>
+	<view class="page">
+		<demo-navbar title="状态栏" subtitle="StatusBar" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-status-bar custom-style="background-color: #f2f3f5" />
+				<text class="caption">height 默认 0：App 端取系统状态栏高度（真机可见），Web / 小程序为 0 不占位</text>
+			</view>
+
+			<text class="section" id="height">自定义高度</text>
+			<view class="card">
+				<m-status-bar :height="24" custom-style="background-color: #e8f3ff" />
+				<text class="caption">height 24</text>
+				<m-status-bar :height="44" custom-style="background-color: #e8f3ff" />
+				<text class="caption">height 44（常见状态栏 + 导航行高度参考）</text>
+				<m-status-bar :height="88" custom-style="background-color: #e8f3ff" />
+				<text class="caption">height 88（大屏 / 折叠屏状态栏参考）</text>
+			</view>
+
+			<text class="section" id="style">背景与自定义样式</text>
+			<view class="card">
+				<m-status-bar :height="32" custom-style="background: linear-gradient(90deg, #1989fa, #39b54a);" />
+				<text class="caption">custom-style 渐变背景（高度经 height 显式指定）</text>
+				<m-status-bar :height="32" custom-class="demo-status-bar--dark" />
+				<text class="caption">custom-class 挂载类样式（深色背景 + 圆角）</text>
+			</view>
+
+			<text class="section" id="navbar">模拟导航栏</text>
+			<view class="card">
+				<view class="demo-navbar-mock">
+					<m-status-bar :height="24" custom-style="background-color: #ffffff" />
+					<view class="demo-navbar-mock__body">
+						<text class="demo-navbar-mock__title">页面标题</text>
+					</view>
+				</view>
+				<text class="caption">状态栏占位与 44px 导航行组合成完整贴顶结构（等价 demo-navbar 的用法）</text>
+			</view>
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/** 演示页无动态逻辑：全部场景为静态穷举（自动高度场景依赖 App 真机） */
+</script>
+
+<style lang="scss">
+	/* 自定义类名演示：深色底 + 圆角（经 custom-class 挂载） */
+	.demo-status-bar--dark {
+		background-color: #323233;
+		border-radius: 8px;
+	}
+	/* 模拟导航栏容器：白色底、圆角裁切 */
+	.demo-navbar-mock {
+		background-color: #f7f8fa;
+		padding: 8px;
+	}
+	/* 模拟导航行：44px 居中标题 */
+	.demo-navbar-mock__body {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		height: 44px;
+		background-color: #ffffff;
+	}
+	/* 模拟导航标题 */
+	.demo-navbar-mock__title {
+		font-size: 16px;
+		font-weight: bold;
+		color: #323233;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+		margin-bottom: 12px;
+	}
+</style>

@@ -72,6 +72,12 @@
 				}
 			},
 			{
+				"path": "sticky/sticky",
+				"style": {
+					"navigationBarTitleText": "粘性布局 Sticky"
+				}
+			},
+			{
 				"path": "layout/layout",
 				"style": {
 					"navigationBarTitleText": "布局 Layout"

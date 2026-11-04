@@ -1,0 +1,366 @@
+<template>
+	<!-- 受控吸附结构（全端一致）：
+	     根节点作为占位层，高度实测回填，始终留在文档流中；
+	     内容节点在吸附态切换 position: fixed，并以最近滚动容器的顶边作为吸附基准。
+	     内容节点同时承载 custom-class / custom-style -->
+	<view ref="rootRef" class="m-sticky" :style="rootStyle">
+		<view :class="innerClass" :style="innerStyle">
+			<slot></slot>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { STICKY_BOX_KEY, StickyBoxContext } from './context.uts'
+
+	/** 吸附方向 */
+	type StickyPosition = 'top' | 'bottom'
+
+	type Props = {
+		/** 外层滚动容器的滚动距离（px），吸附与 events 均依赖该值，必须由页面回传 */
+		scrollTop?: number
+		/** 吸附方向，默认吸顶 */
+		position?: StickyPosition
+		/** 吸顶时与滚动容器顶部的距离（px） */
+		offsetTop?: number
+		/** 吸底时与滚动容器底部的距离（px） */
+		offsetBottom?: number
+		/** 吸附层级，默认跟随主题变量（99） */
+		zIndex?: number
+		/** 自定义内容节点类名 */
+		customClass?: string.ClassString
+		/** 自定义内容节点内联样式（背景、圆角、阴影等视觉样式） */
+		customStyle?: string
+	}
+
+	/** scroll 事件载荷（对齐 Vant：scrollTop + isFixed） */
+	type StickyScrollEvent = {
+		/** 当前滚动距离（px） */
+		scrollTop: number
+		/** 当前是否处于吸附态 */
+		isFixed: boolean
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		scrollTop: 0,
+		position: 'top',
+		offsetTop: 0,
+		offsetBottom: 0,
+		zIndex: 99,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 吸附状态变化时触发 */
+		change: [isFixed: boolean]
+		/** 滚动时触发（需由外层滚动容器传入 scroll-top） */
+		scroll: [detail: StickyScrollEvent]
+	}>()
+
+	/** 根节点占位层（始终留在文档流中，吸附时固定的是内容节点） */
+	const rootRef = ref<UniElement | null>(null)
+	/** m-sticky-box 容器上下文（未使用容器时为 null） */
+	const boxContext = inject<StickyBoxContext | null>(STICKY_BOX_KEY, null)
+
+	/** 是否已完成首次测量 */
+	const measured = ref(false)
+	/** 根节点宽度（px，吸附时用于固定内容节点宽度） */
+	const selfWidth = ref(0)
+	/** 根节点高度（px，吸附时回填占位高度，避免布局塌陷） */
+	const selfHeight = ref(0)
+	/** 根节点左边界（px，吸附时用于固定内容节点横向位置） */
+	const selfLeft = ref(0)
+	/** 根节点在页面坐标系中的顶部位置（px，= 视口坐标 + scrollTop） */
+	const selfPageTop = ref(0)
+	/** 容器在页面坐标系中的顶部位置（px） */
+	const boxPageTop = ref(0)
+	/** 容器在页面坐标系中的底部位置（px） */
+	const boxPageBottom = ref(0)
+	/** 容器是否已完成测量 */
+	const boxMeasured = ref(false)
+	/** 滚动容器在视口坐标系中的顶部位置（px，吸附基准） */
+	const scrollportTop = ref(0)
+	/** 滚动容器可视高度（px，吸底基准） */
+	const scrollportHeight = ref(0)
+	/** 当前是否处于吸附态 */
+	const isFixed = ref(false)
+	/** 容器边界回顶量（px，负值表示向上顶住容器底部） */
+	const translateY = ref(0)
+
+	/**
+	 * 读取窗口高度
+	 *
+	 * 仅在没有可识别的滚动容器时作为吸附基准兜底，同时用于窗口 resize 时重测。
+	 */
+	function readWindowHeight() {
+		const info = uni.getWindowInfo()
+		scrollportHeight.value = info.windowHeight
+	}
+
+	/**
+	 * 判断元素是否为滚动容器候选
+	 *
+	 * Web 端 uni-app x 把 scroll-view 渲染为 class 含 uni-scroll-view 的 div；
+	 * 兜底用「滚动高度大于可视高度」判断，覆盖 App / 小程序与原生的 scroll-view。
+	 *
+	 * @param el 待判断的元素
+	 * @returns 是否可作为滚动容器
+	 */
+	function isScrollCandidate(el: UniElement): boolean {
+		const classes = el.classList
+		let i = 0
+		while (i < classes.length) {
+			if (classes[i].indexOf('uni-scroll-view') != -1) {
+				return true
+			}
+			i++
+		}
+		return el.scrollHeight > el.offsetHeight
+	}
+
+	/**
+	 * 向上查找最近的滚动容器
+	 *
+	 * uni-app x 的 Web 运行时为所有 view 注入 `overflow: hidden`，
+	 * `position: sticky` 的最近滚动容器会退化为不滚动的父级 view 而失效，
+	 * 因此全端统一改走受控定位，吸附基准取最近滚动容器的顶边。
+	 *
+	 * @returns 滚动容器元素；未找到时返回 null
+	 */
+	function findScrollParent(): UniElement | null {
+		let node: UniElement | null = rootRef.value
+		let i = 0
+		while (i < 32) {
+			if (node == null) {
+				return null
+			}
+			const parent = node.parentElement
+			if (parent == null) {
+				return null
+			}
+			if (isScrollCandidate(parent)) {
+				return parent
+			}
+			node = parent
+			i++
+		}
+		return null
+	}
+
+	/**
+	 * 根据当前 scrollTop 计算吸附态与容器边界回顶量，并派发 change 事件
+	 */
+	function updatePosition() {
+		if (!measured.value) {
+			return
+		}
+		const top = scrollportTop.value
+		const bottom = scrollportTop.value + scrollportHeight.value
+		const scrollTop = props.scrollTop
+		let fixed = false
+		let offsetY = 0
+		if (props.position == 'top') {
+			// 容器已完全滚出可视区域时不再吸附（与 Vant container 语义一致）
+			const containerVisible = boxMeasured.value ? (boxPageBottom.value - scrollTop > top) : true
+			fixed = containerVisible && (selfPageTop.value - scrollTop < top + props.offsetTop)
+			if (fixed && boxMeasured.value) {
+				// 吸附条将超出容器底部时，向上回顶，保证不越过容器边界
+				const cap = boxPageBottom.value - scrollTop - selfHeight.value - (top + props.offsetTop)
+				offsetY = cap < 0 ? cap : 0
+			}
+		} else {
+			const containerVisible = boxMeasured.value ? (boxPageTop.value - scrollTop < bottom) : true
+			fixed = containerVisible && (selfPageTop.value - scrollTop + selfHeight.value > bottom - props.offsetBottom)
+			if (fixed && boxMeasured.value) {
+				// 吸附条将越过容器顶部时，向下回顶
+				const fixedTop = bottom - props.offsetBottom - selfHeight.value
+				const capTop = boxPageTop.value - scrollTop
+				offsetY = fixedTop < capTop ? capTop - fixedTop : 0
+			}
+		}
+		const changed = isFixed.value != fixed
+		isFixed.value = fixed
+		translateY.value = offsetY
+		if (changed) {
+			emit('change', fixed)
+		}
+	}
+
+	/**
+	 * 测量滚动容器可视区域
+	 *
+	 * 滚动容器本身不随内容滚动，其 rect 在页面滚动过程中保持不变，因此只需测量一次。
+	 * Web 端 parentElement 返回的是原生 DOM 节点（无 getBoundingClientRectAsync），
+	 * 改用同步的 getBoundingClientRect；App / 小程序仍走 UniElement 异步接口。
+	 */
+	function measureScrollParent() {
+		const parent = findScrollParent()
+		if (parent == null) {
+			return
+		}
+		// #ifdef WEB
+		const rect = (parent as any).getBoundingClientRect()
+		scrollportTop.value = rect.top
+		scrollportHeight.value = rect.height
+		updatePosition()
+		return
+		// #endif
+		// #ifndef WEB
+		parent.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+			scrollportTop.value = rect.top
+			scrollportHeight.value = rect.height
+			updatePosition()
+		})
+		// #endif
+	}
+
+	/**
+	 * 测量根节点几何信息（异步）
+	 *
+	 * 根节点始终参与文档流，rect 与 scrollTop 叠加后即为页面坐标系中的原始位置，
+	 * 吸附过程中反复测量也不会漂移。
+	 */
+	function measureSelf() {
+		const el = rootRef.value
+		if (el == null) {
+			return
+		}
+		el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+			selfWidth.value = rect.width
+			selfHeight.value = rect.height
+			selfLeft.value = rect.left
+			selfPageTop.value = rect.top + props.scrollTop
+			measured.value = true
+			updatePosition()
+		})
+	}
+
+	/**
+	 * 测量 m-sticky-box 容器边界（未使用容器时跳过）
+	 */
+	function measureBox() {
+		if (boxContext == null) {
+			return
+		}
+		const box = boxContext.root.value
+		if (box == null) {
+			return
+		}
+		box.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+			boxPageTop.value = rect.top + props.scrollTop
+			boxPageBottom.value = rect.top + props.scrollTop + rect.height
+			boxMeasured.value = true
+			updatePosition()
+		})
+	}
+
+	/**
+	 * 窗口尺寸变化处理
+	 *
+	 * 根节点始终在文档流中（固定的是内容节点），可安全重测全部几何信息。
+	 */
+	function handleWindowResize() {
+		readWindowHeight()
+		measureScrollParent()
+		measureSelf()
+		measureBox()
+	}
+
+	/** 内容节点类名：基础类 + 自定义类名 */
+	const innerClass = computed<string>(() => {
+		let cls = 'm-sticky__inner'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 根节点动态样式：实测回填占位高度，保证吸附时布局不塌陷 */
+	const rootStyle = computed<string>(() => {
+		if (!measured.value) {
+			return ''
+		}
+		return 'height: ' + selfHeight.value.toString() + 'px;'
+	})
+
+	/** 内容节点动态样式：吸附态切换 fixed 并对齐滚动容器边缘，非吸附态回到文档流 */
+	const innerStyle = computed<string>(() => {
+		let style = ''
+		if (isFixed.value) {
+			let top = scrollportTop.value + props.offsetTop
+			if (props.position == 'bottom') {
+				top = scrollportTop.value + scrollportHeight.value - props.offsetBottom - selfHeight.value
+			}
+			style += 'position: fixed;'
+			style += ' top: ' + top.toString() + 'px;'
+			style += ' left: ' + selfLeft.value.toString() + 'px;'
+			style += ' width: ' + selfWidth.value.toString() + 'px;'
+			style += ' height: ' + selfHeight.value.toString() + 'px;'
+			if (translateY.value != 0) {
+				style += ' transform: translateY(' + translateY.value.toString() + 'px);'
+			}
+		} else {
+			style += 'position: relative;'
+		}
+		if (props.zIndex != 99) {
+			style += ' z-index: ' + props.zIndex.toString() + ';'
+		}
+		if (props.customStyle != '') {
+			if (!style.endsWith(';')) {
+				style += ';'
+			}
+			style += ' ' + props.customStyle
+			if (!style.endsWith(';')) {
+				style += ';'
+			}
+		}
+		return style
+	})
+
+	watch(
+		(): number => props.scrollTop,
+		(value: number) => {
+			updatePosition()
+			const detail: StickyScrollEvent = {
+				scrollTop: value,
+				isFixed: isFixed.value
+			}
+			emit('scroll', detail)
+		},
+		{ flush: 'post' }
+	)
+
+	onMounted(() => {
+		readWindowHeight()
+		uni.onWindowResize(handleWindowResize)
+		// 等待父级 m-sticky-box 模板 ref 填充后再测量容器边界
+		nextTick(() => {
+			measureScrollParent()
+			measureSelf()
+			measureBox()
+		})
+	})
+
+	onUnmounted(() => {
+		uni.offWindowResize(handleWindowResize)
+	})
+</script>
+
+<style lang="scss">
+	@import '../../theme/vars.scss';
+
+	/* 根节点：占位层，吸附时由内容节点切换 fixed */
+	.m-sticky {
+		position: relative;
+		width: 100%;
+		z-index: $m-sticky-z-index;
+	}
+
+	/* 内容节点：承载插槽与自定义样式，吸附时由内联样式切换 fixed */
+	.m-sticky__inner {
+		position: relative;
+		width: 100%;
+		z-index: $m-sticky-z-index;
+	}
+</style>

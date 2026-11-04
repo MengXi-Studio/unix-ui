@@ -107,6 +107,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '状态栏',
 				enName: 'StatusBar',
 				desc: '状态栏占位，为贴顶元素预留系统状态栏高度，支持自定义高度与背景样式。'
+			},
+			{
+				name: 'sticky',
+				zhName: '粘性布局',
+				enName: 'Sticky',
+				desc: '内容滚出可视范围时吸附在顶部或底部，支持吸顶 / 吸底距离、容器边界约束与吸附状态事件。'
 			}
 		]
 	},

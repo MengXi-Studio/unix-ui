@@ -99,7 +99,8 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Grid 宫格', link: '/components/grid' },
 						{ text: 'Layout 布局', link: '/components/layout' },
 						{ text: 'Space 间距', link: '/components/space' },
-						{ text: 'StatusBar 状态栏', link: '/components/status-bar' }
+						{ text: 'StatusBar 状态栏', link: '/components/status-bar' },
+						{ text: 'Sticky 粘性布局', link: '/components/sticky' }
 					]
 				},
 				{

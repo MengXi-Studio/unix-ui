@@ -445,3 +445,10 @@
 - 例外：**水平换行（wrap）仍保留「全部子项 margin-left + 容器等值负 margin」**（#72 的行首顶格方案）；此时 justify + wrap 组合会因负 margin 整体偏 gap 宽，属可接受边角（无 wrap 时 justify 精确）
 - Web 实测证据：row-reverse 视觉顺序 三 二 一（首项 left 1048 / 末项 880）、column-reverse 自上而下 三 二 一；wrap 10 项换 4 行（3/3/3/1），各行行首 left 全等于 24px；9 个区块控制台无报错
 - 实现要点：反向方向需 `ctx.ids.length`（末项判断），`computed` 读 reactive 数组长度即响应 v-if/v-for 增删；单 item 时 `index < count - 1` 恒 false，首尾均无 margin
+
+### 75. uvue Web 不能使用 position: sticky；受控吸附的三个实测坑（2026-11-03 m-sticky Web 实测）
+- **sticky 全端不可用**：uni-app x Web 运行时给所有 `<view>` 注入 `overflow: hidden`（`@dcloudio/uni-h5/style/framework/uvue.css` 的 `uni-app uni-view { overflow: hidden; }`），`position: sticky` 的最近滚动容器会退化为不滚动的父级 view。实测：根节点 computed `position: sticky / top: 0px`，滚到 `scrollTop=400` 时 `rect.top=-198`（等于 202-400，完全没吸附），无任何报错——只查 computed style 会误判为「已生效」。组件级吸顶一律走「占位根节点 + 内容节点 fixed」的受控方案，Web 也需页面回传 `scroll-top`
+- **`parentElement` 在 Web 返回原生 DOM 节点**：没有 `UniElement.getBoundingClientRectAsync`（实测 `TypeError: parent.getBoundingClientRectAsync is not a function`，且该异常会中断后续测量链导致整个组件静默不工作）。Web 用条件编译 `(parent as any).getBoundingClientRect()` 同步取，App / 小程序保留异步接口；把 Web 分支放在 `#ifdef WEB` + `return` 之前，避免重复声明 `rect`
+- **滚动容器识别**：Web 判 `classList` 含 `uni-scroll-view`（框架把 scroll-view 渲染成多层同名 class 的 div，最内层即 scroller）；App / 小程序判 `scrollHeight > offsetHeight`（官方文档：非滚动组件该值返回视图高度，相等）。用 `scrollHeight > offsetHeight` 单独作判据会误判「固定高度 + overflow:hidden + 内容溢出」的普通 view（如自定义高度的 m-sticky-box），只在兜底时用
+- **吸附基准要用滚动容器可视区，不要用视口**：uvue 页面常见「自定义导航栏 + scroll-view」，视口顶部在导航栏之上，按视口吸附会把吸附条压到导航栏里；容器 rect 在滚动中不变，只需测一次
+- **演示页要有尾部留白**：最后一个吸顶块的页面位置若距内容底部不足一个视口高度，滚到底也永远越不过吸附线（实测第 6 个 m-sticky 无法触发 change/scroll），验收页末尾需留 `~600px` 空白才能覆盖最后一个变体

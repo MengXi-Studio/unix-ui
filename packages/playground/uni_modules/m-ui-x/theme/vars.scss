@@ -117,6 +117,9 @@ $m-flex-gap-sm: 4px !default;                /* small 档间距 */
 $m-flex-gap: 8px !default;                   /* 默认档间距（medium） */
 $m-flex-gap-lg: 12px !default;               /* large 档间距 */
 
+/* ========== Sticky 粘性布局 ========== */
+$m-sticky-z-index: 99 !default;              /* 吸附层级（对齐 Vant） */
+
 /* ========== Overlay 遮罩层 ========== */
 $m-overlay-z-index: 1 !default;
 $m-overlay-background: rgba(0, 0, 0, 0.7) !default;

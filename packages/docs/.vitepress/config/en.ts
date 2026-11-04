@@ -86,7 +86,8 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Grid', link: '/en/components/grid' },
 						{ text: 'Layout', link: '/en/components/layout' },
 						{ text: 'Space', link: '/en/components/space' },
-						{ text: 'StatusBar', link: '/en/components/status-bar' }
+						{ text: 'StatusBar', link: '/en/components/status-bar' },
+						{ text: 'Sticky', link: '/en/components/sticky' }
 					]
 				},
 				{

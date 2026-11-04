@@ -177,6 +177,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '图片 Image', name: 'image' })
 	/**
 	 * 演示图基址：仓库 packages/playground/static/demo 目录的 GitHub raw 地址
 	 * （图片随仓库维护，分支为 master；更换分支或目录时需同步修改）

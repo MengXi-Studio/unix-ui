@@ -67,6 +67,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '文本 Text', name: 'text' })
 	/** 多行省略演示长文本 */
 	const clampText = 'uni-app x 是 uni-app 的下一代版本，基于 Vue 3.0 与 uts 语言开发，可编译为高性能原生代码执行。它保留了 uni-app 的跨端能力，同时提供更强的性能与更原生的体验，是全新一代的跨端开发框架。'
 </script>

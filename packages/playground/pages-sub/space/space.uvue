@@ -100,6 +100,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '间距 Space', name: 'space' })
 	/** 演示页无动态逻辑：所有场景均为静态穷举（v-for 仅生成按钮序列） */
 </script>
 

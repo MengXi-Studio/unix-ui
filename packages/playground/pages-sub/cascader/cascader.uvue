@@ -152,6 +152,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '级联选择 Cascader', name: 'cascader' })
 	import { CascaderChangeEvent, CascaderValue, CascaderFieldNames } from '@/uni_modules/m-ui-x/components/m-cascader/cascader.uts'
 
 	// ========== 选项数据（JSON 解析为 UTSJSONObject[] 动态类型） ==========

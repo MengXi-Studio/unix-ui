@@ -83,6 +83,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '瀑布流 Waterfall', name: 'waterfall' })
 	/** 瀑布流演示数据类型（id 用于 v-for key 与动态增删） */
 	type WaterfallDemoItem = {
 		id: number

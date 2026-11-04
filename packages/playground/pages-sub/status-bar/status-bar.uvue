@@ -44,6 +44,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '状态栏 StatusBar', name: 'status-bar' })
 	/** 演示页无动态逻辑：全部场景为静态穷举（自动高度场景依赖 App 真机） */
 </script>
 

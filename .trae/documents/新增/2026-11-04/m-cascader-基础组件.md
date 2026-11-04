@@ -173,6 +173,7 @@ type CascaderChangeEvent = { value: string, selectedOptions: CascaderOption[], t
 3. **`options-height` prop 默认 0 而非字面 384**：0 表示走主题变量 `$m-cascader-options-height: 384px`，prop > 0 时 inline 覆盖——保持「默认值全部走主题变量」的覆盖契约一致性。
 4. **finish 自动关闭弹层**：m-cascader-popup 在 finish 后主动 `update:show` 关闭（Vant Popup 组合的惯例行为，演示页与文档已标注）。
 5. **层级列表用 swiper 承载**（Q2=②）：每层一个 pane，`swipeable` 由 `:disable-touch` 反向承载；swiper `@change` 同步 activeTab（不回发 click-tab）。
+6. **演示页路由补挂两条命名路由**（验收后修复）：首页 demo-components 登记的 `cascader-popup` / `cascader-input` 条目按名导航（`router.push({ name })`，ux-router strict 模式未注册即抛 RouterError），而演示页为一页穷举形态 → router.config.uts 补两条命名路由指向同一 path（meta.title 各自正确）。代价是路由初始化时 2 条「重复路由路径」warn（pathMap 后者覆盖前者，仅影响直连 path 时的 document.title 取值，按名导航全部正常），浏览器实测三条目均正常跳转。
 
 ### 踩坑记录
 

@@ -1,36 +1,18 @@
 import type { RouteConfig } from '@/uni_modules/ux-router/utssdk/index.uts'
+import { routes as generatedRoutes } from './routes.gen.uts'
 
 /**
  * 应用路由表（playground 示例工程）
  *
- * path 须与 pages.json 注册的页面路径保持一致；
- * meta.title 供 afterEach 守卫更新 Web 端 document.title。
- * 新增组件演示页时在此登记一条，并同步 pages.json 注册与首页分组数据表。
+ * 主体来自构建期 routeGen 插件的生成产物 routes.gen.uts——页面路径 / name / title
+ * 的事实源在各页面的 defineUniPage 宏声明（新增 / 改名页面只需改宏，pages.json 与
+ * 路由表由插件自动同步）。本文件仅承担生成器无法表达的显式扩展：同一 path 挂多条
+ * 命名路由的别名条目。meta.title 供 afterEach 守卫更新 Web 端 document.title。
  */
-export const routes: RouteConfig[] = [
-	{ path: 'pages/index/index', name: 'home', meta: { title: 'unix-ui 组件演示' } },
-	{ path: 'pages-sub/button/button', name: 'button', meta: { title: '按钮 Button' } },
-	{ path: 'pages-sub/loading/loading', name: 'loading', meta: { title: '加载 Loading' } },
-	{ path: 'pages-sub/icon/icon', name: 'icon', meta: { title: '图标 Icon' } },
-	{ path: 'pages-sub/badge/badge', name: 'badge', meta: { title: '徽标 Badge' } },
-	{ path: 'pages-sub/cell/cell', name: 'cell', meta: { title: '单元格 Cell' } },
-	{ path: 'pages-sub/image/image', name: 'image', meta: { title: '图片 Image' } },
-	{ path: 'pages-sub/text/text', name: 'text', meta: { title: '文本 Text' } },
-	{ path: 'pages-sub/space/space', name: 'space', meta: { title: '间距 Space' } },
-	{ path: 'pages-sub/flex/flex', name: 'flex', meta: { title: '弹性布局 Flex' } },
-	{ path: 'pages-sub/status-bar/status-bar', name: 'status-bar', meta: { title: '状态栏 StatusBar' } },
-	{ path: 'pages-sub/sticky/sticky', name: 'sticky', meta: { title: '粘性布局 Sticky' } },
-	{ path: 'pages-sub/waterfall/waterfall', name: 'waterfall', meta: { title: '瀑布流 Waterfall' } },
-	{ path: 'pages-sub/layout/layout', name: 'layout', meta: { title: '布局 Layout' } },
-	{ path: 'pages-sub/overlay/overlay', name: 'overlay', meta: { title: '遮罩层 Overlay' } },
-	{ path: 'pages-sub/popup/popup', name: 'popup', meta: { title: '弹出层 Popup' } },
-	{ path: 'pages-sub/divider/divider', name: 'divider', meta: { title: '分割线 Divider' } },
-	{ path: 'pages-sub/grid/grid', name: 'grid', meta: { title: '宫格 Grid' } },
-	{ path: 'pages-sub/toast/toast', name: 'toast', meta: { title: '轻提示 Toast' } },
-	{ path: 'pages-sub/compact/compact', name: 'compact', meta: { title: '紧凑布局 Compact' } },
-	{ path: 'pages-sub/input/input', name: 'input', meta: { title: '输入框 Input' } },
-	{ path: 'pages-sub/calendar/calendar', name: 'calendar', meta: { title: '日历 Calendar' } },
-	{ path: 'pages-sub/calendar-popup/calendar-popup', name: 'calendar-popup', meta: { title: '日历弹出框 CalendarPopup' } },
-	{ path: 'pages-sub/calendar-input/calendar-input', name: 'calendar-input', meta: { title: '日历输入框 CalendarInput' } },
-	{ path: 'pages-sub/cascader/cascader', name: 'cascader', meta: { title: '级联选择 Cascader' } }
+// 级联三组件共用一个演示页（cascader 页内穷举 popup / input 区块），两条命名路由指向同一 path
+const cascaderAliases: RouteConfig[] = [
+	{ path: 'pages-sub/cascader/cascader', name: 'cascader-popup', meta: { title: '级联弹出框 CascaderPopup' } },
+	{ path: 'pages-sub/cascader/cascader', name: 'cascader-input', meta: { title: '级联输入框 CascaderInput' } }
 ]
+
+export const routes: RouteConfig[] = generatedRoutes.concat(cascaderAliases)

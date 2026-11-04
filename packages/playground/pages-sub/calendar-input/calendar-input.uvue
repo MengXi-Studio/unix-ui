@@ -84,6 +84,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '日历输入框 CalendarInput', name: 'calendar-input' })
 	/** 日期转 YYYY-MM-DD 文本 */
 	function fmtDate(d: Date): string {
 		const m = d.getMonth() + 1

@@ -108,6 +108,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '粘性布局 Sticky', name: 'sticky' })
 	/** scroll 事件载荷（与 m-sticky StickyScrollEvent 字段对齐） */
 	type StickyScrollPayload = {
 		scrollTop: number

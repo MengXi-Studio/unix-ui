@@ -112,6 +112,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '图标 Icon', name: 'icon' })
 	import { iconBasicNames, iconOutlineNames, iconFilledNames } from '@/uni_modules/m-ui-x/components/m-icon/icons.uts'
 
 	/** 最近点击的图标名（click 事件演示状态） */

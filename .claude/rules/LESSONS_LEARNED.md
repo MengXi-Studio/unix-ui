@@ -465,3 +465,10 @@
 - **递归 type 风险的工程解**：UTS 的 type 递归引用（children 引用自身数组）未验证过，动态类型 + typed getter 是零风险替代方案，`field-names` 等能力不受影响
 - **swiper 承载 swipeable**：层级切换手势用 `:disable-touch="!swipeable"` 反向承载（prop 语义不变），swiper `@change`（`e.detail.current`）同步 activeTab 但不回发 click-tab——避免用户手势与 tab 点击双重触发
 - **浏览器自动化测 uni-app x Web 页面**：自定义元素在快照中不暴露 interactive ref，`browser_click` 对视口外元素直接失败且子 agent 易误判；有效方案——视口内元素用 fresh snapshot ref 点击，其余用 `browser_evaluate` 派发合成 MouseEvent 序列（mousedown / mouseup / click，`bubbles: true`），组件 `@click` 正常响应；子 agent 给出矛盾结论时必须亲自复现
+
+### 78. HBuilderX 项目级 vite.config.ts 接入 routeGen 的四个坑（2026-11-04 playground 改造实测）
+- **manifest `web` 段的 server 侧注入随内置配置一起丢失**：项目根出现 vite.config.ts 后，HBuilderX 整体替换内置配置（内置仅 `plugins: [uni()]`），dev server 掉回 5173 / base 丢失；须在 vite.config.ts 读 manifest.json 显式回填 `base` 与 `server.port`
+- **`uniMod.default ?? uniMod` 是工厂不是插件实例**：直接放进 plugins 数组时 uni 全部钩子静默失效，唯一症状是 `/main` 走 SPA fallback 返回 HTML（curl 看 content_type 即可判别），页面空白且无报错堆栈——必须调用 `uniFactory()`
+- **`/main` 解析的 importer 死角**：`uni:h5-resolve-id` 仅在 `importer.endsWith('index.html')` 时把 `/main` 映射到 main.uts，dev 下浏览器模块请求无 importer，项目级 config + 自定义 base 下该路径不命中；前置一个 `resolveId(id) { if (id === '/main') return main.uts 绝对路径 }` 的插件即可修复
+- **插件适配器的 bare import 依赖**：ux-router `plugins/index.mjs` 内部 `import 'unplugin'`，playground 是纯 HBuilderX 工程无 node_modules，需在 monorepo 根安装 unplugin（vite 加载 config 时按项目侧解析，不会落到 HBuilderX 内置目录）
+- **判别服务是否正常的快捷链**：`curl /unix-ui/playground/main` 看 content_type——`text/javascript` = uni transform 生效；`text/html` = uni 插件未注册（工厂未调用或宏/依赖缺失）；vite.config.ts 改动会自动重启 server（重启窗口期的 ERR_ABORTED / CONNECTION_REFUSED 是瞬态噪音，别误判为编译错误）

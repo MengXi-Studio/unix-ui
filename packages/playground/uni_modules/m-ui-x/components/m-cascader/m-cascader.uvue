@@ -1,0 +1,531 @@
+<template>
+	<!-- 级联选择面板（三组件拆分后的基础组件）：头部 + tabs + swiper 层级选项列表。
+	     弹层组合见 m-cascader-popup，输入框触发组合见 m-cascader-input。
+	     根节点常驻静态（LESSONS #32）。 -->
+	<view :class="rootClass" :style="customStyle">
+		<!-- 头部：标题 + 关闭图标 -->
+		<view v-if="showHeader" class="m-cascader__header">
+			<view class="m-cascader__header-title">
+				<slot name="title">
+					<text class="m-cascader__header-title-text">{{ title }}</text>
+				</slot>
+			</view>
+			<view v-if="closeable" class="m-cascader__close" @click="onClose">
+				<m-icon :name="closeIcon" custom-class="m-cascader__close-icon" />
+			</view>
+		</view>
+		<!-- 层级 tabs：已选各级标题 + 未选层 placeholder；scroll-into-view 对齐当前 tab -->
+		<scroll-view
+			class="m-cascader__tabs"
+			:scroll-x="true"
+			:scroll-into-view="tabAnchor"
+			:scroll-with-animation="true"
+		>
+			<view class="m-cascader__tabs-row">
+				<view
+					v-for="(tabTitle, i) in tabTitles"
+					:id="'m-cascader-tab-' + i"
+					:key="i"
+					class="m-cascader__tab"
+					@click="onTabClick(i)"
+				>
+					<text :class="tabTitleClass(i)" :style="tabTitleStyle(i)">{{ tabTitle }}</text>
+					<view v-if="i == activeTab" class="m-cascader__tab-line" :style="tabLineStyle"></view>
+				</view>
+			</view>
+		</scroll-view>
+		<!-- 层级选项区：swiper 承载（swipeable 控制 disable-touch），每层为固定高选项列表内部滚动 -->
+		<swiper
+			class="m-cascader__swiper"
+			:current="activeTab"
+			:duration="300"
+			:style="swiperStyle"
+			:disable-touch="!swipeable"
+			@change="onSwiperChange"
+		>
+			<swiper-item v-for="(level, li) in levels" :key="li" class="m-cascader__pane">
+				<slot v-if="$slots['options-top'] != null" name="options-top" :tab-index="li"></slot>
+				<scroll-view class="m-cascader__options" :scroll-y="true">
+					<view
+						v-for="(opt, oi) in level"
+						:key="oi"
+						class="m-cascader__option"
+						@click="onOptionClick(opt, li)"
+					>
+						<view class="m-cascader__option-text-wrap">
+							<slot name="option" :option="opt" :selected="isOptionSelected(opt, li)">
+								<text :class="optionTextClass(opt, li)" :style="optionTextStyle(opt, li)">{{ optionText(opt) }}</text>
+							</slot>
+						</view>
+						<m-icon v-if="isOptionSelected(opt, li)" name="success" custom-class="m-cascader__option-check" :custom-style="checkStyle" />
+					</view>
+				</scroll-view>
+				<slot v-if="$slots['options-bottom'] != null" name="options-bottom" :tab-index="li"></slot>
+			</swiper-item>
+		</swiper>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-cascader 级联选择面板：对标 Vant Cascader 的平铺形态。
+	 * 多级联动选择：tabs 展示各级已选标题（未选层显示 placeholder），点击选项进入下一级，
+	 * 选到最后一级（children 缺失或为空数组）触发 finish；层级经 swiper 承载支持手势滑动。
+	 * options 为 UTSJSONObject[] 动态类型（field-names 自定义字段名 + 异步加载均经此支持）。
+	 * 弹层形态由 m-cascader-popup 组合 m-popup + 本组件实现，输入框形态见 m-cascader-input。
+	 */
+	import {
+		CascaderValue,
+		CascaderFieldNames,
+		CascaderChangeEvent,
+		DEFAULT_CASCADER_FIELD_NAMES,
+		cascaderOptionText,
+		cascaderOptionValue,
+		cascaderOptionValueString,
+		cascaderOptionChildren,
+		cascaderOptionDisabled,
+		cascaderOptionColor,
+		findCascaderPath
+	} from './cascader.uts'
+	import { IconName } from '../m-icon/icons.uts'
+	import MIcon from '../m-icon/m-icon.uvue'
+
+	type Props = {
+		/** 选中值（v-model:value，叶子 value；null 未选；string | number 对齐 Vant） */
+		value?: CascaderValue
+		/** 级联选项树（动态类型：UTSJSONObject[]，字段名经 field-names 映射） */
+		options?: UTSJSONObject[]
+		/** 常规标题 */
+		title?: string
+		/** 未选层 tab 占位文案 */
+		placeholder?: string
+		/** 主题色（选中项文字与对勾、tab 下划线，空串用默认主题变量） */
+		activeColor?: string
+		/** 显示头部关闭图标 */
+		closeable?: boolean
+		/** 关闭图标名称 */
+		closeIcon?: IconName
+		/** 显示头部 */
+		showHeader?: boolean
+		/** 自定义选项字段名（null 用默认 text / value / children） */
+		fieldNames?: CascaderFieldNames
+		/** 选项区高度 px（0 用主题变量 $m-cascader-options-height） */
+		optionsHeight?: number
+		/** 是否支持手势滑动切换层级 */
+		swipeable?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: null,
+		options: null,
+		title: '',
+		placeholder: '请选择',
+		activeColor: '',
+		closeable: true,
+		closeIcon: 'cross',
+		showHeader: true,
+		fieldNames: null,
+		optionsHeight: 0,
+		swipeable: true,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 选中值变化（v-model:value；change 与 finish 时均回写） */
+		'update:value': [value: CascaderValue]
+		/** 点击选项后触发（含未选完的中间层） */
+		change: [event: CascaderChangeEvent]
+		/** 选完最后一级后触发（children 缺失或为空数组即叶子） */
+		finish: [event: CascaderChangeEvent]
+		/** 点击关闭图标 */
+		close: []
+		/** 点击 tab（滑动手势不触发） */
+		'click-tab': [tabIndex: number, title: string]
+	}>()
+
+	// ========== 字段名 / 根选项（null 默认兜底，规避 withDefaults 对象字面量默认值） ==========
+
+	const fields = computed<CascaderFieldNames>(() => {
+		const f = props.fieldNames
+		if (f != null) {
+			return f
+		}
+		return DEFAULT_CASCADER_FIELD_NAMES
+	})
+
+	const rootOptions = computed<UTSJSONObject[]>(() => {
+		const o = props.options
+		if (o != null) {
+			return o
+		}
+		const empty: UTSJSONObject[] = []
+		return empty
+	})
+
+	// ========== 状态 ==========
+
+	/** 各级已选节点路径（含叶子；长度 = 已选层数） */
+	const selectedNodes = ref<UTSJSONObject[]>([])
+	/** 当前展示层级下标 */
+	const activeTab = ref<number>(0)
+
+	/** 根类名：基础类 + customClass 透传（对齐 m-input 拼接惯例） */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-cascader'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 末级是否为叶子（children 缺失或为空数组均视为叶子） */
+	const finished = computed<boolean>(() => {
+		const path = selectedNodes.value
+		if (path.length == 0) {
+			return false
+		}
+		const children = cascaderOptionChildren(path[path.length - 1], fields.value)
+		return children == null || children.length == 0
+	})
+
+	/** tabs 标题：已选各级文字 + 未选层 placeholder */
+	const tabTitles = computed<string[]>(() => {
+		const list: string[] = []
+		const path = selectedNodes.value
+		for (let i = 0; i < path.length; i++) {
+			list.push(cascaderOptionText(path[i], fields.value))
+		}
+		if (!finished.value) {
+			list.push(props.placeholder)
+		}
+		return list
+	})
+
+	/** 各层选项列表：level 0 为根选项，level i > 0 为 selectedNodes[i-1] 的子级 */
+	const levels = computed<UTSJSONObject[][]>(() => {
+		const list: UTSJSONObject[][] = []
+		const count = tabTitles.value.length
+		const path = selectedNodes.value
+		for (let i = 0; i < count; i++) {
+			if (i == 0) {
+				list.push(rootOptions.value)
+			} else {
+				const children = cascaderOptionChildren(path[i - 1], fields.value)
+				if (children != null) {
+					list.push(children)
+				} else {
+					const empty: UTSJSONObject[] = []
+					list.push(empty)
+				}
+			}
+		}
+		return list
+	})
+
+	/** tabs 滚动锚点（scroll-into-view 对齐当前 tab） */
+	const tabAnchor = computed<string>(() => {
+		return 'm-cascader-tab-' + activeTab.value.toString()
+	})
+
+	/** 选项区高度：prop > 0 时 inline 覆盖（px），否则用主题变量类默认值 */
+	const swiperStyle = computed<string>(() => {
+		if (props.optionsHeight > 0) {
+			return 'height: ' + props.optionsHeight.toString() + 'px;'
+		}
+		return ''
+	})
+
+	/** 对勾图标颜色：activeColor 非空时 inline 覆盖主题变量 */
+	const checkStyle = computed<string>(() => {
+		if (props.activeColor != '') {
+			return 'color: ' + props.activeColor + ';'
+		}
+		return ''
+	})
+
+	/** tab 下划线颜色：activeColor 非空时 inline 覆盖主题变量 */
+	const tabLineStyle = computed<string>(() => {
+		if (props.activeColor != '') {
+			return 'background-color: ' + props.activeColor + ';'
+		}
+		return ''
+	})
+
+	// ========== 交互（模板绑定的组件事件处理函数一律 const 箭头函数：function 声明在 VDOM 生成 Kotlin 中被裸名传递报 Function invocation expected） ==========
+
+	/** 选项文字（模板桥接：模板表达式调用导入函数会被 unref 包裹后不可调用） */
+	const optionText = (opt: UTSJSONObject): string => cascaderOptionText(opt, fields.value)
+
+	/**
+	 * 某层选项是否为该层已选项（value 归一化字符串比较）
+	 */
+	function isOptionSelected(opt: UTSJSONObject, levelIndex: number): boolean {
+		const path = selectedNodes.value
+		if (levelIndex >= path.length) {
+			return false
+		}
+		return cascaderOptionValueString(path[levelIndex], fields.value) == cascaderOptionValueString(opt, fields.value)
+	}
+
+	/**
+	 * 选项文字类名：选中主题色 / 禁用置灰
+	 */
+	function optionTextClass(opt: UTSJSONObject, levelIndex: number): string {
+		let cls = 'm-cascader__option-text'
+		if (cascaderOptionDisabled(opt)) {
+			cls += ' m-cascader__option-text--disabled'
+		} else if (isOptionSelected(opt, levelIndex)) {
+			cls += ' m-cascader__option-text--selected'
+		}
+		return cls
+	}
+
+	/**
+	 * 选项文字 inline 样式：选项自带 color 最优先；activeColor 覆盖选中项主题变量
+	 */
+	function optionTextStyle(opt: UTSJSONObject, levelIndex: number): string {
+		if (cascaderOptionDisabled(opt)) {
+			return ''
+		}
+		const color = cascaderOptionColor(opt)
+		if (color != '') {
+			return 'color: ' + color + ';'
+		}
+		if (isOptionSelected(opt, levelIndex) && props.activeColor != '') {
+			return 'color: ' + props.activeColor + ';'
+		}
+		return ''
+	}
+
+	/**
+	 * tab 文字类名：激活态
+	 */
+	function tabTitleClass(index: number): string {
+		if (index == activeTab.value) {
+			return 'm-cascader__tab-title m-cascader__tab-title--active'
+		}
+		return 'm-cascader__tab-title'
+	}
+
+	/**
+	 * tab 文字 inline 样式：activeColor 非空时覆盖激活态主题变量
+	 */
+	function tabTitleStyle(index: number): string {
+		if (index == activeTab.value && props.activeColor != '') {
+			return 'color: ' + props.activeColor + ';'
+		}
+		return ''
+	}
+
+	/** 点击选项：截断当前层之后的旧选择 → 回写路径 → 有子级进下一层，叶子派发 finish */
+	const onOptionClick = (opt: UTSJSONObject, levelIndex: number) => {
+		if (cascaderOptionDisabled(opt)) {
+			return
+		}
+		const path = selectedNodes.value.slice(0, levelIndex)
+		path.push(opt)
+		selectedNodes.value = path
+		const children = cascaderOptionChildren(opt, fields.value)
+		const hasNext = children != null && children.length > 0
+		const event: CascaderChangeEvent = {
+			value: cascaderOptionValue(opt, fields.value),
+			selectedOptions: path,
+			tabIndex: levelIndex
+		}
+		emit('update:value', event.value)
+		emit('change', event)
+		if (hasNext) {
+			activeTab.value = levelIndex + 1
+		} else {
+			// 叶子：activeTab 收拢至叶子层（回退重选时裁掉多余 tab）
+			activeTab.value = levelIndex
+			emit('finish', event)
+		}
+	}
+
+	/** 点击 tab：切层并派发 click-tab（含未选层 placeholder） */
+	const onTabClick = (index: number) => {
+		if (index >= tabTitles.value.length || index == activeTab.value) {
+			return
+		}
+		activeTab.value = index
+		emit('click-tab', index, tabTitles.value[index])
+	}
+
+	/** 手势滑动换层：同步 activeTab（不派发 click-tab，对齐 Vant） */
+	const onSwiperChange = (e: UniSwiperChangeEvent) => {
+		const current = e.detail.current
+		if (current < tabTitles.value.length) {
+			activeTab.value = current
+		}
+	}
+
+	/** 关闭图标点击（弹层组合由 m-cascader-popup 监听后关闭弹层） */
+	const onClose = () => {
+		emit('close')
+	}
+
+	/**
+	 * 外部 value 回灌：按 options 自顶向下重建路径；
+	 * 当前路径叶子已与 value 匹配时跳过（防 v-model 回写循环）；
+	 * value 为 null 重置，未找到保持现状
+	 */
+	const syncFromValue = (v: CascaderValue | null) => {
+		if (v == null) {
+			selectedNodes.value = []
+			activeTab.value = 0
+			return
+		}
+		const path = selectedNodes.value
+		if (path.length > 0) {
+			const leaf = path[path.length - 1]
+			if (cascaderOptionValueString(leaf, fields.value) == v.toString()) {
+				return
+			}
+		}
+		const found = findCascaderPath(rootOptions.value, v.toString(), fields.value)
+		if (found != null) {
+			selectedNodes.value = found
+			activeTab.value = found.length - 1
+		}
+	}
+
+	// 初始 value 同步 + 外部回灌监听
+	syncFromValue(props.value)
+	watch(() => props.value, (nv) => {
+		syncFromValue(nv)
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 面板根 ========== */
+	.m-cascader {
+		flex-direction: column;
+		background-color: $m-cascader-background;
+	}
+
+	/* ========== 头部 ========== */
+	.m-cascader__header {
+		flex-direction: row;
+		align-items: center;
+		height: $m-cascader-header-height;
+	}
+	.m-cascader__header-title {
+		flex: 1;
+		height: $m-cascader-header-height;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-cascader__header-title-text {
+		font-size: $m-cascader-header-title-font-size;
+		font-weight: bold;
+		color: $m-cascader-header-title-color;
+	}
+	/* 关闭图标：右侧绝对定位不占标题居中布局 */
+	.m-cascader__close {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: $m-cascader-header-height;
+		justify-content: center;
+		align-items: center;
+		z-index: 1;
+	}
+	.m-cascader__close-icon {
+		font-size: $m-cascader-close-icon-size;
+		color: $m-cascader-close-icon-color;
+	}
+
+	/* ========== 层级 tabs（横向滚动） ========== */
+	.m-cascader__tabs {
+		height: $m-cascader-tabs-height;
+	}
+	.m-cascader__tabs-row {
+		flex-direction: row;
+		height: $m-cascader-tabs-height;
+	}
+	.m-cascader__tab {
+		width: $m-cascader-tab-max-width;
+		height: $m-cascader-tabs-height;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		position: relative;
+	}
+	.m-cascader__tab-title {
+		font-size: $m-cascader-tab-font-size;
+		color: $m-cascader-tab-color;
+		/* 超长省略（tab 定宽，超出截断） */
+		lines: 1;
+		text-overflow: ellipsis;
+		max-width: $m-cascader-tab-max-width;
+	}
+	.m-cascader__tab-title--active {
+		font-weight: bold;
+		color: $m-cascader-tab-active-color;
+	}
+	.m-cascader__tab-line {
+		position: absolute;
+		bottom: 0;
+		width: $m-cascader-tab-line-width;
+		height: $m-cascader-tab-line-height;
+		border-radius: $m-cascader-tab-line-radius;
+		background-color: $m-cascader-tab-active-color;
+	}
+
+	/* ========== 层级选项区（swiper 高度默认主题变量，prop inline 覆盖） ========== */
+	.m-cascader__swiper {
+		height: $m-cascader-options-height;
+	}
+	.m-cascader__pane {
+		flex-direction: column;
+	}
+	.m-cascader__options {
+		flex: 1;
+	}
+
+	/* #ifdef WEB */
+	/* Web 端弹层内合成滚动区绘制溢出裁剪区鬼影，建立独立层叠上下文封闭绘制（与 m-calendar 同款修复） */
+	.m-cascader__options {
+		isolation: isolate;
+	}
+	/* #endif */
+
+	/* ========== 选项行 ========== */
+	.m-cascader__option {
+		flex-direction: row;
+		align-items: center;
+		height: $m-cascader-option-height;
+		padding: $m-cascader-option-padding;
+	}
+	.m-cascader__option-text-wrap {
+		flex: 1;
+		flex-direction: row;
+	}
+	.m-cascader__option-text {
+		font-size: $m-cascader-option-font-size;
+		color: $m-cascader-option-text-color;
+	}
+	.m-cascader__option-text--selected {
+		color: $m-cascader-option-active-color;
+	}
+	.m-cascader__option-text--disabled {
+		color: $m-cascader-option-disabled-color;
+	}
+	.m-cascader__option-check {
+		font-size: $m-cascader-option-check-size;
+		color: $m-cascader-option-active-color;
+	}
+</style>

@@ -97,6 +97,9 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Calendar', link: '/en/components/calendar' },
 						{ text: 'CalendarInput', link: '/en/components/calendar-input' },
 						{ text: 'CalendarPopup', link: '/en/components/calendar-popup' },
+						{ text: 'Cascader', link: '/en/components/cascader' },
+						{ text: 'CascaderInput', link: '/en/components/cascader-input' },
+						{ text: 'CascaderPopup', link: '/en/components/cascader-popup' },
 						{ text: 'Input', link: '/en/components/input' }
 					]
 				},

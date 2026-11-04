@@ -148,6 +148,12 @@
 				"style": {
 					"navigationBarTitleText": "日历输入框 CalendarInput"
 				}
+			},
+			{
+				"path": "cascader/cascader",
+				"style": {
+					"navigationBarTitleText": "级联选择 Cascader"
+				}
 			}
 		]
 		}

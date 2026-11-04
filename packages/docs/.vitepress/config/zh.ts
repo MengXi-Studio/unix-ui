@@ -110,6 +110,9 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Calendar 日历', link: '/components/calendar' },
 						{ text: 'CalendarInput 日历输入框', link: '/components/calendar-input' },
 						{ text: 'CalendarPopup 日历弹出框', link: '/components/calendar-popup' },
+						{ text: 'Cascader 级联选择', link: '/components/cascader' },
+						{ text: 'CascaderInput 级联输入框', link: '/components/cascader-input' },
+						{ text: 'CascaderPopup 级联弹出框', link: '/components/cascader-popup' },
 						{ text: 'Input 输入框', link: '/components/input' }
 					]
 				},

@@ -235,3 +235,40 @@ $m-calendar-input-clear-width: 40px !default;
 $m-calendar-input-clear-icon-size: 16px !default;
 /** 清空图标颜色（对齐 $m-input-clear-color 默认值） */
 $m-calendar-input-clear-color: #c8c9cc !default;
+
+/* ========== Cascader 级联选择 ========== */
+$m-cascader-background: $m-white !default;
+$m-cascader-header-height: 48px !default;
+$m-cascader-header-title-font-size: 16px !default;
+$m-cascader-header-title-font-weight: bold !default;
+$m-cascader-header-title-color: $m-text-color !default;
+$m-cascader-close-icon-size: 22px !default;
+$m-cascader-close-icon-color: #c8c9cc !default;
+$m-cascader-tabs-height: 48px !default;
+$m-cascader-tab-max-width: 100px !default;
+$m-cascader-tab-font-size: 14px !default;
+$m-cascader-tab-color: $m-text-color !default;
+$m-cascader-tab-active-color: $m-color-primary !default;
+$m-cascader-tab-line-width: 20px !default;
+$m-cascader-tab-line-height: 3px !default;
+$m-cascader-tab-line-radius: 3px !default;
+$m-cascader-options-height: 384px !default;
+$m-cascader-option-height: 40px !default;
+$m-cascader-option-padding: 0 16px !default;
+$m-cascader-option-font-size: 14px !default;
+$m-cascader-option-text-color: $m-text-color !default;
+$m-cascader-option-active-color: $m-color-primary !default;
+$m-cascader-option-disabled-color: $m-text-color-fourth !default;
+$m-cascader-option-check-size: 16px !default;
+
+/* ========== m-cascader-input（级联输入框：触发层与自绘清空按钮，层叠同 m-calendar-input） ========== */
+/** 透明触发层层级 */
+$m-cascader-input-trigger-z-index: 1 !default;
+/** 清空按钮层叠（高于触发层） */
+$m-cascader-input-clear-z-index: 2 !default;
+/** 清空按钮点击区宽度（组件内 padding-right 预留值与之同步） */
+$m-cascader-input-clear-width: 40px !default;
+/** 清空图标字号（对齐 $m-input-clear-icon-size 默认值） */
+$m-cascader-input-clear-icon-size: 16px !default;
+/** 清空图标颜色（对齐 $m-input-clear-color 默认值） */
+$m-cascader-input-clear-color: #c8c9cc !default;

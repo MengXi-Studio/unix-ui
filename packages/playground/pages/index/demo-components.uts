@@ -144,6 +144,24 @@ export const demoGroups: DemoGroup[] = [
 				desc: 'm-input 与日历弹出框的表单组合，点击触发选择，选中值格式化回填展示，支持清空与禁用。'
 			},
 			{
+				name: 'cascader',
+				zhName: '级联选择',
+				enName: 'Cascader',
+				desc: '多级联动选择面板，支持层级 tab 与手势滑动、field-names 字段映射、异步加载、主题色与四插槽。'
+			},
+			{
+				name: 'cascader-popup',
+				zhName: '级联弹出框',
+				enName: 'CascaderPopup',
+				desc: 'm-popup 与 m-cascader 的弹层组合，v-model 控制显隐，选完最后一级自动关闭，支持方位、圆角与安全区配置。'
+			},
+			{
+				name: 'cascader-input',
+				zhName: '级联输入框',
+				enName: 'CascaderInput',
+				desc: 'm-input 与级联弹出框的表单组合，点击触发选择，选中路径文字回填展示，支持清空与禁用。'
+			},
+			{
 				name: 'input',
 				zhName: '输入框',
 				enName: 'Input',

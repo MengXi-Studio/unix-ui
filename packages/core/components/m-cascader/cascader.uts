@@ -1,0 +1,146 @@
+/**
+ * m-cascader 共享类型与工具（跨组件共享，独立 .uts）
+ *
+ * m-cascader.uvue（面板）、m-cascader-popup.uvue（弹层）、m-cascader-input.uvue（输入框）共用。
+ *
+ * 动态选项说明：options 声明为 UTSJSONObject[]（而非静态递归 type）——
+ * 1. UTS type 递归引用自身数组的编译行为未验证，是最主要的编译风险；
+ * 2. field-names 自定义字段名需要按运行时字符串键取值，UTS type 对象在 App 端
+ *    不能任意键索引，动态取值统一经 UTSJSONObject 的 typed getter（getString /
+ *    getNumber / getArray / getBoolean）完成，跨端安全。
+ */
+
+/** 级联选项值类型（对齐 Vant：string | number，内部比较统一归一化为字符串） */
+export type CascaderValue = string | number
+
+/** 自定义选项字段名（text / value / children 三键映射，对齐 Vant field-names） */
+export type CascaderFieldNames = {
+	/** 选项文字字段名 */
+	text: string
+	/** 选项值字段名 */
+	value: string
+	/** 子级选项字段名 */
+	children: string
+}
+
+/** 默认字段名映射 */
+export const DEFAULT_CASCADER_FIELD_NAMES: CascaderFieldNames = {
+	text: 'text',
+	value: 'value',
+	children: 'children'
+}
+
+/** change / finish 事件载荷 */
+export type CascaderChangeEvent = {
+	/** 本次点击选项的值（原值，string 或 number） */
+	value: CascaderValue
+	/** 已选层级完整路径（各级选项对象，UTSJSONObject 动态类型） */
+	selectedOptions: UTSJSONObject[]
+	/** 本次点击选项所在层级下标 */
+	tabIndex: number
+}
+
+/**
+ * 读取选项文字（text 字段缺省回退数字字段，避免 getString 吞掉数字文案）
+ */
+export function cascaderOptionText(opt: UTSJSONObject, fields: CascaderFieldNames): string {
+	const s = opt.getString(fields.text)
+	if (s != null && s != '') {
+		return s
+	}
+	const n = opt.getNumber(fields.text)
+	if (n != null) {
+		return n.toString()
+	}
+	return ''
+}
+
+/**
+ * 读取选项值并归一化为字符串（内部路径匹配统一用字符串比较，数字 value 归一后仍可正确匹配）
+ */
+export function cascaderOptionValueString(opt: UTSJSONObject, fields: CascaderFieldNames): string {
+	const n = opt.getNumber(fields.value)
+	if (n != null) {
+		return n.toString()
+	}
+	const s = opt.getString(fields.value)
+	if (s != null) {
+		return s
+	}
+	return ''
+}
+
+/**
+ * 读取选项原值（string 或 number，事件 payload 用，不做归一化）
+ */
+export function cascaderOptionValue(opt: UTSJSONObject, fields: CascaderFieldNames): CascaderValue {
+	const n = opt.getNumber(fields.value)
+	if (n != null) {
+		return n
+	}
+	const s = opt.getString(fields.value)
+	if (s != null) {
+		return s
+	}
+	return ''
+}
+
+/**
+ * 读取选项子级（children 缺失返回 null；过滤掉非对象元素；空数组原样返回——视为「叶子」语义由调用方判定）
+ */
+export function cascaderOptionChildren(opt: UTSJSONObject, fields: CascaderFieldNames): UTSJSONObject[] | null {
+	const arr = opt.getArray(fields.children)
+	if (arr == null) {
+		return null
+	}
+	const list: UTSJSONObject[] = []
+	for (let i = 0; i < arr.length; i++) {
+		const item = arr[i]
+		if (item instanceof UTSJSONObject) {
+			list.push(item as UTSJSONObject)
+		}
+	}
+	return list
+}
+
+/**
+ * 读取选项禁用态（disabled 固定键，不经 field-names 映射，对齐 Vant）
+ */
+export function cascaderOptionDisabled(opt: UTSJSONObject): boolean {
+	const b = opt.getBoolean('disabled')
+	return b == true
+}
+
+/**
+ * 读取选项自定义文字颜色（color 固定键，不经 field-names 映射，对齐 Vant）
+ */
+export function cascaderOptionColor(opt: UTSJSONObject): string {
+	const s = opt.getString('color')
+	if (s != null) {
+		return s
+	}
+	return ''
+}
+
+/**
+ * 按 value（归一化字符串）在选项树中查找完整路径（自顶向下 DFS，首个匹配即返回）。
+ * 返回各级选项对象数组（含匹配节点本身）；未找到返回 null。
+ */
+export function findCascaderPath(options: UTSJSONObject[], target: string, fields: CascaderFieldNames): UTSJSONObject[] | null {
+	for (let i = 0; i < options.length; i++) {
+		const opt = options[i]
+		if (cascaderOptionValueString(opt, fields) == target) {
+			const path: UTSJSONObject[] = [opt]
+			return path
+		}
+		const children = cascaderOptionChildren(opt, fields)
+		if (children != null && children.length > 0) {
+			const sub = findCascaderPath(children, target, fields)
+			if (sub != null) {
+				sub.unshift(opt)
+				return sub
+			}
+		}
+	}
+	return null
+}

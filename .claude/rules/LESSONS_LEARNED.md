@@ -458,3 +458,10 @@
 - **`<image mode="widthFix">` 的 `@load` 时刻不可直接测高**：回调触发时 uvue image 自身尺寸更新尚未落地，测得高度偏小且之后无重测（表现为项已显示但位置重叠、容器总高度偏小）。正确做法是「立即测一次并标记完成 + `setTimeout(0)` 再补测一次」；修复后实测 `containerH === maxBottom`、重叠数 0
 - **作用域插槽透出函数在 Web 端可用且 props 必须 camelCase**：`<m-waterfall-item #default="{ onLoad }">` 与别名解构 `#default="{ onLoad: onImageLoad, overtime }"` 编译、运行均正常（此前未验证的能力，本轮实证可用）；插槽 prop 要写 `:onLoad`，kebab-case 会取不到
 - **排查提示**：演示页依赖 GitHub raw 外链图时，偶发「浏览器零请求 + 容器高度 0」先怀疑网络（本轮 `curl` 单个图片耗时 9.3s），不要误判为组件缺陷；组件本身在图片到达后自动重排
+
+### 77. UTSJSONObject 动态选项与级联组件的三条实测结论（2026-11-04 m-cascader Web 实测）
+- **`getString` 签名按端漂移**：Web 编译产物中 `UTSJSONObject.getString` 返回 `string | null`，本机 Kotlin d.ts 却是非空签名——按「可空」写 null 判断兜底是唯一安全写法（两端都编译通过）；同族 `getNumber` / `getArray` / `getBoolean` / `getJSON` 均已验证存在。动态选项树（对标 Vant 的 options）全部走 typed getter，配合 `instanceof UTSJSONObject` 过滤 children 元素，规避递归 type 编译风险
+- **`JSON.parse<UTSJSONObject[]>` 解析单对象 `{...}` 返回 null**（不是抛错）：单对象必须用 `JSON.parse<UTSJSONObject>` 泛型，数组与对象要分开封 parse 函数；null 兜底后再 `new UTSJSONObject()` 防下游空接收者
+- **递归 type 风险的工程解**：UTS 的 type 递归引用（children 引用自身数组）未验证过，动态类型 + typed getter 是零风险替代方案，`field-names` 等能力不受影响
+- **swiper 承载 swipeable**：层级切换手势用 `:disable-touch="!swipeable"` 反向承载（prop 语义不变），swiper `@change`（`e.detail.current`）同步 activeTab 但不回发 click-tab——避免用户手势与 tab 点击双重触发
+- **浏览器自动化测 uni-app x Web 页面**：自定义元素在快照中不暴露 interactive ref，`browser_click` 对视口外元素直接失败且子 agent 易误判；有效方案——视口内元素用 fresh snapshot ref 点击，其余用 `browser_evaluate` 派发合成 MouseEvent 序列（mousedown / mouseup / click，`bubbles: true`），组件 `@click` 正常响应；子 agent 给出矛盾结论时必须亲自复现

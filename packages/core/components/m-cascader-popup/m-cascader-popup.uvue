@@ -1,0 +1,216 @@
+<template>
+	<!-- 级联弹出框：m-popup + m-cascader 组合（三组件拆分后的弹层形态组件）。
+	     弹层 props 经 m-popup，级联 props / 事件 / 插槽逐项透传给 m-cascader；
+	     finish（选完最后一级）后自动关闭弹层（对齐 m-calendar-popup 确认后自动关先例） -->
+	<m-popup
+		:show="show"
+		:position="position"
+		:round="round"
+		:close-on-click-overlay="closeOnClickOverlay"
+		:safe-area-inset-top="safeAreaInsetTop"
+		:safe-area-inset-bottom="safeAreaInsetBottom"
+		:z-index="zIndex"
+		:duration="duration"
+		@update:show="onPopupUpdateShow"
+		@open="onPopupOpen"
+		@opened="onPopupOpened"
+		@close="onPopupClose"
+		@closed="onPopupClosed"
+		@click-overlay="onPopupClickOverlay"
+	>
+		<m-cascader
+			:value="value"
+			:options="options"
+			:title="title"
+			:placeholder="placeholder"
+			:active-color="activeColor"
+			:closeable="closeable"
+			:close-icon="closeIcon"
+			:show-header="showHeader"
+			:field-names="fieldNames"
+			:options-height="optionsHeight"
+			:swipeable="swipeable"
+			:custom-class="customClass"
+			:custom-style="customStyle"
+			@update:value="onCascValueChange"
+			@change="onCascChange"
+			@finish="onCascFinish"
+			@click-tab="onCascClickTab"
+			@close="onCascClose"
+		>
+			<!-- 插槽条件转发：v-if="$slots.xxx != null" 保证未传入的插槽不覆盖 m-cascader
+			     的默认渲染（无条件转发空内容会吞默认渲染） -->
+			<template v-if="$slots['title'] != null" #title>
+				<slot name="title"></slot>
+			</template>
+			<template v-if="$slots['option'] != null" #option="{ option, selected }">
+				<slot name="option" :option="option" :selected="selected"></slot>
+			</template>
+			<template v-if="$slots['options-top'] != null" #options-top="{ tabIndex }">
+				<slot name="options-top" :tab-index="tabIndex"></slot>
+			</template>
+			<template v-if="$slots['options-bottom'] != null" #options-bottom="{ tabIndex }">
+				<slot name="options-bottom" :tab-index="tabIndex"></slot>
+			</template>
+		</m-cascader>
+	</m-popup>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-cascader-popup 级联弹出框：m-popup + m-cascader 组合组件。
+	 * 自身无选择状态与样式，弹层行为（显隐 / 方位 / 圆角 / 安全区 / 遮罩）归 m-popup，
+	 * 级联行为（选项树 / field-names / 手势滑动）归 m-cascader，本组件仅做组合与转发。
+	 * 关闭路径：遮罩点击 → m-popup 内部关闭；头部关闭图标 → m-cascader close → 本组件
+	 * 派发 update:show(false)，两路最终均经 m-popup close 事件统一派发本组件 close。
+	 */
+	import {
+		CascaderValue,
+		CascaderFieldNames,
+		CascaderChangeEvent
+	} from '../m-cascader/cascader.uts'
+	import { IconName } from '../m-icon/icons.uts'
+	import MCascader from '../m-cascader/m-cascader.uvue'
+
+	/** 弹出方位（与 m-popup 的 position 取值一致） */
+	type CascaderPopupPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'
+
+	type Props = {
+		/** 是否显示弹出层（v-model:show） */
+		show?: boolean
+		/** 选中值（v-model:value；叶子 value，null 未选） */
+		value?: CascaderValue
+		/** 级联选项树（动态类型：UTSJSONObject[]） */
+		options?: UTSJSONObject[]
+		/** 常规标题 */
+		title?: string
+		/** 未选层 tab 占位文案 */
+		placeholder?: string
+		/** 主题色（选中项文字与对勾、tab 下划线） */
+		activeColor?: string
+		/** 显示头部关闭图标 */
+		closeable?: boolean
+		/** 关闭图标名称 */
+		closeIcon?: IconName
+		/** 显示头部 */
+		showHeader?: boolean
+		/** 自定义选项字段名（null 用默认 text / value / children） */
+		fieldNames?: CascaderFieldNames
+		/** 选项区高度 px（0 用主题变量 $m-cascader-options-height） */
+		optionsHeight?: number
+		/** 是否支持手势滑动切换层级 */
+		swipeable?: boolean
+		/** 弹出方位（透传 m-popup，默认底部） */
+		position?: CascaderPopupPosition
+		/** 弹层圆角（透传 m-popup） */
+		round?: boolean
+		/** 点击遮罩后是否关闭（透传 m-popup） */
+		closeOnClickOverlay?: boolean
+		/** 顶部安全区（透传 m-popup） */
+		safeAreaInsetTop?: boolean
+		/** 底部安全区（透传 m-popup） */
+		safeAreaInsetBottom?: boolean
+		/** z-index 层级（透传 m-popup） */
+		zIndex?: number
+		/** 动画时长秒（透传 m-popup） */
+		duration?: number
+		/** 自定义级联面板根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义级联面板根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		value: null,
+		options: null,
+		title: '',
+		placeholder: '请选择',
+		activeColor: '',
+		closeable: true,
+		closeIcon: 'cross',
+		showHeader: true,
+		fieldNames: null,
+		optionsHeight: 0,
+		swipeable: true,
+		position: 'bottom',
+		round: true,
+		closeOnClickOverlay: true,
+		safeAreaInsetTop: false,
+		safeAreaInsetBottom: true,
+		zIndex: 1,
+		duration: 0.3,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		'update:show': [value: boolean]
+		/** 选中值变化（v-model:value；change 与 finish 均回写，叶子已匹配时内部防循环跳过） */
+		'update:value': [value: CascaderValue]
+		/** 点击选项后触发（含未选完的中间层） */
+		change: [event: CascaderChangeEvent]
+		/** 选完最后一级后触发（自动关闭弹层） */
+		finish: [event: CascaderChangeEvent]
+		/** 点击 tab */
+		'click-tab': [tabIndex: number, title: string]
+		open: []
+		opened: []
+		close: []
+		closed: []
+		/** 点击遮罩 */
+		'click-overlay': [event: MouseEvent]
+	}>()
+
+	// ========== 弹层事件转发 ==========
+	// 模板绑定的组件事件处理函数一律 const 箭头函数：function 声明在 VDOM 生成 Kotlin 中被裸名传递报 Function invocation expected
+
+	const onPopupUpdateShow = (value: boolean) => {
+		emit('update:show', value)
+	}
+
+	const onPopupOpen = () => {
+		emit('open')
+	}
+
+	const onPopupOpened = () => {
+		emit('opened')
+	}
+
+	const onPopupClose = () => {
+		emit('close')
+	}
+
+	const onPopupClosed = () => {
+		emit('closed')
+	}
+
+	const onPopupClickOverlay = (e: MouseEvent) => {
+		emit('click-overlay', e)
+	}
+
+	// ========== 级联事件转发（finish 额外触发关闭） ==========
+
+	const onCascValueChange = (value: CascaderValue) => {
+		emit('update:value', value)
+	}
+
+	const onCascChange = (event: CascaderChangeEvent) => {
+		emit('change', event)
+	}
+
+	/** 选完最后一级：派发 finish 后关闭弹层 */
+	const onCascFinish = (event: CascaderChangeEvent) => {
+		emit('finish', event)
+		emit('update:show', false)
+	}
+
+	const onCascClickTab = (tabIndex: number, title: string) => {
+		emit('click-tab', tabIndex, title)
+	}
+
+	/** 头部关闭图标：关闭弹层（close 事件由 m-popup 关闭过程统一派发，不在此重复） */
+	const onCascClose = () => {
+		emit('update:show', false)
+	}
+</script>

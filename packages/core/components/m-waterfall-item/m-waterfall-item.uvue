@@ -1,0 +1,147 @@
+<template>
+	<!-- 瀑布流项：容器下发列宽 / 位置（内联样式），项负责在正确列宽下测量自身高度；
+	     默认插槽透出 onLoad（内容加载完成后调用，触发重新测量与重排）与 columnWidth -->
+	<view ref="itemRef" :class="rootClass" :style="itemStyle">
+		<slot :onLoad="handleContentLoad" :columnWidth="columnWidth"></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { WATERFALL_KEY, WaterfallContext, generateWaterfallId } from '../m-waterfall/context.uts'
+
+	type Props = {
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式（margin 不计入排版高度，间距请用内部 padding） */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		customClass: '',
+		customStyle: ''
+	})
+
+	/** 项根节点（测量内容高度，绝对定位不影响自身内容布局） */
+	const itemRef = ref<UniElement | null>(null)
+	/** 注入瀑布流上下文（独立使用时为 null，退化为普通容器） */
+	const waterfall = inject<WaterfallContext | null>(WATERFALL_KEY, null)
+
+	/** 项唯一 id（注册序即渲染序） */
+	const itemId = generateWaterfallId()
+	if (waterfall != null) {
+		waterfall.register(itemId)
+	}
+	onUnmounted(() => {
+		if (waterfall != null) {
+			waterfall.unregister(itemId)
+		}
+	})
+
+	/**
+	 * 测量自身高度并上报容器
+	 *
+	 * 列宽未知（容器尚未测量完成）时跳过，避免在错误宽度下得到失真的换行高度；
+	 * markAsLoaded 为 true 表示内容已完成加载，容器可排版该项。
+	 *
+	 * @param markAsLoaded 是否同时标记该项加载完成
+	 */
+	function measureSelf(markAsLoaded: boolean): void {
+		const el = itemRef.value
+		const ctx = waterfall
+		if (el == null || ctx == null || ctx.columnWidth <= 0) {
+			return
+		}
+		el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+			ctx.updateHeight(itemId, rect.height)
+			if (markAsLoaded) {
+				ctx.markLoaded(itemId)
+			}
+		})
+	}
+
+	/**
+	 * 插槽回调：内容（图片等异步高度）加载完成后调用
+	 *
+	 * 图片 @load 回调触发时，图片组件自身的尺寸更新可能尚未落地（widthFix 等模式），
+	 * 因此先立即测量一次并标记加载完成，再延后一帧补测一次修正真实高度；
+	 * 内容尺寸再次变化时可重复调用。
+	 */
+	function handleContentLoad(): void {
+		measureSelf(true)
+		setTimeout(() => {
+			measureSelf(false)
+		}, 0)
+	}
+
+	/** 根节点类名：基础类 + 自定义类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-waterfall-item'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 当前列宽（px，随容器重排更新；供插槽内容按列宽布局） */
+	const columnWidth = computed<number>(() => {
+		if (waterfall == null) {
+			return 0
+		}
+		waterfall.layoutVersion.value
+		return waterfall.columnWidth
+	})
+
+	/** 根节点动态样式：直接应用容器计算的定位样式，最后拼接自定义样式 */
+	const itemStyle = computed<string>(() => {
+		let style = ''
+		if (waterfall != null) {
+			waterfall.layoutVersion.value
+			const index = waterfall.indexOf(itemId)
+			if (index != -1) {
+				style = waterfall.styles[index]
+			}
+		}
+		if (props.customStyle != '') {
+			if (style != '') {
+				style += ' '
+			}
+			style += props.customStyle
+		}
+		return style
+	})
+
+	onMounted(() => {
+		nextTick(() => {
+			measureSelf(false)
+		})
+	})
+
+	// 容器宽度变化 / reflow() 后，在正确列宽下重新测量
+	watch(
+		(): number => waterfall == null ? 0 : waterfall.measureVersion.value,
+		() => {
+			measureSelf(false)
+		},
+		{ flush: 'post' }
+	)
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 项：绝对定位，宽度 / 位置由容器内联下发；未排版前隐藏（仍可测量内容高度） */
+	.m-waterfall-item {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		visibility: hidden;
+		flex-direction: column;
+	}
+</style>

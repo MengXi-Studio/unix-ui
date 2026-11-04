@@ -1,0 +1,305 @@
+<template>
+	<!-- 瀑布流容器：相对定位 + 显式回填总高度（绝对定位子项不撑开父级）；
+	     列宽由容器实测后下发给 m-waterfall-item，项内联应用宽度 / 位置 -->
+	<view ref="rootRef" :class="rootClass" :style="rootStyle">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { WATERFALL_KEY, WaterfallContext } from './context.uts'
+
+	type Props = {
+		/** 列数（默认 2） */
+		columns?: number
+		/** 列间距（px，默认 16） */
+		columnGap?: number
+		/** 行间距（px，默认 16） */
+		rowGap?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式（左右内边距会挤占列宽，建议用外层容器控制） */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		columns: 2,
+		columnGap: 16,
+		rowGap: 16,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 全部项加载完成（首轮排版结束）时触发 */
+		load: []
+		/** 出现未加载完成的项（新一轮加载开始）时触发 */
+		loadstart: []
+	}>()
+
+	/** 容器根节点（测量可用宽度） */
+	const rootRef = ref<UniElement | null>(null)
+	/** 容器总高度（px，全部已排版列的累计高度最大值） */
+	const totalHeight = ref(0)
+	/** 加载状态机：idle 空闲 / busy 有项未加载完成 */
+	let loadStatus: string = 'idle'
+	/** 全部加载完成时调用的回调集合（onLoad 实例方法注册） */
+	let loadedHandlers: Array<() => void> = []
+
+	/** 排版上下文：项在 setup 中注册自身，容器据此计算列位 */
+	const context = new WaterfallContext()
+	provide(WATERFALL_KEY, context)
+
+	/**
+	 * 未排版的项样式：保留正确列宽以便测量内容高度，但不可见、不占视觉位置
+	 *
+	 * @param width 当前列宽（0 表示容器宽度尚未测得）
+	 * @returns 内联样式串
+	 */
+	function hiddenStyle(width: number): string {
+		if (width <= 0) {
+			return 'visibility: hidden;'
+		}
+		return 'position: absolute; left: 0px; top: 0px; width: ' + width.toString() + 'px; visibility: hidden;'
+	}
+
+	/**
+	 * 根据全部项的加载态推进状态机并派发 loadstart / load
+	 *
+	 * idle → busy 表示新一轮加载开始（emit loadstart）；
+	 * busy → idle 表示全部完成（先执行 onLoad 注册的回调，再 emit load）。
+	 */
+	function updateLoadStatus(): void {
+		let allLoaded = true
+		let i = 0
+		while (i < context.ids.length) {
+			if (!context.loaded[i]) {
+				allLoaded = false
+				break
+			}
+			i++
+		}
+		if (!allLoaded) {
+			if (loadStatus == 'idle') {
+				loadStatus = 'busy'
+				emit('loadstart')
+			}
+		} else if (loadStatus == 'busy') {
+			loadStatus = 'idle'
+			const handlers = loadedHandlers
+			loadedHandlers = []
+			let h = 0
+			while (h < handlers.length) {
+				handlers[h]()
+				h++
+			}
+			emit('load')
+		}
+	}
+
+	/**
+	 * 根据已加载项的高度计算「最短列优先」的绝对定位，并回填容器总高度
+	 *
+	 * 严格按注册顺序逐项落位：遇到未加载 / 未测量的项即阻塞，后续项保持隐藏，
+	 * 保证已显示项位置稳定（对齐 Sard 的顺序排版语义）。
+	 */
+	function recompute(): void {
+		const count = context.ids.length
+		const columns = props.columns > 0 ? props.columns : 1
+		const columnGap = props.columnGap >= 0 ? props.columnGap : 0
+		const rowGap = props.rowGap >= 0 ? props.rowGap : 0
+		const columnWidth = context.columnWidth
+		// 每列当前累计高度（含行间距前的底边）
+		const acc: number[] = []
+		let c = 0
+		while (c < columns) {
+			acc.push(0)
+			c++
+		}
+		let blocked = false
+		let i = 0
+		while (i < count) {
+			const loaded = context.loaded[i]
+			const height = context.heights[i]
+			if (blocked || !loaded || height < 0 || columnWidth <= 0) {
+				context.styles[i] = hiddenStyle(columnWidth)
+				blocked = true
+				i++
+				continue
+			}
+			// 最短列优先，同高取最左列
+			let minIndex = 0
+			let j = 1
+			while (j < columns) {
+				if (acc[j] < acc[minIndex]) {
+					minIndex = j
+				}
+				j++
+			}
+			const top = acc[minIndex] == 0 ? 0 : acc[minIndex] + rowGap
+			const left = (columnWidth + columnGap) * minIndex
+			context.styles[i] = 'position: absolute; left: ' + left.toString() + 'px; top: ' + top.toString()
+				+ 'px; width: ' + columnWidth.toString() + 'px; visibility: visible;'
+			acc[minIndex] = top + height
+			i++
+		}
+		let maxHeight = 0
+		let k = 0
+		while (k < columns) {
+			if (acc[k] > maxHeight) {
+				maxHeight = acc[k]
+			}
+			k++
+		}
+		totalHeight.value = maxHeight
+		context.layoutVersion.value++
+		updateLoadStatus()
+	}
+
+	/**
+	 * 测量容器宽度，换算列宽后重排并触发全部项重新测量
+	 *
+	 * 无 ResizeObserver，只能在挂载、窗口尺寸变化与 reflow() 时主动测量。
+	 */
+	function measureWidth(): void {
+		const el = rootRef.value
+		if (el == null) {
+			return
+		}
+		el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+			const columns = props.columns > 0 ? props.columns : 1
+			const columnGap = props.columnGap >= 0 ? props.columnGap : 0
+			let columnWidth = (rect.width - (columns - 1) * columnGap) / columns
+			if (columnWidth < 0) {
+				columnWidth = 0
+			}
+			context.columnWidth = columnWidth
+			recompute()
+			context.requestMeasure()
+		})
+	}
+
+	/**
+	 * 窗口尺寸变化：重测容器宽度并让全部项在新列宽下重新测量
+	 */
+	function handleWindowResize() {
+		measureWidth()
+	}
+
+	/**
+	 * 重新排版（实例方法 / 暴露给使用方）
+	 *
+	 * 重测容器宽度 → 全部项重新测量 → 自动重排；内容尺寸变化后（如图片加载完成）可手动调用。
+	 */
+	function reflow(): void {
+		measureWidth()
+	}
+
+	/**
+	 * 注册「全部加载完成」回调（实例方法，对齐 Sard onLoad(handler)）
+	 *
+	 * 当前空闲则下一帧立即执行；忙碌中则缓存，待 load 时统一执行。
+	 *
+	 * @param handler 回调函数
+	 */
+	function registerLoadHandler(handler: () => void): void {
+		nextTick(() => {
+			if (loadStatus == 'idle') {
+				handler()
+			} else if (loadedHandlers.indexOf(handler) == -1) {
+				loadedHandlers.push(handler)
+			}
+		})
+	}
+
+	/** 根节点类名：基础类 + 自定义类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-waterfall'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 根节点动态样式：回填排版总高度，保证页面滚动区与内容一致 */
+	const rootStyle = computed<string>(() => {
+		let style = ''
+		if (totalHeight.value > 0) {
+			style = 'height: ' + totalHeight.value.toString() + 'px;'
+		}
+		if (props.customStyle != '') {
+			if (style != '') {
+				style += ' '
+			}
+			style += props.customStyle
+		}
+		return style
+	})
+
+	// 项注册 / 注销 / 高度 / 加载态变化 → 重排
+	watch(
+		(): number => context.revision.value,
+		() => {
+			recompute()
+		},
+		{ flush: 'post' }
+	)
+
+	// 列数 / 列间距变化会改变列宽，必须重新测量
+	watch(
+		(): number => props.columns,
+		() => {
+			measureWidth()
+		},
+		{ flush: 'post' }
+	)
+
+	watch(
+		(): number => props.columnGap,
+		() => {
+			measureWidth()
+		},
+		{ flush: 'post' }
+	)
+
+	// 行间距只影响落位，不需重测宽度
+	watch(
+		(): number => props.rowGap,
+		() => {
+			recompute()
+		},
+		{ flush: 'post' }
+	)
+
+	onMounted(() => {
+		uni.onWindowResize(handleWindowResize)
+		nextTick(() => {
+			measureWidth()
+		})
+	})
+
+	onUnmounted(() => {
+		uni.offWindowResize(handleWindowResize)
+	})
+
+	defineExpose({
+		reflow,
+		onLoad: registerLoadHandler
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 容器：相对定位作为项的定位基准；高度由内联样式回填 */
+	.m-waterfall {
+		position: relative;
+		width: 100%;
+	}
+</style>

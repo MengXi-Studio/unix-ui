@@ -452,3 +452,9 @@
 - **滚动容器识别**：Web 判 `classList` 含 `uni-scroll-view`（框架把 scroll-view 渲染成多层同名 class 的 div，最内层即 scroller）；App / 小程序判 `scrollHeight > offsetHeight`（官方文档：非滚动组件该值返回视图高度，相等）。用 `scrollHeight > offsetHeight` 单独作判据会误判「固定高度 + overflow:hidden + 内容溢出」的普通 view（如自定义高度的 m-sticky-box），只在兜底时用
 - **吸附基准要用滚动容器可视区，不要用视口**：uvue 页面常见「自定义导航栏 + scroll-view」，视口顶部在导航栏之上，按视口吸附会把吸附条压到导航栏里；容器 rect 在滚动中不变，只需测一次
 - **演示页要有尾部留白**：最后一个吸顶块的页面位置若距内容底部不足一个视口高度，滚到底也永远越不过吸附线（实测第 6 个 m-sticky 无法触发 change/scroll），验收页末尾需留 `~600px` 空白才能覆盖最后一个变体
+
+### 76. 瀑布流实现的三条实测结论（2026-11-04 m-waterfall Web 实测）
+- **多组件家族必须拆顶层目录**：easycom 只认 `components/<tag>/<tag>.uvue`，把 `m-waterfall-item` / `m-waterfall-load` 放进 `m-waterfall/` 目录会报 `Failed to resolve component`（连带出现 `getBoundingClientRectAsync is not a function` 等派生异常）；拆成各自顶层目录后一次修复，共享逻辑仍放 `m-waterfall/context.uts` 用相对路径导入
+- **`<image mode="widthFix">` 的 `@load` 时刻不可直接测高**：回调触发时 uvue image 自身尺寸更新尚未落地，测得高度偏小且之后无重测（表现为项已显示但位置重叠、容器总高度偏小）。正确做法是「立即测一次并标记完成 + `setTimeout(0)` 再补测一次」；修复后实测 `containerH === maxBottom`、重叠数 0
+- **作用域插槽透出函数在 Web 端可用且 props 必须 camelCase**：`<m-waterfall-item #default="{ onLoad }">` 与别名解构 `#default="{ onLoad: onImageLoad, overtime }"` 编译、运行均正常（此前未验证的能力，本轮实证可用）；插槽 prop 要写 `:onLoad`，kebab-case 会取不到
+- **排查提示**：演示页依赖 GitHub raw 外链图时，偶发「浏览器零请求 + 容器高度 0」先怀疑网络（本轮 `curl` 单个图片耗时 9.3s），不要误判为组件缺陷；组件本身在图片到达后自动重排

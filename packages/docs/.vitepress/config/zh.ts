@@ -100,7 +100,8 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Layout 布局', link: '/components/layout' },
 						{ text: 'Space 间距', link: '/components/space' },
 						{ text: 'StatusBar 状态栏', link: '/components/status-bar' },
-						{ text: 'Sticky 粘性布局', link: '/components/sticky' }
+						{ text: 'Sticky 粘性布局', link: '/components/sticky' },
+						{ text: 'Waterfall 瀑布流', link: '/components/waterfall' }
 					]
 				},
 				{

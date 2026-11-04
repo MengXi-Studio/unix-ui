@@ -78,6 +78,12 @@
 				}
 			},
 			{
+				"path": "waterfall/waterfall",
+				"style": {
+					"navigationBarTitleText": "瀑布流 Waterfall"
+				}
+			},
+			{
 				"path": "layout/layout",
 				"style": {
 					"navigationBarTitleText": "布局 Layout"

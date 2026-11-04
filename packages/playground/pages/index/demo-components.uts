@@ -113,6 +113,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '粘性布局',
 				enName: 'Sticky',
 				desc: '内容滚出可视范围时吸附在顶部或底部，支持吸顶 / 吸底距离、容器边界约束与吸附状态事件。'
+			},
+			{
+				name: 'waterfall',
+				zhName: '瀑布流',
+				enName: 'Waterfall',
+				desc: '按内容实际高度自适应排列的多列布局，支持列数与间距、已知宽高占位、动态增删与重新排版。'
 			}
 		]
 	},

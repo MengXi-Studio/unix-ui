@@ -2,7 +2,7 @@
 
 ## [0.3.0] - 2026-11-03
 
-新增弹性布局组件（m-flex / m-flex-item）、状态栏占位组件（m-status-bar）与粘性布局组件（m-sticky / m-sticky-box），均为布局组件。
+新增弹性布局组件（m-flex / m-flex-item）、状态栏占位组件（m-status-bar）、粘性布局组件（m-sticky / m-sticky-box）与瀑布流组件（m-waterfall / m-waterfall-item / m-waterfall-load），均为布局组件。
 
 ### 新增
 
@@ -10,6 +10,7 @@
 - **m-status-bar 状态栏占位**：为 Navbar / Notify 等贴顶元素预留系统状态栏高度；`height` prop（px，大于 0 时直接使用）优先，否则 App 端自动读取 `uni.getWindowInfo().statusBarHeight`，Web / 小程序无系统状态栏保持 0（不占位）；`custom-class` / `custom-style` 样式直达（背景色等），无专属主题变量；playground 的 demo-navbar 同步改为消费该组件
 - **m-sticky 粘性布局（全端受控吸附）**：页面在滚动容器 `@scroll` 中回传 `scroll-top`，组件沿 `parentElement` 自动识别最近的滚动容器（Web 按 `uni-scroll-view` 类名、App / 小程序按滚动高度大于可视高度），以其实视区为吸附基准；吸附时内容节点切换 `position: fixed`，根节点回填实测占位高度避免布局塌陷。**不使用原生 CSS `position: sticky`**：uni-app x Web 运行时给所有 `view` 注入 `overflow: hidden`，sticky 的最近滚动容器会退化为不滚动的父级而完全失效（实测滚动 400px 后 rect.top=-198 不吸附）。`position`（top / bottom）与互斥生效的 `offset-top` / `offset-bottom`（相对滚动容器可视边缘，自定义导航栏无需叠加高度）、`z-index`（默认 99 走主题类，非默认 inline 覆盖）、`custom-class` / `custom-style`（挂在内容节点）、`change(isFixed)` 与 `scroll({ scrollTop, isFixed })` 事件；仅首次测量 + 窗口 resize 自动重测，内容尺寸变化需重建组件（不提供 `refresh()`）
 - **m-sticky-box 容器边界**：provide/inject 向内部 m-sticky 注入容器 `UniElement` 引用，吸附元素到达容器上下边缘时回顶（复刻 Vant 的 containerVisible 判定与 translateY 补偿）；容器高度需显式指定以形成吸附行程；新增主题变量 `$m-sticky-z-index: 99 !default`
+- **m-waterfall / m-waterfall-item / m-waterfall-load 瀑布流**：容器实测可用宽度等分出列宽，项在正确列宽下实测自身高度上报，按「注册顺序 → 最短列优先」计算绝对定位（left / top / width）并回填容器总高度；严格顺序排版（前项未加载完成时后续项隐藏等待，已显示项不跳动），未加载项以 `visibility: hidden` 按正确列宽占位保证测量准确；`columns`（默认 2）、`column-gap` / `row-gap`（px，默认 16）、`custom-class` / `custom-style`；项插槽透出 `onLoad`（内容加载完成后调用，触发重测）与 `columnWidth`；`loadstart` / `load` 事件与 `reflow()` / `onLoad(handler)` 实例方法；`m-waterfall-load` 按 width / height 用 `padding-top` 预占高度，`max-wait` 内加载完成取图片真实宽高、超时保留自定义比例并透出 `overtime`；无 ResizeObserver，容器宽度在挂载 / 窗口 resize / reflow 时测量，容器左右 padding 会挤压列宽（留白请放外层）
 
 ### 修复
 

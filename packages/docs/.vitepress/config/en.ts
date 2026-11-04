@@ -87,7 +87,8 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Layout', link: '/en/components/layout' },
 						{ text: 'Space', link: '/en/components/space' },
 						{ text: 'StatusBar', link: '/en/components/status-bar' },
-						{ text: 'Sticky', link: '/en/components/sticky' }
+						{ text: 'Sticky', link: '/en/components/sticky' },
+						{ text: 'Waterfall', link: '/en/components/waterfall' }
 					]
 				},
 				{

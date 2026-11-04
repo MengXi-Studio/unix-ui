@@ -1,0 +1,145 @@
+<template>
+	<view class="page">
+		<demo-navbar title="级联输入框" subtitle="CascaderInput" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<view class="demo-label"><text class="demo-label-text">基本用法</text></view>
+				<m-cascader-input
+					v-model:value="inputValue"
+					title="请选择所在地区"
+					:options="basicOptions"
+					placeholder="请选择地区"
+					@finish="onInputFinish"
+					@clear="onInputClear"
+				/>
+				<view class="demo-label"><text class="demo-label-text">禁用</text></view>
+				<m-cascader-input
+					:value="'330106'"
+					title="请选择所在地区"
+					:options="basicOptions"
+					:disabled="true"
+				/>
+				<view class="demo-label"><text class="demo-label-text">无边框嵌入式</text></view>
+				<m-cascader-input
+					:value="'440305'"
+					title="请选择所在地区"
+					:options="basicOptions"
+					:border="false"
+				/>
+				<view class="event-log">
+					<text class="event-text">v-model：{{ fmtNullableValue(inputValue) }}</text>
+				</view>
+				<text class="caption">m-input 触发器 + 弹层组合：选中后按「省/市/区」路径文字回显；有值显示清空按钮；disabled 禁用触发</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '级联输入框 CascaderInput', name: 'cascader-input' })
+	import { CascaderChangeEvent, CascaderValue } from '@/uni_modules/m-ui-x/components/m-cascader/cascader.uts'
+
+	/** 安全解析：JSON.parse 泛型返回可空，null 兜底空数组 */
+	function parseOptions(json: string): UTSJSONObject[] {
+		const parsed = JSON.parse<UTSJSONObject[]>(json)
+		if (parsed != null) {
+			return parsed
+		}
+		const empty: UTSJSONObject[] = []
+		return empty
+	}
+
+	/** 省市区基础选项 */
+	const basicOptions: UTSJSONObject[] = parseOptions(`[
+		{"text":"浙江省","value":"330000","children":[
+			{"text":"杭州市","value":"330100","children":[
+				{"text":"西湖区","value":"330106"},
+				{"text":"余杭区","value":"330110"},
+				{"text":"临平区","value":"330113"}
+			]},
+			{"text":"宁波市","value":"330200","children":[
+				{"text":"海曙区","value":"330203"},
+				{"text":"鄞州区","value":"330212"}
+			]},
+			{"text":"温州市","value":"330300","children":[
+				{"text":"鹿城区","value":"330302"},
+				{"text":"瓯海区","value":"330304"}
+			]}
+		]},
+		{"text":"江苏省","value":"320000","children":[
+			{"text":"南京市","value":"320100","children":[
+				{"text":"玄武区","value":"320102"},
+				{"text":"鼓楼区","value":"320106"}
+			]},
+			{"text":"苏州市","value":"320500","children":[
+				{"text":"姑苏区","value":"320508"},
+				{"text":"工业园区","value":"320571"}
+			]}
+		]},
+		{"text":"广东省","value":"440000","children":[
+			{"text":"广州市","value":"440100","children":[
+				{"text":"天河区","value":"440106"},
+				{"text":"越秀区","value":"440104"}
+			]},
+			{"text":"深圳市","value":"440300","children":[
+				{"text":"福田区","value":"440304"},
+				{"text":"南山区","value":"440305"}
+			]}
+		]}
+	]`)
+
+	// ========== 输入框演示 ==========
+	const inputValue = ref<CascaderValue | null>(null)
+
+	// 模板绑定处理函数一律 const 箭头函数：function 声明在 VDOM 生成 Kotlin 中被裸名传递报 Function invocation expected
+
+	/** 可空值转展示文本 */
+	function fmtNullableValue(v: CascaderValue | null): string {
+		if (v == null) {
+			return 'null（未选）'
+		}
+		return v.toString()
+	}
+
+	/** 输入框 finish 记录 */
+	const onInputFinish = (event: CascaderChangeEvent) => {
+		inputValue.value = event.value
+	}
+
+	const onInputClear = () => {
+		inputValue.value = null
+	}
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+		flex-direction: column;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	/* 输入框分组标签 */
+	.demo-label {
+		margin-top: 12px;
+		margin-bottom: 8px;
+	}
+	.demo-label-text {
+		font-size: 13px;
+		color: #646566;
+	}
+</style>

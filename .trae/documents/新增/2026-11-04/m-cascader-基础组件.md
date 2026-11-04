@@ -163,7 +163,7 @@ type CascaderChangeEvent = { value: string, selectedOptions: CascaderOption[], t
 | 弹出框 | `packages/core/components/m-cascader-popup/m-cascader-popup.uvue` | m-popup（position 默认 bottom、round 默认 true）组合；finish 自动 `update:show` 关闭；头部关闭图标仅发 `update:show`（close 事件由 m-popup 统一派发防双发）；四插槽条件转发 |
 | 输入框 | `packages/core/components/m-cascader-input/m-cascader-input.uvue` | m-input 只读触发器 + 弹层（`:z-index="3"`）+ 透明触发层（z-index 1）+ 自绘清空（z-index 2）；displayText 用 findCascaderPath 路径文字 `/` 连接，未找到回退 value 字符串 |
 | 主题变量 | `packages/core/theme/vars.scss` | `$m-cascader-*` 段（header 48px / tabs 48px / options 384px / option 40px 等）+ `$m-cascader-input-*` 段（trigger / clear 层级与尺寸），全部 `!default` |
-| 演示页 | `packages/playground/pages-sub/cascader/cascader.uvue` + pages.json + router.config.uts + demo-components.uts | 9 区块穷举：基础 / 数字 value / 自定义主题色+高度 / 关闭手势 / 弹出框 / 输入框三形态 / 异步加载 / field-names / 插槽四件套 |
+| 演示页 | `packages/playground/pages-sub/cascader/cascader.uvue`（7 区块）+ `cascader-popup/cascader-popup.uvue` + `cascader-input/cascader-input.uvue`（各自独立页）+ demo-components.uts | 级联面板穷举：基础 / 数字 value / 自定义主题色+高度 / 关闭手势 / 异步加载 / field-names / 插槽四件套；弹出框与输入框各自一页穷举（对齐日历家族形态），页面声明走 defineUniPage 宏，pages.json 与路由表由 routeGen 插件生成 |
 | 文档 | docs zh / en 各 3 篇 + 侧栏（zh.ts / en.ts 表单区字母序）+ changelog 三处（docs zh / en、插件 KEEP 文件） | frontmatter `added: 0.3.0` |
 
 ### 与伪代码设计的偏差（自定默认决策）
@@ -173,7 +173,7 @@ type CascaderChangeEvent = { value: string, selectedOptions: CascaderOption[], t
 3. **`options-height` prop 默认 0 而非字面 384**：0 表示走主题变量 `$m-cascader-options-height: 384px`，prop > 0 时 inline 覆盖——保持「默认值全部走主题变量」的覆盖契约一致性。
 4. **finish 自动关闭弹层**：m-cascader-popup 在 finish 后主动 `update:show` 关闭（Vant Popup 组合的惯例行为，演示页与文档已标注）。
 5. **层级列表用 swiper 承载**（Q2=②）：每层一个 pane，`swipeable` 由 `:disable-touch` 反向承载；swiper `@change` 同步 activeTab（不回发 click-tab）。
-6. **演示页路由补挂两条命名路由**（验收后修复）：首页 demo-components 登记的 `cascader-popup` / `cascader-input` 条目按名导航（`router.push({ name })`，ux-router strict 模式未注册即抛 RouterError），而演示页为一页穷举形态 → router.config.uts 补两条命名路由指向同一 path（meta.title 各自正确）。代价是路由初始化时 2 条「重复路由路径」warn（pathMap 后者覆盖前者，仅影响直连 path 时的 document.title 取值，按名导航全部正常），浏览器实测三条目均正常跳转。
+6. **演示页拆分为三页**（初版为一页穷举，验收后曾用 router.config.uts 别名路由补救两条目导航，最终按用户要求拆除别名层、对齐日历家族拆为三个独立演示页）：各页 defineUniPage 宏声明 name / title，pages.json 与 routes.gen.uts 由 routeGen 插件生成，无重复路径 warn。
 
 ### 踩坑记录
 

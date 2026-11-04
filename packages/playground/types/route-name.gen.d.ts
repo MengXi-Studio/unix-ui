@@ -18,6 +18,10 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		'calendar-popup': 'pages-sub/calendar-popup/calendar-popup'
 		/** 日历 Calendar */
 		calendar: 'pages-sub/calendar/calendar'
+		/** 级联输入框 CascaderInput */
+		'cascader-input': 'pages-sub/cascader-input/cascader-input'
+		/** 级联弹出框 CascaderPopup */
+		'cascader-popup': 'pages-sub/cascader-popup/cascader-popup'
 		/** 级联选择 Cascader */
 		cascader: 'pages-sub/cascader/cascader'
 		/** 单元格 Cell */

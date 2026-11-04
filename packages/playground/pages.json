@@ -42,6 +42,18 @@
 					}
 				},
 				{
+					"path": "cascader-input/cascader-input",
+					"style": {
+						"navigationBarTitleText": "级联输入框 CascaderInput"
+					}
+				},
+				{
+					"path": "cascader-popup/cascader-popup",
+					"style": {
+						"navigationBarTitleText": "级联弹出框 CascaderPopup"
+					}
+				},
+				{
 					"path": "cascader/cascader",
 					"style": {
 						"navigationBarTitleText": "级联选择 Cascader"

@@ -54,57 +54,6 @@
 				<text class="caption">swipeable=false 关闭手势滑动换层，仅可点击 tab 或选项切换层级；placeholder 自定义未选层 tab 文案</text>
 			</view>
 
-			<text class="section" id="popup">级联弹出框</text>
-			<view class="card">
-				<m-button block @click="openPopup">打开级联弹层（底部 + 圆角）</m-button>
-				<m-cascader-popup
-					v-model:show="popupShow"
-					title="请选择所在地区"
-					:options="basicOptions"
-					@change="onPopupChange"
-					@finish="onPopupFinish"
-					@open="onPopupOpen"
-					@closed="onPopupClosed"
-					@click-overlay="onPopupOverlay"
-				/>
-				<view class="event-log">
-					<text class="event-text">v-model：{{ fmtNullableValue(popupValue) }}</text>
-					<text class="event-text">最近事件：{{ popupLog }}</text>
-				</view>
-				<text class="caption">m-popup + m-cascader 弹层组合；finish 后自动关闭；遮罩点击 / 头部关闭图标均可关闭并派发 close</text>
-			</view>
-
-			<text class="section" id="input">级联输入框</text>
-			<view class="card">
-				<view class="demo-label"><text class="demo-label-text">基本用法</text></view>
-				<m-cascader-input
-					v-model:value="inputValue"
-					title="请选择所在地区"
-					:options="basicOptions"
-					placeholder="请选择地区"
-					@finish="onInputFinish"
-					@clear="onInputClear"
-				/>
-				<view class="demo-label"><text class="demo-label-text">禁用</text></view>
-				<m-cascader-input
-					:value="'330106'"
-					title="请选择所在地区"
-					:options="basicOptions"
-					:disabled="true"
-				/>
-				<view class="demo-label"><text class="demo-label-text">无边框嵌入式</text></view>
-				<m-cascader-input
-					:value="'440305'"
-					title="请选择所在地区"
-					:options="basicOptions"
-					:border="false"
-				/>
-				<view class="event-log">
-					<text class="event-text">v-model：{{ fmtNullableValue(inputValue) }}</text>
-				</view>
-				<text class="caption">m-input 触发器 + 弹层组合：选中后按「省/市/区」路径文字回显；有值显示清空按钮；disabled 禁用触发</text>
-			</view>
-
 			<text class="section" id="async">异步加载</text>
 			<view class="card">
 				<m-cascader :options="asyncOptions" :show-header="false" @change="onAsyncChange" />
@@ -337,52 +286,7 @@
 		numberLog.value = 'finish → value=' + event.value.toString()
 	}
 
-	// ========== 3 弹出框 ==========
-	const popupShow = ref<boolean>(false)
-	const popupValue = ref<CascaderValue | null>(null)
-	const popupLog = ref<string>('（等待交互）')
-
-	/** 打开弹层 */
-	const openPopup = () => {
-		popupShow.value = true
-	}
-
-	const onPopupChange = (event: CascaderChangeEvent) => {
-		popupValue.value = event.value
-		popupLog.value = 'change → ' + event.value.toString()
-	}
-
-	/** finish 记录（弹层同步自动关闭） */
-	const onPopupFinish = (event: CascaderChangeEvent) => {
-		popupValue.value = event.value
-		popupLog.value = 'finish → ' + event.value.toString() + '（自动关闭）'
-	}
-
-	const onPopupOpen = () => {
-		popupLog.value = 'open'
-	}
-
-	const onPopupClosed = () => {
-		popupLog.value = 'closed'
-	}
-
-	const onPopupOverlay = () => {
-		popupLog.value = 'click-overlay（遮罩已关闭）'
-	}
-
-	// ========== 4 输入框 ==========
-	const inputValue = ref<CascaderValue | null>(null)
-
-	/** 输入框 finish 记录 */
-	const onInputFinish = (event: CascaderChangeEvent) => {
-		inputValue.value = event.value
-	}
-
-	const onInputClear = () => {
-		inputValue.value = null
-	}
-
-	// ========== 5 异步加载 ==========
+	// ========== 3 异步加载 ==========
 	const asyncTip = ref<string>('（点击省份后 600ms 填充子级）')
 
 	/** 异步 change：首次点击省份时模拟请求填充 children（children 为空数组视为叶子直接 finish） */
@@ -409,14 +313,14 @@
 		}, 600)
 	}
 
-	// ========== 6 field-names ==========
+	// ========== 4 field-names ==========
 	const customLog = ref<string>('（等待交互）')
 
 	const onCustomFinish = (event: CascaderChangeEvent) => {
 		customLog.value = 'finish → ' + event.value.toString()
 	}
 
-	// ========== 7 插槽作用域取值桥接（模板表达式调用导入函数会被 unref 包裹后不可调用） ==========
+	// ========== 5 插槽作用域取值桥接（模板表达式调用导入函数会被 unref 包裹后不可调用） ==========
 
 	const optionTextOf = (opt: UTSJSONObject): string => {
 		const s = opt.getString('text')
@@ -447,15 +351,6 @@
 	.demo-btn-row {
 		flex-direction: row;
 		margin-top: 12px;
-	}
-	/* 输入框分组标签 */
-	.demo-label {
-		margin-top: 12px;
-		margin-bottom: 8px;
-	}
-	.demo-label-text {
-		font-size: 13px;
-		color: #646566;
 	}
 	/* 插槽演示：标题 / 上下扩展区 / 自定义选项 */
 	.demo-slot-title {

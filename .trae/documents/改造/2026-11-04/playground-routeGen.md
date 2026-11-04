@@ -33,7 +33,7 @@
 | 25 个页面 | script setup 顶部插入 `defineUniPage({ title, name })`，name 保持 kebab-case、title「中文 English」；loading.uvue 为纯静态页，补最小空 script setup 承载宏 |
 | `router/routes.gen.uts` + `route-name.gen.d.ts`【生成产物，提交 git】 | 25 条路由与原手写版逐字一致（entryPage 置首） |
 | `pages.json`【插件重生成】 | pages / subPackages 全自动 + navigationBarTitleText 来自宏 title；globalStyle 等非页面字段自动合并保留 |
-| `router/router.config.uts`【改写】 | 改为「`import { routes as generatedRoutes } from './routes.gen.uts'` + concat 级联两条别名路由」的显式扩展层（插件按 path 1:1 生成，无法表达同 path 多 name） |
+| `router/router.config.uts`【先改写，后删除】 | 初版为「`import { routes as generatedRoutes } from './routes.gen.uts'` + concat 级联两条别名路由」的显式扩展层；级联演示页拆为三页后别名层失去存在意义，已整体删除（见下方追加实施记录） |
 | `pages/index/demo-components.uts`【注释更新】 | 登记链路说明改为「宏声明 + 条目登记」两处 |
 | `.trae/rules/architecture.md` | 第 3 节步骤 4 与第 6 节表格更新为新的路由声明落点 |
 
@@ -51,8 +51,25 @@
 - dev server（5174，base /unix-ui/playground/）正常；`/main` 返回 JS 模块（uni transform 全生效：pages-json-js 注入、uni-h5 dist-x 插件、createVueApp）。
 - 首页加载正常，document.title「unix-ui 组件演示」来自宏；三个级联条目按名导航全部正常且 title 各自正确（级联选择 Cascader / 级联弹出框 CascaderPopup / 级联输入框 CascaderInput）；日历弹出框条目导航正常。
 - 抽验 5 个页面模块（calendar / waterfall / toast / button / loading）按需编译全部 200 text/javascript。
-- 新开标签页控制台零 error，仅剩预期中的「重复路由路径」warn（级联别名路由，已在 router.config.uts 注释与任务文档说明）。
+- 新开标签页控制台零 error，仅剩预期中的「重复路由路径」warn（级联别名路由）——拆页后该 warn 已随之消失。
 - `pnpm sync:uni-modules:check` 通过（core 零变更）。
+
+### 追加实施记录：级联演示页拆分（同日）
+
+用户问「为啥一个页面？不能跟日历一样，也分开三个页面？」——按日历家族形态把级联一页穷举拆为三个独立演示页，别名路由层随之删除：
+
+| 产物 | 说明 |
+| --- | --- |
+| `pages-sub/cascader/cascader.uvue`【裁剪】 | 移除弹出框 / 输入框模板与 script 区块，保留 7 区块（基础 / 数字 value / 主题色 / 关闭手势 / 异步加载 / field-names / 插槽），区块注释重编号 |
+| `pages-sub/cascader-popup/cascader-popup.uvue`【新建】 | 独立弹层演示页，自包含选项数据与弹层状态；宏 `defineUniPage({ title: '级联弹出框 CascaderPopup', name: 'cascader-popup' })` |
+| `pages-sub/cascader-input/cascader-input.uvue`【新建】 | 独立输入框演示页，三形态（基本 / 禁用 / 无边框）；宏 `defineUniPage({ title: '级联输入框 CascaderInput', name: 'cascader-input' })` |
+| `router/router.config.uts`【删除】 | 别名路由层失去存在意义；`router/index.uts` 改为直连 `import { routes } from './routes.gen.uts'` |
+| `pages.json` / `router/routes.gen.uts`【插件 watch 自动重生成】 | 27 页（tab 0/分包 26），新增两页条目自动出现 |
+| `pages/index/demo-components.uts` | 级联三条目过时注释清理 |
+
+**验证结论**：`pnpm sync:uni-modules:check` 通过；重启 dev server 后浏览器实测——首页三个级联条目点击导航全部正确（`/pages-sub/cascader/cascader`、`/pages-sub/cascader-popup/cascader-popup`、`/pages-sub/cascader-input/cascader-input`，document.title 各自正确），两新页内容渲染完整（popup 页「打开级联弹层」按钮 + 基础用法、input 页三形态），控制台零 error / warn（重复路径 warn 已随别名层删除消失）。
+
+**验证期踩坑**：长跑 dev server 历经端口竞争与多次 config 重启风暴后进入坏状态，症状为「部分条目点击导航静默失败（URL 不变、无报错）」且极易误判为代码问题——重启 dev server 后立即恢复。排查点击类问题前先重启 server 再取证。
 
 ### 遗留 TODO
 

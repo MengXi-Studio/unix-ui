@@ -472,3 +472,9 @@
 - **`/main` 解析的 importer 死角**：`uni:h5-resolve-id` 仅在 `importer.endsWith('index.html')` 时把 `/main` 映射到 main.uts，dev 下浏览器模块请求无 importer，项目级 config + 自定义 base 下该路径不命中；前置一个 `resolveId(id) { if (id === '/main') return main.uts 绝对路径 }` 的插件即可修复
 - **插件适配器的 bare import 依赖**：ux-router `plugins/index.mjs` 内部 `import 'unplugin'`，playground 是纯 HBuilderX 工程无 node_modules，需在 monorepo 根安装 unplugin（vite 加载 config 时按项目侧解析，不会落到 HBuilderX 内置目录）
 - **判别服务是否正常的快捷链**：`curl /unix-ui/playground/main` 看 content_type——`text/javascript` = uni transform 生效；`text/html` = uni 插件未注册（工厂未调用或宏/依赖缺失）；vite.config.ts 改动会自动重启 server（重启窗口期的 ERR_ABORTED / CONNECTION_REFUSED 是瞬态噪音，别误判为编译错误）
+
+### 79. 长跑 dev server 坏状态导致点击导航静默失败（2026-11-04 级联拆页验证实测）
+- **症状**：首页部分条目（级联三个）点击后 URL 不变、页面不跳转，控制台无 error 也无 `[ux-router]` afterEach 日志；同页其它条目（按钮）跳转正常——极易误判为新改代码的问题
+- **根因**：dev server 长跑期间历经端口竞争（两个 `cli launch` 并存）与多次 vite.config 触发的重启风暴后进入坏状态，与代码无关；对照实验（按钮条目可跳、级联条目不可跳）曾强烈误导排查方向
+- **正确姿势**：排查点击 / 导航类异常前，先 `kill` 旧 node 进程重启 dev server 再取证；重启后同一代码立即全部恢复正常
+- **重启注意**：`kill` HBuilderX 拉起的 node 编译进程后，HBuilderX IDE 会自动重新 launch（新 PID），无需手动 `cli launch`；正确的 CLI 路径是 `Contents/MacOS/cli`（`Contents/HBuilderX/cli` 报 exit 127）

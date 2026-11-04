@@ -37,6 +37,16 @@ export const routes: RouteConfig[] = [
 		meta: { title: '日历 Calendar' },
 	},
 	{
+		path: 'pages-sub/cascader-input/cascader-input',
+		name: 'cascader-input',
+		meta: { title: '级联输入框 CascaderInput' },
+	},
+	{
+		path: 'pages-sub/cascader-popup/cascader-popup',
+		name: 'cascader-popup',
+		meta: { title: '级联弹出框 CascaderPopup' },
+	},
+	{
 		path: 'pages-sub/cascader/cascader',
 		name: 'cascader',
 		meta: { title: '级联选择 Cascader' },

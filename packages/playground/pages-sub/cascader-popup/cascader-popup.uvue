@@ -1,0 +1,146 @@
+<template>
+	<view class="page">
+		<demo-navbar title="级联弹出框" subtitle="CascaderPopup" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-button block @click="openPopup">打开级联弹层（底部 + 圆角）</m-button>
+				<m-cascader-popup
+					v-model:show="popupShow"
+					title="请选择所在地区"
+					:options="basicOptions"
+					@change="onPopupChange"
+					@finish="onPopupFinish"
+					@open="onPopupOpen"
+					@closed="onPopupClosed"
+					@click-overlay="onPopupOverlay"
+				/>
+				<view class="event-log">
+					<text class="event-text">v-model：{{ fmtNullableValue(popupValue) }}</text>
+					<text class="event-text">最近事件：{{ popupLog }}</text>
+				</view>
+				<text class="caption">m-popup + m-cascader 弹层组合；finish 后自动关闭；遮罩点击 / 头部关闭图标均可关闭并派发 close</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '级联弹出框 CascaderPopup', name: 'cascader-popup' })
+	import { CascaderChangeEvent, CascaderValue } from '@/uni_modules/m-ui-x/components/m-cascader/cascader.uts'
+
+	/** 安全解析：JSON.parse 泛型返回可空，null 兜底空数组 */
+	function parseOptions(json: string): UTSJSONObject[] {
+		const parsed = JSON.parse<UTSJSONObject[]>(json)
+		if (parsed != null) {
+			return parsed
+		}
+		const empty: UTSJSONObject[] = []
+		return empty
+	}
+
+	/** 省市区基础选项 */
+	const basicOptions: UTSJSONObject[] = parseOptions(`[
+		{"text":"浙江省","value":"330000","children":[
+			{"text":"杭州市","value":"330100","children":[
+				{"text":"西湖区","value":"330106"},
+				{"text":"余杭区","value":"330110"},
+				{"text":"临平区","value":"330113"}
+			]},
+			{"text":"宁波市","value":"330200","children":[
+				{"text":"海曙区","value":"330203"},
+				{"text":"鄞州区","value":"330212"}
+			]},
+			{"text":"温州市","value":"330300","children":[
+				{"text":"鹿城区","value":"330302"},
+				{"text":"瓯海区","value":"330304"}
+			]}
+		]},
+		{"text":"江苏省","value":"320000","children":[
+			{"text":"南京市","value":"320100","children":[
+				{"text":"玄武区","value":"320102"},
+				{"text":"鼓楼区","value":"320106"}
+			]},
+			{"text":"苏州市","value":"320500","children":[
+				{"text":"姑苏区","value":"320508"},
+				{"text":"工业园区","value":"320571"}
+			]}
+		]},
+		{"text":"广东省","value":"440000","children":[
+			{"text":"广州市","value":"440100","children":[
+				{"text":"天河区","value":"440106"},
+				{"text":"越秀区","value":"440104"}
+			]},
+			{"text":"深圳市","value":"440300","children":[
+				{"text":"福田区","value":"440304"},
+				{"text":"南山区","value":"440305"}
+			]}
+		]}
+	]`)
+
+	// ========== 弹层演示 ==========
+	const popupShow = ref<boolean>(false)
+	const popupValue = ref<CascaderValue | null>(null)
+	const popupLog = ref<string>('（等待交互）')
+
+	// 模板绑定处理函数一律 const 箭头函数：function 声明在 VDOM 生成 Kotlin 中被裸名传递报 Function invocation expected
+
+	/** 可空值转展示文本 */
+	function fmtNullableValue(v: CascaderValue | null): string {
+		if (v == null) {
+			return 'null（未选）'
+		}
+		return v.toString()
+	}
+
+	/** 打开弹层 */
+	const openPopup = () => {
+		popupShow.value = true
+	}
+
+	const onPopupChange = (event: CascaderChangeEvent) => {
+		popupValue.value = event.value
+		popupLog.value = 'change → ' + event.value.toString()
+	}
+
+	/** finish 记录（弹层同步自动关闭） */
+	const onPopupFinish = (event: CascaderChangeEvent) => {
+		popupValue.value = event.value
+		popupLog.value = 'finish → ' + event.value.toString() + '（自动关闭）'
+	}
+
+	const onPopupOpen = () => {
+		popupLog.value = 'open'
+	}
+
+	const onPopupClosed = () => {
+		popupLog.value = 'closed'
+	}
+
+	const onPopupOverlay = () => {
+		popupLog.value = 'click-overlay（遮罩已关闭）'
+	}
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+		flex-direction: column;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

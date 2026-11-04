@@ -150,14 +150,12 @@ export const demoGroups: DemoGroup[] = [
 				desc: '多级联动选择面板，支持层级 tab 与手势滑动、field-names 字段映射、异步加载、主题色与四插槽。'
 			},
 			{
-				// 级联三组件共用一个演示页（cascader 页内穷举 popup / input 区块），name 须与 router.config.uts 一致
 				name: 'cascader-popup',
 				zhName: '级联弹出框',
 				enName: 'CascaderPopup',
 				desc: 'm-popup 与 m-cascader 的弹层组合，v-model 控制显隐，选完最后一级自动关闭，支持方位、圆角与安全区配置。'
 			},
 			{
-				// 级联三组件共用一个演示页（cascader 页内穷举 popup / input 区块），name 须与 router.config.uts 一致
 				name: 'cascader-input',
 				zhName: '级联输入框',
 				enName: 'CascaderInput',

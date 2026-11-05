@@ -478,3 +478,11 @@
 - **根因**：dev server 长跑期间历经端口竞争（两个 `cli launch` 并存）与多次 vite.config 触发的重启风暴后进入坏状态，与代码无关；对照实验（按钮条目可跳、级联条目不可跳）曾强烈误导排查方向
 - **正确姿势**：排查点击 / 导航类异常前，先 `kill` 旧 node 进程重启 dev server 再取证；重启后同一代码立即全部恢复正常
 - **重启注意**：`kill` HBuilderX 拉起的 node 编译进程后，HBuilderX IDE 会自动重新 launch（新 PID），无需手动 `cli launch`；正确的 CLI 路径是 `Contents/MacOS/cli`（`Contents/HBuilderX/cli` 报 exit 127）
+
+### 80. VDOM 云打包 kotlinc 报错的五类源码适配（2026-11-04 appResource 本地导出核验）
+- **本地回归链路**：kotlinc 只在云端跑，但 .kt 由本地生成——`"/Applications/HBuilderX.app/Contents/MacOS/cli" publish app-android --type appResource --project <playground>` 导出后直接 grep `unpackage/resources/app-android/uniappx/app-android/src/` 下的 .kt 即可核对全部 kotlinc 报错点，无需反复云打包
+- **重命名解构不绑定**：`#default="{ onLoad: onImageLoad, overtime }"` 在 VDOM 生成器中不产出 `val onImageLoad = slotProps[...]`，模板内引用报 Unresolved；必须同名解构。嵌套同名（外层 m-waterfall-item 与内层 m-waterfall-load 槽都透出 onLoad）合法——各自 slot lambda 内生成同名 `val onLoad`，Kotlin 嵌套局部作用域遮蔽
+- **watch 双端都要显式类型**：源无返回类型 → Kotlin `Return type mismatch (expected Unit, actual Any?)` + `Cannot infer`；回调参数无类型 → `Cannot infer (nv)`。写法 `watch((): T | null => props.value, (nv: T | null) => {...})`
+- **作用域插槽桥接参数必须 `any | null`**：槽实参生成 `val x = slotProps["x"]`（Any?），页面桥接函数参数声明 `any`（非空 Any）即类型不匹配；`any | null` 生成 `Any?` 正确对接（ux-router isNavigationFailure 同款先例）。取属性仍需 `as` 强转 + 判空兜底
+- **`is` 类型判断在 uvue script 不可用**：`event is UniImageLoadEvent` 报 vue/compiler-sfc `Unexpected token`——uvue 编译链不认 UTS 的 is 运算符；判别场景改为收窄 API 或换设计（m-waterfall-load 的 error 场景由 maxWait 超时兜底替代）
+- **extapi 云端缺失判别**：本地 UTS 编译器能对 `uni.onWindowResize` 生成 import `io.dcloud.uniapp.extapi.*`，但云端 VDOM runtime SDK 无该类，kotlinc 报 Unresolved——支持性表查官方文档（doc.dcloud.net.cn/uni-app-x/api/），onWindowResize/offWindowResize 仅 Web/微信小程序支持（App/iOS/HarmonyOS 全 x），用 `// #ifdef WEB` 条件编译隔离；App 端窗口尺寸恒定，页面级尺寸变化用 onResize 生命周期

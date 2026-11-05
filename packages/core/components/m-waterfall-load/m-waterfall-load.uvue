@@ -50,6 +50,8 @@
 	 *
 	 * maxWait 内完成时取图片真实宽高更新比例（event 为 null 表示失败 / 无尺寸信息，
 	 * 保持自定义比例）；超过 maxWait 后调用不再派发 load。
+	 * 页面 image 的 @error 不建议直接绑定本回调（error 事件与 UniImageLoadEvent
+	 * 类型不符），失败场景由 maxWait 超时兜底排版，语义等价。
 	 *
 	 * @param event 图片 load 事件（detail 含真实宽高），无尺寸信息时传 null
 	 */

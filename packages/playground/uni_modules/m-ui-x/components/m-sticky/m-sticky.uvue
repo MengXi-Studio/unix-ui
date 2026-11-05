@@ -333,7 +333,12 @@
 
 	onMounted(() => {
 		readWindowHeight()
+		// uni.onWindowResize 仅 Web / 微信小程序支持（App 端官方无此全局 API，
+		// 页面尺寸变化应监听页面 onResize 生命周期）；App 窗口尺寸基本恒定，
+		// 旋转屏重测为已知降级。VDOM 云端打包时 extapi 类缺失会直接 kotlinc 报错。
+		// #ifdef WEB
 		uni.onWindowResize(handleWindowResize)
+		// #endif
 		// 等待父级 m-sticky-box 模板 ref 填充后再测量容器边界
 		nextTick(() => {
 			measureScrollParent()
@@ -343,7 +348,9 @@
 	})
 
 	onUnmounted(() => {
+		// #ifdef WEB
 		uni.offWindowResize(handleWindowResize)
+		// #endif
 	})
 </script>
 

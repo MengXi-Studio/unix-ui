@@ -465,7 +465,7 @@
 
 	// v-model:value 外部变更：与内部选择语义相同则忽略（内部回写防回环），不同则重置
 	// （UTS 先用后声明在 Kotlin 端报 unresolved，watch 一律放在全部被调函数之后）
-	watch((): Date | Date[] | null => props.value, (nv) => {
+	watch((): Date | Date[] | null => props.value, (nv: Date | Date[] | null) => {
 		if (isSameSelection(getSelectedDate(), nv)) {
 			return
 		}

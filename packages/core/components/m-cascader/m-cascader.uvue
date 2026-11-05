@@ -395,7 +395,8 @@
 
 	// 初始 value 同步 + 外部回灌监听
 	syncFromValue(props.value)
-	watch(() => props.value, (nv) => {
+	// 源与回调显式标注类型：VDOM 生成 Kotlin 时无类型 lambda 推断冲突（Return type mismatch / Cannot infer）
+	watch((): CascaderValue | null => props.value, (nv: CascaderValue | null) => {
 		syncFromValue(nv)
 	})
 </script>

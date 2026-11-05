@@ -322,14 +322,25 @@
 
 	// ========== 5 插槽作用域取值桥接（模板表达式调用导入函数会被 unref 包裹后不可调用） ==========
 
-	const optionTextOf = (opt: UTSJSONObject): string => {
-		const s = opt.getString('text')
+	// option 插槽作用域参数在 VDOM 生成 Kotlin 中为 Any?（slotProps["option"]），
+	// 桥接参数须 any | null（声明 UTSJSONObject 为非空，与插槽实参 Any? 类型不匹配报 kotlinc 错）
+
+	const optionTextOf = (opt: any | null): string => {
+		if (opt == null) {
+			return ''
+		}
+		const s = (opt as UTSJSONObject).getString('text')
 		if (s != null) {
 			return s
 		}
 		return ''
 	}
-	const optionDisabledOf = (opt: UTSJSONObject): boolean => opt.getBoolean('disabled') == true
+	const optionDisabledOf = (opt: any | null): boolean => {
+		if (opt == null) {
+			return false
+		}
+		return (opt as UTSJSONObject).getBoolean('disabled') == true
+	}
 </script>
 
 <style lang="scss">

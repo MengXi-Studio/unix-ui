@@ -272,14 +272,21 @@
 	)
 
 	onMounted(() => {
+		// uni.onWindowResize 仅 Web / 微信小程序支持（App 端官方无此全局 API），
+		// App 端列宽由容器决定基本恒定，旋转屏重排为已知降级；
+		// VDOM 云端打包时 extapi 类缺失会直接 kotlinc 报错，故条件编译隔离。
+		// #ifdef WEB
 		uni.onWindowResize(handleWindowResize)
+		// #endif
 		nextTick(() => {
 			measureWidth()
 		})
 	})
 
 	onUnmounted(() => {
+		// #ifdef WEB
 		uni.offWindowResize(handleWindowResize)
+		// #endif
 	})
 
 	defineExpose({

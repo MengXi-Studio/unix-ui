@@ -40,9 +40,12 @@
 									:height="item.height"
 									:max-wait="300"
 									@load="onLoad"
-									#default="{ onLoad: onImageLoad, overtime }"
+									#default="{ onLoad, overtime }"
 								>
-									<image class="wf-img wf-img--fill" mode="aspectFill" :src="item.url" @load="(e) => onImageLoad(e)" @error="() => onImageLoad(null)" />
+									<!-- 同名解构（VDOM 生成器对重命名解构不绑定）；与外层 m-waterfall-item 的 onLoad 同名，
+									     内层作用域遮蔽外层；image 只绑 @load（error 事件与槽 onLoad 的 UniImageLoadEvent | null
+									     类型不符，失败由 maxWait 超时兜底排版） -->
+									<image class="wf-img wf-img--fill" mode="aspectFill" :src="item.url" @load="onLoad" />
 									<text v-if="overtime" class="wf-overtime">超时</text>
 								</m-waterfall-load>
 								<text class="wf-title">{{ item.title }}</text>

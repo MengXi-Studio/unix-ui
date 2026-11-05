@@ -1,7 +1,7 @@
 ---
 title: CascaderPopup
 subtitle: 级联弹出框
-demo: pages-sub/cascader/cascader
+demo: pages-sub/cascader-popup/cascader-popup
 added: 0.3.0
 ---
 

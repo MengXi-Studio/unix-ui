@@ -1,7 +1,7 @@
 ---
 title: CascaderInput
 subtitle: 级联输入框
-demo: pages-sub/cascader/cascader
+demo: pages-sub/cascader-input/cascader-input
 added: 0.3.0
 ---
 

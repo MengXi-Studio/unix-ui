@@ -71,6 +71,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '遮罩层 Overlay', name: 'overlay' })
 	/** 基础用法遮罩显隐 */
 	const showBasic = ref(false)
 

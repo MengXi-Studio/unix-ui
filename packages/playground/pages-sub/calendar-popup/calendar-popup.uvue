@@ -130,6 +130,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '日历弹出框 CalendarPopup', name: 'calendar-popup' })
 	import { CalendarDayItem, getDayDiff } from '@/uni_modules/m-ui-x/components/m-calendar/calendar.uts'
 
 	/** 日期转 YYYY-M-D 文本（演示日志用） */

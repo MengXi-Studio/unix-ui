@@ -24,9 +24,9 @@
 		/** 间距方向 */
 		direction?: SpaceDirection
 		/** 间距大小：number（补 px）/ string（原样）/ 数组 [横向, 纵向]（垂直方向取第一个值作主轴间距）；为空走主题默认 $m-space-size */
-		size?: SpaceSize | SpaceSize[] | null
+		size?: SpaceSize | SpaceSize[]
 		/** 子元素对齐方式：未传时水平默认 center、垂直默认 stretch */
-		align?: SpaceAlign | null
+		align?: SpaceAlign
 		/** 是否自动换行（仅水平方向生效） */
 		wrap?: boolean
 		/** 是否块级填充父元素 */

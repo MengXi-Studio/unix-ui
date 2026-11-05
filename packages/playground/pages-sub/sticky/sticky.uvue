@@ -1,0 +1,251 @@
+<template>
+	<view class="page">
+		<demo-navbar title="粘性布局" subtitle="Sticky" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true" @scroll="onPageScroll">
+			<view class="container">
+				<text class="section" id="basic">基础吸顶</text>
+				<view class="card">
+					<view class="demo-stage">
+						<view class="demo-filler demo-filler--top">
+							<text class="demo-filler__text">向上滚动，吸附条到达滚动区域顶部后固定</text>
+						</view>
+						<m-sticky :scroll-top="pageScrollTop" :offset-top="0">
+							<view class="sticky-bar">
+								<text class="sticky-bar__text">offset-top 0</text>
+							</view>
+						</m-sticky>
+						<view class="demo-filler demo-filler--bottom">
+							<text class="demo-filler__text">继续滚动，吸附条到达容器底部后随内容滚出</text>
+						</view>
+					</view>
+					<text class="caption">全端由 scroll-top 受控吸附：内容到达滚动区域顶部即固定，Web 与 App / 小程序行为一致</text>
+				</view>
+
+				<text class="section" id="offset">吸顶距离</text>
+				<view class="card">
+					<view class="demo-stage">
+						<view class="demo-filler demo-filler--offset-top">
+							<text class="demo-filler__text">吸附条与滚动区域顶部保留 50px 距离</text>
+						</view>
+						<m-sticky :scroll-top="pageScrollTop" :offset-top="50">
+							<view class="sticky-bar sticky-bar--success">
+								<text class="sticky-bar__text">offset-top 50</text>
+							</view>
+						</m-sticky>
+						<view class="demo-filler demo-filler--offset-bottom">
+							<text class="demo-filler__text">继续滚动查看吸附行程</text>
+						</view>
+					</view>
+					<text class="caption">offset-top 为距滚动区域顶部的距离（px）</text>
+				</view>
+
+				<text class="section" id="bottom">吸底</text>
+				<view class="card">
+					<view class="demo-stage">
+						<view class="demo-filler demo-filler--bottom-head">
+							<text class="demo-filler__text">吸附条初始位于滚动区域下部</text>
+						</view>
+						<m-sticky :scroll-top="pageScrollTop" :position="'bottom'" :offset-bottom="0">
+							<view class="sticky-bar sticky-bar--warning">
+								<text class="sticky-bar__text">position bottom · offset-bottom 0</text>
+							</view>
+						</m-sticky>
+						<view class="demo-filler demo-filler--bottom-tail">
+							<text class="demo-filler__text">滚动时吸附条贴住滚动区域底部，直到其自然位置进入可视区</text>
+						</view>
+					</view>
+					<text class="caption">position 设为 bottom 时吸附在底部，offset-bottom 为距滚动区域底部的距离</text>
+				</view>
+
+				<text class="section" id="container">容器边界</text>
+				<view class="card">
+					<m-sticky-box custom-style="height: 200px; background-color: #f7f8fa; border-radius: 8px;">
+						<m-sticky :scroll-top="pageScrollTop" :offset-top="0">
+							<view class="sticky-bar sticky-bar--purple">
+								<text class="sticky-bar__text">容器内吸顶</text>
+							</view>
+						</m-sticky>
+						<view class="demo-box-filler">
+							<text class="demo-filler__text">吸附条不会超出容器底部，到达边界后向上回顶</text>
+						</view>
+					</m-sticky-box>
+					<text class="caption">m-sticky-box 提供容器边界（对齐 Vant container / Sard StickyBox）</text>
+					<m-sticky-box custom-style="height: 200px; background-color: #f7f8fa; border-radius: 8px; margin-top: 12px;">
+						<view class="demo-box-filler">
+							<text class="demo-filler__text">容器内吸底：吸附条不会越过容器顶部</text>
+						</view>
+						<m-sticky :scroll-top="pageScrollTop" :position="'bottom'" :offset-bottom="0">
+							<view class="sticky-bar sticky-bar--purple">
+								<text class="sticky-bar__text">容器内吸底</text>
+							</view>
+						</m-sticky>
+					</m-sticky-box>
+					<text class="caption">容器高度需显式指定，否则随内容自然高度、无吸附行程</text>
+				</view>
+
+				<text class="section" id="events">事件监听</text>
+				<view class="card">
+					<view class="demo-stage">
+						<view class="demo-filler demo-filler--events-top">
+							<text class="demo-filler__text">观察下方状态：change 与 scroll 事件由 scroll-top 驱动</text>
+						</view>
+						<m-sticky :scroll-top="pageScrollTop" :offset-top="0" @change="onFixedChange" @scroll="onStickyScroll">
+							<view class="sticky-bar sticky-bar--danger">
+								<text class="sticky-bar__text">监听 change / scroll</text>
+							</view>
+						</m-sticky>
+						<view class="demo-filler demo-filler--events-bottom">
+							<text class="demo-filler__text">继续滚动查看事件状态变化</text>
+						</view>
+					</view>
+					<text class="caption">isFixed: {{ topFixed ? 'true' : 'false' }} / scrollTop: {{ scrollEventTop }} / 页面 scrollTop: {{ pageScrollTop }}</text>
+				</view>
+				<view class="demo-tail" />
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '粘性布局 Sticky', name: 'sticky' })
+	/** scroll 事件载荷（与 m-sticky StickyScrollEvent 字段对齐） */
+	type StickyScrollPayload = {
+		scrollTop: number
+		isFixed: boolean
+	}
+
+	/** 页面滚动距离（透传给所有 m-sticky，吸附与事件均依赖它） */
+	const pageScrollTop = ref(0)
+	/** 事件演示吸附态的最近一次 change 值 */
+	const topFixed = ref(false)
+	/** 事件演示最近一次 scroll 回调中的 scrollTop */
+	const scrollEventTop = ref(0)
+
+	/**
+	 * 页面滚动回调：把外层滚动容器 scrollTop 透传给 m-sticky
+	 *
+	 * 全端吸附与 change / scroll 事件都依赖该值，必须实时回传
+	 */
+	function onPageScroll(e: UniScrollEvent) {
+		pageScrollTop.value = e.detail.scrollTop
+	}
+
+	/**
+	 * 吸附状态变化：记录 change 事件值用于页面展示
+	 */
+	function onFixedChange(value: boolean) {
+		topFixed.value = value
+	}
+
+	/**
+	 * 滚动事件：记录 scroll 事件载荷中的 scrollTop
+	 */
+	function onStickyScroll(detail: StickyScrollPayload) {
+		scrollEventTop.value = detail.scrollTop
+	}
+</script>
+
+<style lang="scss">
+	/* 演示舞台：固定高度形成吸附行程，内容按上 / 中 / 下三段排布 */
+	.demo-stage {
+		height: 280px;
+		flex-direction: column;
+		background-color: #f7f8fa;
+		border-radius: 8px;
+	}
+	/* 填充区：上下留白并居中提示文案 */
+	.demo-filler {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 12px;
+	}
+	/* 基础吸顶：上段高度 */
+	.demo-filler--top {
+		height: 96px;
+	}
+	/* 基础吸顶：下段高度 */
+	.demo-filler--bottom {
+		height: 140px;
+	}
+	/* 吸顶距离：上段高度 */
+	.demo-filler--offset-top {
+		height: 80px;
+	}
+	/* 吸顶距离：下段高度 */
+	.demo-filler--offset-bottom {
+		height: 156px;
+	}
+	/* 吸底：上段高度 */
+	.demo-filler--bottom-head {
+		height: 140px;
+	}
+	/* 吸底：下段高度 */
+	.demo-filler--bottom-tail {
+		height: 96px;
+	}
+	/* 事件演示：上段高度 */
+	.demo-filler--events-top {
+		height: 120px;
+	}
+	/* 事件演示：下段高度 */
+	.demo-filler--events-bottom {
+		height: 116px;
+	}
+	/* 填充提示文案 */
+	.demo-filler__text {
+		font-size: 12px;
+		color: #969799;
+		text-align: center;
+	}
+	/* 吸附条：普通主题色 */
+	.sticky-bar {
+		height: 44px;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		background-color: #1989fa;
+	}
+	/* 吸附条：成功色 */
+	.sticky-bar--success {
+		background-color: #07c160;
+	}
+	/* 吸附条：警告色 */
+	.sticky-bar--warning {
+		background-color: #ff976a;
+	}
+	/* 吸附条：容器演示色 */
+	.sticky-bar--purple {
+		background-color: #7232dd;
+	}
+	/* 吸附条：事件演示色 */
+	.sticky-bar--danger {
+		background-color: #ee0a24;
+	}
+	/* 吸附条文案 */
+	.sticky-bar__text {
+		font-size: 14px;
+		color: #ffffff;
+	}
+	/* 容器内填充区：补齐 m-sticky-box 显式高度（200px - 吸附条 44px） */
+	.demo-box-filler {
+		height: 156px;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 12px;
+	}
+	/* 说明文案 */
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+		margin-bottom: 12px;
+	}
+	/* 尾部留白：为最后一个演示块提供吸附行程，避免内容到底后无法吸顶 */
+	.demo-tail {
+		height: 600px;
+	}
+</style>

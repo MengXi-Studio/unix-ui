@@ -98,17 +98,17 @@
 		/** 主题色（选中方块与范围 bar 派生色，支持 #hex 与渐变） */
 		color?: string
 		/** 最小日期（null 默认今天） */
-		minDate?: Date | null
+		minDate?: Date
 		/** 最大日期（null 默认今天 + 6 个月） */
-		maxDate?: Date | null
+		maxDate?: Date
 		/** 默认选中日期（单值或数组，随 type 语义消费） */
-		defaultDate?: Date | Date[] | null
+		defaultDate?: Date | Date[]
 		/** 选中值（v-model:value；类型随 type：single 为 Date|null，range/multiple 为 Date[]；优先于 defaultDate 作初始值） */
-		value?: Date | Date[] | null
+		value?: Date | Date[]
 		/** 日格行高 px（0 用默认变量值） */
 		rowHeight?: number
-		/** 日期格格式化函数（最后统一应用，可覆盖内置标记与文案） */
-		formatter?: CalendarFormatter | null
+		/** 日期格格式化函数（最后统一应用，可覆盖内置标记与文案；未传时内部为 null） */
+		formatter?: CalendarFormatter
 		/** 显示月份背景水印 */
 		showMark?: boolean
 		/** 显示标题 */
@@ -465,7 +465,7 @@
 
 	// v-model:value 外部变更：与内部选择语义相同则忽略（内部回写防回环），不同则重置
 	// （UTS 先用后声明在 Kotlin 端报 unresolved，watch 一律放在全部被调函数之后）
-	watch((): Date | Date[] | null => props.value, (nv) => {
+	watch((): Date | Date[] | null => props.value, (nv: Date | Date[] | null) => {
 		if (isSameSelection(getSelectedDate(), nv)) {
 			return
 		}

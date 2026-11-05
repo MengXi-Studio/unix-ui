@@ -103,6 +103,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '轻提示 Toast', name: 'toast' })
 	import { showToast, showSuccessToast, showFailToast, showLoadingToast, closeToast } from '@/uni_modules/m-ui-x/components/m-toast/toast.uts'
 
 	/** 组件式显隐状态（v-model:show） */

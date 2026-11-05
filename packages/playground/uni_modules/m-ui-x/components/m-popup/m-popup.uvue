@@ -59,8 +59,8 @@
 		safeAreaInsetTop?: boolean
 		/** 是否增加底部安全区间距（env(safe-area-inset-bottom)） */
 		safeAreaInsetBottom?: boolean
-		/** 关闭前回调：返回 false 可阻止关闭（boolean 同步版，作用于关闭图标与遮罩点击两条内部关闭路径） */
-		beforeClose?: ((action: string) => boolean) | null
+		/** 关闭前回调：返回 false 可阻止关闭（boolean 同步版，作用于关闭图标与遮罩点击两条内部关闭路径；未传时内部为 null） */
+		beforeClose?: ((action: string) => boolean)
 	}
 
 	const props = withDefaults(defineProps<Props>(), {

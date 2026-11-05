@@ -38,7 +38,7 @@ packages/docs（VitePress 双语文档站，手工维护）
 1. **组件源**：`packages/core/components/<m-name>/<m-name>.uvue`（组合式 API；`<style lang="scss">` **必须显式声明 lang**；style 顶层无条件 `@import '../../theme/vars.scss'`——组件目录固定两层，相对路径写死两级）。
 2. **主题变量**：`packages/core/theme/vars.scss` 新增 `$m-<component>-*` 段，全部 `!default`；已有变量禁止改默认值（破坏用户覆盖契约）。
 3. **同步**：`pnpm sync:uni-modules`。
-4. **演示页**：`packages/playground/pages-sub/<name>/<name>.uvue` + `pages.json` 注册；一页穷举该组件全部 props / 变体 / 事件，便于截图验收。
+4. **演示页**：`packages/playground/pages-sub/<name>/<name>.uvue`，页面 script setup 顶部 `defineUniPage({ title: '中文名 English', name: '<kebab-name>' })`（routeGen 插件据此自动生成 pages.json 条目与 `router/routes.gen.uts` 路由表，产物提交 git）；同时在 `pages/index/demo-components.uts` 登记条目（name 与宏一致）。一页穷举该组件全部 props / 变体 / 事件，便于截图验收。
 5. **文档**：`packages/docs/src/components/<name>.md`（中文）与 `src/en/components/<name>.md`（英文）双份同步维护；更新 `.vitepress/config/zh.ts` 与 `en.ts` 侧栏。
 6. **验证**：见第 6 节，达到 core-protocol DoD 方可声称完成。
 
@@ -67,6 +67,7 @@ packages/docs（VitePress 双语文档站，手工维护）
 | 组件实现 | `packages/core/components/<m-name>/` |
 | 主题变量 | `packages/core/theme/vars.scss` |
 | 组件演示页 | `packages/playground/pages-sub/<name>/` |
+| 演示页路由声明 | 页面内 `defineUniPage` 宏（pages.json 与 `router/routes.gen.uts` 由 routeGen 插件生成，`router/router.config.uts` 仅存别名等显式扩展） |
 | 插件元数据（id / changelog） | `playground/uni_modules/m-ui-x/` 的 KEEP 文件 |
 | 使用文档 | `packages/docs/src/`（zh 主包 + `en/` 镜像） |
 | 文档导航 / 侧栏 | `packages/docs/.vitepress/config/zh.ts` + `en.ts` |

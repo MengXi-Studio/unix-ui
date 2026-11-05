@@ -1,0 +1,104 @@
+/**
+ * m-waterfall 与 m-waterfall-item 的排版上下文（跨组件共享，独立 .uts）
+ *
+ * uvue 无 $children，容器无法直接读取插槽内任意子节点的尺寸；
+ * 由容器 provide 本上下文，项在 setup 中同步注册自身 id（注册序即渲染序），
+ * onUnmounted 注销；项把「是否已加载」与「实测高度」写入上下文，
+ * 容器 watch revision 后统一计算「最短列优先」的绝对定位并回填总高度。
+ *
+ * revision / layoutVersion / measureVersion 三个版本号：
+ * revision 由数据变更（注册 / 注销 / 高度 / 加载态）自增，触发容器重排；
+ * layoutVersion 由容器重排完成时自增，触发项重新读取定位样式；
+ * measureVersion 由容器宽度变化或 reflow() 时自增，触发项在正确列宽下重新测量。
+ */
+import { reactive, ref, type Ref } from 'vue'
+
+/** provide / inject 配对 key（字符串 key，App 原生端无需 Symbol 支持） */
+export const WATERFALL_KEY: string = '__mxi_waterfall__'
+
+/**
+ * 瀑布流排版上下文：容器与项共享的注册表与布局结果。
+ * 数组下标与 ids 对齐：heights 为 -1 表示尚未测量，loaded 为 false 表示内容尚未加载完成。
+ */
+export class WaterfallContext {
+	/** 组内 item id 有序集合（注册序即渲染序） */
+	ids: string[] = reactive<string[]>([])
+	/** 与 ids 对齐的实测高度（px，-1 表示未测量） */
+	heights: number[] = reactive<number[]>([])
+	/** 与 ids 对齐的加载态（false 时容器按顺序阻塞，后续项不排版） */
+	loaded: boolean[] = reactive<boolean[]>([])
+	/** 与 ids 对齐的定位内联样式（由容器计算，项直接应用） */
+	styles: string[] = reactive<string[]>([])
+	/** 当前列宽（px，容器宽度测量完成后才有值） */
+	columnWidth: number = 0
+	/** 重排版本号（容器每次重排完成自增，项据此刷新样式） */
+	layoutVersion: Ref<number> = ref(0)
+	/** 测量版本号（容器宽度变化 / reflow 时自增，项据此重新测量高度） */
+	measureVersion: Ref<number> = ref(0)
+	/** 数据变更版本号（注册 / 注销 / 高度 / 加载态变化时自增，容器据此重排） */
+	revision: Ref<number> = ref(0)
+
+	/** 注册 item（项 setup 中同步调用，注册顺序即渲染顺序） */
+	register(id: string): void {
+		if (this.ids.indexOf(id) != -1) {
+			return
+		}
+		this.ids.push(id)
+		this.heights.push(-1)
+		this.loaded.push(false)
+		this.styles.push('')
+		this.revision.value++
+	}
+
+	/** 注销 item（onUnmounted 调用，v-if / v-for 动态增删后自动重排） */
+	unregister(id: string): void {
+		const index = this.ids.indexOf(id)
+		if (index == -1) {
+			return
+		}
+		this.ids.splice(index, 1)
+		this.heights.splice(index, 1)
+		this.loaded.splice(index, 1)
+		this.styles.splice(index, 1)
+		this.revision.value++
+	}
+
+	/** 上报实测高度（px） */
+	updateHeight(id: string, height: number): void {
+		const index = this.ids.indexOf(id)
+		if (index == -1) {
+			return
+		}
+		this.heights[index] = height
+		this.revision.value++
+	}
+
+	/** 标记内容已加载完成（首帧不再隐藏，容器可排版该项） */
+	markLoaded(id: string): void {
+		const index = this.ids.indexOf(id)
+		if (index == -1) {
+			return
+		}
+		this.loaded[index] = true
+		this.revision.value++
+	}
+
+	/** 查询 id 的注册序位（-1 表示未注册） */
+	indexOf(id: string): number {
+		return this.ids.indexOf(id)
+	}
+
+	/** 请求全部项重新测量（列宽变化 / reflow 后调用） */
+	requestMeasure(): void {
+		this.measureVersion.value++
+	}
+}
+
+/** item id 自增计数器（模块级） */
+let waterfallIdCounter = 0
+
+/** 生成全局唯一 item id（项 setup 中调用一次） */
+export function generateWaterfallId(): string {
+	waterfallIdCounter++
+	return 'mxi_waterfall_' + waterfallIdCounter
+}

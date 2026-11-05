@@ -201,6 +201,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '弹出层 Popup', name: 'popup' })
 	/** 基础用法显隐 */
 	const showBasic = ref(false)
 	/** 顶部弹出显隐 */

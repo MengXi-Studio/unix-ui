@@ -24,29 +24,29 @@
 		/** 组件式显隐（v-model:show）；函数式命令驱动时忽略 */
 		show?: boolean
 		/** 提示类型：text / loading / success / fail */
-		type?: ToastType | null
+		type?: ToastType
 		/** 展示位置：top / middle / bottom */
-		position?: ToastPosition | null
+		position?: ToastPosition
 		/** 文本内容，支持 \n 换行 */
 		message?: string
 		/** 自定义图标（覆盖 success/fail 默认图标；loading 型忽略） */
-		icon?: IconName | null
+		icon?: IconName
 		/** 图标大小，纯数字自动补 px，默认走 '36px' */
 		iconSize?: string
 		/** 是否显示背景遮罩层 */
 		overlay?: boolean
-		/** 是否禁止背景点击（未传时 loading 型默认 true，其余 false） */
-		forbidClick?: boolean | null
+		/** 是否禁止背景点击（未传时内部为 null，loading 型默认 true，其余 false） */
+		forbidClick?: boolean
 		/** 是否点击提示后关闭 */
 		closeOnClick?: boolean
 		/** 是否点击遮罩层后关闭 */
 		closeOnClickOverlay?: boolean
 		/** 加载图标类型（type=loading 时生效） */
-		loadingType?: LoadingType | null
+		loadingType?: LoadingType
 		/** 展示时长 ms，0 不自动关闭；未传时 loading 型 0、其余 2000 */
-		duration?: number | null
+		duration?: number
 		/** message 换行控制：normal / break-all / break-word（App 端 break-word 回退 normal，其余两值原生支持） */
-		wordBreak?: ToastWordBreak | null
+		wordBreak?: ToastWordBreak
 		/** z-index 层级（字符串数字），默认走主题基准 */
 		zIndex?: string
 		/** 气泡自定义类名 */

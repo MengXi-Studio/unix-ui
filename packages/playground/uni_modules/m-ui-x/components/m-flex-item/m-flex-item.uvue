@@ -1,0 +1,176 @@
+<template>
+	<!-- 弹性布局子项：m-flex 的子项包裹器。App 端不支持 CSS gap 且 ucss 无子级选择器，
+	     间距由本组件注入 margin（row 非首项 margin-left、row-reverse 非末项 margin-left、
+	     column 非首项 margin-top、column-reverse 非末项 margin-bottom；水平换行时全部子项
+	     margin-left 配合容器负 margin 补偿顶格，行间距 margin-bottom）；
+	     未在 m-flex 内使用时退化为普通纵向容器（无间距） -->
+	<view :class="itemClass" :style="itemStyle">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-flex-item 弹性布局子项：包裹 m-flex 的每个子项，与 m-flex 经 provide/inject
+	 * 上下文协作（m-space 同款机制）。setup 中同步注册自身 id（注册序即渲染序）。
+	 * 间距施加边与轮位：row 非首项 / row-reverse 非末项 margin-left、column 非首项
+	 * margin-top、column-reverse 非末项 margin-bottom；水平换行时全部子项 margin-left
+	 * （容器以等值负 margin 补偿，各行行首顶格）+ margin-bottom 行间距。
+	 * 间距值：内置档位走 $m-flex-gap* 主题变量类，自定义尺寸走内联样式。
+	 */
+	import { FLEX_KEY, FlexContext, type FlexDirection, generateFlexId } from '../m-flex/context.uts'
+
+	type Props = {
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		customClass: '',
+		customStyle: ''
+	})
+
+	/** 注入 m-flex 上下文（独立使用时为 null，无间距语义） */
+	const flex = inject<FlexContext | null>(FLEX_KEY, null)
+
+	/** 注册序：setup 中同步注册（顺序即渲染顺序，首帧即为正确轮位），onUnmounted 注销 */
+	const itemId = generateFlexId()
+	if (flex != null) {
+		flex.register(itemId)
+	}
+	onUnmounted(() => {
+		if (flex != null) {
+			flex.unregister(itemId)
+		}
+	})
+
+	/** 轮位（reactive ids 驱动，v-if / v-for 动态增删自动重排） */
+	const itemIndex = computed<number>(() => {
+		if (flex == null) return -1
+		return flex.indexOf(itemId)
+	})
+
+	/** 组内子项总数（反向方向判断末项用，reactive ids 驱动） */
+	const itemCount = computed<number>(() => {
+		if (flex == null) return 0
+		return flex.ids.length
+	})
+
+	/**
+	 * 是否水平方向（row / row-reverse）
+	 */
+	function isRowDirection(direction: FlexDirection): boolean {
+		return direction == 'row' || direction == 'row-reverse'
+	}
+
+	/**
+	 * 主轴间距施加的边名：row / row-reverse → left，column → top，column-reverse → bottom
+	 */
+	const gapSide = computed<string>(() => {
+		if (flex == null) return ''
+		const d = flex.direction
+		if (isRowDirection(d)) return 'left'
+		return d == 'column' ? 'top' : 'bottom'
+	})
+
+	/**
+	 * 间距是否施加于当前子项：
+	 * 水平换行 → 全部子项（容器负 margin 补偿各行行首）；
+	 * row / column → 非首项；row-reverse / column-reverse → 非末项（视觉首项为 DOM 末项）
+	 */
+	const gapApplies = computed<boolean>(() => {
+		if (flex == null) return false
+		const d = flex.direction
+		if (isRowDirection(d) && flex.wrap) return true
+		if (d == 'row' || d == 'column') return itemIndex.value > 0
+		return itemIndex.value < itemCount.value - 1
+	})
+
+	/** 间距内联样式：自定义尺寸时接管类样式；内置档位返回空串走主题变量类 */
+	const itemStyle = computed<string>(() => {
+		let style = props.customStyle
+		if (style != '' && !style.endsWith(';')) style += ';'
+		if (flex == null) return style
+		const gap = flex.gap.value
+		if (gap == '') return style
+		if (gapApplies.value) {
+			style += 'margin-' + gapSide.value + ': ' + gap + ';'
+		}
+		if (isRowDirection(flex.direction) && flex.wrap) {
+			style += 'margin-bottom: ' + gap + ';'
+		}
+		return style
+	})
+
+	/** 根类名：内置档位间距变体（自定义尺寸时由内联样式接管） */
+	const itemClass = computed<string>(() => {
+		let cls = 'm-flex-item'
+		if (flex != null) {
+			if (gapApplies.value && flex.gap.value == '') {
+				cls += ' m-flex-item--' + gapSide.value + flex.gapTier
+			}
+			if (isRowDirection(flex.direction) && flex.wrap) {
+				cls += ' m-flex-item--wrap' + flex.gapTier
+			}
+		}
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 基类（子项包裹器：纵向堆叠多子元素，flex 子项默认收缩贴合内容） ========== */
+	.m-flex-item {
+		flex-direction: column;
+	}
+
+	/* ========== 主轴间距变体（内置档位主题变量；自定义尺寸时由内联样式接管） ========== */
+	.m-flex-item--left {
+		margin-left: $m-flex-gap;
+	}
+	.m-flex-item--left-sm {
+		margin-left: $m-flex-gap-sm;
+	}
+	.m-flex-item--left-lg {
+		margin-left: $m-flex-gap-lg;
+	}
+	.m-flex-item--top {
+		margin-top: $m-flex-gap;
+	}
+	.m-flex-item--top-sm {
+		margin-top: $m-flex-gap-sm;
+	}
+	.m-flex-item--top-lg {
+		margin-top: $m-flex-gap-lg;
+	}
+	.m-flex-item--bottom {
+		margin-bottom: $m-flex-gap;
+	}
+	.m-flex-item--bottom-sm {
+		margin-bottom: $m-flex-gap-sm;
+	}
+	.m-flex-item--bottom-lg {
+		margin-bottom: $m-flex-gap-lg;
+	}
+
+	/* ========== 水平换行行间距变体（全部子项 margin-bottom；末行底部多出一段为已知限制） ========== */
+	.m-flex-item--wrap {
+		margin-bottom: $m-flex-gap;
+	}
+	.m-flex-item--wrap-sm {
+		margin-bottom: $m-flex-gap-sm;
+	}
+	.m-flex-item--wrap-lg {
+		margin-bottom: $m-flex-gap-lg;
+	}
+</style>

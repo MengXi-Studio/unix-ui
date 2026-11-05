@@ -1,11 +1,13 @@
 import { createRouter } from '@/uni_modules/ux-router/utssdk/index.uts'
 import type { RouteLocation } from '@/uni_modules/ux-router/utssdk/index.uts'
-import { routes } from './router.config.uts'
+import { routes } from './routes.gen.uts'
 
 /**
  * 全局路由器实例（main.uts 中通过 app.use(router) 安装）
  *
- * strict: true —— 未注册的命名路由直接抛错，保证调用方与路由表的一致性
+ * 路由表来自 routeGen 插件的生成产物——页面路径 / name / title 的事实源
+ * 在各页面的 defineUniPage 宏声明。strict: true —— 未注册的命名路由直接
+ * 抛错，保证调用方与路由表的一致性
  */
 export const router = createRouter({
 	routes: routes,

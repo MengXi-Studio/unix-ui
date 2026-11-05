@@ -66,6 +66,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '分割线 Divider', name: 'divider' })
 	// 纯展示组件：无状态、无事件回调，全部变体以静态 prop 穷举
 </script>
 

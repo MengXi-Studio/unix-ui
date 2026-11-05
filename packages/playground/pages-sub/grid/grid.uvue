@@ -138,6 +138,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '宫格 Grid', name: 'grid' })
 	import { IconName } from '@/uni_modules/m-ui-x/components/m-icon/icons.uts'
 
 	/** 自定义列数演示项：图标 + 文字 */

@@ -109,6 +109,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '单元格 Cell', name: 'cell' })
 	/** 动态增删的 cell 标题列表（验证组内末线随增删自动重算） */
 	const dynamicCells = ref<string[]>(['单元格 1', '单元格 2', '单元格 3'])
 	let cellCounter = 3

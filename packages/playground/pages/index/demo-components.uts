@@ -2,13 +2,13 @@
  * 组件演示条目数据表（首页分组导航的唯一数据源）
  *
  * 新增组件时在对应分组的 components 中登记一条即可，
- * 首页分组列表与搜索过滤自动生效；演示页路由需另行在
- * router/router.config.uts 与 pages.json 中登记。
+ * 首页分组列表与搜索过滤自动生效；演示页路由无需手工登记——
+ * 在页面 defineUniPage 宏声明 name / title，pages.json 与路由表由 routeGen 插件生成。
  */
 
 /** 组件演示条目 */
 export type DemoComponent = {
-	/** 路由名（router.push 按名导航，须与 router.config.uts 的 name 一致） */
+	/** 路由名（router.push 按名导航，须与页面 defineUniPage 宏的 name 一致） */
 	name: string
 	/** 中文名 */
 	zhName: string
@@ -27,11 +27,11 @@ export type DemoGroup = {
 }
 
 /**
- * 组件演示分组表（标准 UI 库分类体系：基础 / 表单 / 反馈 / 布局 / 数据展示，组内按字母序）
+ * 组件演示分组表（标准 UI 库分类体系：基础 / 布局 / 表单 / 反馈 / 数据展示，组内按字母序）
  *
  * 新增组件时在对应分组的 components 中登记一条即可，
- * 首页分组列表与搜索过滤自动生效；演示页路由需另行在
- * router/router.config.uts 与 pages.json 中登记。
+ * 首页分组列表与搜索过滤自动生效；演示页路由无需手工登记——
+ * 在页面 defineUniPage 宏声明 name / title，pages.json 与路由表由 routeGen 插件生成。
  */
 export const demoGroups: DemoGroup[] = [
 	{
@@ -64,6 +64,65 @@ export const demoGroups: DemoGroup[] = [
 		]
 	},
 	{
+		title: '布局组件',
+		components: [
+			{
+				name: 'compact',
+				zhName: '紧凑布局',
+				enName: 'Compact',
+				desc: '让按钮等组件紧凑连接且合并边框，支持水平垂直方向与块级撑满。'
+			},
+			{
+				name: 'divider',
+				zhName: '分割线',
+				enName: 'Divider',
+				desc: '分隔内容区域，支持虚线、0.5px 细线、内容位置与垂直形态。'
+			},
+			{
+				name: 'flex',
+				zhName: '弹性布局',
+				enName: 'Flex',
+				desc: '弹性布局容器，支持排列方向、三档与自定义间距、主轴 / 交叉轴对齐、自动换行与 flex 简写。'
+			},
+			{
+				name: 'grid',
+				zhName: '宫格',
+				enName: 'Grid',
+				desc: '水平方向分隔等宽区块，支持自定义列数、正方形格子、间距、横排反向、徽标与点击跳转。'
+			},
+			{
+				name: 'layout',
+				zhName: '布局',
+				enName: 'Layout',
+				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
+			},
+			{
+				name: 'space',
+				zhName: '间距',
+				enName: 'Space',
+				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
+			},
+			{
+				name: 'status-bar',
+				zhName: '状态栏',
+				enName: 'StatusBar',
+				desc: '状态栏占位，为贴顶元素预留系统状态栏高度，支持自定义高度与背景样式。'
+			},
+			{
+				name: 'sticky',
+				zhName: '粘性布局',
+				enName: 'Sticky',
+				desc: '内容滚出可视范围时吸附在顶部或底部，支持吸顶 / 吸底距离、容器边界约束与吸附状态事件。'
+			},
+			{
+				name: 'waterfall',
+				zhName: '瀑布流',
+				enName: 'Waterfall',
+				desc: '按内容实际高度自适应排列的多列布局，支持列数与间距、已知宽高占位、动态增删与重新排版。'
+			}
+		]
+	},
+	{
 		title: '表单组件',
 		components: [
 			{
@@ -83,6 +142,24 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '日历输入框',
 				enName: 'CalendarInput',
 				desc: 'm-input 与日历弹出框的表单组合，点击触发选择，选中值格式化回填展示，支持清空与禁用。'
+			},
+			{
+				name: 'cascader',
+				zhName: '级联选择',
+				enName: 'Cascader',
+				desc: '多级联动选择面板，支持层级 tab 与手势滑动、field-names 字段映射、异步加载、主题色与四插槽。'
+			},
+			{
+				name: 'cascader-popup',
+				zhName: '级联弹出框',
+				enName: 'CascaderPopup',
+				desc: 'm-popup 与 m-cascader 的弹层组合，v-model 控制显隐，选完最后一级自动关闭，支持方位、圆角与安全区配置。'
+			},
+			{
+				name: 'cascader-input',
+				zhName: '级联输入框',
+				enName: 'CascaderInput',
+				desc: 'm-input 与级联弹出框的表单组合，点击触发选择，选中路径文字回填展示，支持清空与禁用。'
 			},
 			{
 				name: 'input',
@@ -118,41 +195,6 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '轻提示',
 				enName: 'Toast',
 				desc: '在页面中间弹出黑色半透明提示，支持文字、成功失败、加载、自定义图标、位置、遮罩与函数式调用。'
-			}
-		]
-	},
-	{
-		title: '布局组件',
-		components: [
-			{
-				name: 'compact',
-				zhName: '紧凑布局',
-				enName: 'Compact',
-				desc: '让按钮等组件紧凑连接且合并边框，支持水平垂直方向与块级撑满。'
-			},
-			{
-				name: 'divider',
-				zhName: '分割线',
-				enName: 'Divider',
-				desc: '分隔内容区域，支持虚线、0.5px 细线、内容位置与垂直形态。'
-			},
-			{
-				name: 'grid',
-				zhName: '宫格',
-				enName: 'Grid',
-				desc: '水平方向分隔等宽区块，支持自定义列数、正方形格子、间距、横排反向、徽标与点击跳转。'
-			},
-			{
-				name: 'layout',
-				zhName: '布局',
-				enName: 'Layout',
-				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
-			},
-			{
-				name: 'space',
-				zhName: '间距',
-				enName: 'Space',
-				desc: '设置元素之间的间距，支持方向、自定义大小、对齐方式、自动换行与块级填充。'
 			}
 		]
 	},

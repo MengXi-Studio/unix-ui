@@ -51,11 +51,11 @@
 		/** 加载完成后是否淡入显示（opacity 0→1 过渡） */
 		fade?: boolean
 		/** 图片宽度：number 自动补 px，string 原样（支持 % / vw 等单位）；未传默认 100% */
-		width?: string | number | null
+		width?: string | number
 		/** 图片高度：number 自动补 px，string 原样；未传默认 240px */
-		height?: string | number | null
+		height?: string | number
 		/** 圆角值：number 自动补 px，string 原样 */
-		radius?: string | number | null
+		radius?: string | number
 		/** 是否圆形（border-radius 50%，优先于 radius） */
 		round?: boolean
 		/** 是否显示加载中占位（默认图标或 loading 插槽） */

@@ -11,121 +11,163 @@
 		{
 			"root": "pages-sub",
 			"pages": [
-			{
-				"path": "button/button",
-				"style": {
-					"navigationBarTitleText": "按钮 Button"
+				{
+					"path": "badge/badge",
+					"style": {
+						"navigationBarTitleText": "徽标 Badge"
+					}
+				},
+				{
+					"path": "button/button",
+					"style": {
+						"navigationBarTitleText": "按钮 Button"
+					}
+				},
+				{
+					"path": "calendar-input/calendar-input",
+					"style": {
+						"navigationBarTitleText": "日历输入框 CalendarInput"
+					}
+				},
+				{
+					"path": "calendar-popup/calendar-popup",
+					"style": {
+						"navigationBarTitleText": "日历弹出框 CalendarPopup"
+					}
+				},
+				{
+					"path": "calendar/calendar",
+					"style": {
+						"navigationBarTitleText": "日历 Calendar"
+					}
+				},
+				{
+					"path": "cascader-input/cascader-input",
+					"style": {
+						"navigationBarTitleText": "级联输入框 CascaderInput"
+					}
+				},
+				{
+					"path": "cascader-popup/cascader-popup",
+					"style": {
+						"navigationBarTitleText": "级联弹出框 CascaderPopup"
+					}
+				},
+				{
+					"path": "cascader/cascader",
+					"style": {
+						"navigationBarTitleText": "级联选择 Cascader"
+					}
+				},
+				{
+					"path": "cell/cell",
+					"style": {
+						"navigationBarTitleText": "单元格 Cell"
+					}
+				},
+				{
+					"path": "compact/compact",
+					"style": {
+						"navigationBarTitleText": "紧凑布局 Compact"
+					}
+				},
+				{
+					"path": "divider/divider",
+					"style": {
+						"navigationBarTitleText": "分割线 Divider"
+					}
+				},
+				{
+					"path": "flex/flex",
+					"style": {
+						"navigationBarTitleText": "弹性布局 Flex"
+					}
+				},
+				{
+					"path": "grid/grid",
+					"style": {
+						"navigationBarTitleText": "宫格 Grid"
+					}
+				},
+				{
+					"path": "icon/icon",
+					"style": {
+						"navigationBarTitleText": "图标 Icon"
+					}
+				},
+				{
+					"path": "image/image",
+					"style": {
+						"navigationBarTitleText": "图片 Image"
+					}
+				},
+				{
+					"path": "input/input",
+					"style": {
+						"navigationBarTitleText": "输入框 Input"
+					}
+				},
+				{
+					"path": "layout/layout",
+					"style": {
+						"navigationBarTitleText": "布局 Layout"
+					}
+				},
+				{
+					"path": "loading/loading",
+					"style": {
+						"navigationBarTitleText": "加载 Loading"
+					}
+				},
+				{
+					"path": "overlay/overlay",
+					"style": {
+						"navigationBarTitleText": "遮罩层 Overlay"
+					}
+				},
+				{
+					"path": "popup/popup",
+					"style": {
+						"navigationBarTitleText": "弹出层 Popup"
+					}
+				},
+				{
+					"path": "space/space",
+					"style": {
+						"navigationBarTitleText": "间距 Space"
+					}
+				},
+				{
+					"path": "status-bar/status-bar",
+					"style": {
+						"navigationBarTitleText": "状态栏 StatusBar"
+					}
+				},
+				{
+					"path": "sticky/sticky",
+					"style": {
+						"navigationBarTitleText": "粘性布局 Sticky"
+					}
+				},
+				{
+					"path": "text/text",
+					"style": {
+						"navigationBarTitleText": "文本 Text"
+					}
+				},
+				{
+					"path": "toast/toast",
+					"style": {
+						"navigationBarTitleText": "轻提示 Toast"
+					}
+				},
+				{
+					"path": "waterfall/waterfall",
+					"style": {
+						"navigationBarTitleText": "瀑布流 Waterfall"
+					}
 				}
-			},
-			{
-				"path": "loading/loading",
-				"style": {
-					"navigationBarTitleText": "加载 Loading"
-				}
-			},
-			{
-				"path": "icon/icon",
-				"style": {
-					"navigationBarTitleText": "图标 Icon"
-				}
-			},
-			{
-				"path": "badge/badge",
-				"style": {
-					"navigationBarTitleText": "徽标 Badge"
-				}
-			},
-			{
-				"path": "cell/cell",
-				"style": {
-					"navigationBarTitleText": "单元格 Cell"
-				}
-			},
-			{
-				"path": "image/image",
-				"style": {
-					"navigationBarTitleText": "图片 Image"
-				}
-			},
-			{
-				"path": "text/text",
-				"style": {
-					"navigationBarTitleText": "文本 Text"
-				}
-			},
-			{
-				"path": "space/space",
-				"style": {
-					"navigationBarTitleText": "间距 Space"
-				}
-			},
-			{
-				"path": "layout/layout",
-				"style": {
-					"navigationBarTitleText": "布局 Layout"
-				}
-			},
-			{
-				"path": "overlay/overlay",
-				"style": {
-					"navigationBarTitleText": "遮罩层 Overlay"
-				}
-			},
-			{
-				"path": "popup/popup",
-				"style": {
-					"navigationBarTitleText": "弹出层 Popup"
-				}
-			},
-			{
-				"path": "divider/divider",
-				"style": {
-					"navigationBarTitleText": "分割线 Divider"
-				}
-			},
-			{
-				"path": "grid/grid",
-				"style": {
-					"navigationBarTitleText": "宫格 Grid"
-				}
-			},
-			{
-				"path": "toast/toast",
-				"style": {
-					"navigationBarTitleText": "轻提示 Toast"
-				}
-			},
-			{
-				"path": "compact/compact",
-				"style": {
-					"navigationBarTitleText": "紧凑布局 Compact"
-				}
-			},
-			{
-				"path": "input/input",
-				"style": {
-					"navigationBarTitleText": "输入框 Input"
-				}
-			},
-			{
-				"path": "calendar/calendar",
-				"style": {
-					"navigationBarTitleText": "日历 Calendar"
-				}
-			},
-			{
-				"path": "calendar-popup/calendar-popup",
-				"style": {
-					"navigationBarTitleText": "日历弹出框 CalendarPopup"
-				}
-			},
-			{
-				"path": "calendar-input/calendar-input",
-				"style": {
-					"navigationBarTitleText": "日历输入框 CalendarInput"
-				}
-			}
-		]
+			]
 		}
 	],
 	"globalStyle": {

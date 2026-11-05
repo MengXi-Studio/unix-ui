@@ -18,7 +18,8 @@
 	},
 	"devDependencies": {
 		"bumpp": "^12.3.0",
-		"prettier": "^3.8.1"
+		"prettier": "^3.8.1",
+		"unplugin": "^3.7.0"
 	},
 	"author": {
 		"name": "PedroQue99",

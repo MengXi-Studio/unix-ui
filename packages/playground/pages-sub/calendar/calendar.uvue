@@ -139,6 +139,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '日历 Calendar', name: 'calendar' })
 	import { CalendarDayItem, getDayDiff } from '@/uni_modules/m-ui-x/components/m-calendar/calendar.uts'
 
 	/** 日期转 YYYY-M-D 文本（演示日志用） */
@@ -283,15 +285,22 @@
 	const slotsMax = new Date(2026, 9, 31)
 
 	// text 插槽 day 桥接：作用域插槽传参在 VDOM 生成 Kotlin 中为 Any?（slotProps["day"]），
-	// 模板内直接属性访问报 Unresolved，须经本地桥接函数显式强转 CalendarDayItem 后取值
+	// 模板内直接属性访问报 Unresolved，须经本地桥接函数显式强转 CalendarDayItem 后取值；
+	// 参数类型须 any | null（Any?），声明 any（非空 Any）与插槽实参类型不匹配报 kotlinc 错
 	/** text 插槽 day 类名：按选中 / 禁用 / 常规派生（覆盖内置渲染时需自行处理状态色） */
-	const slotDayClass = (day: any): string => {
+	const slotDayClass = (day: any | null): string => {
+		if (day == null) {
+			return 'demo-slot-text'
+		}
 		const d = day as CalendarDayItem
 		return d.type == 'disabled' ? 'demo-slot-text-disabled' : (d.type == 'selected' ? 'demo-slot-text-selected' : 'demo-slot-text')
 	}
 
 	/** text 插槽 day 文本 */
-	const slotDayText = (day: any): string => {
+	const slotDayText = (day: any | null): string => {
+		if (day == null) {
+			return ''
+		}
 		return (day as CalendarDayItem).text
 	}
 

@@ -123,17 +123,17 @@
 		/** 主题色（选中圆点与范围 bar 派生色，支持 #hex 与渐变） */
 		color?: string
 		/** 最小日期（null 默认今天） */
-		minDate?: Date | null
+		minDate?: Date
 		/** 最大日期（null 默认今天 + 6 个月） */
-		maxDate?: Date | null
+		maxDate?: Date
 		/** 默认选中日期（单值或数组，随 type 语义消费） */
-		defaultDate?: Date | Date[] | null
+		defaultDate?: Date | Date[]
 		/** 选中值（v-model:value）：single 为 Date，multiple / range 为 Date[]，null 未选 */
-		value?: Date | Date[] | null
+		value?: Date | Date[]
 		/** 日格行高 px（0 用默认变量值） */
 		rowHeight?: number
-		/** 日期格格式化函数 */
-		formatter?: ((day: CalendarDayItem) => CalendarDayItem) | null
+		/** 日期格格式化函数（未传时内部为 null） */
+		formatter?: ((day: CalendarDayItem) => CalendarDayItem)
 		/** 显示月份背景水印 */
 		showMark?: boolean
 		/** 显示标题 */

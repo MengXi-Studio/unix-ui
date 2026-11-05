@@ -53,14 +53,14 @@
 		label?: string
 		/** 尺寸 */
 		size?: CellSize
-		/** 左侧图标名称（IconName 联合类型，null 表示无图标） */
-		icon?: IconName | null
+		/** 左侧图标名称（IconName 联合类型，未传时为 null 表示无图标） */
+		icon?: IconName
 		/** 是否显示分隔线（组内末线自动隐藏，手动传 false 可强制关闭） */
 		border?: boolean
 		/** 内容是否垂直居中 */
 		center?: boolean
-		/** 是否展示点击反馈（默认取 isLink 值；显式设置后以本值为准） */
-		clickable?: boolean | null
+		/** 是否展示点击反馈（未传时内部为 null，取 isLink 值并继承 m-cell-group 的 clickable；显式设置后以本值为准） */
+		clickable?: boolean
 		/** 是否展示右侧箭头 */
 		isLink?: boolean
 		/** 箭头方向 */

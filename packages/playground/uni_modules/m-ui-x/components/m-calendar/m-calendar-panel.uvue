@@ -115,7 +115,7 @@
 
 	type Props = {
 		/** 面板配置（宿主计算后整体下发；null 时按空配置渲染，避免首帧崩溃） */
-		panel?: CalendarPanelConfig | null
+		panel?: CalendarPanelConfig
 	}
 
 	const props = withDefaults(defineProps<Props>(), {

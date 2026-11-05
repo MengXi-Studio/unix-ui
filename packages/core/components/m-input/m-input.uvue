@@ -99,16 +99,16 @@
 		confirmType?: string
 		/** 多行时是否自动增高，仅 type=textarea 生效 */
 		autoHeight?: boolean
-		/** 输入内容格式化函数；配合 format-trigger 指定生效时机 */
-		formatter?: ((value: string) => string) | null
+		/** 输入内容格式化函数；配合 format-trigger 指定生效时机（未传时内部为 null） */
+		formatter?: ((value: string) => string)
 		/** formatter 生效时机 */
 		formatTrigger?: FormatTrigger
 		/** 小数位数：type 为 number / digit 时失焦按 precision 取舍 */
-		precision?: number | null
+		precision?: number
 		/** 数值下限：type 为 number / digit 时失焦收敛 */
-		min?: number | null
+		min?: number
 		/** 数值上限：type 为 number / digit 时失焦收敛 */
-		max?: number | null
+		max?: number
 		/** 内置明文切换图标，仅 type=password 生效（位于 append 插槽之前） */
 		showEye?: boolean
 		/** 自定义输入框容器（边框层）类名 */

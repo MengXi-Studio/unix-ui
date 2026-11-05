@@ -159,3 +159,7 @@
 		color: #1989fa;
 	}
 </style>
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源（本页为纯静态演示页，仅承载声明）
+	defineUniPage({ title: '加载 Loading', name: 'loading' })
+</script>

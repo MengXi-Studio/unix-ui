@@ -430,3 +430,59 @@
 - **wrap 已知限制**：行间距经子项 margin-bottom 实现，末行底部多出一段（子项无法感知换行位置），文档已标注；若改为「全部子项 margin-top + 容器负 margin-top」可消除，但 margin-top 会参与交叉轴 align-items 计算使内容整体偏移，权衡后保留 margin-bottom 方案
 - **App 负 margin 支持度待验证**：Web 已实测顶格；App 端 ucss 若不支持负 margin（声明被丢弃），症状是整体左移 8px 丢失 + 每行行首缩进 8px，届时回退方案为条件编译（App 保留「非首项 margin-left」旧方案）
 - **注册序先例三件套**：context.uts（reactive ids 数组 + 模块级自增 id 生成器）· 子组件 inject + 同步 register · computed indexOf 驱动样式；`$children` / `:first-child` / `gap` 三缺一的场景均可套用
+
+### 73. 可空 prop 的编译器诊断噪音与正确写法（2026-11-03 dev 日志复核）
+- 现象：VDOM Web 构建（`pnpm build:demo`）出现 `No overload matches this call` TS 诊断——编译器把「`T | null` 类型 + `default: null`」的可空 prop 生成为 `type: [T, null]` 形态的 props 对象，Vue Prop 类型系统不接受 type 数组里的 null；**该噪音会泄漏到使用者的构建日志中**（组件库经 uni_modules 分发后用户编译即见）
+- **正确写法（2026-11-03 dev 日志复核后的最终结论）**：**保留 `default: null`，只去掉类型上的 `| null`**（`formatter?: Function` 而非 `formatter?: Function | null`，withDefaults 里的 `xxx: null` 原样保留）——生成声明变为 `{ type: Function, default: null }` 或 `{ default: null }`，type 数组不再含 null，警告消除且运行时未传仍为 null
+- **反向坑：不要顺手删掉 `default: null`**。Vue 对 Boolean prop 仅在「缺省且无 default」时才转 false（`isAbsent && !hasDefault`）；删掉默认值后 `props.clickable != null` 恒真，三态语义破坏（m-cell 不再继承 isLink、m-toast loading 型不再默认 forbidClick）——曾因此产生运行时回归
+- **验证方式**：TS2769 只在 dev 模式（HBuilderX 运行 / `cli launch web` 非 `--compile`）逐页类型诊断时输出；`pnpm build:demo`（发行）与 `launch web --compile` 均不输出该诊断，用它们验证「警告清零」是无效验证；发行模式仅剩 SSRSlot 警告
+- 判别规律：同样可空的 prop（如 m-row `gutter?: GutterValue | GutterValue[] | null` 默认 0）不触发警告，触发点是「默认值为 null」；据此先用单组件试点（m-input formatter）再全量推广
+- 残余不可修：SSRSlot WARNING（`Type 'number'/'Function' is not assignable to type 'SSRSlot'`，定位在生成代码 `_createSlots({ _: 2 }, ...)` / `footer: _withCtx(...)`）来自**插槽条件转发**（`<template v-if="$slots['x'] != null" #x>`）与无条件插槽转发的生成代码类型标注，属编译器噪音；规避需砍掉插槽透传 API，不值得，声明为已知噪音即可
+
+### 74. 反向方向（row-reverse / column-reverse）的间距映射：轮位换边而非换 margin 边（2026-11-03 Web 实测）
+- 现象：若照搬「全部子项 margin-left + 容器负 margin 补偿」到 row-reverse，**不换行**时容器负 margin 会把内容整体左移一段（justify center / end 下右边缘差 gap 宽），因为 justify 需要容器满宽（`width: auto` 撑满 / 100%），负 margin 会改变内容盒起点
+- 规约：**间距施加的 margin 边只由「主轴方向」决定，轮位判断承担反向语义**——row / row-reverse 都用 `margin-left`（DOM 非首项即 row，DOM 非末项即 row-reverse）；column 用 `margin-top`（非首项）；column-reverse 用 `margin-bottom`（非末项）；如此首尾天然无多余留白，且不依赖负 margin
+- 例外：**水平换行（wrap）仍保留「全部子项 margin-left + 容器等值负 margin」**（#72 的行首顶格方案）；此时 justify + wrap 组合会因负 margin 整体偏 gap 宽，属可接受边角（无 wrap 时 justify 精确）
+- Web 实测证据：row-reverse 视觉顺序 三 二 一（首项 left 1048 / 末项 880）、column-reverse 自上而下 三 二 一；wrap 10 项换 4 行（3/3/3/1），各行行首 left 全等于 24px；9 个区块控制台无报错
+- 实现要点：反向方向需 `ctx.ids.length`（末项判断），`computed` 读 reactive 数组长度即响应 v-if/v-for 增删；单 item 时 `index < count - 1` 恒 false，首尾均无 margin
+
+### 75. uvue Web 不能使用 position: sticky；受控吸附的三个实测坑（2026-11-03 m-sticky Web 实测）
+- **sticky 全端不可用**：uni-app x Web 运行时给所有 `<view>` 注入 `overflow: hidden`（`@dcloudio/uni-h5/style/framework/uvue.css` 的 `uni-app uni-view { overflow: hidden; }`），`position: sticky` 的最近滚动容器会退化为不滚动的父级 view。实测：根节点 computed `position: sticky / top: 0px`，滚到 `scrollTop=400` 时 `rect.top=-198`（等于 202-400，完全没吸附），无任何报错——只查 computed style 会误判为「已生效」。组件级吸顶一律走「占位根节点 + 内容节点 fixed」的受控方案，Web 也需页面回传 `scroll-top`
+- **`parentElement` 在 Web 返回原生 DOM 节点**：没有 `UniElement.getBoundingClientRectAsync`（实测 `TypeError: parent.getBoundingClientRectAsync is not a function`，且该异常会中断后续测量链导致整个组件静默不工作）。Web 用条件编译 `(parent as any).getBoundingClientRect()` 同步取，App / 小程序保留异步接口；把 Web 分支放在 `#ifdef WEB` + `return` 之前，避免重复声明 `rect`
+- **滚动容器识别**：Web 判 `classList` 含 `uni-scroll-view`（框架把 scroll-view 渲染成多层同名 class 的 div，最内层即 scroller）；App / 小程序判 `scrollHeight > offsetHeight`（官方文档：非滚动组件该值返回视图高度，相等）。用 `scrollHeight > offsetHeight` 单独作判据会误判「固定高度 + overflow:hidden + 内容溢出」的普通 view（如自定义高度的 m-sticky-box），只在兜底时用
+- **吸附基准要用滚动容器可视区，不要用视口**：uvue 页面常见「自定义导航栏 + scroll-view」，视口顶部在导航栏之上，按视口吸附会把吸附条压到导航栏里；容器 rect 在滚动中不变，只需测一次
+- **演示页要有尾部留白**：最后一个吸顶块的页面位置若距内容底部不足一个视口高度，滚到底也永远越不过吸附线（实测第 6 个 m-sticky 无法触发 change/scroll），验收页末尾需留 `~600px` 空白才能覆盖最后一个变体
+
+### 76. 瀑布流实现的三条实测结论（2026-11-04 m-waterfall Web 实测）
+- **多组件家族必须拆顶层目录**：easycom 只认 `components/<tag>/<tag>.uvue`，把 `m-waterfall-item` / `m-waterfall-load` 放进 `m-waterfall/` 目录会报 `Failed to resolve component`（连带出现 `getBoundingClientRectAsync is not a function` 等派生异常）；拆成各自顶层目录后一次修复，共享逻辑仍放 `m-waterfall/context.uts` 用相对路径导入
+- **`<image mode="widthFix">` 的 `@load` 时刻不可直接测高**：回调触发时 uvue image 自身尺寸更新尚未落地，测得高度偏小且之后无重测（表现为项已显示但位置重叠、容器总高度偏小）。正确做法是「立即测一次并标记完成 + `setTimeout(0)` 再补测一次」；修复后实测 `containerH === maxBottom`、重叠数 0
+- **作用域插槽透出函数在 Web 端可用且 props 必须 camelCase**：`<m-waterfall-item #default="{ onLoad }">` 与别名解构 `#default="{ onLoad: onImageLoad, overtime }"` 编译、运行均正常（此前未验证的能力，本轮实证可用）；插槽 prop 要写 `:onLoad`，kebab-case 会取不到
+- **排查提示**：演示页依赖 GitHub raw 外链图时，偶发「浏览器零请求 + 容器高度 0」先怀疑网络（本轮 `curl` 单个图片耗时 9.3s），不要误判为组件缺陷；组件本身在图片到达后自动重排
+
+### 77. UTSJSONObject 动态选项与级联组件的三条实测结论（2026-11-04 m-cascader Web 实测）
+- **`getString` 签名按端漂移**：Web 编译产物中 `UTSJSONObject.getString` 返回 `string | null`，本机 Kotlin d.ts 却是非空签名——按「可空」写 null 判断兜底是唯一安全写法（两端都编译通过）；同族 `getNumber` / `getArray` / `getBoolean` / `getJSON` 均已验证存在。动态选项树（对标 Vant 的 options）全部走 typed getter，配合 `instanceof UTSJSONObject` 过滤 children 元素，规避递归 type 编译风险
+- **`JSON.parse<UTSJSONObject[]>` 解析单对象 `{...}` 返回 null**（不是抛错）：单对象必须用 `JSON.parse<UTSJSONObject>` 泛型，数组与对象要分开封 parse 函数；null 兜底后再 `new UTSJSONObject()` 防下游空接收者
+- **递归 type 风险的工程解**：UTS 的 type 递归引用（children 引用自身数组）未验证过，动态类型 + typed getter 是零风险替代方案，`field-names` 等能力不受影响
+- **swiper 承载 swipeable**：层级切换手势用 `:disable-touch="!swipeable"` 反向承载（prop 语义不变），swiper `@change`（`e.detail.current`）同步 activeTab 但不回发 click-tab——避免用户手势与 tab 点击双重触发
+- **浏览器自动化测 uni-app x Web 页面**：自定义元素在快照中不暴露 interactive ref，`browser_click` 对视口外元素直接失败且子 agent 易误判；有效方案——视口内元素用 fresh snapshot ref 点击，其余用 `browser_evaluate` 派发合成 MouseEvent 序列（mousedown / mouseup / click，`bubbles: true`），组件 `@click` 正常响应；子 agent 给出矛盾结论时必须亲自复现
+
+### 78. HBuilderX 项目级 vite.config.ts 接入 routeGen 的四个坑（2026-11-04 playground 改造实测）
+- **manifest `web` 段的 server 侧注入随内置配置一起丢失**：项目根出现 vite.config.ts 后，HBuilderX 整体替换内置配置（内置仅 `plugins: [uni()]`），dev server 掉回 5173 / base 丢失；须在 vite.config.ts 读 manifest.json 显式回填 `base` 与 `server.port`
+- **`uniMod.default ?? uniMod` 是工厂不是插件实例**：直接放进 plugins 数组时 uni 全部钩子静默失效，唯一症状是 `/main` 走 SPA fallback 返回 HTML（curl 看 content_type 即可判别），页面空白且无报错堆栈——必须调用 `uniFactory()`
+- **`/main` 解析的 importer 死角**：`uni:h5-resolve-id` 仅在 `importer.endsWith('index.html')` 时把 `/main` 映射到 main.uts，dev 下浏览器模块请求无 importer，项目级 config + 自定义 base 下该路径不命中；前置一个 `resolveId(id) { if (id === '/main') return main.uts 绝对路径 }` 的插件即可修复
+- **插件适配器的 bare import 依赖**：ux-router `plugins/index.mjs` 内部 `import 'unplugin'`，playground 是纯 HBuilderX 工程无 node_modules，需在 monorepo 根安装 unplugin（vite 加载 config 时按项目侧解析，不会落到 HBuilderX 内置目录）
+- **判别服务是否正常的快捷链**：`curl /unix-ui/playground/main` 看 content_type——`text/javascript` = uni transform 生效；`text/html` = uni 插件未注册（工厂未调用或宏/依赖缺失）；vite.config.ts 改动会自动重启 server（重启窗口期的 ERR_ABORTED / CONNECTION_REFUSED 是瞬态噪音，别误判为编译错误）
+
+### 79. 长跑 dev server 坏状态导致点击导航静默失败（2026-11-04 级联拆页验证实测）
+- **症状**：首页部分条目（级联三个）点击后 URL 不变、页面不跳转，控制台无 error 也无 `[ux-router]` afterEach 日志；同页其它条目（按钮）跳转正常——极易误判为新改代码的问题
+- **根因**：dev server 长跑期间历经端口竞争（两个 `cli launch` 并存）与多次 vite.config 触发的重启风暴后进入坏状态，与代码无关；对照实验（按钮条目可跳、级联条目不可跳）曾强烈误导排查方向
+- **正确姿势**：排查点击 / 导航类异常前，先 `kill` 旧 node 进程重启 dev server 再取证；重启后同一代码立即全部恢复正常
+- **重启注意**：`kill` HBuilderX 拉起的 node 编译进程后，HBuilderX IDE 会自动重新 launch（新 PID），无需手动 `cli launch`；正确的 CLI 路径是 `Contents/MacOS/cli`（`Contents/HBuilderX/cli` 报 exit 127）
+
+### 80. VDOM 云打包 kotlinc 报错的五类源码适配（2026-11-04 appResource 本地导出核验）
+- **本地回归链路**：kotlinc 只在云端跑，但 .kt 由本地生成——`"/Applications/HBuilderX.app/Contents/MacOS/cli" publish app-android --type appResource --project <playground>` 导出后直接 grep `unpackage/resources/app-android/uniappx/app-android/src/` 下的 .kt 即可核对全部 kotlinc 报错点，无需反复云打包
+- **重命名解构不绑定**：`#default="{ onLoad: onImageLoad, overtime }"` 在 VDOM 生成器中不产出 `val onImageLoad = slotProps[...]`，模板内引用报 Unresolved；必须同名解构。嵌套同名（外层 m-waterfall-item 与内层 m-waterfall-load 槽都透出 onLoad）合法——各自 slot lambda 内生成同名 `val onLoad`，Kotlin 嵌套局部作用域遮蔽
+- **watch 双端都要显式类型**：源无返回类型 → Kotlin `Return type mismatch (expected Unit, actual Any?)` + `Cannot infer`；回调参数无类型 → `Cannot infer (nv)`。写法 `watch((): T | null => props.value, (nv: T | null) => {...})`
+- **作用域插槽桥接参数必须 `any | null`**：槽实参生成 `val x = slotProps["x"]`（Any?），页面桥接函数参数声明 `any`（非空 Any）即类型不匹配；`any | null` 生成 `Any?` 正确对接（ux-router isNavigationFailure 同款先例）。取属性仍需 `as` 强转 + 判空兜底
+- **`is` 类型判断在 uvue script 不可用**：`event is UniImageLoadEvent` 报 vue/compiler-sfc `Unexpected token`——uvue 编译链不认 UTS 的 is 运算符；判别场景改为收窄 API 或换设计（m-waterfall-load 的 error 场景由 maxWait 超时兜底替代）
+- **extapi 云端缺失判别**：本地 UTS 编译器能对 `uni.onWindowResize` 生成 import `io.dcloud.uniapp.extapi.*`，但云端 VDOM runtime SDK 无该类，kotlinc 报 Unresolved——支持性表查官方文档（doc.dcloud.net.cn/uni-app-x/api/），onWindowResize/offWindowResize 仅 Web/微信小程序支持（App/iOS/HarmonyOS 全 x），用 `// #ifdef WEB` 条件编译隔离；App 端窗口尺寸恒定，页面级尺寸变化用 onResize 生命周期

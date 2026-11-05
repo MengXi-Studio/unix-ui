@@ -1,0 +1,56 @@
+<template>
+	<!-- 粘性容器：为 m-sticky 提供边界参照。
+	     容器根节点交给子 m-sticky 测量，吸附条到达容器上下边缘时回顶 -->
+	<view ref="boxRef" :class="rootClass" :style="rootStyle">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { STICKY_BOX_KEY, StickyBoxContext } from '../m-sticky/context.uts'
+
+	type Props = {
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式（常用 height 形成吸附行程） */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		customClass: '',
+		customStyle: ''
+	})
+
+	/** 容器根节点（模板 ref 填充后供子 m-sticky 测量） */
+	const boxRef = ref<UniElement | null>(null)
+
+	/** 容器上下文：root 引用与模板 ref 同源，挂载后子组件即可读取 */
+	const context = new StickyBoxContext()
+	context.root = boxRef
+	provide(STICKY_BOX_KEY, context)
+
+	const rootClass = computed<string>(() => {
+		let cls = 'm-sticky-box'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	const rootStyle = computed<string>(() => {
+		if (props.customStyle == '') {
+			return ''
+		}
+		return props.customStyle
+	})
+</script>
+
+<style lang="scss">
+	@import '../../theme/vars.scss';
+
+	/* 容器：相对定位作为边界参照；高度由使用方指定（否则随内容自然高度，无吸附行程） */
+	.m-sticky-box {
+		position: relative;
+		width: 100%;
+	}
+</style>

@@ -6,7 +6,7 @@
 				<view class="brand">
 					<view class="brand-row">
 						<text class="brand-name">unix-ui</text>
-						<text class="brand-version">v0.1.0</text>
+						<text class="brand-version">v0.3.0</text>
 					</view>
 					<text class="brand-slogan">轻量、可靠的 uni-app x 组件库</text>
 				</view>
@@ -55,6 +55,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: 'unix-ui 组件演示', name: 'home' })
 	import { useRouter } from '@/uni_modules/ux-router/utssdk/index.uts'
 	import type { RawLocation } from '@/uni_modules/ux-router/utssdk/index.uts'
 	import { demoGroups } from './demo-components.uts'

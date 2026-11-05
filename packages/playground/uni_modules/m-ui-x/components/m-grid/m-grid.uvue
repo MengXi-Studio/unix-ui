@@ -21,11 +21,11 @@
 
 	type Props = {
 		/** 列数（最小 1） */
-		columnNum?: GutterValue | null
+		columnNum?: GutterValue
 		/** 图标大小：纯数字自动补 px；空值走主题变量 $m-grid-item-icon-size */
-		iconSize?: GutterValue | null
+		iconSize?: GutterValue
 		/** 格子之间的间距（px），行间与列间同值 */
-		gutter?: GutterValue | null
+		gutter?: GutterValue
 		/** 是否显示边框 */
 		border?: boolean
 		/** 是否将格子内容居中显示 */

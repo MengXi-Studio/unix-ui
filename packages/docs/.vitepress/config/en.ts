@@ -78,11 +78,28 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					]
 				},
 				{
+					text: 'Layout Components',
+					items: [
+						{ text: 'Compact', link: '/en/components/compact' },
+						{ text: 'Divider', link: '/en/components/divider' },
+						{ text: 'Flex', link: '/en/components/flex' },
+						{ text: 'Grid', link: '/en/components/grid' },
+						{ text: 'Layout', link: '/en/components/layout' },
+						{ text: 'Space', link: '/en/components/space' },
+						{ text: 'StatusBar', link: '/en/components/status-bar' },
+						{ text: 'Sticky', link: '/en/components/sticky' },
+						{ text: 'Waterfall', link: '/en/components/waterfall' }
+					]
+				},
+				{
 					text: 'Form Components',
 					items: [
 						{ text: 'Calendar', link: '/en/components/calendar' },
 						{ text: 'CalendarInput', link: '/en/components/calendar-input' },
 						{ text: 'CalendarPopup', link: '/en/components/calendar-popup' },
+						{ text: 'Cascader', link: '/en/components/cascader' },
+						{ text: 'CascaderInput', link: '/en/components/cascader-input' },
+						{ text: 'CascaderPopup', link: '/en/components/cascader-popup' },
 						{ text: 'Input', link: '/en/components/input' }
 					]
 				},
@@ -93,16 +110,6 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Overlay', link: '/en/components/overlay' },
 						{ text: 'Popup', link: '/en/components/popup' },
 						{ text: 'Toast', link: '/en/components/toast' }
-					]
-				},
-				{
-					text: 'Layout Components',
-					items: [
-						{ text: 'Compact', link: '/en/components/compact' },
-						{ text: 'Divider', link: '/en/components/divider' },
-						{ text: 'Grid', link: '/en/components/grid' },
-						{ text: 'Layout', link: '/en/components/layout' },
-						{ text: 'Space', link: '/en/components/space' }
 					]
 				},
 				{

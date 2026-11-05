@@ -101,6 +101,8 @@
 </template>
 
 <script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '紧凑布局 Compact', name: 'compact' })
 	// 动态增删演示：数组驱动 v-for，验证 compact 内按钮首 / 中 / 尾位置自动重排
 	const dynList = ref<number[]>([1, 2, 3])
 	let dynSeed = 3

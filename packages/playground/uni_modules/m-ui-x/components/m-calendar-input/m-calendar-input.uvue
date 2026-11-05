@@ -50,7 +50,7 @@
 
 	type Props = {
 		/** 选中值（v-model:value）：single 为 Date，multiple / range 为 Date[]，null 未选 */
-		value?: Date | Date[] | null
+		value?: Date | Date[]
 		/** 选择类型 */
 		type?: CalendarType
 		/** 占位符 */
@@ -68,9 +68,9 @@
 		/** 主题色（选中圆点与范围 bar 派生色，支持 #hex 与渐变） */
 		color?: string
 		/** 最小日期（null 默认今天） */
-		minDate?: Date | null
+		minDate?: Date
 		/** 最大日期（null 默认今天 + 6 个月） */
-		maxDate?: Date | null
+		maxDate?: Date
 		/** 范围 / 多选最多可选天数（含两端计数；-1 不限制） */
 		maxRange?: number
 		/** 范围选择是否允许起止同日 */

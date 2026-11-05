@@ -1,0 +1,206 @@
+<template>
+	<!-- 弹性布局容器：flex-direction / justify / align / wrap / flex 简写组合。
+	     App 端不支持 CSS gap（官方属性清单与原生运行时属性表均无，声明被静默丢弃），
+	     且 ucss 无子级选择器，插槽直通的任意子元素无法从容器侧加间距，
+	     故子项需经 m-flex-item 包裹（provide/inject 注册序，m-space 同款机制），
+	     由 item 注入主轴 margin；水平换行时容器以等值负 margin-left 补偿
+	     （经典 gutter 技法），保证换行后各行行首与首行顶格。 -->
+	<view :class="rootClass" :style="rootStyle">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-flex 弹性布局：统一设置子元素的排列方向 / 间距 / 对齐方式。
+	 * 间距实现：解析 gap 为自定义尺寸（内联 margin）或内置档位（主题变量类），
+	 * 挂入 FlexContext provide 给组内 m-flex-item；row 方向非首项 margin-left、
+	 * row-reverse 非末项 margin-left、column 非首项 margin-top、
+	 * column-reverse 非末项 margin-bottom；水平换行时全部子项 margin-left +
+	 * 容器等值负 margin 补偿（各行行首顶格），行间距为子项 margin-bottom。
+	 */
+	import { FLEX_KEY, FlexContext, type FlexDirection, type FlexGap } from './context.uts'
+
+	/**
+	 * 交叉轴对齐方式（等价 align-items；未传时沿用 view 默认 stretch）
+	 */
+	type FlexAlign = 'start' | 'end' | 'center' | 'baseline'
+
+	/**
+	 * 主轴对齐方式（等价 justify-content；未传时沿用 flex-start）
+	 */
+	type FlexJustify = 'start' | 'end' | 'center' | 'between' | 'around' | 'evenly'
+
+	type Props = {
+		/** 排列方向，等价 flex-direction，默认 row */
+		direction?: FlexDirection
+		/** 间隔大小：内置档位 small / medium / large，或自定义尺寸（number 补 px / string 原样） */
+		gap?: FlexGap
+		/** 交叉轴对齐方式 */
+		align?: FlexAlign
+		/** 主轴对齐方式 */
+		justify?: FlexJustify
+		/** flex CSS 简写属性（作用于容器自身，如 '1' / '1 1 auto'） */
+		flex?: string
+		/** 是否自动换行（仅 row / row-reverse 生效） */
+		wrap?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		direction: 'row',
+		gap: 'medium',
+		align: null,
+		justify: null,
+		flex: '',
+		wrap: false,
+		customClass: '',
+		customStyle: ''
+	})
+
+	/** 是否水平方向（row / row-reverse）：wrap 与负 margin 补偿仅对水平方向生效 */
+	const isRowDirection: boolean = props.direction == 'row' || props.direction == 'row-reverse'
+
+	/**
+	 * 自定义间距值归一：number 补 px（如 20 → '20px'），
+	 * 内置档位 small / medium / large 返回空串（走主题变量类），其余 string 原样返回
+	 */
+	const gapValue = computed<string>(() => {
+		const g = props.gap
+		if (typeof g == 'number') return g.toString() + 'px'
+		const s = g as string
+		if (s == 'small' || s == 'medium' || s == 'large') return ''
+		return s
+	})
+
+	/** 内置档位后缀：small → '-sm'、large → '-lg'、medium（默认）→ 空串 */
+	const gapTier = computed<string>(() => {
+		const g = props.gap
+		if (typeof g != 'string') return ''
+		if (g == 'small') return '-sm'
+		if (g == 'large') return '-lg'
+		return ''
+	})
+
+	// 间距上下文：direction / wrap 为 props 只读快照（m-space 先例），间距值挂 computed 跟随 gap 响应
+	const ctx = new FlexContext()
+	ctx.direction = props.direction
+	ctx.wrap = props.wrap && isRowDirection
+	ctx.gap = gapValue
+	ctx.gapTier = gapTier.value
+	provide(FLEX_KEY, ctx)
+
+	/** 根节点类名：direction / align / justify / wrap 变体按 props 拼接 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-flex'
+		if (props.direction != 'row') cls += ' m-flex--' + (props.direction as FlexDirection)
+		if (props.align != null) cls += ' m-flex--align-' + (props.align as FlexAlign)
+		if (props.justify != null) cls += ' m-flex--justify-' + (props.justify as FlexJustify)
+		if (props.wrap && isRowDirection) {
+			cls += ' m-flex--wrap'
+			// 水平换行主轴间距补偿类：抵消全部子项的 margin-left（默认档位走 -$m-flex-gap，
+			// 自定义尺寸时被下方 rootStyle 的等值内联负 margin 覆盖），保证各行行首顶格
+			cls += ' m-flex--compensate' + gapTier.value
+		}
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 根节点内联样式：customStyle 与 flex 简写补分号；自定义间距 + 水平换行时追加等值负 margin-left 补偿 */
+	const rootStyle = computed<string>(() => {
+		let style = props.customStyle
+		if (style != '' && !style.endsWith(';')) style += ';'
+		if (props.flex != '') {
+			style += 'flex: ' + props.flex + ';'
+		}
+		if (props.wrap && isRowDirection) {
+			const gap = gapValue.value
+			// 负值间距不做二次取负（避免拼出 '--4px' 非法值）
+			if (gap != '' && !gap.startsWith('-')) {
+				style += 'margin-left: -' + gap + ';'
+			}
+		}
+		return style
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 基类（uvue view 默认 column，必须显式 row；间距由 m-flex-item 的 margin 实现） ========== */
+	.m-flex {
+		flex-direction: row;
+	}
+
+	/* ========== 方向变体（row 为默认值无类） ========== */
+	.m-flex--row-reverse {
+		flex-direction: row-reverse;
+	}
+	.m-flex--column {
+		flex-direction: column;
+	}
+	.m-flex--column-reverse {
+		flex-direction: column-reverse;
+	}
+
+	/* ========== 换行变体（仅水平方向拼接） ========== */
+	.m-flex--wrap {
+		flex-wrap: wrap;
+	}
+
+	/* ========== 主轴对齐变体（start 为默认值无类） ========== */
+	.m-flex--justify-end {
+		justify-content: flex-end;
+	}
+	.m-flex--justify-center {
+		justify-content: center;
+	}
+	.m-flex--justify-between {
+		justify-content: space-between;
+	}
+	.m-flex--justify-around {
+		justify-content: space-around;
+	}
+	.m-flex--justify-evenly {
+		justify-content: space-evenly;
+	}
+
+	/* ========== 交叉轴对齐变体（未传 align 时沿用 view 默认 stretch） ========== */
+	.m-flex--align-start {
+		align-items: flex-start;
+	}
+	.m-flex--align-center {
+		align-items: center;
+	}
+	.m-flex--align-end {
+		align-items: flex-end;
+	}
+	.m-flex--align-baseline {
+		/* App 端 align-items 不支持 baseline，降级为首行起点对齐；Web 端保持 baseline 语义 */
+		align-items: flex-start;
+		/* #ifdef WEB */
+		align-items: baseline;
+		/* #endif */
+	}
+
+	/* ========== 主轴间距补偿（水平换行专用）：等值抵消全部子项的 margin-left，
+	   换行后各行行首与首行顶格（经典 gutter 负 margin 技法；自定义尺寸时被内联等值负 margin 覆盖） ========== */
+	.m-flex--compensate {
+		margin-left: -$m-flex-gap;
+	}
+	.m-flex--compensate-sm {
+		margin-left: -$m-flex-gap-sm;
+	}
+	.m-flex--compensate-lg {
+		margin-left: -$m-flex-gap-lg;
+	}
+</style>

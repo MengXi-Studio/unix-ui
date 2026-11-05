@@ -91,11 +91,28 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					]
 				},
 				{
+					text: '布局组件',
+					items: [
+						{ text: 'Compact 紧凑布局', link: '/components/compact' },
+						{ text: 'Divider 分割线', link: '/components/divider' },
+						{ text: 'Flex 弹性布局', link: '/components/flex' },
+						{ text: 'Grid 宫格', link: '/components/grid' },
+						{ text: 'Layout 布局', link: '/components/layout' },
+						{ text: 'Space 间距', link: '/components/space' },
+						{ text: 'StatusBar 状态栏', link: '/components/status-bar' },
+						{ text: 'Sticky 粘性布局', link: '/components/sticky' },
+						{ text: 'Waterfall 瀑布流', link: '/components/waterfall' }
+					]
+				},
+				{
 					text: '表单组件',
 					items: [
 						{ text: 'Calendar 日历', link: '/components/calendar' },
 						{ text: 'CalendarInput 日历输入框', link: '/components/calendar-input' },
 						{ text: 'CalendarPopup 日历弹出框', link: '/components/calendar-popup' },
+						{ text: 'Cascader 级联选择', link: '/components/cascader' },
+						{ text: 'CascaderInput 级联输入框', link: '/components/cascader-input' },
+						{ text: 'CascaderPopup 级联弹出框', link: '/components/cascader-popup' },
 						{ text: 'Input 输入框', link: '/components/input' }
 					]
 				},
@@ -106,16 +123,6 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Overlay 遮罩层', link: '/components/overlay' },
 						{ text: 'Popup 弹出层', link: '/components/popup' },
 						{ text: 'Toast 轻提示', link: '/components/toast' }
-					]
-				},
-				{
-					text: '布局组件',
-					items: [
-						{ text: 'Compact 紧凑布局', link: '/components/compact' },
-						{ text: 'Divider 分割线', link: '/components/divider' },
-						{ text: 'Grid 宫格', link: '/components/grid' },
-						{ text: 'Layout 布局', link: '/components/layout' },
-						{ text: 'Space 间距', link: '/components/space' }
 					]
 				},
 				{

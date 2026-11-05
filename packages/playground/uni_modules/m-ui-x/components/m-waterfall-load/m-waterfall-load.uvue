@@ -1,0 +1,143 @@
+<template>
+	<!-- 已知宽高占位：按 width / height 的比例用 padding-top 撑出高度，
+	     内容绝对定位铺满；可在图片加载完成前就参与瀑布流排版（对齐 Sard WaterfallLoad） -->
+	<view :class="rootClass" :style="rootStyle">
+		<view class="m-waterfall-load__content">
+			<slot :onLoad="handleContentLoad" :overtime="overtime"></slot>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	type Props = {
+		/** 自定义宽度（仅用于计算宽高比，非最终展示尺寸，默认 320） */
+		width?: number
+		/** 自定义高度（仅用于计算宽高比，非最终展示尺寸，默认 240） */
+		height?: number
+		/** 最大等待时间（ms，默认 0：立即按自定义比例排版，不再等待图片实际尺寸） */
+		maxWait?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		width: 320,
+		height: 240,
+		maxWait: 0,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 加载完成或超时时触发（只会触发一次，供 m-waterfall-item 的 onLoad 使用） */
+		load: []
+	}>()
+
+	/** 当前宽高比基准（maxWait 内加载完成且取得真实尺寸时会被更新） */
+	const currWidth = ref(props.width > 0 ? props.width : 320)
+	const currHeight = ref(props.height > 0 ? props.height : 240)
+	/** 是否已超时（超时后按自定义比例排版，不再采用图片真实尺寸） */
+	const overtime = ref(false)
+	/** 是否已触发 load（保证只派发一次） */
+	let loaded = false
+	/** 超时定时器 id（-1 表示已清除） */
+	let timerId: number = -1
+
+	/**
+	 * 内容加载完成回调（插槽透出）
+	 *
+	 * maxWait 内完成时取图片真实宽高更新比例（event 为 null 表示失败 / 无尺寸信息，
+	 * 保持自定义比例）；超过 maxWait 后调用不再派发 load。
+	 * 页面 image 的 @error 不建议直接绑定本回调（error 事件与 UniImageLoadEvent
+	 * 类型不符），失败场景由 maxWait 超时兜底排版，语义等价。
+	 *
+	 * @param event 图片 load 事件（detail 含真实宽高），无尺寸信息时传 null
+	 */
+	function handleContentLoad(event: UniImageLoadEvent | null): void {
+		if (timerId != -1) {
+			clearTimeout(timerId)
+			timerId = -1
+		}
+		if (overtime.value || loaded) {
+			return
+		}
+		loaded = true
+		if (event != null) {
+			const width = event.detail.width
+			const height = event.detail.height
+			if (width > 0 && height > 0) {
+				currWidth.value = width
+				currHeight.value = height
+			}
+		}
+		emit('load')
+	}
+
+	/** 根节点类名：基础类 + 自定义类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-waterfall-load'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 根节点动态样式：padding-top 百分比按宽高比撑出高度，并保证有一帧可用高度 */
+	const rootStyle = computed<string>(() => {
+		const baseWidth = currWidth.value > 0 ? currWidth.value : 320
+		const ratio = currHeight.value > 0 ? (currHeight.value / baseWidth) * 100 : 0
+		let style = 'padding-top: ' + ratio.toString() + '%;'
+		if (props.customStyle != '') {
+			style += ' ' + props.customStyle
+		}
+		return style
+	})
+
+	onMounted(() => {
+		// maxWait 为 0 时下一帧即超时：按自定义比例排版，不等待图片真实尺寸
+		timerId = setTimeout(() => {
+			timerId = -1
+			if (loaded) {
+				return
+			}
+			loaded = true
+			overtime.value = true
+			emit('load')
+		}, props.maxWait > 0 ? props.maxWait : 0)
+	})
+
+	onUnmounted(() => {
+		if (timerId != -1) {
+			clearTimeout(timerId)
+			timerId = -1
+		}
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 根节点：宽度铺满瀑布流列，高度由内联 padding-top 按比例撑开 */
+	.m-waterfall-load {
+		position: relative;
+		width: 100%;
+		overflow: hidden;
+	}
+
+	/* 内容层：绝对铺满比例盒子，图片等裁剪填满 */
+	.m-waterfall-load__content {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+	}
+</style>

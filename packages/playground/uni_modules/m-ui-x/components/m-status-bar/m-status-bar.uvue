@@ -1,0 +1,70 @@
+<template>
+	<!-- 状态栏占位：高度由 height prop 或系统状态栏高度（App）决定；Web / 小程序无系统状态栏，恒为 0 -->
+	<view :class="rootClass" :style="rootStyle"></view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-status-bar 状态栏占位组件：为 Navbar / Notify 等贴顶元素预留系统状态栏高度。
+	 * 高度取值优先级：height prop（> 0 时直用）→ App 端 uni.getWindowInfo().statusBarHeight；
+	 * Web / 小程序取不到系统值，保持 0（不占位），需要占位时显式传 height。
+	 * uni-app x 无「JS 写 CSS 变量」链路，故高度走内联 style 而非 Sard 的 --s-status-bar-height。
+	 */
+
+	type Props = {
+		/** 状态栏高度（px）；0 表示自动读取系统状态栏高度（仅 App 端有值，Web / 小程序为 0） */
+		height?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式（如背景色） */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		height: 0,
+		customClass: '',
+		customStyle: ''
+	})
+
+	/** 系统状态栏高度：仅 App 端有真实值，其余平台保持 0（#ifdef 编译期裁剪） */
+	const systemHeight = ref(0)
+	// #ifdef APP
+	systemHeight.value = uni.getWindowInfo().statusBarHeight
+	// #endif
+
+	/** 实际生效高度：height > 0 时优先，否则回退系统状态栏高度 */
+	const resolvedHeight = computed<number>(() => {
+		return props.height > 0 ? props.height : systemHeight.value
+	})
+
+	/** 根节点类名：基类 + 自定义类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-status-bar'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 根节点内联样式：customStyle 补分号 + 生效高度（为 0 时不输出 height，保持不占位） */
+	const rootStyle = computed<string>(() => {
+		let style = props.customStyle
+		if (style != '' && !style.endsWith(';')) style += ';'
+		if (resolvedHeight.value > 0) {
+			style += ' height: ' + resolvedHeight.value.toString() + 'px;'
+		}
+		return style
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题说明：本组件无专属 $m-* 变量（纯高度占位，颜色由使用者经 custom-style / custom-class 指定）。
+	 * 组件内顶层无条件引入 theme/vars.scss 保持本库统一契约（全部 !default，零配置即有默认主题）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 基类：固定占位、不参与 flex 伸缩、横向撑满容器 ========== */
+	.m-status-bar {
+		flex: none;
+		width: 100%;
+	}
+</style>

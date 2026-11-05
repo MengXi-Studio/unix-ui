@@ -1,0 +1,396 @@
+<template>
+	<view class="page">
+		<demo-navbar title="级联选择" subtitle="Cascader" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础面板</text>
+			<view class="card">
+				<m-cascader
+					v-model:value="basicValue"
+					title="请选择所在地区"
+					:options="basicOptions"
+					@change="onBasicChange"
+					@finish="onBasicFinish"
+					@click-tab="onBasicClickTab"
+					@close="onBasicClose"
+				/>
+				<view class="event-log">
+					<text class="event-text">v-model：{{ fmtNullableValue(basicValue) }}</text>
+					<text class="event-text">最近事件：{{ basicLog }}</text>
+				</view>
+				<view class="demo-btn-row">
+					<m-button size="small" @click="setBasicHangzhou">外部赋值：杭州→西湖区</m-button>
+					<m-button size="small" @click="clearBasic">清空</m-button>
+				</view>
+				<text class="caption">v-model:value 受控叶子值；change（点击选项）/ finish（选完叶子）/ click-tab（点击 tab，滑动手势不触发）/ close（点击关闭图标）全事件</text>
+			</view>
+
+			<text class="section" id="number">数字 value</text>
+			<view class="card">
+				<m-cascader :options="numberOptions" :show-header="false" @finish="onNumberFinish" />
+				<view class="event-log">
+					<text class="event-text">最近 finish：{{ numberLog }}</text>
+				</view>
+				<text class="caption">选项 value 为 number（1 / 11 / 111）：内部按字符串归一化匹配，payload 保留原值；show-header=false 隐藏头部</text>
+			</view>
+
+			<text class="section" id="color">自定义主题色</text>
+			<view class="card">
+				<m-cascader
+					:options="basicOptions"
+					:show-header="false"
+					:options-height="200"
+					active-color="#07c160"
+					:value="'320571'"
+				/>
+				<text class="caption">active-color 覆盖选中项文字 / 对勾 / tab 下划线主题变量；options-height=200 覆盖选项区高度（默认 384）；value 回灌直接定位选中路径</text>
+			</view>
+
+			<text class="section" id="swipeable">关闭手势滑动</text>
+			<view class="card">
+				<m-cascader :options="basicOptions" :show-header="false" :swipeable="false" placeholder="请选择城市" />
+				<text class="caption">swipeable=false 关闭手势滑动换层，仅可点击 tab 或选项切换层级；placeholder 自定义未选层 tab 文案</text>
+			</view>
+
+			<text class="section" id="async">异步加载</text>
+			<view class="card">
+				<m-cascader :options="asyncOptions" :show-header="false" @change="onAsyncChange" />
+				<view class="event-log">
+					<text class="event-text">{{ asyncTip }}</text>
+				</view>
+				<text class="caption">点击省份后模拟 600ms 请求并填充 children（change 回调内修改 options，组件消费 props 引用自动渲染）；children 为空数组视为叶子直接 finish</text>
+			</view>
+
+			<text class="section" id="field-names">自定义字段名</text>
+			<view class="card">
+				<m-cascader :options="customOptions" :field-names="nameFields" :show-header="false" @finish="onCustomFinish" />
+				<view class="event-log">
+					<text class="event-text">最近 finish：{{ customLog }}</text>
+				</view>
+				<text class="caption">field-names 映射 { name, id, sub } 选项结构；disabled / color 字段仍为固定键名（对齐 Vant）</text>
+			</view>
+
+			<text class="section" id="slots">插槽</text>
+			<view class="card">
+				<m-cascader title="自定义渲染" :options="disabledOptions" :show-header="true" :closeable="true">
+					<template #title>
+						<text class="demo-slot-title">选择品类（标题插槽）</text>
+					</template>
+					<template #options-top>
+						<view class="demo-options-top">
+							<text class="demo-options-top-text">options-top 插槽：每周三 10 点更新库存</text>
+						</view>
+					</template>
+					<template #option="{ option, selected }">
+						<text :class="selected ? 'demo-option-text demo-option-text--on' : 'demo-option-text'">{{ optionTextOf(option) }}{{ optionDisabledOf(option) ? '（已售罄）' : '' }}</text>
+					</template>
+					<template #options-bottom>
+						<view class="demo-options-bottom">
+							<text class="demo-options-bottom-text">options-bottom 插槽</text>
+						</view>
+					</template>
+				</m-cascader>
+				<text class="caption">title / option / options-top / options-bottom 四插槽；option 插槽作用域 { option, selected }；含 disabled 与 color 选项</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '级联选择 Cascader', name: 'cascader' })
+	import { CascaderChangeEvent, CascaderValue, CascaderFieldNames } from '@/uni_modules/m-ui-x/components/m-cascader/cascader.uts'
+
+	// ========== 选项数据（JSON 解析为 UTSJSONObject[] 动态类型） ==========
+
+	/** 安全解析：JSON.parse 泛型返回可空，null 兜底空数组 */
+	function parseOptions(json: string): UTSJSONObject[] {
+		const parsed = JSON.parse<UTSJSONObject[]>(json)
+		if (parsed != null) {
+			return parsed
+		}
+		const empty: UTSJSONObject[] = []
+		return empty
+	}
+
+	/** 安全解析（单对象）：JSON.parse 泛型返回可空，null 兜底空对象 */
+	function parseObject(json: string): UTSJSONObject {
+		const parsed = JSON.parse<UTSJSONObject>(json)
+		if (parsed != null) {
+			return parsed
+		}
+		return new UTSJSONObject()
+	}
+
+	/** 省市区基础选项 */
+	const basicOptions: UTSJSONObject[] = parseOptions(`[
+		{"text":"浙江省","value":"330000","children":[
+			{"text":"杭州市","value":"330100","children":[
+				{"text":"西湖区","value":"330106"},
+				{"text":"余杭区","value":"330110"},
+				{"text":"临平区","value":"330113"}
+			]},
+			{"text":"宁波市","value":"330200","children":[
+				{"text":"海曙区","value":"330203"},
+				{"text":"鄞州区","value":"330212"}
+			]},
+			{"text":"温州市","value":"330300","children":[
+				{"text":"鹿城区","value":"330302"},
+				{"text":"瓯海区","value":"330304"}
+			]}
+		]},
+		{"text":"江苏省","value":"320000","children":[
+			{"text":"南京市","value":"320100","children":[
+				{"text":"玄武区","value":"320102"},
+				{"text":"鼓楼区","value":"320106"}
+			]},
+			{"text":"苏州市","value":"320500","children":[
+				{"text":"姑苏区","value":"320508"},
+				{"text":"工业园区","value":"320571"}
+			]}
+		]},
+		{"text":"广东省","value":"440000","children":[
+			{"text":"广州市","value":"440100","children":[
+				{"text":"天河区","value":"440106"},
+				{"text":"越秀区","value":"440104"}
+			]},
+			{"text":"深圳市","value":"440300","children":[
+				{"text":"福田区","value":"440304"},
+				{"text":"南山区","value":"440305"}
+			]}
+		]}
+	]`)
+
+	/** 数字 value 选项 */
+	const numberOptions: UTSJSONObject[] = parseOptions(`[
+		{"text":"分类一","value":1,"children":[
+			{"text":"子类 A","value":11,"children":[
+				{"text":"明细 A1","value":111},
+				{"text":"明细 A2","value":112}
+			]},
+			{"text":"子类 B","value":12,"children":[
+				{"text":"明细 B1","value":121}
+			]}
+		]},
+		{"text":"分类二","value":2,"children":[
+			{"text":"子类 C","value":21,"children":[
+				{"text":"明细 C1","value":211}
+			]}
+		]}
+	]`)
+
+	/** 异步加载初始选项（省份无 children，change 后填充） */
+	const asyncOptions = ref<UTSJSONObject[]>(parseOptions(`[
+		{"text":"水果","value":"fruit"},
+		{"text":"蔬菜","value":"veggie"}
+	]`))
+
+	/** 异步加载模拟数据源（按省份 value 映射子级） */
+	const asyncDataSource: UTSJSONObject = parseObject(`{
+		"fruit":[
+			{"text":"苹果","value":"apple"},
+			{"text":"香蕉","value":"banana"},
+			{"text":"橘子","value":"orange"}
+		],
+		"veggie":[
+			{"text":"白菜","value":"cabbage"},
+			{"text":"萝卜","value":"radish"}
+		]
+	}`)
+
+	/** field-names 自定义字段名 */
+	const nameFields: CascaderFieldNames = {
+		text: 'name',
+		value: 'id',
+		children: 'sub'
+	}
+
+	/** 自定义字段名选项 */
+	const customOptions: UTSJSONObject[] = parseOptions(`[
+		{"name":"电子","id":"e","sub":[
+			{"name":"手机","id":"e1"},
+			{"name":"电脑","id":"e2"}
+		]},
+		{"name":"服装","id":"c","sub":[
+			{"name":"男装","id":"c1"},
+			{"name":"女装","id":"c2"}
+		]}
+	]`)
+
+	/** 含 disabled / color 选项（插槽演示） */
+	const disabledOptions: UTSJSONObject[] = parseOptions(`[
+		{"text":"数码","value":"d","children":[
+			{"text":"耳机","value":"d1"},
+			{"text":"音箱","value":"d2","disabled":true},
+			{"text":"键盘","value":"d3","color":"#07c160"}
+		]},
+		{"text":"家居","value":"h","children":[
+			{"text":"台灯","value":"h1"},
+			{"text":"沙发","value":"h2"}
+		]}
+	]`)
+
+	// ========== 1 基础面板 ==========
+	const basicValue = ref<CascaderValue | null>(null)
+	const basicLog = ref<string>('（等待交互）')
+
+	// 模板绑定处理函数一律 const 箭头函数：function 声明在 VDOM 生成 Kotlin 中被裸名传递报 Function invocation expected
+
+	/** 可空值转展示文本 */
+	function fmtNullableValue(v: CascaderValue | null): string {
+		if (v == null) {
+			return 'null（未选）'
+		}
+		return v.toString()
+	}
+
+	/** change 事件记录 */
+	const onBasicChange = (event: CascaderChangeEvent) => {
+		basicLog.value = 'change → ' + event.value.toString() + '（tab ' + event.tabIndex.toString() + '）'
+	}
+
+	/** finish 事件记录 */
+	const onBasicFinish = (event: CascaderChangeEvent) => {
+		basicLog.value = 'finish → ' + event.value.toString() + '，路径 ' + event.selectedOptions.length.toString() + ' 级'
+	}
+
+	/** click-tab 事件记录 */
+	const onBasicClickTab = (tabIndex: number, title: string) => {
+		basicLog.value = 'click-tab → tab ' + tabIndex.toString() + '（' + title + '）'
+	}
+
+	/** close 事件记录 */
+	const onBasicClose = () => {
+		basicLog.value = 'close'
+	}
+
+	/** 外部赋值验证 value 回灌重建路径 */
+	const setBasicHangzhou = () => {
+		basicValue.value = '330106'
+	}
+
+	/** 清空验证 null 重置 */
+	const clearBasic = () => {
+		basicValue.value = null
+	}
+
+	// ========== 2 数字 value ==========
+	const numberLog = ref<string>('（等待交互）')
+
+	/** 数字 value finish 记录（payload 保留 number 原值） */
+	const onNumberFinish = (event: CascaderChangeEvent) => {
+		numberLog.value = 'finish → value=' + event.value.toString()
+	}
+
+	// ========== 3 异步加载 ==========
+	const asyncTip = ref<string>('（点击省份后 600ms 填充子级）')
+
+	/** 异步 change：首次点击省份时模拟请求填充 children（children 为空数组视为叶子直接 finish） */
+	const onAsyncChange = (event: CascaderChangeEvent) => {
+		if (event.tabIndex != 0) {
+			return
+		}
+		const province = event.selectedOptions[0]
+		const children = province.getArray('children')
+		if (children != null) {
+			return
+		}
+		const key = event.value.toString()
+		asyncTip.value = '加载中…'
+		setTimeout(() => {
+			const loaded = asyncDataSource.getArray(key)
+			if (loaded != null) {
+				province.set('children', loaded)
+			} else {
+				const empty: UTSJSONObject[] = []
+				province.set('children', empty)
+			}
+			asyncTip.value = '已加载「' + key + '」子级'
+		}, 600)
+	}
+
+	// ========== 4 field-names ==========
+	const customLog = ref<string>('（等待交互）')
+
+	const onCustomFinish = (event: CascaderChangeEvent) => {
+		customLog.value = 'finish → ' + event.value.toString()
+	}
+
+	// ========== 5 插槽作用域取值桥接（模板表达式调用导入函数会被 unref 包裹后不可调用） ==========
+
+	// option 插槽作用域参数在 VDOM 生成 Kotlin 中为 Any?（slotProps["option"]），
+	// 桥接参数须 any | null（声明 UTSJSONObject 为非空，与插槽实参 Any? 类型不匹配报 kotlinc 错）
+
+	const optionTextOf = (opt: any | null): string => {
+		if (opt == null) {
+			return ''
+		}
+		const s = (opt as UTSJSONObject).getString('text')
+		if (s != null) {
+			return s
+		}
+		return ''
+	}
+	const optionDisabledOf = (opt: any | null): boolean => {
+		if (opt == null) {
+			return false
+		}
+		return (opt as UTSJSONObject).getBoolean('disabled') == true
+	}
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+		flex-direction: column;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	/* 外部赋值 / 清空按钮行 */
+	.demo-btn-row {
+		flex-direction: row;
+		margin-top: 12px;
+	}
+	/* 插槽演示：标题 / 上下扩展区 / 自定义选项 */
+	.demo-slot-title {
+		font-size: 16px;
+		font-weight: bold;
+		color: #07c160;
+	}
+	.demo-options-top {
+		padding: 8px 16px;
+		background-color: #f0f9ff;
+	}
+	.demo-options-top-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.demo-option-text {
+		font-size: 14px;
+		color: #323233;
+	}
+	.demo-option-text--on {
+		color: #1989fa;
+		font-weight: bold;
+	}
+	.demo-options-bottom {
+		padding: 8px 16px;
+		justify-content: center;
+	}
+	.demo-options-bottom-text {
+		font-size: 12px;
+		color: #969799;
+	}
+</style>

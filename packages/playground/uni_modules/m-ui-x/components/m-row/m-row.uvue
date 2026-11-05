@@ -25,11 +25,11 @@
 
 	type Props = {
 		/** 列元素之间的间距（px）；数组 [水平, 垂直]；0 不产生间距 */
-		gutter?: GutterValue | GutterValue[] | null
+		gutter?: GutterValue | GutterValue[]
 		/** 主轴对齐方式，等价 justify-content（start 为默认值） */
-		justify?: RowJustify | null
+		justify?: RowJustify
 		/** 交叉轴对齐方式，等价 align-items（top 为默认值） */
-		align?: RowAlign | null
+		align?: RowAlign
 		/** 是否自动换行 */
 		wrap?: boolean
 		/** 自定义根节点类名 */

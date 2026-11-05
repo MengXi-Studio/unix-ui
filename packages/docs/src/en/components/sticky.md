@@ -1,6 +1,7 @@
 ---
 title: Sticky
 demo: pages-sub/sticky/sticky
+added: 0.3.0
 ---
 
 ## Introduction

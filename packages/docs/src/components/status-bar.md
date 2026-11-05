@@ -2,6 +2,7 @@
 title: StatusBar
 subtitle: 状态栏
 demo: pages-sub/status-bar/status-bar
+added: 0.3.0
 ---
 
 ## 介绍

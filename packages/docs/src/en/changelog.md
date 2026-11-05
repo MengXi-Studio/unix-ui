@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.0] - 2026-11-03
+## [0.3.0] - 2026-11-05
 
 Adds the flex layout components (m-flex / m-flex-item), the status bar placeholder component (m-status-bar), the sticky layout components (m-sticky / m-sticky-box), the waterfall components (m-waterfall / m-waterfall-item / m-waterfall-load) and the cascader family (m-cascader / m-cascader-popup / m-cascader-input, form family).
 

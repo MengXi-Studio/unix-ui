@@ -2,6 +2,7 @@
 title: Flex
 subtitle: 弹性布局
 demo: pages-sub/flex/flex
+added: 0.3.0
 ---
 
 ## 介绍

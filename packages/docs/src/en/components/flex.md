@@ -1,6 +1,7 @@
 ---
 title: Flex
 demo: pages-sub/flex/flex
+added: 0.3.0
 ---
 
 ## Introduction

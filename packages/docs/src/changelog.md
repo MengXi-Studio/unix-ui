@@ -1,6 +1,6 @@
 # 更新日志
 
-## [0.3.0] - 2026-11-03
+## [0.3.0] - 2026-11-05
 
 新增弹性布局组件（m-flex / m-flex-item）、状态栏占位组件（m-status-bar）、粘性布局组件（m-sticky / m-sticky-box）、瀑布流组件（m-waterfall / m-waterfall-item / m-waterfall-load）与级联选择三组件（m-cascader / m-cascader-popup / m-cascader-input，表单组件）。
 

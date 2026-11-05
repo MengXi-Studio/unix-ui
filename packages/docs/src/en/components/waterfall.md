@@ -1,6 +1,7 @@
 ---
 title: Waterfall
 demo: pages-sub/waterfall/waterfall
+added: 0.3.0
 ---
 
 ## Introduction

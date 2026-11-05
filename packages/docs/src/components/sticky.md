@@ -2,6 +2,7 @@
 title: Sticky
 subtitle: 粘性布局
 demo: pages-sub/sticky/sticky
+added: 0.3.0
 ---
 
 ## 介绍

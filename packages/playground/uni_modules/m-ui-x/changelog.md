@@ -1,4 +1,4 @@
-## 0.3.0 (2026-11-03)
+## 0.3.0 (2026-11-05)
 
 - 新增 `m-cascader` / `m-cascader-popup` / `m-cascader-input` 级联选择三组件：对标 Vant Cascader，按「面板 / 弹出框 / 输入框」拆分——m-cascader 纯平铺面板（`v-model:value` 叶子值 `string | number`、options 为动态类型 `UTSJSONObject[]` 支持 `field-names` 字段名映射与异步加载（空数组视为叶子直接 finish）、`swipeable` 手势滑动换层、`active-color` 主题色、`options-height` 选项区高度；change / finish / close / click-tab 事件与 title / option / options-top / options-bottom 四插槽）；m-cascader-popup 基于 m-popup 组合的弹层级联（弹层 props 全透传、finish 后自动关闭、事件与插槽条件转发）；m-cascader-input 基于 m-input 只读触发器 + 弹层组合（`v-model:value` finish 回填、路径文字「/」连接回显、自绘清空按钮、disabled / border / inlaid 形态）
 - 新增 `m-flex` / `m-flex-item` 弹性布局组件：`direction` 四值（row / row-reverse / column / column-reverse）、`gap` 三档内置（small / medium / large，对应 `$m-flex-gap-sm` / `$m-flex-gap` / `$m-flex-gap-lg`）与自定义尺寸（number 补 px / string 原样）、`align` 四值（App 端 baseline 降级 flex-start）、`justify` 六值（start / end / center / between / around / evenly）、`flex` CSS 简写透传、`wrap` 自动换行（仅 row / row-reverse）；间距由 m-flex-item 的 margin 实现（App 端 ucss 不支持 flex

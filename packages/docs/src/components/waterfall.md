@@ -2,6 +2,7 @@
 title: Waterfall
 subtitle: 瀑布流
 demo: pages-sub/waterfall/waterfall
+added: 0.3.0
 ---
 
 ## 介绍

@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.1] - 2026-11-09
+
+WeChat Mini Program adaptation fixes: m-overlay visibility and transition timing, m-icon font loading.
+
+### Fixed
+
+- **m-overlay overlay visibility broken on Mini Program**: the root `v-show` is compiled by the uni-app x compiler into a `virtualHostHidden` expression that gets short-circuited by the external default `false`, so hidden transparent full-screen overlays stayed on top intercepting every touch and no button on the page was clickable; the root `v-show` is removed and the hidden state now appends `display: none` at the end of rootStyle (placed after custom-style to override its display declaration). The root `v-if` remains unusable (on the uni-app x Web runtime, event bindings passed through attrs are lost when the root node switches from a comment node to a created node), and popup components composed on m-overlay such as m-popup are fixed on Mini Program accordingly
+- **m-overlay fade without a gradual appearance on Mini Program**: the Mini Program render layer merges two setData updates that fire too closely into a single paint — the opacity 1 set after nextTick (a logic-layer microtask) gets merged with the display removal into the same paint, so the transition has no starting point and the overlay just pops in; the non-Web show trigger changes from nextTick to a 50ms timeout to stagger the timing (ensuring the first frame after the display:none removal has finished painting; 50ms is imperceptible within a transition starting at 0.3s), while the Web double-rAF timing is unchanged
+- **m-icon font loading failure on WeChat Mini Program**: `@font-face` in wxss does not support local font file paths (Web / App are unaffected), so icons all rendered as default glyphs; on MP-WEIXIN the in-style `@font-face` declaration is excluded via conditional compilation and replaced by a runtime `uni.loadFontFace` call in onMounted (`global: true` to apply to all pages) loading a base64 inlined font (new `m-icon-font.uts`, font data bundled in the package with zero configuration); icons may flash with default glyphs on the first frame, which is a known limitation
+
 ## [0.3.0] - 2026-11-05
 
 Adds the flex layout components (m-flex / m-flex-item), the status bar placeholder component (m-status-bar), the sticky layout components (m-sticky / m-sticky-box), the waterfall components (m-waterfall / m-waterfall-item / m-waterfall-load) and the cascader family (m-cascader / m-cascader-popup / m-cascader-input, form family).

@@ -1,5 +1,15 @@
 # 更新日志
 
+## [0.3.1] - 2026-11-09
+
+微信小程序端适配修复批次：m-overlay 显隐与过渡时序、m-icon 字体加载。
+
+### 修复
+
+- **m-overlay 小程序端遮罩显隐失效**：根节点 `v-show` 在小程序端被 uni-app x 编译为 `virtualHostHidden` 表达式并被外部默认值 false 短路，隐藏的透明全屏遮罩常驻顶层拦截全部触摸，页面所有按钮无法点击；移除根节点 `v-show`，改为隐藏态在 rootStyle 末尾追加 `display: none`（置于 custom-style 之后压制其 display 声明）。根节点 `v-if` 依旧不可用（uni-app x Web 端根节点从注释节点切换创建后 attrs 透传的事件绑定丢失），基于 m-overlay 组合的 m-popup 等弹层组件在小程序端同步修复
+- **m-overlay 小程序端淡入淡出无渐现**：小程序渲染层对间隔过近的两次 setData 合帧渲染，nextTick（逻辑层微任务）后设置的 opacity 1 与 display 移除合并为同一次绘制，过渡没有起点导致直接出现；非 Web 分支的显示触发由 nextTick 改为 50ms 定时错开时序（确保 display:none 移除的首帧已绘制完成，50ms 在 0.3s 起步的过渡中不可感知），Web 端双 rAF 时序不变
+- **m-icon 微信小程序端字体加载失败**：wxss 的 `@font-face` 不支持本地字体文件路径（Web / App 端不受影响），图标全部显示为默认字形；MP-WEIXIN 端条件编译排除 style 内 `@font-face` 声明，改为 onMounted 中 `uni.loadFontFace`（`global: true` 全局生效）运行时加载 base64 内联字体（新增 `m-icon-font.uts`，字体数据随包内置零配置），首帧图标可能先以默认字形闪现属已知限制
+
 ## [0.3.0] - 2026-11-05
 
 新增弹性布局组件（m-flex / m-flex-item）、状态栏占位组件（m-status-bar）、粘性布局组件（m-sticky / m-sticky-box）、瀑布流组件（m-waterfall / m-waterfall-item / m-waterfall-load）与级联选择三组件（m-cascader / m-cascader-popup / m-cascader-input，表单组件）。

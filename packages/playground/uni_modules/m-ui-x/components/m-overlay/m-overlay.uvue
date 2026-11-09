@@ -1,7 +1,9 @@
 <template>
-	<!-- 遮罩层根节点：DOM 常驻（v-show 控制显隐）。不可用根节点 v-if —— uni-app x web 端
-	     根节点从注释节点切换创建后 attrs 透传的事件绑定丢失，点击事件永不触发 -->
-	<view v-show="visible" :class="rootClass" :style="rootStyle" @click="onClick">
+	<!-- 遮罩层根节点：DOM 常驻，显隐走 rootStyle 的 inline display（不可用根节点 v-show —— 小程序端
+	     编译为 virtualHostHidden 表达式被外部默认值 false 短路，遮罩隐藏失效致全屏层拦截触摸；
+	     也不可用根节点 v-if —— uni-app x web 端根节点从注释节点切换创建后 attrs 透传的事件绑定丢失，
+	     点击事件永不触发） -->
+	<view :class="rootClass" :style="rootStyle" @click="onClick">
 		<slot></slot>
 	</view>
 </template>
@@ -57,7 +59,7 @@
 	/**
 	 * 触发淡入过渡：浏览器在首帧绘制前不产生样式差值，需先以 opacity 0 完成一帧渲染，
 	 * 下一帧再置 1 才能触发过渡（双重 rAF 与 Vue Transition 同款时序）；
-	 * 非 Web 端原生渲染按 nextTick 时序切换
+	 * 非 Web 端原生渲染无法用 rAF / nextTick 对齐渲染帧，按 50ms 定时切换（见下方实现注释）
 	 */
 	function triggerFadeIn() {
 		// #ifdef WEB
@@ -68,9 +70,13 @@
 		})
 		// #endif
 		// #ifndef WEB
-		nextTick(() => {
+		// 小程序渲染层对间隔过近的两次 setData 合帧渲染：nextTick（逻辑层微任务）后设置的 opacity 1
+		// 会与 display:none 移除合并为同一次绘制，过渡没有起点导致直接出现。Web 端双 rAF 的
+		// 两帧间隔在小程序逻辑层与渲染帧不对齐，改用 50ms 定时确保 display:none 移除的首帧
+		// 已绘制完成（50ms 在 0.3s 起步的过渡中不可感知）
+		setTimeout(() => {
 			opacity.value = 1
-		})
+		}, 50)
 		// #endif
 	}
 
@@ -116,7 +122,8 @@
 		return cls
 	})
 
-	/** 根节点动态样式：过渡透明度 + z-index（非默认值时 inline 覆盖主题类）+ 过渡时长 + 自定义样式（补分号拼接）；显隐由 v-show 控制 */
+	/** 根节点动态样式：过渡透明度 + z-index（非默认值时 inline 覆盖主题类）+ 过渡时长 + 自定义样式（补分号拼接）；
+	    隐藏态末尾追加 display: none（置于 custom-style 之后压制其 display 声明，保证透明全屏层不拦截触摸） */
 	const rootStyle = computed<string>(() => {
 		let style = 'opacity: ' + opacity.value.toString() + ';'
 		if (props.zIndex != 1) style += ' z-index: ' + props.zIndex.toString() + ';'
@@ -125,6 +132,7 @@
 			if (props.customStyle.endsWith(';')) style += ' ' + props.customStyle
 			else style += ' ' + props.customStyle + ';'
 		}
+		if (!visible.value) style += ' display: none;'
 		return style
 	})
 

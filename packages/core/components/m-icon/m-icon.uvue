@@ -7,6 +7,7 @@
 
 <script setup lang="uts">
 	import { iconCodepoints, IconName } from './icons.uts'
+	import { M_ICON_FONT_BASE64 } from './m-icon-font.uts'
 
 	type Props = {
 		/** 图标名称（IconName 联合类型，IDE 自动提示全部图标名，写错编译期报错） */
@@ -68,6 +69,19 @@
 		emit('click', e)
 	}
 
+	// 微信小程序端字体注入：wxss 的 @font-face 不支持本地字体文件路径（Web / App 端不受影响，
+	// 走 style 内本地 ttf 声明），MP-WEIXIN 端改用 loadFontFace 运行时加载 base64 内联字体；
+	// global: true 使 family 对全部页面与自定义组件生效（首帧图标可能先以默认字形闪现，可接受）
+	// #ifdef MP-WEIXIN
+	onMounted(() => {
+		uni.loadFontFace({
+			global: true,
+			family: 'm-icon',
+			source: M_ICON_FONT_BASE64
+		})
+	})
+	// #endif
+
 	// 无效图标名告警：联合类型已拦截绝大多数错误，此处兜底动态 string 强转等运行时场景
 	watch(
 		(): IconName => props.name,
@@ -92,13 +106,17 @@
 	/*
 	 * 字体声明：ttf 随包内置（packages/core/static/m-icon.ttf → sync 后位于
 	 * uni_modules/m-ui-x/static/，官方支持的本地字体路径），零配置、离线可用。
+	 * MP-WEIXIN 端例外：wxss @font-face 不支持本地路径，改由 script 内 loadFontFace
+	 * 加载 base64 内联字体（m-icon-font.uts），故此处条件编译排除微信端。
 	 * 自定义图标出口：custom-class 覆盖根节点 font-family（配合自有字体与码点），
 	 * 或 icon 插槽放置任意内容。
 	 */
+	/* #ifndef MP-WEIXIN */
 	@font-face {
 		font-family: m-icon;
 		src: url('/uni_modules/m-ui-x/static/m-icon.ttf');
 	}
+	/* #endif */
 
 	/* ========== 根节点（text，行内收缩） ========== */
 	.m-icon {

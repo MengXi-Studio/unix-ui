@@ -1,6 +1,7 @@
 # LESSONS_LEARNED
 
 > 仅记录"只有运行起来才知道"的坑。前提：经验已通过运行验证（DoD 达成）。
+> 路径说明：原位于 `.claude/rules/LESSONS_LEARNED.md`，2026-11-09 迁移至 `.trae/documents/`（历史任务文档中的旧路径引用以本文件为准）。
 
 ## 2026-10-21 unix-ui monorepo 搭建 + mxi-button（HBuilderX 5.26 / uni-app x VDOM + vapor 配置）
 

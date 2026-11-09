@@ -2,7 +2,7 @@
 
 > 本规则约束在本项目中的一切代码生成行为。pnpm monorepo 三包职责、同步机制与主题契约见本文件；
 > 与本规则冲突的写法一律视为错误实现，即使 AI 认为「更简洁」或「TS 里惯用」。
-> UTS 语言红线与 uvue / 条件编译规范见 `project_rules.md`；运行时踩坑记录见 `.claude/rules/LESSONS_LEARNED.md`。
+> UTS 语言红线与 uvue / 条件编译规范见 `project_rules.md`；运行时踩坑记录见 `.trae/documents/LESSONS_LEARNED.md`。
 
 ## 1. Monorepo 分层与数据流（强制）
 

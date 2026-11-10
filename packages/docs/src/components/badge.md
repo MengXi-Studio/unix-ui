@@ -2,6 +2,7 @@
 title: Badge
 subtitle: 徽标
 demo: pages-sub/badge/badge
+added: 0.1.0
 ---
 
 ## 介绍

@@ -1,6 +1,7 @@
 ---
 title: Cell
 demo: pages-sub/cell/cell
+added: 0.1.0
 ---
 
 ## Introduction

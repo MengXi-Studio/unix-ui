@@ -2,6 +2,7 @@
 title: Space
 subtitle: 间距
 demo: pages-sub/space/space
+added: 0.1.0
 ---
 
 ## 介绍

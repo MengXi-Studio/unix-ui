@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.2] - 2026-11-10
+
+m-image adds tap-to-preview.
+
+### Added
+
+- **m-image tap-to-preview**: with `preview` enabled, tapping the image calls `uni.previewImage` to open the full-size preview (available on every platform: Web / WeChat / Alipay Mini Programs / Android / iOS / HarmonyOS), responding only in the loaded-success state; `preview-list` specifies the list of URLs to preview (falling back to the single `[src]` when omitted or empty), the start index is resolved to the position of the current `src` in the list (falling back to 0 when not found), and `preview-current` sets it explicitly; enabling `preview` does not swallow the `click` event — both work together (see [Image](/en/components/image))
+
 ## [0.3.1] - 2026-11-09
 
 WeChat Mini Program adaptation fixes: m-overlay visibility and transition timing, m-icon font loading.

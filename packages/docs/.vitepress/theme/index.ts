@@ -5,6 +5,7 @@ import DefaultTheme from 'vitepress/theme'
 import HomeBadges from './components/HomeBadges.vue'
 import DemoPhone from './components/DemoPhone.vue'
 import DocHeader from './components/DocHeader.vue'
+import VersionBadge from './components/VersionBadge.vue'
 import './styles/demo.css'
 
 /**
@@ -54,5 +55,9 @@ const UnixLayout = defineComponent({
  */
 export default {
 	extends: DefaultTheme,
-	Layout: UnixLayout
+	Layout: UnixLayout,
+	enhanceApp({ app }) {
+		// Props 表等 Markdown 行内场景的新增版本徽标：<VersionBadge version="0.3.2" />
+		app.component('VersionBadge', VersionBadge)
+	}
 } satisfies Theme

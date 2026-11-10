@@ -1,6 +1,7 @@
 ---
 title: Icon
 demo: pages-sub/icon/icon
+added: 0.1.0
 ---
 
 ## Introduction

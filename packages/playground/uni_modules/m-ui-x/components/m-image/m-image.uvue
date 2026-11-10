@@ -68,6 +68,12 @@
 		errorIcon?: IconName
 		/** 占位图标大小：纯数字自动补 px */
 		iconSize?: string
+		/** 是否开启点击预览大图（点击时调用 uni.previewImage，仅加载成功态响应） */
+		preview?: boolean
+		/** 预览的图片地址列表（仅 preview 开启时生效）：不传或为空时使用 [src] */
+		previewList?: string[]
+		/** 预览起始索引：未指定时取 src 在 previewList 中的索引，找不到回退 0 */
+		previewCurrent?: number
 		/** 自定义根节点类名 */
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */
@@ -87,6 +93,9 @@
 		loadingIcon: 'photo',
 		errorIcon: 'photo-fail',
 		iconSize: '32',
+		preview: false,
+		previewList: null,
+		previewCurrent: null,
 		customClass: '',
 		customStyle: ''
 	})
@@ -140,10 +149,38 @@
 	})
 
 	/**
-	 * 点击事件透传：向父组件派发原生 click 事件
+	 * 点击事件透传：向父组件派发原生 click 事件（始终透传，不因 preview 开启而吞掉）；
+	 * preview 开启且加载成功态时调用 uni.previewImage 弹出大图预览
 	 */
 	function onClick(e: MouseEvent) {
 		emit('click', e)
+		if (!props.preview) return
+		// 仅加载成功态响应预览（失败 / 加载中占位态不弹）
+		if (status.value != 'success') return
+		// 预览列表：未传或为空时回退单图 [src]
+		let urls: string[] = []
+		const list = props.previewList
+		if (list != null && list.length > 0) {
+			for (let i = 0; i < list.length; i++) {
+				urls.push(list[i])
+			}
+		} else {
+			urls.push(props.src)
+		}
+		// 起始索引：previewCurrent 显式指定优先；否则取 src 在列表中的索引，找不到回退 0
+		let current = 0
+		const pc = props.previewCurrent
+		if (pc != null) {
+			current = pc
+		} else {
+			for (let i = 0; i < urls.length; i++) {
+				if (urls[i] == props.src) {
+					current = i
+					break
+				}
+			}
+		}
+		uni.previewImage({ urls: urls, current: current })
 	}
 
 	/**

@@ -1,3 +1,7 @@
+## 0.3.2 (2026-11-10)
+
+- 新增 `m-image` 点击预览：`preview` 开启后点击图片调用 `uni.previewImage` 弹出大图预览（Web / 微信 / 支付宝小程序 / Android / iOS / HarmonyOS 全端可用），仅加载成功态响应；`preview-list` 指定预览图列表（不传或为空回退单图 `[src]`），起始索引自动取当前 `src` 在列表中的位置（找不到回退 0），`preview-current` 可显式指定；`preview` 开启不影响 `click` 事件透传
+
 ## 0.3.1 (2026-11-09)
 
 - 修复 `m-overlay` 小程序端遮罩显隐失效：根节点 `v-show` 在小程序端被 uni-app x 编译为 `virtualHostHidden` 表达式并被外部默认值 false 短路，隐藏的透明全屏遮罩常驻顶层拦截全部触摸，页面所有按钮无法点击；移除根节点 `v-show`，改为隐藏态在 rootStyle 末尾追加 `display: none`（置于 custom-style 之后压制其 display 声明）。基于 m-overlay 组合的 `m-popup` / `m-cascader-popup` / `m-calendar-popup` 等弹层组件在小程序端同步修复

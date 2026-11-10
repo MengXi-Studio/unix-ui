@@ -2,6 +2,7 @@
 title: Cell
 subtitle: 单元格
 demo: pages-sub/cell/cell
+added: 0.1.0
 ---
 
 ## 介绍

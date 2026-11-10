@@ -1,6 +1,7 @@
 ---
 title: Space
 demo: pages-sub/space/space
+added: 0.1.0
 ---
 
 ## Introduction

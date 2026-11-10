@@ -2,11 +2,12 @@
 title: Image
 subtitle: 图片
 demo: pages-sub/image/image
+added: 0.1.0
 ---
 
 ## 介绍
 
-图片组件对原生 image 进行增强封装，`mode` 等原生能力同名直通透传，并扩展加载中与加载失败占位、淡入过渡、圆角与圆形等特性。
+图片组件对原生 image 进行增强封装，`mode` 等原生能力同名直通透传，并扩展加载中与加载失败占位、淡入过渡、圆角与圆形、点击预览大图等特性。
 
 ## 代码演示
 
@@ -59,6 +60,29 @@ demo: pages-sub/image/image
 <m-image src="https://cdn.example.com/demo.jpg" width="130px" height="130px" :fade="false" />
 ```
 
+### 点击预览 {#demo-preview}
+
+`preview` 开启后点击图片（仅加载成功态响应）调用 `uni.previewImage` 弹出大图预览；`preview-list` 指定预览的图片地址列表，不传或为空时使用自身 `src`；起始索引自动取当前 `src` 在列表中的位置（找不到回退 0），也可用 `preview-current` 显式指定。`preview` 开启不影响 `click` 事件的透传，两者并存。
+
+```vue
+<!-- 开启预览，预览图即自身 src -->
+<m-image src="https://cdn.example.com/demo.jpg" width="110px" height="110px" preview />
+
+<!-- 多图预览：点击任一张，从其在列表中的位置开始预览 -->
+<m-image
+  v-for="(item, index) in list"
+  :key="index"
+  :src="item"
+  width="80px"
+  height="80px"
+  preview
+  :preview-list="list"
+/>
+
+<!-- 显式指定起始索引 -->
+<m-image src="https://cdn.example.com/demo.jpg" width="110px" height="110px" preview :preview-list="list" :preview-current="2" />
+```
+
 ## API
 
 ### Props
@@ -78,6 +102,9 @@ demo: pages-sub/image/image
 | loading-icon | 加载中占位图标名称 | IconName | `photo` |
 | error-icon | 加载失败占位图标名称 | IconName | `photo-fail` |
 | icon-size | 占位图标大小，纯数字自动补 px | string | `32` |
+| preview <VersionBadge version="0.3.2" /> | 是否开启点击预览大图（调用 uni.previewImage，仅加载成功态响应） | boolean | `false` |
+| preview-list <VersionBadge version="0.3.2" /> | 预览的图片地址列表（仅 preview 开启时生效），不传或为空时使用 src | string[] | null |
+| preview-current <VersionBadge version="0.3.2" /> | 预览起始索引，未指定时取 src 在 preview-list 中的索引（找不到回退 0） | number \| null | null |
 | custom-class | 自定义根节点类名 | string.ClassString | - |
 | custom-style | 自定义根节点内联样式 | string | - |
 

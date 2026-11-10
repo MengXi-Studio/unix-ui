@@ -1,5 +1,13 @@
 # 更新日志
 
+## [0.3.2] - 2026-11-10
+
+m-image 新增点击预览能力。
+
+### 新增
+
+- **m-image 点击预览**：`preview` 开启后点击图片调用 `uni.previewImage` 弹出大图预览（全端可用：Web / 微信 / 支付宝小程序 / Android / iOS / HarmonyOS），仅加载成功态响应；`preview-list` 指定预览图列表（不传或为空回退单图 `[src]`），起始索引自动取当前 `src` 在列表中的位置（找不到回退 0），`preview-current` 可显式指定；`preview` 开启不影响 `click` 事件透传，两者并存（详见 [Image](/components/image)）
+
 ## [0.3.1] - 2026-11-09
 
 微信小程序端适配修复批次：m-overlay 显隐与过渡时序、m-icon 字体加载。

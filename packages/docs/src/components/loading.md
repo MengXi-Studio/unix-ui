@@ -2,6 +2,7 @@
 title: Loading
 subtitle: 加载
 demo: pages-sub/loading/loading
+added: 0.1.0
 ---
 
 ## 介绍

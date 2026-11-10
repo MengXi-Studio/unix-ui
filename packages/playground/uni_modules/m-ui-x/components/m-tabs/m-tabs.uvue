@@ -1,0 +1,963 @@
+<template>
+	<!-- 标签页容器：标签栏（sticky 时由 m-sticky 包裹吸附）+ 内容区（m-tab 子项承载）。
+	     双形态：m-tab 子组件插槽式（内容区渲染）或 options 数组纯标签栏（无内容区）。
+	     scrollspy 滚动导航依赖页面回传 scroll-top（对齐 m-sticky 受控协议）。 -->
+	<view ref="rootRef" :class="rootClass" :style="rootStyle">
+		<!-- 标签栏：sticky 吸附分支（模板无法抽公共块，两分支重复渲染同一结构） -->
+		<m-sticky v-if="sticky && showHeader" :scroll-top="scrollTop" :offset-top="offsetTop" @change="onStickyChange">
+			<view class="m-tabs__nav" :class="navClass">
+				<view v-if="slots['nav-left'] != null" class="m-tabs__nav-extra">
+					<slot name="nav-left"></slot>
+				</view>
+				<scroll-view
+					class="m-tabs__nav-scroll"
+					:scroll-x="canScroll"
+					:scroll-into-view="tabAnchor"
+					:scroll-with-animation="true"
+				>
+					<view :class="navRowClass">
+						<view
+							v-for="(item, i) in navItems"
+							:id="'m-tabs-tab-' + i"
+							:key="item.key"
+							class="m-tabs__title"
+							:class="titleClass(item, i)"
+							:style="titleStyle(item, i)"
+							@click="onTitleClick(item, i)"
+						>
+							<text :class="titleTextClass(item, i)">{{ item.title }}</text>
+							<view v-if="item.dot || item.badge != ''" class="m-tabs__title-badge-wrap">
+								<m-badge :content="item.badge" :dot="item.dot" :show-zero="item.showZeroBadge" />
+							</view>
+							<view v-if="showTitleLine(item, i)" class="m-tabs__title-line" :style="lineInlineStyle"></view>
+						</view>
+					</view>
+				</scroll-view>
+				<view v-if="slots['nav-right'] != null" class="m-tabs__nav-extra">
+					<slot name="nav-right"></slot>
+				</view>
+				<view v-if="showFreeLine" ref="lineRef" class="m-tabs__line" :style="lineStyle"></view>
+			</view>
+		</m-sticky>
+		<template v-else-if="showHeader">
+			<view class="m-tabs__nav" :class="navClass">
+				<view v-if="slots['nav-left'] != null" class="m-tabs__nav-extra">
+					<slot name="nav-left"></slot>
+				</view>
+				<scroll-view
+					class="m-tabs__nav-scroll"
+					:scroll-x="canScroll"
+					:scroll-into-view="tabAnchor"
+					:scroll-with-animation="true"
+				>
+					<view :class="navRowClass">
+						<view
+							v-for="(item, i) in navItems"
+							:id="'m-tabs-tab-' + i"
+							:key="item.key"
+							class="m-tabs__title"
+							:class="titleClass(item, i)"
+							:style="titleStyle(item, i)"
+							@click="onTitleClick(item, i)"
+						>
+							<text :class="titleTextClass(item, i)">{{ item.title }}</text>
+							<view v-if="item.dot || item.badge != ''" class="m-tabs__title-badge-wrap">
+								<m-badge :content="item.badge" :dot="item.dot" :show-zero="item.showZeroBadge" />
+							</view>
+							<view v-if="showTitleLine(item, i)" class="m-tabs__title-line" :style="lineInlineStyle"></view>
+						</view>
+					</view>
+				</scroll-view>
+				<view v-if="slots['nav-right'] != null" class="m-tabs__nav-extra">
+					<slot name="nav-right"></slot>
+				</view>
+				<view v-if="showFreeLine" ref="lineRef" class="m-tabs__line" :style="lineStyle"></view>
+			</view>
+		</template>
+
+		<!-- 内容区：options 纯标签栏模式不渲染；viewport 裁剪轨道平移，track 承载 m-tab 们 -->
+		<view
+			v-if="!optionsMode"
+			class="m-tabs__viewport"
+			@touchstart="onTouchStart"
+			@touchmove="onTouchMove"
+			@touchend="onTouchEnd"
+		>
+			<view ref="trackRef" class="m-tabs__track" :class="trackClass" :style="trackStyle">
+				<slot></slot>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-tabs 标签页容器：对标 Vant Tabs（交互与 API 主参考）+ Sard Tabs（pill 形态与 options 数组形态）。
+	 * 标题栏由容器按注册快照渲染（uni-app x 无 VNode 移动能力，m-tab 插槽内容无法上提）；
+	 * 内容显隐经上下文下发（renderSet / everSet / scrollspy 三协议）。
+	 * active 匹配语义（索引与 name 混用）：先按 name 分类型全等匹配，无命中回退索引（clamp）。
+	 * sticky 吸附复用 m-sticky、scrollspy 滚动导航依赖页面回传 scroll-top（对齐 m-sticky 受控协议）。
+	 * 底部条平移动画与内容轨道动画走 UniElement.animate（ucss 无 @keyframes）。
+	 */
+	import { TABS_KEY, TabsContext, TabItem, TabsClickEvent } from './tabs.uts'
+	import MSticky from '../m-sticky/m-sticky.uvue'
+	import MBadge from '../m-badge/m-badge.uvue'
+
+	/** 标签页样式风格 */
+	type TabsType = 'line' | 'card' | 'pill'
+
+	/** options 数组的字段名映射 */
+	type TabsFieldNames = {
+		label: string
+		value: string
+		disabled: string
+		dot: string
+		badge: string
+	}
+
+	/** 切换拦截回调：返回 false 阻止本次切换（boolean 同步版，对齐 m-popup before-close；类型标注不含 null——VDOM 编译器生成的 props type 数组不接受 null 成员，未传时运行时仍为 null） */
+	type TabsBeforeChange = (name: string | number | null, index: number) => boolean
+
+	const DEFAULT_FIELD_NAMES: TabsFieldNames = { label: 'label', value: 'value', disabled: 'disabled', dot: 'dot', badge: 'badge' }
+
+	type Props = {
+		/** 当前激活标签（v-model:active；索引或 name 混用：先按 name 分类型匹配，无命中回退索引） */
+		active?: string | number
+		/** 样式风格：line 底部条 / card 卡片 / pill 药丸 */
+		type?: TabsType
+		/** 主题色（line 底部条、card / pill 选中填充、激活标题色派生；空串用主题变量） */
+		color?: string
+		/** 标签栏背景色（空串用主题变量） */
+		background?: string
+		/** 底部条与内容切换动画时长（秒，0 禁用动画） */
+		duration?: number
+		/** 底部条宽度（number 补 px / string 原样） */
+		lineWidth?: string | number
+		/** 底部条高度（number 补 px / string 原样） */
+		lineHeight?: string | number
+		/** 是否开启内容切换转场动画（轨道模式） */
+		animated?: boolean
+		/** 是否显示标签栏外边框（仅 line 风格生效） */
+		border?: boolean
+		/** 是否省略过长标题文字（仅平分布局生效） */
+		ellipsis?: boolean
+		/** 是否吸顶（复用 m-sticky，需页面回传 scroll-top） */
+		sticky?: boolean
+		/** 是否左侧收缩布局（标签不再平分，向左排列） */
+		shrink?: boolean
+		/** 是否手势左右滑动切换内容（走轨道模式，手势切换不触发 before-change，对齐 Vant） */
+		swipeable?: boolean
+		/** 是否延迟渲染（标签首次激活才渲染内容） */
+		lazyRender?: boolean
+		/** 是否滚动导航（内容平铺展示，滚动时联动激活；需页面回传 scroll-top） */
+		scrollspy?: boolean
+		/** 是否显示标签栏 */
+		showHeader?: boolean
+		/** 吸顶时与滚动容器顶部的距离（px，透传 m-sticky） */
+		offsetTop?: number
+		/** 滚动阈值：标签数超过该值时标签栏开始横向滚动（平分布局失效） */
+		swipeThreshold?: number
+		/** 标题选中态颜色（空串用主题变量派生） */
+		titleActiveColor?: string
+		/** 标题默认态颜色（空串用主题变量） */
+		titleInactiveColor?: string
+		/** 切换前拦截回调（返回 false 阻止；手势滑动不触发） */
+		beforeChange?: TabsBeforeChange
+		/** options 数组（纯标签栏形态：label / value / disabled / dot / badge，无内容区） */
+		options?: UTSJSONObject[]
+		/** options 字段名映射（未传用默认） */
+		fieldNames?: TabsFieldNames
+		/** 页面滚动距离（px，sticky 与 scrollspy 依赖页面 / 滚动容器回传） */
+		scrollTop?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		active: 0,
+		type: 'line',
+		color: '',
+		background: '',
+		duration: 0.3,
+		lineWidth: '',
+		lineHeight: '',
+		animated: false,
+		border: false,
+		ellipsis: true,
+		sticky: false,
+		shrink: false,
+		swipeable: false,
+		lazyRender: true,
+		scrollspy: false,
+		showHeader: true,
+		offsetTop: 0,
+		swipeThreshold: 5,
+		titleActiveColor: '',
+		titleInactiveColor: '',
+		beforeChange: null,
+		options: null,
+		fieldNames: null,
+		scrollTop: 0,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 激活标签变化（v-model:active；值为标签 name，未指定 name 时为索引） */
+		'update:active': [name: string | number]
+		/** 激活标签变化（交互路径派发；scrollspy 滚动联动与外部回灌不派发） */
+		change: [name: string | number | null, index: number]
+		/** 点击标签（含禁用标签，对齐 Vant） */
+		'click-tab': [event: TabsClickEvent]
+		/** 吸顶状态变化（sticky 模式透传 m-sticky） */
+		'sticky-change': [isFixed: boolean]
+	}>()
+
+	const slots = useSlots()
+
+	// ========== 上下文与元素引用 ==========
+
+	/** m-tab 注册上下文（options 模式不 provide，子组件不存在） */
+	const ctx = new TabsContext()
+	provide(TABS_KEY, ctx)
+
+	/** 根节点（实测宽度用于底部条位置计算） */
+	const rootRef = ref<UniElement | null>(null)
+	/** 内容轨道节点（animated / swipeable 平移动画载体） */
+	const trackRef = ref<UniElement | null>(null)
+	/** 独立底部条节点（平分 line 布局） */
+	const lineRef = ref<UniElement | null>(null)
+
+	// ========== 状态 ==========
+
+	/** 容器实测宽度（px，底部条位置与轨道平移距离依据） */
+	const selfWidth = ref(0)
+	/** 轨道平移偏移（px，swipeable 跟手阶段响应式驱动） */
+	const trackOffset = ref(0)
+	/** swipeable 手势是否处于跟手阶段（true 时 watch 编排器让位给手势） */
+	const gesturing = ref(false)
+
+	/** options 纯标签栏模式 */
+	const optionsMode = computed<boolean>(() => props.options != null)
+
+	/** 标签栏数据源：子组件注册快照或 options 解析结果 */
+	const navItems = computed<TabItem[]>(() => {
+		if (optionsMode.value) {
+			return parseOptions()
+		}
+		return ctx.items.value
+	})
+
+	/** 激活注册序（-1 未激活；options 模式直接驱动本状态） */
+	const activeIndex = ctx.activeIndex
+
+	// ========== options 解析 ==========
+
+	/** 字段名映射（null 兜底默认） */
+	const fields = computed<TabsFieldNames>(() => {
+		const f = props.fieldNames
+		if (f != null) return f
+		return DEFAULT_FIELD_NAMES
+	})
+
+	/**
+	 * options 数组解析为标签项快照（key 用负数段避免与子组件注册 key 冲突）
+	 */
+	function parseOptions(): TabItem[] {
+		const list: TabItem[] = []
+		const opts = props.options
+		if (opts == null) return list
+		for (let i = 0; i < opts.length; i++) {
+			const o = opts[i]
+			let name: string | number | null = null
+			const numVal = o.getNumber(fields.value.value)
+			if (numVal != null) {
+				name = numVal
+			} else {
+				name = o.getString(fields.value.value)
+			}
+			list.push({
+				index: i,
+				key: -1000 - i,
+				title: o.getString(fields.value.label) ?? '',
+				name: name,
+				disabled: o.getBoolean(fields.value.disabled) == true,
+				dot: o.getBoolean(fields.value.dot) == true,
+				badge: o.getString(fields.value.badge) ?? '',
+				showZeroBadge: true
+			})
+		}
+		return list
+	}
+
+	// ========== 布局判定 ==========
+
+	/** 平分布局失效：收缩布局或标签数超过滚动阈值 */
+	const canScroll = computed<boolean>(() => {
+		return navItems.value.length > props.swipeThreshold || props.shrink
+	})
+
+	/** 轨道模式（animated / swipeable 开启且非 scrollspy） */
+	const trackMode = computed<boolean>(() => (props.animated || props.swipeable) && !props.scrollspy)
+
+	// 模式标志同步下发上下文（m-tab 依此决定 pane 布局类与 scrollspy 平铺协议；两个 prop 声明期静态）
+	ctx.scrollspy.value = props.scrollspy
+	ctx.trackMode.value = trackMode.value
+
+	/** 底部条双实现切换：平分布局独立条（animate 平移），滚动 / 收缩布局标题内嵌条 */
+	const freeLineMode = computed<boolean>(() => {
+		return props.type == 'line' && !canScroll.value && !props.shrink
+	})
+
+	/** 独立底部条是否渲染 */
+	const showFreeLine = computed<boolean>(() => freeLineMode.value && activeIndex.value >= 0)
+
+	/** 标题内嵌条是否显示（滚动 / 收缩布局的 line 风格激活项） */
+	const showTitleLine = (item: TabItem, index: number): boolean => {
+		return props.type == 'line' && !freeLineMode.value && index == activeIndex.value
+	}
+
+	/** 轨道容器类：scrollspy 平铺为纵向排布 */
+	const trackClass = computed<string>(() => {
+		return props.scrollspy ? 'm-tabs__track--scrollspy' : 'm-tabs__track--row'
+	})
+
+	// ========== 类名与样式（扁平类，禁后代选择器） ==========
+
+	const rootClass = computed<string>(() => {
+		let cls = 'm-tabs'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	const rootStyle = computed<string>(() => {
+		if (props.background != '') {
+			return 'background-color: ' + props.background + ';'
+		}
+		return ''
+	})
+
+	/** 标签栏变体类：card 卡片壳 / pill 药丸 / line 外边框 */
+	const navClass = computed<string>(() => {
+		let cls = ''
+		if (props.type == 'card') cls = 'm-tabs__nav--card'
+		if (props.type == 'pill') cls = 'm-tabs__nav--pill'
+		if (props.type == 'line' && props.border) cls += ' m-tabs__nav--border'
+		return cls
+	})
+
+	/** 标签行布局类：平分等宽（flex:1）或滚动收缩（flex:none） */
+	const navRowClass = computed<string>(() => {
+		return freeLineMode.value ? 'm-tabs__nav-row--equal' : 'm-tabs__nav-row--scroll'
+	})
+
+	/** 标题类名：布局 + 风格 + 状态三段拼接 */
+	const titleClass = (item: TabItem, index: number): string => {
+		let cls = freeLineMode.value ? 'm-tabs__title--equal' : 'm-tabs__title--scroll'
+		if (props.type == 'card') cls += ' m-tabs__title--card'
+		if (props.type == 'pill') cls += ' m-tabs__title--pill'
+		if (index == activeIndex.value && !item.disabled) cls += ' m-tabs__title--active'
+		if (item.disabled) cls += ' m-tabs__title--disabled'
+		if (props.type == 'card' && index == activeIndex.value && !item.disabled) cls += ' m-tabs__title--card-active'
+		if (props.type == 'pill' && index == activeIndex.value && !item.disabled) cls += ' m-tabs__title--pill-active'
+		return cls
+	}
+
+	/** 标题 inline 样式：color 派生激活色（card / pill 激活白字走 --filled 类，不在此注入） */
+	const titleStyle = (item: TabItem, index: number): string => {
+		if (item.disabled) return ''
+		if (index == activeIndex.value) {
+			if (props.titleActiveColor != '') return 'color: ' + props.titleActiveColor + ';'
+			if (props.type == 'line' && props.color != '') return 'color: ' + props.color + ';'
+		} else if (props.titleInactiveColor != '') {
+			return 'color: ' + props.titleInactiveColor + ';'
+		}
+		return ''
+	}
+
+	/** 标题文字类：激活色 / 省略 / 填充白字（扁平类拼接，禁后代选择器） */
+	const titleTextClass = (item: TabItem, index: number): string => {
+		let cls = 'm-tabs__title-text'
+		const isActive = index == activeIndex.value && !item.disabled
+		if (isActive) cls += ' m-tabs__title-text--active'
+		if (freeLineMode.value && props.ellipsis) cls += ' m-tabs__title-text--ellipsis'
+		if ((props.type == 'card' || props.type == 'pill') && isActive) cls += ' m-tabs__title-text--filled'
+		return cls
+	}
+
+	/** 底部条 inline 样式：平移位置（独立条）由 lineStyle 计算，颜色派生 color */
+	const lineInlineStyle = computed<string>(() => {
+		let s = ''
+		if (props.color != '') s += 'background-color: ' + props.color + ';'
+		if (props.lineWidth != '') s += 'width: ' + addUnit(props.lineWidth) + ';'
+		if (props.lineHeight != '') s += 'height: ' + addUnit(props.lineHeight) + ';'
+		return s
+	})
+
+	/** 独立底部条样式：translateX 定位（平分布局） */
+	const lineStyle = computed<string>(() => {
+		return lineInlineStyle.value + 'transform: translateX(' + lineLeft.value.toString() + 'px);'
+	})
+
+	/** 轨道偏移样式（跟手 / 复位共用） */
+	const trackStyle = computed<string>(() => {
+		return 'transform: translateX(' + trackOffset.value.toString() + 'px);'
+	})
+
+	/** scroll-into-view 锚点（滚动 / 收缩布局对齐当前标签） */
+	const tabAnchor = computed<string>(() => {
+		const i = activeIndex.value
+		return i >= 0 ? 'm-tabs-tab-' + i.toString() : ''
+	})
+
+	/**
+	 * 数字或纯数字字符串补 px（"40" → "40px"，"40px" 原样）
+	 */
+	function addUnit(value: string | number): string {
+		if (typeof value == 'number') return value.toString() + 'px'
+		const s = value as string
+		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
+		return pattern.test(s) ? s + 'px' : s
+	}
+
+	/** 独立底部条平移目标位置（px）：激活项中心 - 条宽一半 */
+	const lineLeft = computed<number>(() => {
+		const n = navItems.value.length
+		if (n == 0 || selfWidth.value <= 0) return 0
+		const lw = props.lineWidth != '' ? parsePx(props.lineWidth) : 40
+		const tabWidth = selfWidth.value / n
+		return (activeIndex.value + 0.5) * tabWidth - lw / 2
+	})
+
+	/**
+	 * 尺寸解析为 px 数值（number 直取；string 纯数字或带 px 后缀均可）
+	 */
+	function parsePx(value: string | number): number {
+		if (typeof value == 'number') return value
+		const s = (value as string).replace('px', '')
+		const n = parseFloat(s)
+		return isNaN(n) ? 40 : n
+	}
+
+	// ========== active 匹配与切换 ==========
+
+	/**
+	 * active 值解析为注册序（混用协议）：先按 name 分类型全等匹配，无命中回退索引（clamp）
+	 */
+	function resolveActive(v: string | number): number {
+		const items = navItems.value
+		let i = 0
+		while (i < items.length) {
+			const n = items[i].name
+			if (n != null && typeof v == 'string' && typeof n == 'string' && n == v) return i
+			if (n != null && typeof v == 'number' && typeof n == 'number' && n == v) return i
+			i++
+		}
+		if (typeof v == 'number') {
+			const idx = Math.floor(v)
+			if (idx >= 0 && idx < items.length) return idx
+		}
+		return -1
+	}
+
+	/** 激活项标识（name 优先，未指定回退索引） */
+	function itemIdent(index: number): string | number {
+		const item = navItems.value[index]
+		if (item.name != null) return item.name
+		return index
+	}
+
+	/** 是否首定（首个激活项直接定位，不做动画） */
+	let firstSet = true
+
+	/**
+	 * 交互路径切换激活项（before-change 拦截在点击处理器完成）
+	 */
+	const setActive = (index: number) => {
+		if (index < 0 || index >= navItems.value.length) return
+		if (index == activeIndex.value) return
+		activeIndex.value = index
+		emit('update:active', itemIdent(index))
+		emit('change', navItems.value[index].name, index)
+	}
+
+	/** 点击标签：click-tab 恒派发（含禁用，对齐 Vant）；before-change 拦截；scrollspy 先滚动定位 */
+	const onTitleClick = (item: TabItem, index: number) => {
+		const event: TabsClickEvent = { index: index, name: item.name, title: item.title, disabled: item.disabled }
+		emit('click-tab', event)
+		if (item.disabled) return
+		if (props.beforeChange != null && !props.beforeChange(item.name, index)) return
+		if (props.scrollspy) {
+			// 先直接激活（点击即反馈），再尝试滚动定位；页面级滚动下定位后 scrollspy 判定二次确认同一项
+			setActive(index)
+			scrollTo(index)
+			return
+		}
+		setActive(index)
+	}
+
+	// ========== 渲染协议与动画编排 ==========
+
+	/**
+	 * 全量激活集合（lazyRender=false / scrollspy 平铺：所有注册项可渲染）
+	 */
+	function fillEverSet() {
+		const all: number[] = []
+		for (let i = 0; i < ctx.items.value.length; i++) all.push(i)
+		ctx.everSet.value = all
+	}
+
+	/**
+	 * 独立底部条定位：首次直接落位，切换走 UniElement.animate 平移
+	 */
+	function animateLine(oldIndex: number, newIndex: number) {
+		if (!freeLineMode.value) return
+		if (firstSet || props.duration <= 0) {
+			firstSet = false
+			return
+		}
+		const el = lineRef.value
+		if (el == null || selfWidth.value <= 0) return
+		const n = navItems.value.length
+		if (n == 0) return
+		const lw = props.lineWidth != '' ? parsePx(props.lineWidth) : 40
+		const tabWidth = selfWidth.value / n
+		const from = (oldIndex + 0.5) * tabWidth - lw / 2
+		const to = (newIndex + 0.5) * tabWidth - lw / 2
+		const keyframes: UniAnimationKeyframe[] = [
+			{ transform: 'translateX(' + from.toString() + 'px)', offset: 0 },
+			{ transform: 'translateX(' + to.toString() + 'px)', offset: 1 }
+		]
+		el.animate(keyframes, { duration: Math.round(props.duration * 1000) })
+	}
+
+	/**
+	 * 内容轨道动画：renderSet 过渡期两可见子项并排，整体平移后收缩为单项
+	 */
+	function animateTrack(oldIndex: number, newIndex: number) {
+		if (!trackMode.value || gesturing.value) return
+		if (oldIndex < 0 || oldIndex == newIndex) return
+		// 起始帧：渲染集合已含新旧两项，DOM 序 min 在左 max 在右
+		nextTick(() => {
+			const el = trackRef.value
+			if (el == null || selfWidth.value <= 0) return
+			const rightward = newIndex > oldIndex
+			const from = rightward ? 0 : -selfWidth.value
+			const to = rightward ? -selfWidth.value : 0
+			if (props.duration <= 0) {
+				ctx.renderSet.value = [newIndex]
+				trackOffset.value = 0
+				return
+			}
+			const keyframes: UniAnimationKeyframe[] = [
+				{ transform: 'translateX(' + from.toString() + 'px)', offset: 0 },
+				{ transform: 'translateX(' + to.toString() + 'px)', offset: 1 }
+			]
+			el.animate(keyframes, { duration: Math.round(props.duration * 1000), easing: 'ease' })
+			setTimeout(() => {
+				// 动画完成收缩渲染集合（旧项 display none 后轨道自然归零位）
+				ctx.renderSet.value = [newIndex]
+				trackOffset.value = 0
+			}, Math.round(props.duration * 1000))
+		})
+	}
+
+	// 激活变化编排（flush: post 确保新状态渲染后再测量 / 动画）
+	watch(activeIndex, (nv: number, ov: number) => {
+		// 渲染协议更新
+		if (props.scrollspy) {
+			fillEverSet()
+		} else if (trackMode.value) {
+			const ever = ctx.everSet.value
+			if (ever.indexOf(nv) < 0) ever.push(nv)
+			ctx.everSet.value = ever
+			if (ov >= 0 && ov != nv) {
+				ctx.renderSet.value = [ov, nv]
+			} else {
+				ctx.renderSet.value = [nv]
+			}
+		} else {
+			const ever = ctx.everSet.value
+			if (ever.indexOf(nv) < 0) ever.push(nv)
+			ctx.everSet.value = ever
+			ctx.renderSet.value = [nv]
+		}
+		animateLine(ov, nv)
+		animateTrack(ov, nv)
+	}, { flush: 'post' })
+
+	// ========== swipeable 手势 ==========
+
+	/** 手势起点 x */
+	let touchStartX = 0
+	/** 手势起点 y（判定滑动方向排除纵向滚动干扰） */
+	let touchStartY = 0
+	/** 方向已锁定（|dx| 超过判定阈值后锁定横向手势） */
+	let touchLocked = false
+	/** 手势锁定的切换目标（-1 未定） */
+	let gestureTarget = -1
+
+	const onTouchStart = (e: TouchEvent) => {
+		if (!props.swipeable || trackMode.value == false) return
+		const t = e.touches[0]
+		touchStartX = t.clientX
+		touchStartY = t.clientY
+		touchLocked = false
+		gestureTarget = -1
+	}
+
+	const onTouchMove = (e: TouchEvent) => {
+		if (!props.swipeable || !trackMode.value || activeIndex.value < 0) return
+		const t = e.touches[0]
+		const dx = t.clientX - touchStartX
+		const dy = t.clientY - touchStartY
+		if (!touchLocked) {
+			if (dy * dy > dx * dx) return
+			if (dx * dx < 400) return
+			touchLocked = true
+			gesturing.value = true
+			// 预渲染相邻目标（两侧都入渲染集合，方向由首个 move 决定）
+			const cur = activeIndex.value
+			const set: number[] = [cur]
+			if (cur > 0) set.push(cur - 1)
+			if (cur < navItems.value.length - 1) set.push(cur + 1)
+			ctx.renderSet.value = set
+		}
+		// 边界阻尼：无相邻项方向位移减半
+		let limit = dx
+		const cur = activeIndex.value
+		if (dx < 0 && cur >= navItems.value.length - 1) limit = dx / 2
+		if (dx > 0 && cur <= 0) limit = dx / 2
+		trackOffset.value = limit
+	}
+
+	const onTouchEnd = (e: TouchEvent) => {
+		if (!touchLocked) return
+		touchLocked = false
+		const dx = trackOffset.value
+		// 跟手阶段结束：先复位标记，动画由 watch 编排或回弹承担
+		gesturing.value = false
+		const cur = activeIndex.value
+		if (dx < 0 && cur < navItems.value.length - 1 && dx * -1 > selfWidth.value / 3) {
+			// 向左滑 → 下一项（手势切换不经 before-change，对齐 Vant）
+			gestureTarget = cur + 1
+		} else if (dx > 0 && cur > 0 && dx > selfWidth.value / 3) {
+			gestureTarget = cur - 1
+		} else {
+			gestureTarget = -1
+		}
+		if (gestureTarget >= 0) {
+			activeIndex.value = gestureTarget
+			emit('update:active', itemIdent(gestureTarget))
+			emit('change', navItems.value[gestureTarget].name, gestureTarget)
+		} else {
+			// 回弹：从当前偏移动画归零，渲染集合收缩回当前项
+			const el = trackRef.value
+			if (el != null && props.duration > 0) {
+				const keyframes: UniAnimationKeyframe[] = [
+					{ transform: 'translateX(' + dx.toString() + 'px)', offset: 0 },
+					{ transform: 'translateX(0px)', offset: 1 }
+				]
+				el.animate(keyframes, { duration: Math.round(props.duration * 1000), easing: 'ease' })
+			}
+			setTimeout(() => {
+				ctx.renderSet.value = [cur]
+				trackOffset.value = 0
+			}, Math.round(props.duration * 1000))
+		}
+	}
+
+	// ========== sticky / scrollspy ==========
+
+	const onStickyChange = (isFixed: boolean) => {
+		emit('sticky-change', isFixed)
+	}
+
+	/**
+	 * scrollspy 滚动判定：以视口内固定基准线（吸顶偏移 offsetTop）为准，
+	 * 最后一个顶边越过基准线的内容块激活
+	 */
+	function resolveScrollSpy() {
+		const items = ctx.items.value
+		if (items.length == 0) return
+		const base = props.offsetTop
+		let cur = 0
+		for (let i = 0; i < items.length; i++) {
+			const el = ctx.paneEls.get(items[i].key)
+			if (el == null) continue
+			if (el.getBoundingClientRect().top - base <= 4) {
+				cur = i
+			}
+		}
+		if (cur != activeIndex.value) {
+			activeIndex.value = cur
+			emit('update:active', itemIdent(cur))
+			emit('change', items[cur].name, cur)
+		}
+	}
+
+	/**
+	 * scrollspy 点击定位：目标块顶对齐内容区顶（扣除吸顶高度）。
+	 * 优先定位最近滚动容器（scroll-view 内嵌场景可用）；
+	 * 无滚动容器时回退 uni.pageScrollTo 页面级定位（页面级滚动场景）。
+	 *
+	 * @param target 注册序
+	 */
+	function scrollToIndex(target: number) {
+		const viewport = trackRef.value
+		if (viewport == null || target < 0 || target >= ctx.items.value.length) return
+		const el = ctx.paneEls.get(ctx.items.value[target].key)
+		if (el == null) return
+		const delta = el.getBoundingClientRect().top - viewport.getBoundingClientRect().top
+		const scrollBy = delta - props.offsetTop
+		if (scrollBy == 0) return
+		const holder = findScrollParent(rootRef.value)
+		if (holder != null) {
+			holder.scrollTop = holder.scrollTop + scrollBy
+		} else {
+			// 页面级滚动回退（App 端主路径）；回调风格避免 web 端未处理 rejection
+			uni.pageScrollTo({
+				scrollTop: props.scrollTop + scrollBy,
+				duration: Math.round(props.duration * 1000),
+				success: () => {},
+				fail: () => {}
+			})
+		}
+	}
+
+	/**
+	 * 判断元素是否为滚动容器候选（可实际滚动）
+	 *
+	 * 对齐 m-sticky 的判定思路：Web 端 scroll-view 渲染为多层 class 含 uni-scroll-view 的节点，
+	 * 外层壳 overflow hidden 不可滚，须以「滚动高度大于可视高度」为准。
+	 *
+	 * @param el 待判断的元素
+	 * @return 是否可作为滚动容器
+	 */
+	function isScrollCandidate(el: UniElement): boolean {
+		// offsetHeight（UniElement 类型可用）替代 clientHeight，语义一致（可视高度），对齐 m-sticky 同名判定
+		return el.scrollHeight > el.offsetHeight + 4
+	}
+
+	/**
+	 * 向上查找最近的滚动容器（对齐 m-sticky 同名逻辑）
+	 *
+	 * @param start 起始元素
+	 * @return 滚动容器元素（未找到为 null）
+	 */
+	function findScrollParent(start: UniElement | null): UniElement | null {
+		let cur = start != null ? start.parentElement : null
+		while (cur != null) {
+			if (isScrollCandidate(cur)) return cur
+			cur = cur.parentElement
+		}
+		return null
+	}
+
+	// scroll-top 回灌驱动 scrollspy 判定（页面滚动事件 → scroll-top prop → 此处联动）
+	watch((): number => props.scrollTop, (_: number) => {
+		if (props.scrollspy) resolveScrollSpy()
+	})
+
+	/** 注册项集合变化：激活越界校正 + 全渲染协议补全 + 底部条重测 */
+	watch(ctx.items, () => {
+		const n = ctx.items.value.length
+		if (n == 0) return
+		if (props.scrollspy || !props.lazyRender) fillEverSet()
+		if (activeIndex.value >= n) activeIndex.value = n - 1
+		if (activeIndex.value < 0) activeIndex.value = resolveActive(props.active)
+		if (!trackMode.value && ctx.renderSet.value.indexOf(activeIndex.value) < 0) {
+			ctx.renderSet.value = [activeIndex.value]
+		}
+		measureWidth()
+	}, { flush: 'post' })
+
+	/**
+	 * 实测容器宽度（底部条位置与轨道平移距离依据）
+	 */
+	function measureWidth() {
+		const el = rootRef.value
+		if (el == null) return
+		selfWidth.value = el.getBoundingClientRect().width
+	}
+
+	onMounted(() => {
+		measureWidth()
+		// 初始激活解析与渲染集合初始化
+		const init = resolveActive(props.active)
+		if (init >= 0) activeIndex.value = init
+		if (props.scrollspy || !props.lazyRender) {
+			fillEverSet()
+			ctx.renderSet.value = [activeIndex.value >= 0 ? activeIndex.value : 0]
+		}
+		if (activeIndex.value >= 0 && !trackMode.value) {
+			ctx.renderSet.value = [activeIndex.value]
+		}
+	})
+
+	defineExpose({
+		/**
+		 * 滚动定位到指定标签（scrollspy 模式：name 或索引）
+		 */
+		scrollTo: (target: string | number) => {
+			const idx = resolveActive(target)
+			scrollToIndex(idx)
+		}
+	})
+</script>
+
+<style lang="scss">
+	@import '../../theme/vars.scss';
+
+	/* ========== 根 ========== */
+	.m-tabs {
+		flex-direction: column;
+		background-color: $m-tabs-background;
+	}
+
+	/* ========== 标签栏 ========== */
+	.m-tabs__nav {
+		position: relative;
+		flex-direction: row;
+		align-items: center;
+		height: $m-tabs-tab-height;
+		background-color: $m-tabs-background;
+	}
+	/* card 卡片壳：内缩留白 + 整组圆角边框 */
+	.m-tabs__nav--card {
+		height: $m-tabs-card-height + 8px;
+		padding: 4px 8px;
+	}
+	.m-tabs__nav--pill {
+		height: $m-tabs-pill-height + 8px;
+		padding: 4px 8px;
+	}
+	/* line 外边框（仅 line 风格） */
+	.m-tabs__nav--border {
+		border-bottom: $m-border-width solid $m-tabs-border-color;
+	}
+	.m-tabs__nav-extra {
+		flex-direction: row;
+		align-items: center;
+	}
+	.m-tabs__nav-scroll {
+		flex: 1;
+		height: 100%;
+	}
+	.m-tabs__nav-row--equal {
+		flex-direction: row;
+		height: 100%;
+	}
+	.m-tabs__nav-row--scroll {
+		flex-direction: row;
+		height: 100%;
+	}
+
+	/* ========== 标题项 ========== */
+	.m-tabs__title {
+		position: relative;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+	}
+	.m-tabs__title--equal {
+		flex: 1;
+	}
+	.m-tabs__title--scroll {
+		flex: none;
+		padding: 0 16px;
+	}
+	.m-tabs__title--card {
+		height: $m-tabs-card-height;
+		border-radius: $m-tabs-card-radius;
+	}
+	.m-tabs__title--pill {
+		height: $m-tabs-pill-height;
+		border-radius: $m-tabs-pill-radius;
+	}
+	.m-tabs__title--active {
+		font-weight: bold;
+	}
+	.m-tabs__title--card-active {
+		background-color: $m-color-primary;
+	}
+	.m-tabs__title--pill-active {
+		background-color: $m-color-primary;
+	}
+	.m-tabs__title--disabled {
+		opacity: $m-disabled-opacity;
+	}
+	.m-tabs__title-text {
+		font-size: $m-tabs-tab-font-size;
+		color: $m-tabs-tab-color;
+	}
+	.m-tabs__title-text--active {
+		color: $m-tabs-tab-active-color;
+	}
+	.m-tabs__title-text--ellipsis {
+		lines: 1;
+		text-overflow: ellipsis;
+	}
+	.m-tabs__title-text--filled {
+		color: $m-white;
+	}
+	/* 徽标：右上角悬浮，不挤压标题布局 */
+	.m-tabs__title-badge-wrap {
+		position: absolute;
+		top: 2px;
+		right: 6px;
+		flex-direction: row;
+	}
+
+	/* ========== 底部条 ========== */
+	/* 独立条（平分 line 布局）：绝对定位 + translateX 平移（动画走 UniElement.animate） */
+	.m-tabs__line {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		width: $m-tabs-line-width;
+		height: $m-tabs-line-height;
+		border-radius: $m-tabs-line-radius;
+		background-color: $m-color-primary;
+	}
+	/* 内嵌条（滚动 / 收缩布局）：激活标题内底部 */
+	.m-tabs__title-line {
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		width: $m-tabs-line-width;
+		height: $m-tabs-line-height;
+		border-radius: $m-tabs-line-radius;
+		background-color: $m-color-primary;
+	}
+
+	/* ========== 内容区 ========== */
+	.m-tabs__viewport {
+		flex: 1;
+		overflow: hidden;
+	}
+	.m-tabs__track {
+		width: 100%;
+	}
+	.m-tabs__track--row {
+		flex-direction: row;
+		width: 100%;
+	}
+	.m-tabs__track--scrollspy {
+		flex-direction: column;
+		width: 100%;
+	}
+	/* 轨道子项：等宽占位，平移载体 */
+	.m-tabs__pane--track {
+		flex: none;
+		width: 100%;
+		flex-shrink: 0;
+	}
+	/* scrollspy 平铺子项 */
+	.m-tabs__pane--scrollspy {
+		width: 100%;
+	}
+</style>

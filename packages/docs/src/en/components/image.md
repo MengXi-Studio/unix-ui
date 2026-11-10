@@ -101,9 +101,9 @@ With `preview` enabled, tapping the image (only in the loaded-success state) cal
 | loading-icon | Loading placeholder icon name | IconName | `photo` |
 | error-icon | Error placeholder icon name | IconName | `photo-fail` |
 | icon-size | Placeholder icon size, px is appended for pure numbers | string | `32` |
-| preview <VersionBadge version="0.3.2" /> | Whether to enable tap-to-preview (calls uni.previewImage, responds only in the loaded-success state) | boolean | `false` |
-| preview-list <VersionBadge version="0.3.2" /> | List of image URLs to preview (effective when preview is enabled); falls back to src when omitted or empty | string[] | null |
-| preview-current <VersionBadge version="0.3.2" /> | Preview start index; when omitted, resolved to the position of src in preview-list (falls back to 0 when not found) | number \| null | null |
+| preview <VersionBadge version="0.4.0" /> | Whether to enable tap-to-preview (calls uni.previewImage, responds only in the loaded-success state) | boolean | `false` |
+| preview-list <VersionBadge version="0.4.0" /> | List of image URLs to preview (effective when preview is enabled); falls back to src when omitted or empty | string[] | null |
+| preview-current <VersionBadge version="0.4.0" /> | Preview start index; when omitted, resolved to the position of src in preview-list (falls back to 0 when not found) | number \| null | null |
 | custom-class | Custom root node class name | string.ClassString | - |
 | custom-style | Custom root node inline style | string | - |
 

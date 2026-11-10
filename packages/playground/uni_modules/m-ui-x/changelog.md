@@ -1,5 +1,6 @@
-## 0.3.2 (2026-11-10)
+## 0.4.0 (2026-11-11)
 
+- 新增 `m-tabs` / `m-tab` 标签页：内容区域切换容器，`line` / `card` / `pill` 三种风格；`active` 支持索引与 name 混用匹配；标签数超过 `swipe-threshold` 自动横向滚动并居中激活项；`animated` 轨道平移转场 + `swipeable` 手势跟手切换（手势切换不触发 `before-change`）；`sticky` 吸顶复用 m-sticky、`scrollspy` 滚动导航（内容平铺 + 滚动联动激活 + 点击定位）；`before-change` 切换前拦截（boolean 同步版）；`options` 数组纯标签栏形态（`field-names` 字段映射）；标题徽标（dot / badge / show-zero-badge）与 nav-left / nav-right 插槽
 - 新增 `m-image` 点击预览：`preview` 开启后点击图片调用 `uni.previewImage` 弹出大图预览（Web / 微信 / 支付宝小程序 / Android / iOS / HarmonyOS 全端可用），仅加载成功态响应；`preview-list` 指定预览图列表（不传或为空回退单图 `[src]`），起始索引自动取当前 `src` 在列表中的位置（找不到回退 0），`preview-current` 可显式指定；`preview` 开启不影响 `click` 事件透传
 
 ## 0.3.1 (2026-11-09)

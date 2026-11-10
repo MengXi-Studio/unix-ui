@@ -54,6 +54,8 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		'status-bar': 'pages-sub/status-bar/status-bar'
 		/** 粘性布局 Sticky */
 		sticky: 'pages-sub/sticky/sticky'
+		/** 标签页 Tabs */
+		tabs: 'pages-sub/tabs/tabs'
 		/** 文本 Text */
 		text: 'pages-sub/text/text'
 		/** 轻提示 Toast */

@@ -57,7 +57,7 @@ export default {
 	extends: DefaultTheme,
 	Layout: UnixLayout,
 	enhanceApp({ app }) {
-		// Props 表等 Markdown 行内场景的新增版本徽标：<VersionBadge version="0.3.2" />
+		// Props 表等 Markdown 行内场景的新增版本徽标：<VersionBadge version="0.4.0" />
 		app.component('VersionBadge', VersionBadge)
 	}
 } satisfies Theme

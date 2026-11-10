@@ -102,9 +102,9 @@ added: 0.1.0
 | loading-icon | 加载中占位图标名称 | IconName | `photo` |
 | error-icon | 加载失败占位图标名称 | IconName | `photo-fail` |
 | icon-size | 占位图标大小，纯数字自动补 px | string | `32` |
-| preview <VersionBadge version="0.3.2" /> | 是否开启点击预览大图（调用 uni.previewImage，仅加载成功态响应） | boolean | `false` |
-| preview-list <VersionBadge version="0.3.2" /> | 预览的图片地址列表（仅 preview 开启时生效），不传或为空时使用 src | string[] | null |
-| preview-current <VersionBadge version="0.3.2" /> | 预览起始索引，未指定时取 src 在 preview-list 中的索引（找不到回退 0） | number \| null | null |
+| preview <VersionBadge version="0.4.0" /> | 是否开启点击预览大图（调用 uni.previewImage，仅加载成功态响应） | boolean | `false` |
+| preview-list <VersionBadge version="0.4.0" /> | 预览的图片地址列表（仅 preview 开启时生效），不传或为空时使用 src | string[] | null |
+| preview-current <VersionBadge version="0.4.0" /> | 预览起始索引，未指定时取 src 在 preview-list 中的索引（找不到回退 0） | number \| null | null |
 | custom-class | 自定义根节点类名 | string.ClassString | - |
 | custom-style | 自定义根节点内联样式 | string | - |
 

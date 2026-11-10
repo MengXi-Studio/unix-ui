@@ -1,7 +1,7 @@
 {
 	"id": "m-ui-x",
 	"displayName": "m-ui-x 为 uni-app x 提供功能完善的 UI 组件库",
-	"version": "0.3.2",
+	"version": "0.4.0",
 	"description": "为 uni-app x 提供功能完善的 UI 组件库",
 	"keywords": [
 		"unix-ui",

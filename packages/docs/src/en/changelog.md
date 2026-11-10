@@ -1,11 +1,12 @@
 # Changelog
 
-## [0.3.2] - 2026-11-10
+## [0.4.0] - 2026-11-11
 
-m-image adds tap-to-preview.
+New m-tabs / m-tab tabs components; m-image adds tap-to-preview.
 
 ### Added
 
+- **m-tabs / m-tab tabs**: content switching container with `line` / `card` / `pill` styles; `active` supports mixed index / name matching (exact match by name type first, falls back to index); the tab bar scrolls horizontally beyond `swipe-threshold` and centers the active tab; `animated` track translation transition + `swipeable` follow-finger gesture switching (gesture does not trigger `before-change`, aligned with Vant); `sticky` header reuses m-sticky and `scrollspy` scroll navigation (flat content + scroll-driven activation + click-to-scroll); `before-change` interception (synchronous boolean version); `options` array bar-only form (`field-names` mapping); title badges (dot / badge / show-zero-badge) and nav-left / nav-right slots (see [Tabs](/en/components/tabs))
 - **m-image tap-to-preview**: with `preview` enabled, tapping the image calls `uni.previewImage` to open the full-size preview (available on every platform: Web / WeChat / Alipay Mini Programs / Android / iOS / HarmonyOS), responding only in the loaded-success state; `preview-list` specifies the list of URLs to preview (falling back to the single `[src]` when omitted or empty), the start index is resolved to the position of the current `src` in the list (falling back to 0 when not found), and `preview-current` sets it explicitly; enabling `preview` does not swallow the `click` event — both work together (see [Image](/en/components/image))
 
 ## [0.3.1] - 2026-11-09

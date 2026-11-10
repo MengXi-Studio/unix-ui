@@ -119,6 +119,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '瀑布流',
 				enName: 'Waterfall',
 				desc: '按内容实际高度自适应排列的多列布局，支持列数与间距、已知宽高占位、动态增删与重新排版。'
+			},
+			{
+				name: 'tabs',
+				zhName: '标签页',
+				enName: 'Tabs',
+				desc: '内容区域切换容器，支持索引与 name 混用匹配、line / card / pill 三种风格、标签栏滚动、内容动画与手势切换、吸顶、滚动导航与切换前拦截。'
 			}
 		]
 	},

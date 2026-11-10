@@ -1,0 +1,124 @@
+<template>
+	<!-- 标签页内容节点：显隐由容器经上下文下发（标题栏由 m-tabs 渲染，本组件只承载内容）；
+	     独立使用（无容器 inject）时始终渲染。 -->
+	<view v-if="everRendered" v-show="visible" ref="paneRef" :class="paneClass">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-tab 标签页子项：m-tabs 的内容承载单元。
+	 * props 快照经上下文注册给容器（标题栏由容器渲染）；内容显隐由容器下发：
+	 * 普通 / 轨道模式按 renderSet / everSet（lazyRender）控制，scrollspy 模式全量平铺。
+	 */
+	import { TABS_KEY, TabsContext } from '../m-tabs/tabs.uts'
+
+	type Props = {
+		/** 标签标题文本 */
+		title?: string
+		/** 标签标识（string | number；未传按索引匹配） */
+		name?: string | number
+		/** 是否禁用（禁用标签点击不切换，click-tab 事件照常派发） */
+		disabled?: boolean
+		/** 是否展示标题红点 */
+		dot?: boolean
+		/** 标题徽标内容（数字语义用字符串表达，如 "5"） */
+		badge?: string
+		/** 徽标为 0 时是否展示 */
+		showZeroBadge?: boolean
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		title: '',
+		name: null,
+		disabled: false,
+		dot: false,
+		badge: '',
+		showZeroBadge: true
+	})
+
+	/** 容器上下文（独立使用时为 null，内容始终渲染） */
+	const ctx = inject<TabsContext | null>(TABS_KEY, null)
+
+	/** 内容根节点（注册时上报给容器，scrollspy 滚动导航测量用） */
+	const paneRef = ref<UniElement | null>(null)
+
+	/** 注册时分配的 key（注销依据） */
+	let regKey = 0
+
+	/** 自身注册序（实时从容器 items 中取序位，动态增删后自动重排） */
+	const ownIndex = computed<number>(() => {
+		if (ctx == null) return 0
+		const list = ctx.items.value
+		let i = 0
+		while (i < list.length) {
+			if (list[i].key == regKey) return i
+			i++
+		}
+		return -1
+	})
+
+	/** 是否曾激活过（lazyRender 协议；独立使用 / 容器未下发时恒 true） */
+	const everRendered = computed<boolean>(() => {
+		if (ctx == null) return true
+		return ctx.everSet.value.indexOf(ownIndex.value) >= 0
+	})
+
+	/** 内容是否显示（renderSet 协议；scrollspy 平铺恒 true） */
+	const visible = computed<boolean>(() => {
+		if (ctx == null) return true
+		if (ctx.scrollspy.value) return true
+		return ctx.renderSet.value.indexOf(ownIndex.value) >= 0
+	})
+
+	/** 内容节点类名：轨道模式加轨道子项布局类，scrollspy 模式加平铺类 */
+	const paneClass = computed<string>(() => {
+		let cls = 'm-tabs__pane'
+		if (ctx != null) {
+			if (ctx.trackMode.value) {
+				cls += ' m-tabs__pane--track'
+			}
+			if (ctx.scrollspy.value) {
+				cls += ' m-tabs__pane--scrollspy'
+			}
+		}
+		return cls
+	})
+
+	onMounted(() => {
+		if (ctx == null) return
+		regKey = ctx.register({
+			index: 0,
+			key: 0,
+			title: props.title,
+			name: props.name,
+			disabled: props.disabled,
+			dot: props.dot,
+			badge: props.badge,
+			showZeroBadge: props.showZeroBadge
+		}, paneRef.value)
+	})
+
+	// 首次渲染后补报内容根元素（注册时 lazyRender 未渲染 paneRef 为 null，scrollspy 测量依赖此表）
+	watch(everRendered, (v: boolean) => {
+		if (ctx == null || regKey == 0) return
+		if (v && paneRef.value != null) {
+			ctx.updatePane(regKey, paneRef.value)
+		}
+	}, { flush: 'post' })
+
+	onUnmounted(() => {
+		if (ctx == null || regKey == 0) return
+		ctx.unregister(regKey)
+	})
+</script>
+
+<style lang="scss">
+	@import '../../theme/vars.scss';
+
+	/* 内容节点默认样式：普通模式占满容器；轨道 / scrollspy 修饰类由 m-tabs 样式段定义 */
+	.m-tabs__pane {
+		width: 100%;
+	}
+</style>

@@ -2,6 +2,7 @@
 title: Layout
 subtitle: 布局
 demo: pages-sub/layout/layout
+added: 0.1.0
 ---
 
 ## 介绍

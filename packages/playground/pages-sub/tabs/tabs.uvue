@@ -1,0 +1,243 @@
+<template>
+	<view class="page">
+		<demo-navbar title="标签页" subtitle="Tabs" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true" @scroll="onPageScroll">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-tabs v-model:active="basicActive">
+						<m-tab title="标签 1">内容 1</m-tab>
+						<m-tab title="标签 2">内容 2</m-tab>
+						<m-tab title="标签 3">内容 3</m-tab>
+					</m-tabs>
+					<text class="caption">v-model:active 索引绑定（当前：{{ basicActive }}）</text>
+				</view>
+
+				<text class="section" id="name">通过 name 匹配</text>
+				<view class="card">
+					<m-tabs v-model:active="nameActive">
+						<m-tab title="A 组" name="a">内容 A</m-tab>
+						<m-tab title="B 组" name="b">内容 B</m-tab>
+						<m-tab title="C 组" name="c">内容 C</m-tab>
+					</m-tabs>
+					<text class="caption">active 为 name 字符串（当前：{{ nameActive }}）；混用协议：先按 name 匹配，无命中回退索引</text>
+				</view>
+
+				<text class="section" id="scroll">标签栏滚动</text>
+				<view class="card">
+					<m-tabs :active="scrollActive" @update:active="onScrollActiveChange">
+						<m-tab v-for="(t, i) in 10" :key="i" :title="'标签 ' + (i + 1)">第 {{ i + 1 }} 个标签的内容</m-tab>
+					</m-tabs>
+					<text class="caption">标签数超过 swipe-threshold（默认 5）自动横向滚动并居中；未开启 animated 时为即时显隐切换</text>
+				</view>
+
+				<text class="section" id="disabled">禁用标签</text>
+				<view class="card">
+					<m-tabs :active="0" @click-tab="logEvent('click-tab')">
+						<m-tab title="可选">内容 1</m-tab>
+						<m-tab title="禁用" disabled>不可达</m-tab>
+						<m-tab title="可选">内容 3</m-tab>
+					</m-tabs>
+					<text class="caption">disabled 标签点击不切换，click-tab 事件照常派发（对齐 Vant）</text>
+				</view>
+
+				<text class="section" id="style">样式风格</text>
+				<view class="card">
+					<m-tabs type="card" :active="0">
+						<m-tab title="卡片 A">card 内容 A</m-tab>
+						<m-tab title="卡片 B">card 内容 B</m-tab>
+						<m-tab title="卡片 C">card 内容 C</m-tab>
+					</m-tabs>
+					<text class="caption">type="card"</text>
+					<m-tabs type="pill" :active="0" style="margin-top: 12px;">
+						<m-tab title="药丸 A">pill 内容 A</m-tab>
+						<m-tab title="药丸 B">pill 内容 B</m-tab>
+						<m-tab title="药丸 C">pill 内容 C</m-tab>
+					</m-tabs>
+					<text class="caption">type="pill"</text>
+				</view>
+
+				<text class="section" id="line">底部条定制</text>
+				<view class="card">
+					<m-tabs color="#ee0a24" :line-width="24" :active="0">
+						<m-tab title="红色">内容 1</m-tab>
+						<m-tab title="主题">内容 2</m-tab>
+					</m-tabs>
+					<text class="caption">color 派生底部条与激活色，line-width 24</text>
+					<m-tabs line-width="30px" line-height="4px" :active="0" style="margin-top: 12px;">
+						<m-tab title="定制条">内容 1</m-tab>
+						<m-tab title="切换看看">内容 2</m-tab>
+						<m-tab title="动画时长">内容 3</m-tab>
+					</m-tabs>
+					<text class="caption">line-width 30px / line-height 4px（duration 默认 0.3s 平移动画）</text>
+				</view>
+
+				<text class="section" id="animated">内容动画与手势切换</text>
+				<view class="card">
+					<m-tabs animated :active="0" style="min-height: 160px;">
+						<m-tab title="动画 1">animated 内容 1（左右平移转场）</m-tab>
+						<m-tab title="动画 2">animated 内容 2</m-tab>
+						<m-tab title="动画 3">animated 内容 3</m-tab>
+					</m-tabs>
+					<text class="caption">animated 轨道平移转场</text>
+					<m-tabs swipeable animated :active="0" style="margin-top: 12px; min-height: 160px;">
+						<m-tab title="手势 1">swipeable 内容 1（左右滑动试试）</m-tab>
+						<m-tab title="手势 2">swipeable 内容 2</m-tab>
+						<m-tab title="手势 3">swipeable 内容 3</m-tab>
+					</m-tabs>
+					<text class="caption">swipeable + animated 手势跟手切换（手势切换不触发 before-change，对齐 Vant）</text>
+				</view>
+
+				<text class="section" id="badge">标题徽标与插槽</text>
+				<view class="card">
+					<m-tabs :active="0">
+						<m-tab title="红点" dot>dot 红点内容</m-tab>
+						<m-tab title="徽标" badge="8">badge 8 内容</m-tab>
+						<m-tab title="零值" badge="0" :show-zero-badge="false">badge 0 且 show-zero-badge=false 不展示</m-tab>
+					</m-tabs>
+				</view>
+				<view class="card" style="margin-top: 12px;">
+					<m-tabs :active="0">
+						<template #nav-left><text class="slot-text">左</text></template>
+						<template #nav-right><text class="slot-text">右</text></template>
+						<m-tab title="标签 1">内容 1</m-tab>
+						<m-tab title="标签 2">内容 2</m-tab>
+					</m-tabs>
+					<text class="caption">nav-left / nav-right 插槽</text>
+				</view>
+
+				<text class="section" id="before">切换前拦截</text>
+				<view class="card">
+					<m-tabs :active="0" :before-change="onBeforeChange" @change="onBeforeTabChange">
+						<m-tab title="可切 1">内容 1</m-tab>
+						<m-tab title="被拦 2">内容 2（点击会被拦截）</m-tab>
+						<m-tab title="可切 3">内容 3</m-tab>
+					</m-tabs>
+					<text class="caption">before-change 返回 false 阻止切换（索引 2 被拦，boolean 同步版对齐 m-popup before-close）</text>
+				</view>
+
+				<text class="section" id="options">options 纯标签栏</text>
+				<view class="card">
+					<m-tabs v-model:active="optActive" :options="tabOptions" />
+					<text class="caption">options 数组驱动（label / value / disabled 字段），无内容区；当前：{{ optActive }}</text>
+				</view>
+
+				<text class="section" id="sticky">粘性布局与滚动导航</text>
+				<view class="card">
+					<m-tabs sticky :scroll-top="pageScrollTop" :active="0">
+						<m-tab v-for="(t, i) in 3" :key="i" :title="'吸顶 ' + (i + 1)">吸顶标签的内容 {{ i + 1 }}</m-tab>
+					</m-tabs>
+					<text class="caption">sticky 复用 m-sticky（需滚动容器回传 scroll-top），向上滚动吸附</text>
+				</view>
+				<view class="card" style="margin-top: 12px;">
+					<m-tabs scrollspy sticky :scroll-top="pageScrollTop" :active="0">
+						<m-tab v-for="(t, i) in 4" :key="i" :title="'区块 ' + (i + 1)">
+							<view class="spy-block">
+								<text class="spy-block__text">区块 {{ i + 1 }} 的长内容（滚动时对应标签自动高亮，点击标签回滚定位）</text>
+							</view>
+						</m-tab>
+					</m-tabs>
+					<text class="caption">scrollspy 内容平铺 + 滚动联动激活 + 点击定位（页面级滚动；scroll-top 回传驱动）</text>
+				</view>
+
+				<text class="section" id="shrink">收缩布局</text>
+				<view class="card">
+					<m-tabs shrink :active="0">
+						<m-tab title="收 1">内容 1</m-tab>
+						<m-tab title="收 2">内容 2</m-tab>
+					</m-tabs>
+					<text class="caption">shrink 标签向左收缩排列（不平分）</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '标签页 Tabs', name: 'tabs' })
+
+	/** 基础用法激活索引 */
+	const basicActive = ref(0)
+	/** name 匹配激活值 */
+	const nameActive = ref('b')
+	/** 滚动标签栏激活索引 */
+	const scrollActive = ref(0)
+	/** options 标签栏激活值 */
+	const optActive = ref(1)
+	/** 页面滚动距离（sticky / scrollspy 场景回传） */
+	const pageScrollTop = ref(0)
+
+	/** options 数组数据（label / value / disabled） */
+	const tabOptions = ref<UTSJSONObject[]>([
+		{ label: '全部', value: 0 },
+		{ label: '进行中', value: 1 },
+		{ label: '已完成', value: 2 },
+		{ label: '已取消', value: 3, disabled: true }
+	] as UTSJSONObject[])
+
+	/**
+	 * scroll 标签栏激活变化回灌（未用 v-model 验证单双路径均可）
+	 */
+	const onScrollActiveChange = (name: string | number) => {
+		scrollActive.value = name as number
+	}
+
+	/**
+	 * 滚动事件回传：驱动 sticky 吸附与 scrollspy 滚动导航
+	 */
+	function onPageScroll(e: UniScrollEvent) {
+		pageScrollTop.value = e.detail.scrollTop
+	}
+
+	/**
+	 * 事件日志（演示 toast 提示）
+	 */
+	function logEvent(msg: string) {
+		uni.showToast({ title: msg, icon: 'none' })
+	}
+
+	/**
+	 * before-change 拦截：索引 2 的标签拒绝切换
+	 */
+	function onBeforeChange(name: string | number | null, index: number): boolean {
+		return index != 2
+	}
+
+	/**
+	 * 拦截场景激活变化展示
+	 */
+	function onBeforeTabChange(name: string | number | null, index: number) {
+		console.log('tabs before-change demo change: index=' + index.toString())
+	}
+</script>
+
+<style lang="scss">
+	/* 插槽演示文字 */
+	.slot-text {
+		font-size: 12px;
+		color: #646566;
+		padding: 0 12px;
+	}
+	/* scrollspy 演示块：撑开高度形成滚动行程 */
+	.spy-block {
+		min-height: 240px;
+		justify-content: center;
+		align-items: center;
+		background-color: #f7f8fa;
+		border-radius: 8px;
+		margin: 8px 0;
+	}
+	.spy-block__text {
+		font-size: 13px;
+		color: #646566;
+		padding: 0 16px;
+		text-align: center;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

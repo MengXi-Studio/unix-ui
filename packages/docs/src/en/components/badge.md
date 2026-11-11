@@ -1,6 +1,7 @@
 ---
 title: Badge
 demo: pages-sub/badge/badge
+added: 0.1.0
 ---
 
 ## Introduction

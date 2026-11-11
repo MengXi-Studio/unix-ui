@@ -272,3 +272,31 @@ $m-cascader-input-clear-width: 40px !default;
 $m-cascader-input-clear-icon-size: 16px !default;
 /** 清空图标颜色（对齐 $m-input-clear-color 默认值） */
 $m-cascader-input-clear-color: #c8c9cc !default;
+
+/* ========== Tabs 标签页 ========== */
+/** 标签栏与根节点背景色 */
+$m-tabs-background: $m-white !default;
+/** 标签栏高度（card / pill 变体在组件内上下留白 4px） */
+$m-tabs-tab-height: 44px !default;
+/** 标签字号 */
+$m-tabs-tab-font-size: 14px !default;
+/** 标题默认色 */
+$m-tabs-tab-color: $m-text-color !default;
+/** 标题激活色 */
+$m-tabs-tab-active-color: $m-color-primary !default;
+/** line 底部条宽度 */
+$m-tabs-line-width: 40px !default;
+/** line 底部条高度 */
+$m-tabs-line-height: 3px !default;
+/** line 底部条圆角 */
+$m-tabs-line-radius: 3px !default;
+/** card 变体标题高度（标签栏整高 38px） */
+$m-tabs-card-height: 30px !default;
+/** card 变体圆角 */
+$m-tabs-card-radius: $m-radius-md !default;
+/** pill 变体标题高度（标签栏整高 38px） */
+$m-tabs-pill-height: 30px !default;
+/** pill 变体圆角（药丸） */
+$m-tabs-pill-radius: $m-radius-max !default;
+/** line 外边框颜色 */
+$m-tabs-border-color: $m-color-default-border !default;

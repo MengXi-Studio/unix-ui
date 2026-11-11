@@ -2,6 +2,7 @@
 title: Text
 subtitle: 文本
 demo: pages-sub/text/text
+added: 0.1.0
 ---
 
 ## 介绍

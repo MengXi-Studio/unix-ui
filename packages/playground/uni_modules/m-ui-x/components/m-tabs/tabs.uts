@@ -1,0 +1,121 @@
+/**
+ * m-tabs 与 m-tab 的容器上下文与共享类型（跨组件共享，独立 .uts）
+ *
+ * 架构约束（uni-app x 无 VNode 移动能力）：标题栏由 m-tabs 按注册快照渲染，
+ * 内容由 m-tab 自渲染（显隐由容器经本上下文下发）。
+ * provide / inject 配对采用字符串 key + class 实例（App 原生端无需 Symbol 支持），
+ * m-tab 在 onMounted 注册、onUnmounted 注销（对齐 m-compact / m-sticky 先例）。
+ */
+import { ref, type Ref } from 'vue'
+
+/** provide / inject 配对 key */
+export const TABS_KEY: string = '__mxi_tabs__'
+
+/** 标签项注册快照（标题栏渲染数据源，字段为 m-tab props 的快照） */
+export type TabItem = {
+	/** 注册序（渲染序，注册时分配） */
+	index: number
+	/** 注册唯一标识（注销依据，注册时分配，自增不复用） */
+	key: number
+	/** 标签标题文本 */
+	title: string
+	/** 标签标识（null 表示未指定，按索引匹配） */
+	name: string | number | null
+	/** 是否禁用 */
+	disabled: boolean
+	/** 是否展示红点 */
+	dot: boolean
+	/** 徽标内容文本（数字语义用字符串表达，如 "5"） */
+	badge: string
+	/** 徽标为 0 时是否展示 */
+	showZeroBadge: boolean
+}
+
+/** click-tab 事件载荷（对齐 Vant：索引 / name / title / disabled） */
+export type TabsClickEvent = {
+	/** 注册序 */
+	index: number
+	/** 标签标识（未指定 name 时为 null） */
+	name: string | number | null
+	/** 标签标题文本 */
+	title: string
+	/** 是否禁用（禁用标签点击不切换但事件照常派发，对齐 Vant） */
+	disabled: boolean
+}
+
+/**
+ * tabs 容器上下文
+ *
+ * m-tabs 在 setup 中 new 出实例并 provide；m-tab 经 inject 读取渲染协议
+ * （trackMode / renderSet / everSet / scrollspy）并把自身注册进来。
+ * 所有集合均为整组替换驱动（规避 UTS 中数组 mutation 的响应式触发差异）。
+ */
+export class TabsContext {
+	/** 注册标签项（注册序即渲染序，标题栏数据源） */
+	items: Ref<TabItem[]> = ref<TabItem[]>([])
+	/** 激活项注册序（-1 表示无激活项） */
+	activeIndex: Ref<number> = ref<number>(-1)
+	/** scrollspy 模式：内容平铺全渲染，显隐协议失效 */
+	scrollspy: Ref<boolean> = ref<boolean>(false)
+	/** 轨道模式（animated / swipeable 开启）：m-tab 根节点按轨道子项布局 */
+	trackMode: Ref<boolean> = ref<boolean>(false)
+	/** 当前应显示内容的注册序集合（轨道模式过渡期为相邻两项，普通模式为单项） */
+	renderSet: Ref<number[]> = ref<number[]>([])
+	/** 曾激活过的注册序集合（lazyRender 协议：从未激活不渲染） */
+	everSet: Ref<number[]> = ref<number[]>([])
+	/** 各标签内容根元素（注册时上报，scrollspy 滚动导航测量用） */
+	paneEls: Map<number, UniElement> = new Map<number, UniElement>()
+	/** key 自增序列 */
+	seq: number = 0
+
+	/**
+	 * 注册标签项
+	 *
+	 * @param item 标签项快照（key / index 由此分配后回填）
+	 * @param pane 内容根元素（onMounted 时 m-tab 模板 ref，scrollspy 测量用）
+	 * @returns 分配的注册 key
+	 */
+	register(item: TabItem, pane: UniElement | null): number {
+		this.seq++
+		const key = this.seq
+		item.key = key
+		item.index = this.items.value.length
+		const list = this.items.value
+		list.push(item)
+		this.items.value = list
+		if (pane != null) {
+			this.paneEls.set(key, pane)
+		}
+		return key
+	}
+
+	/**
+	 * 注销标签项（m-tab 卸载；其后注册项的 index 由消费方按数组序位实时取用，无需重排）
+	 *
+	 * @param key 注册时分配的 key
+	 */
+	unregister(key: number) {
+		const list = this.items.value
+		let i = 0
+		while (i < list.length) {
+			if (list[i].key == key) {
+				list.splice(i, 1)
+				break
+			}
+			i++
+		}
+		this.items.value = list
+		this.paneEls.delete(key)
+	}
+
+	/**
+	 * 补报内容根元素（注册时内容因 lazyRender 未渲染，paneRef 为 null；
+	 * m-tab 首次渲染后经此补齐，scrollspy 测量与点击定位依赖此表）
+	 *
+	 * @param key 注册时分配的 key
+	 * @param pane 内容根元素（flush post 后模板 ref 已就绪）
+	 */
+	updatePane(key: number, pane: UniElement) {
+		this.paneEls.set(key, pane)
+	}
+}

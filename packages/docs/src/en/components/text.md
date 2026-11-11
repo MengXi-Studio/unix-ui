@@ -1,6 +1,7 @@
 ---
 title: Text
 demo: pages-sub/text/text
+added: 0.1.0
 ---
 
 ## Introduction

@@ -1,6 +1,7 @@
 ---
 title: Button
 demo: pages-sub/button/button
+added: 0.1.0
 ---
 
 ## Introduction

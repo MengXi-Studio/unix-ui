@@ -1,6 +1,7 @@
 ---
 title: Layout
 demo: pages-sub/layout/layout
+added: 0.1.0
 ---
 
 ## Introduction

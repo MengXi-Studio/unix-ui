@@ -150,6 +150,12 @@
 					}
 				},
 				{
+					"path": "tabs/tabs",
+					"style": {
+						"navigationBarTitleText": "标签页 Tabs"
+					}
+				},
+				{
 					"path": "text/text",
 					"style": {
 						"navigationBarTitleText": "文本 Text"

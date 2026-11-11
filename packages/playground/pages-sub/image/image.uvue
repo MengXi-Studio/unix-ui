@@ -171,6 +171,32 @@
 				<m-image :src="demoBase + 'demo-forest.jpg'" width="160px" height="120px" @click="onImageClick" />
 				<text class="caption">点击图片查看 console 输出</text>
 			</view>
+
+			<text class="section" id="preview">点击预览</text>
+			<view class="card">
+				<view class="row-gap">
+					<m-image :src="demoBase + 'demo-cat.jpg'" width="110px" height="110px" preview />
+					<m-image :src="demoBase + 'demo-fruit.jpg'" width="110px" height="110px" preview custom-class="row-gap-item" />
+				</view>
+				<text class="caption">preview 单图预览：未传 preview-list 时使用自身 src</text>
+				<view class="row-gap" style="margin-top: 12px;">
+					<m-image
+						v-for="(item, index) in previewSrcs"
+						:key="index"
+						:src="item"
+						width="80px"
+						height="80px"
+						preview
+						:preview-list="previewSrcs"
+						custom-class="preview-item"
+					/>
+				</view>
+				<text class="caption">preview-list 多图预览：4 张一组，起始索引自动取当前 src 在列表中的位置</text>
+				<view class="row-gap" style="margin-top: 12px;">
+					<m-image :src="demoBase + 'demo-mountain.jpg'" width="110px" height="110px" preview :preview-list="previewSrcs" :preview-current="2" @click="onPreviewClick" />
+				</view>
+				<text class="caption">preview-current 显式指定起始索引（点击固定从第 3 张开始）；click 事件与预览并存（console 输出）</text>
+			</view>
 		</view>
 		</scroll-view>
 	</view>
@@ -232,6 +258,19 @@
 	function onImageClick(e: MouseEvent) {
 		console.log('[image demo] image clicked')
 	}
+
+	/** 多图预览演示列表：4 张演示图各一张 */
+	const previewSrcs = ref<string[]>([])
+	for (let i = 0; i < demoNames.length; i++) {
+		previewSrcs.value.push(demoBase + 'demo-' + demoNames[i] + '.jpg')
+	}
+
+	/**
+	 * 预览与 click 并存演示：preview 开启时 click 仍透传（既弹预览又触发监听）
+	 */
+	function onPreviewClick(e: MouseEvent) {
+		console.log('[image demo] preview image clicked (preview opens too)')
+	}
 </script>
 
 <style lang="scss">
@@ -245,6 +284,10 @@
 		width: 50%;
 		align-items: center;
 		margin-bottom: 12px;
+	}
+	/* 预览图组间距：v-for 项统一右间距（无子级选择器区分首项，间隔用 margin-right 实现） */
+	.preview-item {
+		margin-right: 8px;
 	}
 	/* 插槽文字（加载中 / 失败自定义内容） */
 	.slot-text {

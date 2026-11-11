@@ -1,6 +1,7 @@
 ---
 title: Loading
 demo: pages-sub/loading/loading
+added: 0.1.0
 ---
 
 ## Introduction

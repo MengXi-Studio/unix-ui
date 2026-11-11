@@ -127,6 +127,11 @@ export const routes: RouteConfig[] = [
 		meta: { title: '粘性布局 Sticky' },
 	},
 	{
+		path: 'pages-sub/tabs/tabs',
+		name: 'tabs',
+		meta: { title: '标签页 Tabs' },
+	},
+	{
 		path: 'pages-sub/text/text',
 		name: 'text',
 		meta: { title: '文本 Text' },

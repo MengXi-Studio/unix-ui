@@ -1,11 +1,12 @@
 ---
 title: Image
 demo: pages-sub/image/image
+added: 0.1.0
 ---
 
 ## Introduction
 
-The image component wraps the native image with enhancements: native capabilities such as `mode` are passed through with the same names, plus loading and error placeholders, fade-in transition, border radius and round shapes.
+The image component wraps the native image with enhancements: native capabilities such as `mode` are passed through with the same names, plus loading and error placeholders, fade-in transition, border radius and round shapes, and tap-to-preview.
 
 ## Examples
 
@@ -58,6 +59,29 @@ A placeholder icon is shown by default while loading and on failure. Use `loadin
 <m-image src="https://cdn.example.com/demo.jpg" width="130px" height="130px" :fade="false" />
 ```
 
+### Tap to Preview {#demo-preview}
+
+With `preview` enabled, tapping the image (only in the loaded-success state) calls `uni.previewImage` to open the full-size preview. `preview-list` specifies the list of image URLs to preview; when omitted or empty, the component's own `src` is used. The start index is resolved to the position of the current `src` in the list (falling back to 0 when not found), or set explicitly with `preview-current`. Enabling `preview` does not swallow the `click` event — both work together.
+
+```vue
+<!-- Enable preview, the previewed image is the src itself -->
+<m-image src="https://cdn.example.com/demo.jpg" width="110px" height="110px" preview />
+
+<!-- Multi-image preview: tapping any image starts at its position in the list -->
+<m-image
+  v-for="(item, index) in list"
+  :key="index"
+  :src="item"
+  width="80px"
+  height="80px"
+  preview
+  :preview-list="list"
+/>
+
+<!-- Explicit start index -->
+<m-image src="https://cdn.example.com/demo.jpg" width="110px" height="110px" preview :preview-list="list" :preview-current="2" />
+```
+
 ## API
 
 ### Props
@@ -77,6 +101,9 @@ A placeholder icon is shown by default while loading and on failure. Use `loadin
 | loading-icon | Loading placeholder icon name | IconName | `photo` |
 | error-icon | Error placeholder icon name | IconName | `photo-fail` |
 | icon-size | Placeholder icon size, px is appended for pure numbers | string | `32` |
+| preview <VersionBadge version="0.4.0" /> | Whether to enable tap-to-preview (calls uni.previewImage, responds only in the loaded-success state) | boolean | `false` |
+| preview-list <VersionBadge version="0.4.0" /> | List of image URLs to preview (effective when preview is enabled); falls back to src when omitted or empty | string[] | null |
+| preview-current <VersionBadge version="0.4.0" /> | Preview start index; when omitted, resolved to the position of src in preview-list (falls back to 0 when not found) | number \| null | null |
 | custom-class | Custom root node class name | string.ClassString | - |
 | custom-style | Custom root node inline style | string | - |
 

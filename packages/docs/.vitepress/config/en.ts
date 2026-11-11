@@ -88,7 +88,6 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Space', link: '/en/components/space' },
 						{ text: 'StatusBar', link: '/en/components/status-bar' },
 						{ text: 'Sticky', link: '/en/components/sticky' },
-						{ text: 'Tabs', link: '/en/components/tabs' },
 						{ text: 'Waterfall', link: '/en/components/waterfall' }
 					]
 				},
@@ -119,6 +118,10 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Badge', link: '/en/components/badge' },
 						{ text: 'Cell', link: '/en/components/cell' }
 					]
+				},
+				{
+					text: 'Navigation Components',
+					items: [{ text: 'Tabs', link: '/en/components/tabs' }]
 				}
 			]
 		}

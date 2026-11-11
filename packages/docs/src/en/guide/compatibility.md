@@ -4,11 +4,12 @@
 
 | Platform | Status | Notes |
 | --- | --- | --- |
-| Web | ✅ Verified | Compiled and run with HBuilderX; rendering / events / theme override matrix all passed |
-| App-Android | 🔧 Adapted | Vapor mode compilation verified; on-device testing pending |
+| Web | ✅ Verified | Compiled and run with HBuilderX; rendering / events / theme override matrix and per-component scenarios verified in the browser |
+| App-Android | ✅ Cloud build verified | Both vapor and vdom modes compile and package via cloud build; a demo APK ships with every release (see [Installation](/en/guide/installation#try-it-on-a-device)) |
 | App-iOS | 🔧 Adapted | Conditional compilation in place; on-device testing pending (requires macOS) |
 | App-HarmonyOS | 🔧 Adapted | Conditional compilation in place; testing pending (requires DevEco Studio) |
-| Mini Programs | 🔧 Adapted | Conditional compilation in place; testing pending in developer tools |
+| WeChat Mini Program | 🔧 Baseline verified | Baseline issues (overlay visibility / popup layers / font loading) were reproduced and fixed in testing during v0.3.1; new components are verified release by release |
+| Other Mini Programs | 🔧 Adapted | Conditional compilation in place; testing pending in developer tools |
 
 ## HBuilderX Version Requirements
 

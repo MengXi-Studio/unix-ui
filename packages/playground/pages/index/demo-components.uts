@@ -27,7 +27,7 @@ export type DemoGroup = {
 }
 
 /**
- * 组件演示分组表（标准 UI 库分类体系：基础 / 布局 / 导航 / 表单 / 反馈 / 数据展示，组内按字母序）
+ * 组件演示分组表（标准 UI 库分类体系：基础 / 布局 / 表单 / 反馈 / 数据展示 / 导航，组内按字母序）
  *
  * 新增组件时在对应分组的 components 中登记一条即可，
  * 首页分组列表与搜索过滤自动生效；演示页路由无需手工登记——
@@ -132,16 +132,16 @@ export const demoGroups: DemoGroup[] = [
 				desc: '日历面板，支持单选、多选、范围选择、年月切换导航、formatter 定制与超限提示。'
 			},
 			{
-				name: 'calendar-popup',
-				zhName: '日历弹出框',
-				enName: 'CalendarPopup',
-				desc: 'm-popup 与 m-calendar 的弹层组合，v-model 控制显隐，确认后自动关闭，支持方位、圆角、面板高度与安全区配置。'
-			},
-			{
 				name: 'calendar-input',
 				zhName: '日历输入框',
 				enName: 'CalendarInput',
 				desc: 'm-input 与日历弹出框的表单组合，点击触发选择，选中值格式化回填展示，支持清空与禁用。'
+			},
+			{
+				name: 'calendar-popup',
+				zhName: '日历弹出框',
+				enName: 'CalendarPopup',
+				desc: 'm-popup 与 m-calendar 的弹层组合，v-model 控制显隐，确认后自动关闭，支持方位、圆角、面板高度与安全区配置。'
 			},
 			{
 				name: 'cascader',
@@ -150,16 +150,16 @@ export const demoGroups: DemoGroup[] = [
 				desc: '多级联动选择面板，支持层级 tab 与手势滑动、field-names 字段映射、异步加载、主题色与四插槽。'
 			},
 			{
-				name: 'cascader-popup',
-				zhName: '级联弹出框',
-				enName: 'CascaderPopup',
-				desc: 'm-popup 与 m-cascader 的弹层组合，v-model 控制显隐，选完最后一级自动关闭，支持方位、圆角与安全区配置。'
-			},
-			{
 				name: 'cascader-input',
 				zhName: '级联输入框',
 				enName: 'CascaderInput',
 				desc: 'm-input 与级联弹出框的表单组合，点击触发选择，选中路径文字回填展示，支持清空与禁用。'
+			},
+			{
+				name: 'cascader-popup',
+				zhName: '级联弹出框',
+				enName: 'CascaderPopup',
+				desc: 'm-popup 与 m-cascader 的弹层组合，v-model 控制显隐，选完最后一级自动关闭，支持方位、圆角与安全区配置。'
 			},
 			{
 				name: 'input',
@@ -214,7 +214,7 @@ export const demoGroups: DemoGroup[] = [
 				desc: '列表单项展示，支持标题、值、描述、左侧图标、四向箭头、必填星号、圆角卡片分组与组内末线自动隐藏。'
 			}
 		]
-	}，
+	},
 	{
 		title: '导航组件',
 		components: [

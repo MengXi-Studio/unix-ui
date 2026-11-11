@@ -101,7 +101,6 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Space 间距', link: '/components/space' },
 						{ text: 'StatusBar 状态栏', link: '/components/status-bar' },
 						{ text: 'Sticky 粘性布局', link: '/components/sticky' },
-						{ text: 'Tabs 标签页', link: '/components/tabs' },
 						{ text: 'Waterfall 瀑布流', link: '/components/waterfall' }
 					]
 				},
@@ -132,6 +131,10 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Badge 徽标', link: '/components/badge' },
 						{ text: 'Cell 单元格', link: '/components/cell' }
 					]
+				},
+				{
+					text: '导航组件',
+					items: [{ text: 'Tabs 标签页', link: '/components/tabs' }]
 				}
 			]
 		}

@@ -62,6 +62,10 @@ $m-radius-md: 12px;
 
 完整变量见 [Button 主题定制](/components/button#主题定制)，包括各尺寸的高度、内边距、字号与圆角。
 
+### 组件级变量
+
+除上方全局通用变量外，各组件还有专属的 `$m-<component>-*` 变量（如 Sticky 的 `$m-sticky-z-index`、Tabs 的 `$m-tabs-*` 系列、Calendar 的 `$m-calendar-*` 系列），全部 `!default`。完整清单与说明见各组件文档的「主题定制」小节。
+
 ## 下一步
 
 - [Button 按钮](/components/button)：查看组件支持的属性与事件

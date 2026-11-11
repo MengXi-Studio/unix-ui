@@ -62,6 +62,10 @@ To override the theme, just **define the variables directly** — no import of a
 
 See [Button Theming](/en/components/button#theming) for the full set of Button variables, including height, padding, font size and radius for each size.
 
+### Component-level Variables
+
+Besides the global variables above, each component ships its own `$m-<component>-*` variables (e.g. `$m-sticky-z-index` for Sticky, the `$m-tabs-*` series for Tabs, the `$m-calendar-*` series for Calendar), all declared with `!default`. See the "Theming" section of each component's documentation for the complete list.
+
 ## Next Steps
 
 - [Button](/en/components/button): component props and events

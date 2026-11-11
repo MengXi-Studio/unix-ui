@@ -1,3 +1,7 @@
+## 0.4.1 (2026-11-11)
+
+- 修复 `m-tabs` 微信小程序端 mounted 抛 `TypeError: el.getBoundingClientRect is not a function` 导致首屏无激活标签、底部条不显示：小程序端 `UniElement` 无同步测量 API，`measureWidth` 仅在 freeLine 布局与 `swipeable` 场景测量并改走 `getBoundingClientRectAsync`（Web 保留同步测量，平台分支对齐 m-sticky），`scrollspy` 的滚动判定与点击定位同步改为双端分支（小程序端批量异步测量后统一判定）
+
 ## 0.4.0 (2026-11-11)
 
 - 新增 `m-tabs` / `m-tab` 标签页：内容区域切换容器，`line` / `card` / `pill` 三种风格；`active` 支持索引与 name 混用匹配；标签数超过 `swipe-threshold` 自动横向滚动并居中激活项；`animated` 轨道平移转场 + `swipeable` 手势跟手切换（手势切换不触发 `before-change`）；`sticky` 吸顶复用 m-sticky、`scrollspy` 滚动导航（内容平铺 + 滚动联动激活 + 点击定位）；`before-change` 切换前拦截（boolean 同步版）；`options` 数组纯标签栏形态（`field-names` 字段映射）；标题徽标（dot / badge / show-zero-badge）与 nav-left / nav-right 插槽

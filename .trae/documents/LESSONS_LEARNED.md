@@ -487,3 +487,10 @@
 - **作用域插槽桥接参数必须 `any | null`**：槽实参生成 `val x = slotProps["x"]`（Any?），页面桥接函数参数声明 `any`（非空 Any）即类型不匹配；`any | null` 生成 `Any?` 正确对接（ux-router isNavigationFailure 同款先例）。取属性仍需 `as` 强转 + 判空兜底
 - **`is` 类型判断在 uvue script 不可用**：`event is UniImageLoadEvent` 报 vue/compiler-sfc `Unexpected token`——uvue 编译链不认 UTS 的 is 运算符；判别场景改为收窄 API 或换设计（m-waterfall-load 的 error 场景由 maxWait 超时兜底替代）
 - **extapi 云端缺失判别**：本地 UTS 编译器能对 `uni.onWindowResize` 生成 import `io.dcloud.uniapp.extapi.*`，但云端 VDOM runtime SDK 无该类，kotlinc 报 Unresolved——支持性表查官方文档（doc.dcloud.net.cn/uni-app-x/api/），onWindowResize/offWindowResize 仅 Web/微信小程序支持（App/iOS/HarmonyOS 全 x），用 `// #ifdef WEB` 条件编译隔离；App 端窗口尺寸恒定，页面级尺寸变化用 onResize 生命周期
+
+### 81. 微信小程序端 UniElement 无同步测量 API（2026-11-11 issue #5 m-tabs 修复）
+- **mp 端 `UniElement` 只有 `getBoundingClientRectAsync(callback Promise)`，无同步 `getBoundingClientRect`**——组件 mounted 里任何同步测量都会抛 `TypeError: el.getBoundingClientRect is not a function`，且抛错会中断同一 hook 内后续初始化（首屏无激活态、底部条不显示，症状与测量代码本身相距很远）
+- **修复模式（对齐 m-sticky 先例）**：`// #ifdef WEB` 同步测量 + `// #ifndef WEB` `el.getBoundingClientRectAsync()!.then(...)`；批量测量用局部 `let pending` 计数器收集后统一判定（resolveScrollSpy 的 Map<index, top> 收集 → applyScrollSpy）
+- **先问「测量结果真的被消费吗」**：m-tabs `measureWidth` 原本在 onMounted / watch(items) 无条件执行，但 selfWidth 仅被 freeLine 布局与 swipeable 消费——加 `if (!freeLineMode.value && !props.swipeable) return` 跳过大部分场景的测量，比全量异步化更省（issue 报告者的建议 1）
+- **mp 端产物验证捷径**：`cli publish --platform mp-weixin --project <绝对路径>`（查文档确认格式）编译后 grep 产物 `uni_modules/m-ui-x/components/<name>/<name>.js` 统计 `getBoundingClientRect[A-Za-z]*` 调用——修复后应为 0 个同步调用；运行时复现需微信开发者工具
+- **Web 端 dev server 的 public base 是 `/unix-ui/playground/`**：直开 `localhost:5174/pages-sub/...` 只得到配置提示页，须带前缀 `localhost:5174/unix-ui/playground/pages-sub/...`

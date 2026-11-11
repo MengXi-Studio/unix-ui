@@ -1,5 +1,13 @@
 # 更新日志
 
+## [0.4.1] - 2026-11-11
+
+修复 m-tabs 微信小程序端首屏问题。
+
+### 修复
+
+- **m-tabs 微信小程序端 mounted 抛 TypeError 导致首屏无激活标签**：小程序端 `UniElement` 仅提供异步 `getBoundingClientRectAsync`，无同步 `getBoundingClientRect`，组件 mounted 即在 `measureWidth` 处抛 `TypeError: el.getBoundingClientRect is not a function`，同一 hook 内的激活初始化不再执行，表现为首屏无激活标签、底部条不显示。修复三处：`measureWidth` 仅在 freeLine 布局（独立底部条）与 `swipeable`（轨道平移 / 手势阈值）场景测量（其余场景宽度本就未被消费），App / 小程序走异步接口、Web 保留同步测量（平台分支对齐 m-sticky）；`scrollspy` 的滚动判定与点击定位同样改为双端分支（小程序端批量异步测量后统一判定）。基于 m-sticky 同款平台分支先例，Web 端行为不变（[#5](https://github.com/MengXi-Studio/unix-ui/issues/5)）
+
 ## [0.4.0] - 2026-11-11
 
 新增 m-tabs / m-tab 标签页组件；m-image 新增点击预览能力。

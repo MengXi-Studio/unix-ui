@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1] - 2026-11-11
+
+Fixes m-tabs on WeChat Mini Program.
+
+### Fixed
+
+- **m-tabs throws TypeError on mounted on WeChat Mini Program, leaving no active tab on first paint**: on Mini Program the `UniElement` only exposes the async `getBoundingClientRectAsync` and has no synchronous `getBoundingClientRect`, so the component throws `TypeError: el.getBoundingClientRect is not a function` in `measureWidth` right at mounted, and the rest of the same hook (active-state initialization) never runs — first paint shows no active tab and no bottom line. Three fixes: `measureWidth` only measures in the freeLine layout (standalone bottom line) and `swipeable` (track translation / gesture threshold) scenarios (selfWidth is not consumed elsewhere), App / Mini Program go through the async API while Web keeps the synchronous measurement (platform branches aligned with m-sticky); the `scrollspy` scroll-driven activation and click-to-scroll are likewise split per platform (on Mini Program all panes are measured asynchronously in a batch and then judged together). Web behavior unchanged ([#5](https://github.com/MengXi-Studio/unix-ui/issues/5))
+
 ## [0.4.0] - 2026-11-11
 
 New m-tabs / m-tab tabs components; m-image adds tap-to-preview.

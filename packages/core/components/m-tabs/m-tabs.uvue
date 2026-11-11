@@ -678,18 +678,49 @@
 	/**
 	 * scrollspy 滚动判定：以视口内固定基准线（吸顶偏移 offsetTop）为准，
 	 * 最后一个顶边越过基准线的内容块激活
+	 *
+	 * Web 端同步测量；App / 小程序端 UniElement 无同步 getBoundingClientRect，
+	 * 走 getBoundingClientRectAsync 批量测量后统一判定（平台分支对齐 m-sticky）。
 	 */
 	function resolveScrollSpy() {
 		const items = ctx.items.value
 		if (items.length == 0) return
-		const base = props.offsetTop
-		let cur = 0
+		const tops = new Map<number, number>()
+		// #ifdef WEB
+		for (let i = 0; i < items.length; i++) {
+			const el = ctx.paneEls.get(items[i].key)
+			if (el != null) tops.set(i, el.getBoundingClientRect().top)
+		}
+		applyScrollSpy(tops)
+		// #endif
+		// #ifndef WEB
+		let pending = 0
 		for (let i = 0; i < items.length; i++) {
 			const el = ctx.paneEls.get(items[i].key)
 			if (el == null) continue
-			if (el.getBoundingClientRect().top - base <= 4) {
-				cur = i
-			}
+			pending++
+			el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+				tops.set(i, rect.top)
+				pending--
+				if (pending == 0) applyScrollSpy(tops)
+			})
+		}
+		// #endif
+	}
+
+	/**
+	 * 应用 scrollspy 判定结果（resolveScrollSpy 的 Web 同步 / 异步双路径共用）
+	 *
+	 * @param tops 注册序 → 内容块视口顶边距离
+	 */
+	function applyScrollSpy(tops: Map<number, number>) {
+		const items = ctx.items.value
+		const base = props.offsetTop
+		let cur = 0
+		for (let i = 0; i < items.length; i++) {
+			const top = tops.get(i)
+			if (top == null) continue
+			if (top - base <= 4) cur = i
 		}
 		if (cur != activeIndex.value) {
 			activeIndex.value = cur
@@ -703,6 +734,8 @@
 	 * 优先定位最近滚动容器（scroll-view 内嵌场景可用）；
 	 * 无滚动容器时回退 uni.pageScrollTo 页面级定位（页面级滚动场景）。
 	 *
+	 * Web 端同步测量；App / 小程序端走异步测量（平台分支对齐 m-sticky）。
+	 *
 	 * @param target 注册序
 	 */
 	function scrollToIndex(target: number) {
@@ -710,7 +743,24 @@
 		if (viewport == null || target < 0 || target >= ctx.items.value.length) return
 		const el = ctx.paneEls.get(ctx.items.value[target].key)
 		if (el == null) return
-		const delta = el.getBoundingClientRect().top - viewport.getBoundingClientRect().top
+		// #ifdef WEB
+		scrollByToPane(el.getBoundingClientRect().top - viewport.getBoundingClientRect().top)
+		// #endif
+		// #ifndef WEB
+		el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+			viewport.getBoundingClientRectAsync()!.then((vrect: DOMRect) => {
+				scrollByToPane(rect.top - vrect.top)
+			})
+		})
+		// #endif
+	}
+
+	/**
+	 * 按目标块与视口的顶边差执行定位（scrollToIndex 的 Web 同步 / 异步双路径共用）
+	 *
+	 * @param delta 目标块顶边相对视口顶边的距离（px，正值向下滚）
+	 */
+	function scrollByToPane(delta: number) {
 		const scrollBy = delta - props.offsetTop
 		if (scrollBy == 0) return
 		const holder = findScrollParent(rootRef.value)
@@ -776,11 +826,23 @@
 
 	/**
 	 * 实测容器宽度（底部条位置与轨道平移距离依据）
+	 *
+	 * selfWidth 仅被 freeLine 布局（独立底部条平移）与 swipeable（轨道平移 / 手势阈值）消费，
+	 * 其余场景跳过测量；Web 端同步测量，App / 小程序端 UniElement 无同步 getBoundingClientRect，
+	 * 走 getBoundingClientRectAsync（平台分支对齐 m-sticky 同名机制）。
 	 */
 	function measureWidth() {
+		if (!freeLineMode.value && !props.swipeable) return
 		const el = rootRef.value
 		if (el == null) return
+		// #ifdef WEB
 		selfWidth.value = el.getBoundingClientRect().width
+		// #endif
+		// #ifndef WEB
+		el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+			selfWidth.value = rect.width
+		})
+		// #endif
 	}
 
 	onMounted(() => {

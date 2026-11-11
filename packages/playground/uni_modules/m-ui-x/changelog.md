@@ -1,4 +1,4 @@
-## 0.4.1 (2026-11-11)
+## 0.4.1 (2026-11-12)
 
 - 修复 `m-tabs` 滚动 / 收缩布局激活下划线偏移半个条宽：标题内嵌条 `left: 50%` 只钉条左缘未回退自身半宽，条整体右偏 `line-width` 的一半（默认偏 20px）；补 `transform: translateX(-50%)` 居中回退（百分比相对自身宽，全端支持）
 - 修复 `m-tabs` 微信小程序端 mounted 抛 `TypeError: el.getBoundingClientRect is not a function` 导致首屏无激活标签、底部条不显示：小程序端 `UniElement` 无同步测量 API，`measureWidth` 仅在 freeLine 布局与 `swipeable` 场景测量并改走 `getBoundingClientRectAsync`（Web 保留同步测量，平台分支对齐 m-sticky），`scrollspy` 的滚动判定与点击定位同步改为双端分支（小程序端批量异步测量后统一判定）

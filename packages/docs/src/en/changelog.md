@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.4.1] - 2026-11-11
+## [0.4.1] - 2026-11-12
 
 Fixes the m-tabs underline offset in scrollable / shrink layouts and m-tabs on WeChat Mini Program.
 

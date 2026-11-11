@@ -100,7 +100,7 @@ For all available variables see [theme/vars.scss](./theme/vars.scss), named as `
 
 The example project [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) (one page per component exhaustively covering all props / variants / events) is deployed as a [live demo](https://mengxi-studio.github.io/unix-ui/playground/) on the documentation site — try it right in your browser.
 
-**Try it on a real Android device**: [Download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794217369331-__UNI__F1AA560_1794217327911.apk) — a cloud-packaged Android build showcasing native rendering of all components. The package is rebuilt with each release; use the link in the latest release notes.
+**Try it on a real Android device**: [Download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794372058217-__UNI__F1AA560_1794372045757.apk) — a cloud-packaged Android build showcasing native rendering of all components. The package is rebuilt with each release; use the link in the latest release notes.
 
 ## Community & Support
 

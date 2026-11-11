@@ -27,7 +27,7 @@ export type DemoGroup = {
 }
 
 /**
- * 组件演示分组表（标准 UI 库分类体系：基础 / 布局 / 表单 / 反馈 / 数据展示，组内按字母序）
+ * 组件演示分组表（标准 UI 库分类体系：基础 / 布局 / 导航 / 表单 / 反馈 / 数据展示，组内按字母序）
  *
  * 新增组件时在对应分组的 components 中登记一条即可，
  * 首页分组列表与搜索过滤自动生效；演示页路由无需手工登记——
@@ -119,12 +119,6 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '瀑布流',
 				enName: 'Waterfall',
 				desc: '按内容实际高度自适应排列的多列布局，支持列数与间距、已知宽高占位、动态增删与重新排版。'
-			},
-			{
-				name: 'tabs',
-				zhName: '标签页',
-				enName: 'Tabs',
-				desc: '内容区域切换容器，支持索引与 name 混用匹配、line / card / pill 三种风格、标签栏滚动、内容动画与手势切换、吸顶、滚动导航与切换前拦截。'
 			}
 		]
 	},
@@ -218,6 +212,17 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '单元格',
 				enName: 'Cell',
 				desc: '列表单项展示，支持标题、值、描述、左侧图标、四向箭头、必填星号、圆角卡片分组与组内末线自动隐藏。'
+			}
+		]
+	}，
+	{
+		title: '导航组件',
+		components: [
+			{
+				name: 'tabs',
+				zhName: '标签页',
+				enName: 'Tabs',
+				desc: '内容区域切换容器，支持索引与 name 混用匹配、line / card / pill 三种风格、标签栏滚动、内容动画与手势切换、吸顶、滚动导航与切换前拦截。'
 			}
 		]
 	}

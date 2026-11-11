@@ -2,10 +2,11 @@
 
 ## [0.4.1] - 2026-11-11
 
-Fixes m-tabs on WeChat Mini Program.
+Fixes the m-tabs underline offset in scrollable / shrink layouts and m-tabs on WeChat Mini Program.
 
 ### Fixed
 
+- **m-tabs active underline is offset by half its width in scrollable / shrink layouts**: when the tab count exceeds `swipe-threshold` (scrollable layout) or with `shrink`, the active underline is the title-embedded line whose `left: 50%` pins only the line's left edge without pulling back its own half width, shifting the whole line right by half of `line-width` (20px with the default 40px); the standalone bottom line of the equal-width layout is unaffected. A `transform: translateX(-50%)` centering pullback is added (translateX percentages resolve against the element's own width on every platform and adapt to any `line-width`)
 - **m-tabs throws TypeError on mounted on WeChat Mini Program, leaving no active tab on first paint**: on Mini Program the `UniElement` only exposes the async `getBoundingClientRectAsync` and has no synchronous `getBoundingClientRect`, so the component throws `TypeError: el.getBoundingClientRect is not a function` in `measureWidth` right at mounted, and the rest of the same hook (active-state initialization) never runs — first paint shows no active tab and no bottom line. Three fixes: `measureWidth` only measures in the freeLine layout (standalone bottom line) and `swipeable` (track translation / gesture threshold) scenarios (selfWidth is not consumed elsewhere), App / Mini Program go through the async API while Web keeps the synchronous measurement (platform branches aligned with m-sticky); the `scrollspy` scroll-driven activation and click-to-scroll are likewise split per platform (on Mini Program all panes are measured asynchronously in a batch and then judged together). Web behavior unchanged ([#5](https://github.com/MengXi-Studio/unix-ui/issues/5))
 
 ## [0.4.0] - 2026-11-11

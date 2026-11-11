@@ -990,6 +990,8 @@
 		position: absolute;
 		bottom: 0;
 		left: 50%;
+		/* left: 50% 钉的是条左缘，须回退自身半宽居中（translateX 相对自身宽，适配任意 line-width） */
+		transform: translateX(-50%);
 		width: $m-tabs-line-width;
 		height: $m-tabs-line-height;
 		border-radius: $m-tabs-line-radius;

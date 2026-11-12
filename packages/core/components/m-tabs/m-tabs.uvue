@@ -15,6 +15,7 @@
 					:direction="canScroll ? 'horizontal' : 'none'"
 					:scroll-left="navScrollLeft"
 					:scroll-with-animation="true"
+					:show-scrollbar="false"
 					ref="navScrollRef"
 					@scroll="onNavScroll"
 				>
@@ -53,6 +54,7 @@
 					:direction="canScroll ? 'horizontal' : 'none'"
 					:scroll-left="navScrollLeft"
 					:scroll-with-animation="true"
+					:show-scrollbar="false"
 					ref="navScrollRef"
 					@scroll="onNavScroll"
 				>
@@ -1225,6 +1227,18 @@
 		flex: 1;
 		height: 100%;
 	}
+	/* #ifdef WEB */
+	/* uni-h5 运行时的 show-scrollbar=false 仅在内部滚动层追加 uni-scroll-view-scrollbar-hidden
+	   类，隐藏滚动条的 CSS 在运行时样式表里缺失（::-webkit-scrollbar 全库 0 处）——横向滚动时
+	   浏览器默认滚动条会显示，组件内兜底隐藏（内部滚动层是非模板包装节点，须后代选择器穿透；
+	   仅 Web 端编译，App 端不受 ucss 后代选择器约束） */
+	.m-tabs__nav-scroll .uni-scroll-view {
+		scrollbar-width: none;
+	}
+	.m-tabs__nav-scroll .uni-scroll-view::-webkit-scrollbar {
+		display: none;
+	}
+	/* #endif */
 	.m-tabs__nav-row--equal {
 		flex-direction: row;
 		height: 100%;

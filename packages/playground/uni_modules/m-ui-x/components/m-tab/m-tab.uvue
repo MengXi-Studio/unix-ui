@@ -1,7 +1,9 @@
 <template>
 	<!-- 标签页内容节点：显隐由容器经上下文下发（标题栏由 m-tabs 渲染，本组件只承载内容）；
-	     独立使用（无容器 inject）时始终渲染。 -->
-	<view v-if="everRendered" v-show="visible" ref="paneRef" :class="paneClass">
+	     独立使用（无容器 inject）时始终渲染。
+	     id 供小程序端测量（UniElement 无 children/parentElement，按 id 走 createSelectorQuery
+	     组件实例作用域查询，多实例安全；ownIndex 未注册时为 -1，id 仅在渲染后有意义）。 -->
+	<view v-if="everRendered" v-show="visible" ref="paneRef" :id="'m-tabs-pane-' + ownIndex" :class="paneClass">
 		<slot></slot>
 	</view>
 </template>

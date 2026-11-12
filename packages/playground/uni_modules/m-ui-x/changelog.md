@@ -1,3 +1,8 @@
+## 0.4.2 (2026-11-12)
+
+- 修复 `m-tabs` Web 端滚动布局标签栏显示横向滚动条：0.4.1 修复滚动失效时内部滚动层恢复 `overflow-x: auto`，浏览器默认滚动条露出（uni-h5 运行时 `show-scrollbar="false"` 只挂类、隐藏滚动条的 CSS 在运行时样式表缺失，Web 端形同虚设）；修复：标签栏 scroll-view 显式 `:show-scrollbar="false"`（App 端生效），Web 端组件内 `#ifdef WEB` 兜底以 `scrollbar-width: none` + `::-webkit-scrollbar` 双覆盖内部真实滚动层，实测滚动条占高 0、可滚性保持
+- 修复 `m-tabs` 微信小程序端 mounted 抛 `Cannot read properties of undefined (reading 'length')` 导致首屏无激活态（[#8](https://github.com/MengXi-Studio/unix-ui/issues/8)）：小程序端 `UniElement` 无 `children` / `parentElement`（子树与祖先不可遍历），`findDescendantById` 的 `el.children.length` 与 `findScrollParent` 的祖先遍历在 `canScroll` 实例（shrink 或标签数超阈值）mounted 即崩；同时 `getBoundingClientRectAsync` 仅支持有 id 的元素。修复：`findDescendantById` / `findScrollParent` 小程序端编译期返回 null（调用点判空降级）；标签栏 / 底部条 / 根节点 / 内容块补 id，新增 `queryRectById`（`createSelectorQuery().in(instance.proxy)` 按组件实例作用域查询，多实例安全）——滚动布局激活居中、插槽布局底部条定位、scrollspy 判定与点击定位在小程序端全部恢复；底部条切换动画降级直接落位，scroll-view 内嵌场景 scrollspy 按页面级滚动语义退化
+
 ## 0.4.1 (2026-11-12)
 
 - 修复 `m-tabs` 滚动 / 收缩布局激活下划线偏移半个条宽：标题内嵌条 `left: 50%` 只钉条左缘未回退自身半宽，条整体右偏 `line-width` 的一半（默认偏 20px）；补 `transform: translateX(-50%)` 居中回退（百分比相对自身宽，全端支持）

@@ -530,3 +530,11 @@
 - **修复模式：使用点先读入不可变快照**——`const snapshot = spyHolder; if (snapshot != null) { snapshot.xxx }`，局部 val 一次赋值可 smart cast；多分支读同一快照还顺带保证测量批次内引用一致
 - **传参不需要 smart cast**：`if (spyHolder != null) { fn(spyHolder) }`（形参类型可空）合法，只有**成员访问**（`.xxx`）触发该报错——排查时只改报错处，不必全量快照化
 - **VDOM 打包的迭代节奏**：前向引用（Unresolved）修完后才暴露 smart cast（后续编译阶段），单轮 appResource 导出只能验证到当前最深的报错层——重大重构后建议本地导出 + 云打包各跑一轮直至清零
+
+### 87. 小程序端 UniElement 无 children/parentElement，getBoundingClientRectAsync 仅支持有 id 元素（2026-11-12 issue #8 修复）
+- **小程序端 UniElement 的 DOM 遍历能力为零**：无 `children`、无 `parentElement`（vendor.js 实现类只有 getBoundingClientRectAsync / getAttribute / setAttribute / scrollTo / animate 等，scrollHeight / offsetHeight 等恒为 NaN）——`el.children.length` 即 TypeError（mounted 即崩，首屏初始化被中断，与 #5 同款位置效应）
+- **`getBoundingClientRectAsync` 在 mp 端的实现 = `createSelectorQuery().in(this.$vm).select('#'+this.id).boundingClientRect()`**：仅对**有 id 的元素**生效（无 id 时 console.warn 并 reject）；in($vm) 是**组件实例作用域**——元素 id 只需组件内唯一，多实例安全
+- **MP 端测量统一方案**：`uni.createSelectorQuery().in(getCurrentInstance()!.proxy!).select('#'+id).boundingClientRect().exec((ret: Array<any>) => { ret[0] as DOMRect })`（uni-app x UTS API 全端可用，官方签名如此）——所有需测量的元素补 id（root / nav / line / nav-scroll 静态 id + m-tab pane 按注册序动态 id），标题 id（m-tabs-tab-N）已天然满足
+- **遍历型查找 MP 编译期降级**：findDescendantById / findScrollParent 函数体 `#ifdef MP return null`——调用点本就判空（centerActiveTab / animateLine 跳过居中、scrollspy 判定按 holderTop=0 的页面级语义、点击定位回退 uni.pageScrollTo）；注意 findScrollParent 不加保护会在修复 findDescendantById 后成为下一个崩溃点（`cur.parentElement` 在 undefined 上取属性即抛错）
+- **静默降级链**：仅修崩溃点不够——同一根因在多条路径埋雷，修复时把「同一缺失能力」的全部调用点一次排查（children / parentElement / 无 id 的 getBoundingClientRectAsync 三类，m-tabs 中共 6 处）
+- **App 端 UniElement 有完整遍历能力**（children / parentElement / 同步测量都可用）——条件编译按 `#ifdef MP` / `#ifndef MP` 三分支：MP 走 id 查询、WEB 同步、APP 异步；注意 `#ifndef WEB` 会包含 MP 端，三分支必须显式互斥包裹

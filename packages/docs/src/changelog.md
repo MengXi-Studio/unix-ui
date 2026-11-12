@@ -1,5 +1,14 @@
 # 更新日志
 
+## [0.4.2] - 2026-11-12
+
+修复 m-tabs 微信小程序端 `canScroll` 实例 mounted 崩溃（[#8](https://github.com/MengXi-Studio/unix-ui/issues/8)），小程序端滚动布局居中、插槽底部条定位与 scrollspy 判定 / 点击定位恢复；隐藏 Web 端滚动布局标签栏的横向滚动条。
+
+### 修复
+
+- **m-tabs Web 端滚动布局标签栏显示横向滚动条**：0.4.1 修复滚动失效时把内部滚动层恢复为 `overflow-x: auto`，浏览器默认滚动条随之露出；取证发现 uni-h5 运行时的 `show-scrollbar="false"` 仅在内部滚动层追加 `uni-scroll-view-scrollbar-hidden` 类，而隐藏滚动条的 CSS 在运行时样式表里缺失（vapor 与 VDOM 构建的 `::-webkit-scrollbar` 均为 0 处），该 prop 在 Web 端形同虚设。修复两处：标签栏 scroll-view 显式 `:show-scrollbar="false"`（App 端语义生效）；Web 端组件内兜底——`#ifdef WEB` 条件编译内以 `scrollbar-width: none` + `::-webkit-scrollbar` 双覆盖内部真实滚动层（包装节点非模板节点，须后代选择器穿透；仅 Web 端编译，不受 App 端 ucss 后代选择器约束）。实测滚动条占高为 0、横向可滚性保持
+- **m-tabs 微信小程序端 mounted 抛 `Cannot read properties of undefined (reading 'length')` 导致首屏无激活态**（[#8](https://github.com/MengXi-Studio/unix-ui/issues/8)）：小程序端 `UniElement` 无 `children` / `parentElement`（子树与祖先不可遍历），`findDescendantById` 的 `el.children.length` 与 `findScrollParent` 的祖先遍历在 `canScroll` 实例（shrink 或标签数超阈值）mounted 即崩，中断激活初始化；同时 `getBoundingClientRectAsync` 仅支持有 id 的元素（内部即 `createSelectorQuery().in($vm).select('#id')`，组件实例作用域多实例安全）。修复三处：`findDescendantById` / `findScrollParent` 小程序端编译期返回 null（调用点判空降级）；标签栏 / 底部条 / 根节点 / 内容块补 id（m-tab 内容块按注册序动态 id），新增 `queryRectById`（`uni.createSelectorQuery().in(instance.proxy)` 按 id 组件作用域查询）——滚动布局激活居中、插槽布局底部条定位、scrollspy 滚动判定与点击定位在小程序端全部恢复；底部条切换动画小程序端降级直接落位（`UniElement.animate` 的 transform keyframes 支持未证实），scroll-view 内嵌场景的 scrollspy 判定与点击定位按页面级滚动语义退化（`pageScrollTo`）
+
 ## [0.4.1] - 2026-11-12
 
 修复 m-tabs 滚动 / 收缩布局下划线偏移、微信小程序端首屏问题、滚动布局激活标签居中失效、插槽布局下划线偏移与 scrollspy 点击定位失效。

@@ -1,5 +1,14 @@
 # 更新日志
 
+## [0.4.1] - 2026-11-12
+
+修复 m-tabs 滚动 / 收缩布局下划线偏移与微信小程序端首屏问题。
+
+### 修复
+
+- **m-tabs 滚动 / 收缩布局激活下划线偏移半个条宽**：标签数超过 `swipe-threshold` 触发滚动布局（或 `shrink` 收缩布局）时，激活下划线为标题内嵌条，其 `left: 50%` 只钉住条左缘而未回退自身半宽，条整体向右偏移 `line-width` 的一半（默认 40px 即偏 20px），平分布局的独立底部条不受影响；补 `transform: translateX(-50%)` 居中回退（translateX 百分比相对自身宽，全端支持，随 `line-width` 自适应）
+- **m-tabs 微信小程序端 mounted 抛 TypeError 导致首屏无激活标签**：小程序端 `UniElement` 仅提供异步 `getBoundingClientRectAsync`，无同步 `getBoundingClientRect`，组件 mounted 即在 `measureWidth` 处抛 `TypeError: el.getBoundingClientRect is not a function`，同一 hook 内的激活初始化不再执行，表现为首屏无激活标签、底部条不显示。修复三处：`measureWidth` 仅在 freeLine 布局（独立底部条）与 `swipeable`（轨道平移 / 手势阈值）场景测量（其余场景宽度本就未被消费），App / 小程序走异步接口、Web 保留同步测量（平台分支对齐 m-sticky）；`scrollspy` 的滚动判定与点击定位同样改为双端分支（小程序端批量异步测量后统一判定）。基于 m-sticky 同款平台分支先例，Web 端行为不变（[#5](https://github.com/MengXi-Studio/unix-ui/issues/5)）
+
 ## [0.4.0] - 2026-11-11
 
 新增 m-tabs / m-tab 标签页组件；m-image 新增点击预览能力。

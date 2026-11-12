@@ -131,7 +131,7 @@
 					<text class="caption">sticky 复用 m-sticky（需滚动容器回传 scroll-top），向上滚动吸附</text>
 				</view>
 				<view class="card" style="margin-top: 12px;">
-					<m-tabs scrollspy sticky :scroll-top="pageScrollTop" :active="0">
+					<m-tabs scrollspy sticky :scroll-top="pageScrollTop" :offset-top="44" :active="0">
 						<m-tab v-for="(t, i) in 4" :key="i" :title="'区块 ' + (i + 1)">
 							<view class="spy-block">
 								<text class="spy-block__text">区块 {{ i + 1 }} 的长内容（滚动时对应标签自动高亮，点击标签回滚定位）</text>

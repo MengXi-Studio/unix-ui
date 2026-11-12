@@ -2,13 +2,15 @@
 
 ## [0.4.1] - 2026-11-12
 
-修复 m-tabs 滚动 / 收缩布局下划线偏移、微信小程序端首屏问题与滚动布局激活标签居中失效。
+修复 m-tabs 滚动 / 收缩布局下划线偏移、微信小程序端首屏问题、滚动布局激活标签居中失效、插槽布局下划线偏移与 scrollspy 点击定位失效。
 
 ### 修复
 
 - **m-tabs 滚动 / 收缩布局激活下划线偏移半个条宽**：标签数超过 `swipe-threshold` 触发滚动布局（或 `shrink` 收缩布局）时，激活下划线为标题内嵌条，其 `left: 50%` 只钉住条左缘而未回退自身半宽，条整体向右偏移 `line-width` 的一半（默认 40px 即偏 20px），平分布局的独立底部条不受影响；补 `transform: translateX(-50%)` 居中回退（translateX 百分比相对自身宽，全端支持，随 `line-width` 自适应）
 - **m-tabs 微信小程序端 mounted 抛 TypeError 导致首屏无激活标签**：小程序端 `UniElement` 仅提供异步 `getBoundingClientRectAsync`，无同步 `getBoundingClientRect`，组件 mounted 即在 `measureWidth` 处抛 `TypeError: el.getBoundingClientRect is not a function`，同一 hook 内的激活初始化不再执行，表现为首屏无激活标签、底部条不显示。修复三处：`measureWidth` 仅在 freeLine 布局（独立底部条）与 `swipeable`（轨道平移 / 手势阈值）场景测量（其余场景宽度本就未被消费），App / 小程序走异步接口、Web 保留同步测量（平台分支对齐 m-sticky）；`scrollspy` 的滚动判定与点击定位同样改为双端分支（小程序端批量异步测量后统一判定）。基于 m-sticky 同款平台分支先例，Web 端行为不变（[#5](https://github.com/MengXi-Studio/unix-ui/issues/5)）
 - **m-tabs 滚动布局标签栏不可滚动、激活标签不居中**：导航 scroll-view 使用的 `scroll-x` 已废弃（uni-app x 改为 `direction` 属性，默认 `vertical`），仅设 `scroll-x` 时内部滚动层 `overflow-x` 为 hidden，横向触摸滚动与 `scroll-left` / `scroll-into-view` 程序化滚动全部失效，激活标签贴边裁切；同时标题行（view 默认 `overflow: hidden`）把溢出标题裁在行内，scroll-view 的滚动区域看不到溢出内容（`scrollWidth == offsetWidth`），即使补齐 direction 也被内部钳制为 0。修复三处：`:scroll-x` 改为 `:direction`（可滚动时 `horizontal`）；标题行 `overflow: visible` 放行溢出（裁剪交回 scroll-view 真实滚动层）；移除 `scroll-into-view`（只能对齐元素起始位置，末位标签永远贴边），改为程序化居中——按 id 深度优先定位激活标题元素（Web 端 scroll-view 有编译器内部包装层，不能假设直接子节点结构），测量标题中心与视口中心偏差后经 `scroll-left` 属性驱动滚动（`@scroll` 回灌镜像实际位置，手动滚动后同值目标也能重新触发），超界由 scroll-view 内部钳制，动画经 `scroll-with-animation` 平滑居中。m-cascader 层级 tabs 行同步修复（`scroll-x` → `direction="horizontal"` + 行 `overflow: visible`，`scroll-into-view` 层级定位恢复）
+- **m-tabs 平分布局带 nav 插槽时下划线偏移**：独立底部条原按均匀槽位公式 `(i + 0.5) * 容器宽 / 标签数` 定位，nav-left / nav-right 插槽占位后标签实际中心与槽位中心失差（实测偏左约半个条宽）；改为测量制——按 id 深度优先定位激活标题元素实测中心，测量基准统一取底部条的定位父级（nav 原点，与渲染原点 `left: 0 + translateX` 严格一致；底部条与标题行分属 nav 的不同子树，基准不一致会放大偏移），首次直接落位、切换走 `UniElement.animate` 平移，插槽有无与标题行滚动状态均不敏感
+- **m-tabs scrollspy 点击标签不滚动、激活与内容错位**：点击处理器调用的 `scrollTo` 实为 `defineExpose` 对象字面量的属性名而非组件函数，Web 构建下裸调用被解析到全局 `window.scrollTo`（索引被当作滚动坐标），在 scroll-view 滚动的页面里完全无效且无报错，改为调用 `scrollToIndex`。同时修正定位与 scrollspy 判定的基准线语义：二者统一为「吸顶标签栏底边」（滚动视口顶 + `offset-top` + 标签栏高）——原判定直接用 `offset-top` 作基准、在内容区处于非零视口偏移的滚动容器中时（如页面顶部有固定导航）会整体错位一个容器偏移，表现为标签激活与视口内容不一致；基准线用容器顶偏移 + `offset-top` + 标签栏高这组稳定量拼出，与 m-sticky 吸附切换时序解耦（scroll 事件触发判定时吸附态可能尚未切换，不能用标签栏实时 rect）
 
 ## [0.4.0] - 2026-11-11
 

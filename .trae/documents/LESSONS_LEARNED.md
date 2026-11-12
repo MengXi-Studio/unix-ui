@@ -502,3 +502,17 @@
 - **Web 端 scroll-view 有编译器内部包装层**（uni-scroll-view × 2 + uni-scroll-view-content），`UniElement.children[0]` 不是业务子节点、`el.id` 属性可能不映射 DOM id——按 id 定位子元素用 `getAttribute('id')` + 深度优先（children 递归），不要假设直接子节点结构
 - **取证工具链**：窄视口交互验证用 puppeteer（HBuilderX `plugins/uniapp-debugger/node_modules/puppeteer-cn-2` + `executablePath` 指向本机 Chrome，`page.mouse.click` 真实事件；合成 `dispatchEvent` 触发不了组件回调，见 #72）；无头 `--dump-dom` 对异步加载 SPA 有竞态不可靠；`querySelector('.m-tabs__title--active')` 这类全局选择器会抓到页面第一个实例，须先限定实例子树再查
 - **m-cascader 层级 tabs 同款问题同款修复**（`scroll-x` → `direction="horizontal"` + 行 `overflow: visible`）；排查中曾误把宽视口下「内容不溢出、scrollLeft=0 的正确钳制」当成 bug——验证滚动行为必须窄视口
+
+### 83. defineExpose 属性名裸调用被解析到 window.scrollTo（2026-11-12 m-tabs scrollspy 点击定位修复）
+- **`defineExpose({ scrollTo: ... })` 的属性名在组件作用域不可见**：点击处理器里裸写 `scrollTo(index)`，Web 构建下被静默解析到全局 `window.scrollTo`——索引被当作滚动坐标（`window.scrollTo(1)` ≈ 无操作），在 scroll-view 滚动的页面里功能全灭且零报错；UTS 强类型在 Web 目标下也拦不住（全局恰好有同名 API，连 ReferenceError 都没有）
+- **规避模式**：expose 的实现抽成组件内真实函数（如 `scrollToIndex`），`defineExpose` 只引用它；调用点一律显式引用组件内符号
+- **取证捷径**：puppeteer `page.on('pageerror')` + console 过滤抓不到这类静默失效——功能「该发生没发生」时优先怀疑标识符解析，grep 源码核对调用点引用的是函数还是对象字面量属性名
+
+### 84. scrollspy 判定基准线必须与吸附时序解耦（2026-11-12 m-tabs 基准线语义修复）
+- **不能用 `offset-top` 直接作 scrollspy 判定基准**：内容区常处于非零视口偏移的滚动容器中（页面顶部有固定导航时 holder 顶边在视口 44px 处），判定整体错位一个容器偏移，表现为激活标签与视口内容不一致（用户截图「区块 1 激活、内容是区块 2」）
+- **也不能用标签栏实时 rect**：scroll 事件触发判定的瞬间 m-sticky 吸附态可能尚未切换（nav 还在文档流位置，fixed top 未生效），基准线随吸附时序漂移且无后续 scroll 事件修正——错位定格
+- **正解：用稳定量拼出吸附位**——`holderTop + offsetTop + navHeight`（吸附态 nav 底边 = 滚动视口顶 + offset-top + 标签栏高）；点击定位同基准（`scrollBy = delta - offsetTop - navHeight`，容器顶偏移在视口坐标推导中自然抵消）。验证实测：定位后 pane 顶 131.67 vs 吸顶 nav 底 132，偏差 0.33px
+- **findScrollParent 含试位移探测（scrollTop +10 读回）有副作用**，滚动高频路径（每次 scroll 事件）必须缓存结果（含 null——页面级滚动同样缓存），否则试位移赋值会再触发 scroll 事件形成事件风暴
+- **取证教训：跨坐标系比较是最大陷阱**——`getBoundingClientRect().top` 是视口绝对坐标，与「相对滚动容器顶」「相对某 wrapper 顶」混算会造出 ±44px 的假跳动；同一元素多探针测量必须统一坐标系后再比（本轮「布局跳动 44px」的推断最终证明是探针坐标基准不一致）
+- **m-sticky 占位机制已核实无塌陷**：根节点占位层恒在文档流（实测 height 44 恒定），内容节点吸附切 fixed 不引起布局跳动——排查布局偏移时先排除 m-sticky 本身
+- **slots 占位破坏均匀槽位公式**：平分布局独立底部条按 `(i + 0.5) * 宽 / n` 定位，nav-left/right 插槽占位后失真（实测偏约半条宽）——改为测量制（按 id 找标题实测中心），且测量基准必须是 line 自己的定位父级（line 与标题行分属 nav 不同子树，基准错子树偏移翻倍）

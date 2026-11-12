@@ -245,6 +245,89 @@
 	let spyHolderSearched = false
 
 	/**
+	 * 数字或纯数字字符串补 px（"40" → "40px"，"40px" 原样）
+	 */
+	function addUnit(value: string | number): string {
+		if (typeof value == 'number') return value.toString() + 'px'
+		const s = value as string
+		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
+		return pattern.test(s) ? s + 'px' : s
+	}
+
+	/**
+	 * 尺寸解析为 px 数值（number 直取；string 纯数字或带 px 后缀均可）
+	 */
+	function parsePx(value: string | number): number {
+		if (typeof value == 'number') return value
+		const s = (value as string).replace('px', '')
+		const n = parseFloat(s)
+		return isNaN(n) ? 40 : n
+	}
+
+	/**
+	 * 深度优先查找指定 id 的后代元素
+	 *
+	 * Web 端 scroll-view 渲染为多层包装容器，标题项不一定是 ref 节点的直接子节点，
+	 * 按 id 查找对包装层数量不敏感；搜索范围限定在自身标题栏子树内（多实例 id 互不串扰）。
+	 * 注意只认 id attribute（getAttribute）——UniElement 的 id 属性在 App 端不存在，
+	 * Web 端也不映射 DOM id（见 LESSONS #82）。
+	 */
+	function findDescendantById(el: UniElement, id: string): UniElement | null {
+		const attr = el.getAttribute('id')
+		if (attr != null && attr == id) return el
+		for (let i = 0; i < el.children.length; i++) {
+			const found = findDescendantById(el.children[i], id)
+			if (found != null) return found
+		}
+		return null
+	}
+
+	/**
+	 * 判断元素是否为滚动容器候选（可实际滚动）
+	 *
+	 * 对齐 m-sticky 的判定思路：Web 端 scroll-view 渲染为多层 class 含 uni-scroll-view 的节点，
+	 * 外层壳 overflow hidden 不可滚，须以「滚动高度大于可视高度」为准。
+	 *
+	 * @param el 待判断的元素
+	 * @return 是否可作为滚动容器
+	 */
+	function isScrollCandidate(el: UniElement): boolean {
+		// offsetHeight（UniElement 类型可用）替代 clientHeight，语义一致（可视高度），对齐 m-sticky 同名判定
+		return el.scrollHeight > el.offsetHeight + 4
+	}
+
+	/**
+	 * 候选二次验证：试位移并读回，确认可实际滚动
+	 *
+	 * scrollHeight 大于可视高度的候选未必真可滚——Web 端 overflow: visible 的普通包装层
+	 * 同样会把后代溢出计入 scrollHeight（实测 uni-scroll-view-content sh=3660 > oh=626
+	 * 被误判为候选），对其赋值 scrollTop 被静默拒绝，导致点击定位完全失效。位移与还原
+	 * 在同一同步任务内完成，不产生可见闪烁。
+	 */
+	function isReallyScrollable(el: UniElement): boolean {
+		const before = el.scrollTop
+		el.scrollTop = before + 10
+		const moved = el.scrollTop > before + 0.5
+		el.scrollTop = before
+		return moved
+	}
+
+	/**
+	 * 向上查找最近的滚动容器（对齐 m-sticky 同名逻辑）
+	 *
+	 * @param start 起始元素
+	 * @return 滚动容器元素（未找到为 null）
+	 */
+	function findScrollParent(start: UniElement | null): UniElement | null {
+		let cur = start != null ? start.parentElement : null
+		while (cur != null) {
+			if (isScrollCandidate(cur) && isReallyScrollable(cur)) return cur
+			cur = cur.parentElement
+		}
+		return null
+	}
+
+	/**
 	 * 懒探测并缓存 scrollspy 滚动容器（结果含 null——页面级滚动同样缓存，避免每次滚动重复向上探测）
 	 */
 	function ensureSpyHolder() {
@@ -268,22 +351,13 @@
 	const trackOffset = ref(0)
 	/** swipeable 手势是否处于跟手阶段（true 时 watch 编排器让位给手势） */
 	const gesturing = ref(false)
+	/** 独立底部条平移位置（px，测量制；见 animateLine） */
+	const lineLeft = ref<number>(0)
+	/** 是否首定（首个激活项直接定位，不做动画） */
+	let firstSet = true
 
 	/** options 纯标签栏模式 */
 	const optionsMode = computed<boolean>(() => props.options != null)
-
-	/** 标签栏数据源：子组件注册快照或 options 解析结果 */
-	const navItems = computed<TabItem[]>(() => {
-		if (optionsMode.value) {
-			return parseOptions()
-		}
-		return ctx.items.value
-	})
-
-	/** 激活注册序（-1 未激活；options 模式直接驱动本状态） */
-	const activeIndex = ctx.activeIndex
-
-	// ========== options 解析 ==========
 
 	/** 字段名映射（null 兜底默认） */
 	const fields = computed<TabsFieldNames>(() => {
@@ -321,6 +395,17 @@
 		}
 		return list
 	}
+
+	/** 标签栏数据源：子组件注册快照或 options 解析结果 */
+	const navItems = computed<TabItem[]>(() => {
+		if (optionsMode.value) {
+			return parseOptions()
+		}
+		return ctx.items.value
+	})
+
+	/** 激活注册序（-1 未激活；options 模式直接驱动本状态） */
+	const activeIndex = ctx.activeIndex
 
 	// ========== 布局判定 ==========
 
@@ -437,6 +522,21 @@
 	})
 
 	/**
+	 * 按激活标签中心相对视口中心的偏差执行居中滚动（centerActiveTab 的 Web 同步 / 异步双路径共用）
+	 *
+	 * 目标值基于实际 scrollLeft（rootRef 的 getter 已被 uni-h5 重定义到内部真实滚动层）计算；
+	 * 超界目标由 scroll-view 内部钳制（超出 max 的 scroll-left 落在边界，位置经 @scroll 回灌镜像）。
+	 *
+	 * @param delta 标签中心相对视口中心的偏差（px，正值标签偏右需向右滚）
+	 */
+	function scrollToTabCenter(delta: number) {
+		if (delta == 0) return
+		const viewport = navScrollRef.value
+		if (viewport == null) return
+		navScrollLeft.value = Math.max(viewport.scrollLeft + delta, 0)
+	}
+
+	/**
 	 * 滚动 / 收缩布局激活标签居中：将激活标签中心对齐标题栏视口中心
 	 *
 	 * scroll-into-view 只能把元素滚到起始位置（末位标签贴边裁切、无法居中），改为 scroll-left
@@ -464,60 +564,6 @@
 			})
 		})
 		// #endif
-	}
-
-	/**
-	 * 按激活标签中心相对视口中心的偏差执行居中滚动（centerActiveTab 的 Web 同步 / 异步双路径共用）
-	 *
-	 * 目标值基于实际 scrollLeft（rootRef 的 getter 已被 uni-h5 重定义到内部真实滚动层）计算；
-	 * 超界目标由 scroll-view 内部钳制（超出 max 的 scroll-left 落在边界，位置经 @scroll 回灌镜像）。
-	 *
-	 * @param delta 标签中心相对视口中心的偏差（px，正值标签偏右需向右滚）
-	 */
-	function scrollToTabCenter(delta: number) {
-		if (delta == 0) return
-		const viewport = navScrollRef.value
-		if (viewport == null) return
-		navScrollLeft.value = Math.max(viewport.scrollLeft + delta, 0)
-	}
-
-	/**
-	 * 深度优先查找指定 id 的后代元素
-	 *
-	 * Web 端 scroll-view 渲染为多层包装容器，标题项不一定是 ref 节点的直接子节点，
-	 * 按 id 查找对包装层数量不敏感；搜索范围限定在自身标题栏子树内（多实例 id 互不串扰）。
-	 */
-	function findDescendantById(el: UniElement, id: string): UniElement | null {
-		const attr = el.getAttribute('id')
-		if (el.id == id || (attr != null && attr == id)) return el
-		for (let i = 0; i < el.children.length; i++) {
-			const found = findDescendantById(el.children[i], id)
-			if (found != null) return found
-		}
-		return null
-	}
-
-	/**
-	 * 数字或纯数字字符串补 px（"40" → "40px"，"40px" 原样）
-	 */
-	function addUnit(value: string | number): string {
-		if (typeof value == 'number') return value.toString() + 'px'
-		const s = value as string
-		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
-		return pattern.test(s) ? s + 'px' : s
-	}
-
-	/** 独立底部条平移位置（px，测量制；见 animateLine） */
-	const lineLeft = ref<number>(0)
-
-	/**
-	 * 尺寸解析为 px 数值（number 直取；string 纯数字或带 px 后缀均可）
-	 */
-	function parsePx(value: string | number): number {
-		if (typeof value == 'number') return value
-		const s = (value as string).replace('px', '')
-		const n = parseFloat(s)
-		return isNaN(n) ? 40 : n
 	}
 
 	// ========== active 匹配与切换 ==========
@@ -548,8 +594,105 @@
 		return index
 	}
 
-	/** 是否首定（首个激活项直接定位，不做动画） */
-	let firstSet = true
+	/**
+	 * 按目标块与滚动视口顶边的差执行定位（scrollToIndex 的 Web 同步 / 异步双路径共用）
+	 *
+	 * delta 以滚动容器顶边为基准（视口坐标推导中容器顶偏移自然抵消，与容器在视口中的
+	 * 位置无关）；目标位置 = 吸顶标签栏底边，与判定基准线一致——
+	 * 定位后 scrollspy 判定二次确认同一项。定位过深（末位块贴底）由容器内部钳制。
+	 *
+	 * @param delta 目标块顶边相对滚动容器顶边的距离（px，正值向下滚）
+	 * @param holder 真实滚动容器（null 时回退 uni.pageScrollTo 页面级定位）
+	 * @param navHeight 标签栏高度
+	 */
+	function scrollByToPane(delta: number, holder: UniElement | null, navHeight: number) {
+		const scrollBy = delta - props.offsetTop - navHeight
+		if (scrollBy == 0) return
+		if (holder != null) {
+			holder.scrollTop = holder.scrollTop + scrollBy
+		} else {
+			// 页面级滚动回退（App 端主路径）；回调风格避免 web 端未处理 rejection
+			uni.pageScrollTo({
+				scrollTop: props.scrollTop + scrollBy,
+				duration: Math.round(props.duration * 1000),
+				success: () => {},
+				fail: () => {}
+			})
+		}
+	}
+
+	// #ifndef WEB
+	/**
+	 * 异步测量收敛后执行定位（scrollToIndex 非 Web 分支的 batch 回调）
+	 *
+	 * @param paneTop 目标块视口顶边距离
+	 * @param holderTop 滚动容器视口顶边距离（页面级滚动为 0）
+	 * @param navH 标签栏高度
+	 */
+	function finishScrollToIndex(paneTop: number, holderTop: number, navH: number) {
+		if (spyHolder != null) {
+			scrollByToPane(paneTop - holderTop, spyHolder, navH)
+		} else {
+			scrollByToPane(paneTop, null, navH)
+		}
+	}
+	// #endif
+
+	/**
+	 * scrollspy 点击定位：目标块顶边对齐吸顶标签栏底边（吸附位 = 滚动视口顶 +
+	 * offset-top + 标签栏高，与 applyScrollSpy 判定基准线严格一致）。
+	 * 优先定位最近滚动容器（scroll-view 内嵌场景可用）；
+	 * 无滚动容器时回退 uni.pageScrollTo 页面级定位（页面级滚动场景）。
+	 *
+	 * Web 端同步测量；App / 小程序端走异步测量（平台分支对齐 m-sticky）。
+	 *
+	 * @param target 注册序
+	 */
+	function scrollToIndex(target: number) {
+		if (target < 0 || target >= ctx.items.value.length) return
+		const el = ctx.paneEls.get(ctx.items.value[target].key)
+		if (el == null) return
+		const navEl = navRef.value
+		if (navEl == null) return
+		// #ifdef WEB
+		const navH = navEl.getBoundingClientRect().height
+		ensureSpyHolder()
+		if (spyHolder != null) {
+			scrollByToPane(el.getBoundingClientRect().top - spyHolder.getBoundingClientRect().top, spyHolder, navH)
+		} else {
+			scrollByToPane(el.getBoundingClientRect().top, null, navH)
+		}
+		// #endif
+		// #ifndef WEB
+		ensureSpyHolder()
+		// spyHolder 是被闭包捕获的可变局部变量，Kotlin 禁止对它 smart cast——使用点先读入不可变快照
+		const spyHolderSnapshot = spyHolder
+		let pending = 3
+		let paneTop = 0
+		let holderTop = 0
+		let navH = 0
+		const done = () => {
+			pending--
+			if (pending == 0) finishScrollToIndex(paneTop, holderTop, navH)
+		}
+		el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+			paneTop = rect.top
+			done()
+		})
+		if (spyHolderSnapshot != null) {
+			spyHolderSnapshot.getBoundingClientRectAsync()!.then((hrect: DOMRect) => {
+				holderTop = hrect.top
+				done()
+			})
+		} else {
+			done()
+		}
+		navEl.getBoundingClientRectAsync()!.then((nrect: DOMRect) => {
+			navH = nrect.height
+			done()
+		})
+		// #endif
+	}
 
 	/**
 	 * 交互路径切换激活项（before-change 拦截在点击处理器完成）
@@ -590,6 +733,28 @@
 	}
 
 	/**
+	 * 独立底部条落位 / 平移（animateLine 测量结果的应用，Web 同步 / 异步双路径共用）
+	 *
+	 * @param el 底部条节点
+	 * @param to 目标平移位置（px，相对标题行原点）
+	 */
+	function applyLine(el: UniElement, to: number) {
+		if (firstSet || props.duration <= 0) {
+			firstSet = false
+			lineLeft.value = to
+			return
+		}
+		const from = lineLeft.value
+		lineLeft.value = to
+		if (from == to) return
+		const keyframes: UniAnimationKeyframe[] = [
+			{ transform: 'translateX(' + from.toString() + 'px)', offset: 0 },
+			{ transform: 'translateX(' + to.toString() + 'px)', offset: 1 }
+		]
+		el.animate(keyframes, { duration: Math.round(props.duration * 1000) })
+	}
+
+	/**
 	 * 独立底部条定位（测量制）：实测激活标题中心相对条定位父级（nav）的偏移 - 条宽一半
 	 *
 	 * 标题行内 nav-left / nav-right 插槽占位后，均匀槽位公式 (i + 0.5) * selfWidth / n
@@ -619,28 +784,6 @@
 			})
 		})
 		// #endif
-	}
-
-	/**
-	 * 独立底部条落位 / 平移（animateLine 测量结果的应用，Web 同步 / 异步双路径共用）
-	 *
-	 * @param el 底部条节点
-	 * @param to 目标平移位置（px，相对标题行原点）
-	 */
-	function applyLine(el: UniElement, to: number) {
-		if (firstSet || props.duration <= 0) {
-			firstSet = false
-			lineLeft.value = to
-			return
-		}
-		const from = lineLeft.value
-		lineLeft.value = to
-		if (from == to) return
-		const keyframes: UniAnimationKeyframe[] = [
-			{ transform: 'translateX(' + from.toString() + 'px)', offset: 0 },
-			{ transform: 'translateX(' + to.toString() + 'px)', offset: 1 }
-		]
-		el.animate(keyframes, { duration: Math.round(props.duration * 1000) })
 	}
 
 	/**
@@ -787,6 +930,27 @@
 	}
 
 	/**
+	 * 应用 scrollspy 判定结果（resolveScrollSpy 的 Web 同步 / 异步双路径共用）
+	 *
+	 * @param tops 注册序 → 内容块视口顶边距离
+	 * @param base 判定基准线（标签栏底边的视口位置，吸附态含容器顶偏移）
+	 */
+	function applyScrollSpy(tops: Map<number, number>, base: number) {
+		const items = ctx.items.value
+		let cur = 0
+		for (let i = 0; i < items.length; i++) {
+			const top = tops.get(i)
+			if (top == null) continue
+			if (top - base <= 4) cur = i
+		}
+		if (cur != activeIndex.value) {
+			activeIndex.value = cur
+			emit('update:active', itemIdent(cur))
+			emit('change', items[cur].name, cur)
+		}
+	}
+
+	/**
 	 * scrollspy 滚动判定：以「吸顶标签栏底边」为基准线（滚动视口顶 + offset-top +
 	 * 标签栏高，吸附态即标签栏 fixed 的底边位置），最后一个顶边越过基准线的内容块
 	 * 激活——语义即「基准线落在哪个内容块区间」。
@@ -817,6 +981,8 @@
 		applyScrollSpy(tops, holderTop + props.offsetTop + navH)
 		// #endif
 		// #ifndef WEB
+		// spyHolder 是被闭包捕获的可变局部变量，Kotlin 禁止对它 smart cast——使用点先读入不可变快照
+		const spyHolderSnapshot = spyHolder
 		let pending = 0
 		let navH = 0
 		let holderTop = 0
@@ -829,9 +995,9 @@
 			navH = nrect.height
 			done()
 		})
-		if (spyHolder != null) {
+		if (spyHolderSnapshot != null) {
 			pending++
-			spyHolder.getBoundingClientRectAsync()!.then((hrect: DOMRect) => {
+			spyHolderSnapshot.getBoundingClientRectAsync()!.then((hrect: DOMRect) => {
 				holderTop = hrect.top
 				done()
 			})
@@ -848,188 +1014,10 @@
 		// #endif
 	}
 
-	/**
-	 * 应用 scrollspy 判定结果（resolveScrollSpy 的 Web 同步 / 异步双路径共用）
-	 *
-	 * @param tops 注册序 → 内容块视口顶边距离
-	 * @param base 判定基准线（标签栏底边的视口位置，吸附态含容器顶偏移）
-	 */
-	function applyScrollSpy(tops: Map<number, number>, base: number) {
-		const items = ctx.items.value
-		let cur = 0
-		for (let i = 0; i < items.length; i++) {
-			const top = tops.get(i)
-			if (top == null) continue
-			if (top - base <= 4) cur = i
-		}
-		if (cur != activeIndex.value) {
-			activeIndex.value = cur
-			emit('update:active', itemIdent(cur))
-			emit('change', items[cur].name, cur)
-		}
-	}
-
-	/**
-	 * scrollspy 点击定位：目标块顶边对齐吸顶标签栏底边（吸附位 = 滚动视口顶 +
-	 * offset-top + 标签栏高，与 applyScrollSpy 判定基准线严格一致）。
-	 * 优先定位最近滚动容器（scroll-view 内嵌场景可用）；
-	 * 无滚动容器时回退 uni.pageScrollTo 页面级定位（页面级滚动场景）。
-	 *
-	 * Web 端同步测量；App / 小程序端走异步测量（平台分支对齐 m-sticky）。
-	 *
-	 * @param target 注册序
-	 */
-	function scrollToIndex(target: number) {
-		if (target < 0 || target >= ctx.items.value.length) return
-		const el = ctx.paneEls.get(ctx.items.value[target].key)
-		if (el == null) return
-		const navEl = navRef.value
-		if (navEl == null) return
-		// #ifdef WEB
-		const navH = navEl.getBoundingClientRect().height
-		ensureSpyHolder()
-		if (spyHolder != null) {
-			scrollByToPane(el.getBoundingClientRect().top - spyHolder.getBoundingClientRect().top, spyHolder, navH)
-		} else {
-			scrollByToPane(el.getBoundingClientRect().top, null, navH)
-		}
-		// #endif
-		// #ifndef WEB
-		ensureSpyHolder()
-		let pending = 3
-		let paneTop = 0
-		let holderTop = 0
-		let navH = 0
-		const done = () => {
-			pending--
-			if (pending == 0) finishScrollToIndex(paneTop, holderTop, navH)
-		}
-		el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
-			paneTop = rect.top
-			done()
-		})
-		if (spyHolder != null) {
-			spyHolder.getBoundingClientRectAsync()!.then((hrect: DOMRect) => {
-				holderTop = hrect.top
-				done()
-			})
-		} else {
-			done()
-		}
-		navEl.getBoundingClientRectAsync()!.then((nrect: DOMRect) => {
-			navH = nrect.height
-			done()
-		})
-		// #endif
-	}
-
-	// #ifndef WEB
-	/**
-	 * 异步测量收敛后执行定位（scrollToIndex 非 Web 分支的 batch 回调）
-	 *
-	 * @param paneTop 目标块视口顶边距离
-	 * @param holderTop 滚动容器视口顶边距离（页面级滚动为 0）
-	 * @param navH 标签栏高度
-	 */
-	function finishScrollToIndex(paneTop: number, holderTop: number, navH: number) {
-		if (spyHolder != null) {
-			scrollByToPane(paneTop - holderTop, spyHolder, navH)
-		} else {
-			scrollByToPane(paneTop, null, navH)
-		}
-	}
-	// #endif
-
-	/**
-	 * 按目标块与滚动视口顶边的差执行定位（scrollToIndex 的 Web 同步 / 异步双路径共用）
-	 *
-	 * delta 以滚动容器顶边为基准（视口坐标推导中容器顶偏移自然抵消，与容器在视口中的
-	 * 位置无关）；目标位置 = 吸顶标签栏底边，与判定基准线一致——
-	 * 定位后 scrollspy 判定二次确认同一项。定位过深（末位块贴底）由容器内部钳制。
-	 *
-	 * @param delta 目标块顶边相对滚动容器顶边的距离（px，正值向下滚）
-	 * @param holder 真实滚动容器（null 时回退 uni.pageScrollTo 页面级定位）
-	 * @param navHeight 标签栏高度
-	 */
-	function scrollByToPane(delta: number, holder: UniElement | null, navHeight: number) {
-		const scrollBy = delta - props.offsetTop - navHeight
-		if (scrollBy == 0) return
-		if (holder != null) {
-			holder.scrollTop = holder.scrollTop + scrollBy
-		} else {
-			// 页面级滚动回退（App 端主路径）；回调风格避免 web 端未处理 rejection
-			uni.pageScrollTo({
-				scrollTop: props.scrollTop + scrollBy,
-				duration: Math.round(props.duration * 1000),
-				success: () => {},
-				fail: () => {}
-			})
-		}
-	}
-
-	/**
-	 * 判断元素是否为滚动容器候选（可实际滚动）
-	 *
-	 * 对齐 m-sticky 的判定思路：Web 端 scroll-view 渲染为多层 class 含 uni-scroll-view 的节点，
-	 * 外层壳 overflow hidden 不可滚，须以「滚动高度大于可视高度」为准。
-	 *
-	 * @param el 待判断的元素
-	 * @return 是否可作为滚动容器
-	 */
-	function isScrollCandidate(el: UniElement): boolean {
-		// offsetHeight（UniElement 类型可用）替代 clientHeight，语义一致（可视高度），对齐 m-sticky 同名判定
-		return el.scrollHeight > el.offsetHeight + 4
-	}
-
-	/**
-	 * 向上查找最近的滚动容器（对齐 m-sticky 同名逻辑）
-	 *
-	 * @param start 起始元素
-	 * @return 滚动容器元素（未找到为 null）
-	 */
-	function findScrollParent(start: UniElement | null): UniElement | null {
-		let cur = start != null ? start.parentElement : null
-		while (cur != null) {
-			if (isScrollCandidate(cur) && isReallyScrollable(cur)) return cur
-			cur = cur.parentElement
-		}
-		return null
-	}
-
-	/**
-	 * 候选二次验证：试位移并读回，确认可实际滚动
-	 *
-	 * scrollHeight 大于可视高度的候选未必真可滚——Web 端 overflow: visible 的普通包装层
-	 * 同样会把后代溢出计入 scrollHeight（实测 uni-scroll-view-content sh=3660 > oh=626
-	 * 被误判为候选），对其赋值 scrollTop 被静默拒绝，导致点击定位完全失效。位移与还原
-	 * 在同一同步任务内完成，不产生可见闪烁。
-	 */
-	function isReallyScrollable(el: UniElement): boolean {
-		const before = el.scrollTop
-		el.scrollTop = before + 10
-		const moved = el.scrollTop > before + 0.5
-		el.scrollTop = before
-		return moved
-	}
-
 	// scroll-top 回灌驱动 scrollspy 判定（页面滚动事件 → scroll-top prop → 此处联动）
 	watch((): number => props.scrollTop, (_: number) => {
 		if (props.scrollspy) resolveScrollSpy()
 	})
-
-	/** 注册项集合变化：激活越界校正 + 全渲染协议补全 + 底部条重测 */
-	watch(ctx.items, () => {
-		const n = ctx.items.value.length
-		if (n == 0) return
-		if (props.scrollspy || !props.lazyRender) fillEverSet()
-		if (activeIndex.value >= n) activeIndex.value = n - 1
-		if (activeIndex.value < 0) activeIndex.value = resolveActive(props.active)
-		if (!trackMode.value && ctx.renderSet.value.indexOf(activeIndex.value) < 0) {
-			ctx.renderSet.value = [activeIndex.value]
-		}
-		measureWidth()
-		animateLine(activeIndex.value, activeIndex.value)
-	}, { flush: 'post' })
 
 	/**
 	 * 实测容器宽度（底部条位置与轨道平移距离依据）
@@ -1051,6 +1039,20 @@
 		})
 		// #endif
 	}
+
+	/** 注册项集合变化：激活越界校正 + 全渲染协议补全 + 底部条重测 */
+	watch(ctx.items, () => {
+		const n = ctx.items.value.length
+		if (n == 0) return
+		if (props.scrollspy || !props.lazyRender) fillEverSet()
+		if (activeIndex.value >= n) activeIndex.value = n - 1
+		if (activeIndex.value < 0) activeIndex.value = resolveActive(props.active)
+		if (!trackMode.value && ctx.renderSet.value.indexOf(activeIndex.value) < 0) {
+			ctx.renderSet.value = [activeIndex.value]
+		}
+		measureWidth()
+		animateLine(activeIndex.value, activeIndex.value)
+	}, { flush: 'post' })
 
 	onMounted(() => {
 		measureWidth()

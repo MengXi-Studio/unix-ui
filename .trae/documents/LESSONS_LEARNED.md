@@ -516,3 +516,17 @@
 - **取证教训：跨坐标系比较是最大陷阱**——`getBoundingClientRect().top` 是视口绝对坐标，与「相对滚动容器顶」「相对某 wrapper 顶」混算会造出 ±44px 的假跳动；同一元素多探针测量必须统一坐标系后再比（本轮「布局跳动 44px」的推断最终证明是探针坐标基准不一致）
 - **m-sticky 占位机制已核实无塌陷**：根节点占位层恒在文档流（实测 height 44 恒定），内容节点吸附切 fixed 不引起布局跳动——排查布局偏移时先排除 m-sticky 本身
 - **slots 占位破坏均匀槽位公式**：平分布局独立底部条按 `(i + 0.5) * 宽 / n` 定位，nav-left/right 插槽占位后失真（实测偏约半条宽）——改为测量制（按 id 找标题实测中心），且测量基准必须是 line 自己的定位父级（line 与标题行分属 nav 不同子树，基准错子树偏移翻倍）
+
+### 85. VDOM 产物 setup 内函数编译为局部 val 引用，禁前向引用与 function 声明传值（2026-11-12 m-tabs VDOM 云打包修复）
+- **UTS function 声明在 VDOM 产物中编译为两层**：顶层 `fun gen_xxx_fn(...)` + setup 内局部 `val xxx = ::gen_xxx_fn`——setup 内一切引用（含 lambda/computed/watch 回调体内）都经由该局部 val，**val 声明前引用即 kotlinc `Unresolved reference`**；局部 fun/val 无前向可见性，与 #80 的 Kotlin 规则同源
+- **蒸汽模式不报错的原因**：vapor 产物走 JS/字节码路径，标识符解析宽松——「蒸汽通过 ≠ VDOM 通过」，VDOM 改动必须走 appResource 导出静态核对（本条与 #80 捷径配套）
+- **修复模式：setup 内按依赖拓扑排序声明**——纯工具函数（addUnit / parsePx / findDescendantById / findScrollParent 等）→ refs/状态 → computed → 依赖函数的函数组 → const 箭头（onTitleClick 等）→ watch / onMounted；箭头函数体内引用的函数必须在其声明之前
+- **`function` 声明不能作 props 值 / 事件绑定传递**：`:before-change="onBeforeChange"` 传 function 声明报 `Function invocation 'onBeforeChange(...)' expected`（tabs.kt），const 箭头生成 `val onBeforeChange = fun(...)` 定义在前则通过——#80 先例（m-calendar-popup）的推广，演示页全量 function → const 箭头
+- **`UniElement.id` 属性在 App 端 Unresolved**（Web 端也不映射 DOM id）：按 id 查找只用 `el.getAttribute('id')`，产物生成 `el.getAttribute("id")` 合法
+- **`getBoundingClientRectAsync` App 端存在**（11 处调用编译通过）——#81 的「仅小程序缺同步测量」结论与 m-sticky App 端异步先例一致，报错是前向引用级联（接收者类型推断失败），修声明序即消失
+
+### 86. 闭包捕获的可变局部变量禁 Kotlin smart cast（2026-11-12 m-tabs spyHolder 二次修复）
+- **`var spyHolder` 被 lambda 捕获后，`if (spyHolder != null) { spyHolder.xxx }` 报 `Smart cast to 'UniElement' is impossible, because 'spyHolder' is a local variable that is mutated in a capturing closure`**——Kotlin 规则：被闭包捕获的可变局部变量不可 smart cast，判空后不能收窄类型
+- **修复模式：使用点先读入不可变快照**——`const snapshot = spyHolder; if (snapshot != null) { snapshot.xxx }`，局部 val 一次赋值可 smart cast；多分支读同一快照还顺带保证测量批次内引用一致
+- **传参不需要 smart cast**：`if (spyHolder != null) { fn(spyHolder) }`（形参类型可空）合法，只有**成员访问**（`.xxx`）触发该报错——排查时只改报错处，不必全量快照化
+- **VDOM 打包的迭代节奏**：前向引用（Unresolved）修完后才暴露 smart cast（后续编译阶段），单轮 appResource 导出只能验证到当前最深的报错层——重大重构后建议本地导出 + 云打包各跑一轮直至清零

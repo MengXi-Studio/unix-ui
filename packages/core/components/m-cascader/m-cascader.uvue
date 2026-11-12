@@ -17,7 +17,7 @@
 		<!-- 层级 tabs：已选各级标题 + 未选层 placeholder；scroll-into-view 对齐当前 tab -->
 		<scroll-view
 			class="m-cascader__tabs"
-			:scroll-x="true"
+			direction="horizontal"
 			:scroll-into-view="tabAnchor"
 			:scroll-with-animation="true"
 		>
@@ -456,6 +456,9 @@
 	.m-cascader__tabs-row {
 		flex-direction: row;
 		height: $m-cascader-tabs-height;
+		/* view 默认 overflow hidden 会把溢出 tab 裁在行内，scroll-view 滚动区域看不到溢出
+		   内容（scrollWidth == offsetWidth），scroll-into-view 被钳死——放行溢出交由 scroll-view 裁剪 */
+		overflow: visible;
 	}
 	.m-cascader__tab {
 		width: $m-cascader-tab-max-width;

@@ -131,7 +131,7 @@
 					<text class="caption">sticky 复用 m-sticky（需滚动容器回传 scroll-top），向上滚动吸附</text>
 				</view>
 				<view class="card" style="margin-top: 12px;">
-					<m-tabs scrollspy sticky :scroll-top="pageScrollTop" :active="0">
+					<m-tabs scrollspy sticky :scroll-top="pageScrollTop" :offset-top="44" :active="0">
 						<m-tab v-for="(t, i) in 4" :key="i" :title="'区块 ' + (i + 1)">
 							<view class="spy-block">
 								<text class="spy-block__text">区块 {{ i + 1 }} 的长内容（滚动时对应标签自动高亮，点击标签回滚定位）</text>
@@ -185,30 +185,30 @@
 	}
 
 	/**
-	 * 滚动事件回传：驱动 sticky 吸附与 scrollspy 滚动导航
+	 * 滚动事件回传：驱动 sticky 吸附与 scrollspy 滚动导航（const 箭头——VDOM 产物中函数声明不能作值/绑定传递）
 	 */
-	function onPageScroll(e: UniScrollEvent) {
+	const onPageScroll = (e: UniScrollEvent) => {
 		pageScrollTop.value = e.detail.scrollTop
 	}
 
 	/**
 	 * 事件日志（演示 toast 提示）
 	 */
-	function logEvent(msg: string) {
+	const logEvent = (msg: string) => {
 		uni.showToast({ title: msg, icon: 'none' })
 	}
 
 	/**
 	 * before-change 拦截：索引 2 的标签拒绝切换
 	 */
-	function onBeforeChange(name: string | number | null, index: number): boolean {
+	const onBeforeChange = (name: string | number | null, index: number): boolean => {
 		return index != 2
 	}
 
 	/**
 	 * 拦截场景激活变化展示
 	 */
-	function onBeforeTabChange(name: string | number | null, index: number) {
+	const onBeforeTabChange = (name: string | number | null, index: number) => {
 		console.log('tabs before-change demo change: index=' + index.toString())
 	}
 </script>

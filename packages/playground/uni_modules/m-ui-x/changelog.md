@@ -2,6 +2,9 @@
 
 - 修复 `m-tabs` 滚动 / 收缩布局激活下划线偏移半个条宽：标题内嵌条 `left: 50%` 只钉条左缘未回退自身半宽，条整体右偏 `line-width` 的一半（默认偏 20px）；补 `transform: translateX(-50%)` 居中回退（百分比相对自身宽，全端支持）
 - 修复 `m-tabs` 微信小程序端 mounted 抛 `TypeError: el.getBoundingClientRect is not a function` 导致首屏无激活标签、底部条不显示：小程序端 `UniElement` 无同步测量 API，`measureWidth` 仅在 freeLine 布局与 `swipeable` 场景测量并改走 `getBoundingClientRectAsync`（Web 保留同步测量，平台分支对齐 m-sticky），`scrollspy` 的滚动判定与点击定位同步改为双端分支（小程序端批量异步测量后统一判定）
+- 修复 `m-tabs` 滚动布局标签栏不可滚动、激活标签贴边裁切：导航 scroll-view 使用的 `scroll-x` 已废弃（uni-app x 改为 `direction` 属性，默认 `vertical`），横向触摸滚动与程序化滚动全部失效；同时标题行（view 默认 `overflow: hidden`）把溢出标题裁在行内，scroll-view 滚动区域看不到溢出内容（`scrollWidth == offsetWidth`）被内部钳制为 0。修复三处：`:scroll-x` 改为 `:direction`（可滚动时 `horizontal`）；标题行 `overflow: visible` 放行溢出；移除 `scroll-into-view`（只能对齐元素起始位置，末位标签永远贴边）改为程序化居中（`scroll-left` 属性驱动 + `@scroll` 回灌镜像 + `scroll-with-animation` 平滑过渡）。`m-cascader` 层级 tabs 行同步修复（层级定位恢复）
+- 修复 `m-tabs` 平分布局带 nav 插槽时下划线偏移：独立底部条原按均匀槽位公式定位，nav-left / nav-right 插槽占位后失差（实测偏左约半个条宽）；改为测量制——按 id 深度优先定位激活标题元素实测中心，测量基准统一取底部条的定位父级（nav 原点，与渲染原点严格一致），插槽有无与标题行滚动状态均不敏感
+- 修复 `m-tabs` scrollspy 点击标签不滚动、激活与内容错位：点击处理器调用的 `scrollTo` 实为 `defineExpose` 对象字面量的属性名而非组件函数，Web 构建下裸调用被解析到全局 `window.scrollTo`（索引被当作滚动坐标），在 scroll-view 滚动的页面里完全无效且无报错，改为调用 `scrollToIndex`；同时定位与 scrollspy 判定的基准线统一为「吸顶标签栏底边」（滚动视口顶 + `offset-top` + 标签栏高）——原判定直接用 `offset-top` 作基准，在内容区处于非零视口偏移的滚动容器中时（如页面顶部有固定导航）会整体错位一个容器偏移，表现为标签激活与视口内容不一致；基准线用容器顶偏移 + `offset-top` + 标签栏高这组稳定量拼出，与 m-sticky 吸附切换时序解耦
 
 ## 0.4.0 (2026-11-11)
 

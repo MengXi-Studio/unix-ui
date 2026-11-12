@@ -11,9 +11,11 @@
 				</view>
 				<scroll-view
 					class="m-tabs__nav-scroll"
-					:scroll-x="canScroll"
-					:scroll-into-view="tabAnchor"
+					:direction="canScroll ? 'horizontal' : 'none'"
+					:scroll-left="navScrollLeft"
 					:scroll-with-animation="true"
+					ref="navScrollRef"
+					@scroll="onNavScroll"
 				>
 					<view :class="navRowClass">
 						<view
@@ -46,9 +48,11 @@
 				</view>
 				<scroll-view
 					class="m-tabs__nav-scroll"
-					:scroll-x="canScroll"
-					:scroll-into-view="tabAnchor"
+					:direction="canScroll ? 'horizontal' : 'none'"
+					:scroll-left="navScrollLeft"
 					:scroll-with-animation="true"
+					ref="navScrollRef"
+					@scroll="onNavScroll"
 				>
 					<view :class="navRowClass">
 						<view
@@ -229,6 +233,17 @@
 	const trackRef = ref<UniElement | null>(null)
 	/** 独立底部条节点（平分 line 布局） */
 	const lineRef = ref<UniElement | null>(null)
+	/** 标题栏滚动视口节点（滚动 / 收缩布局激活标签居中测量基准） */
+	const navScrollRef = ref<UniElement | null>(null)
+	/** 标题栏滚动位置（scroll-left 绑定值；@scroll 回灌镜像实际位置，手动滚动后同值目标也能重新触发） */
+	const navScrollLeft = ref(0)
+
+	/**
+	 * 标题栏滚动回灌：镜像实际滚动位置（保持 scroll-left 绑定值与真实位置一致）
+	 */
+	const onNavScroll = (e: UniScrollEvent) => {
+		navScrollLeft.value = e.detail.scrollLeft
+	}
 
 	// ========== 状态 ==========
 
@@ -406,11 +421,66 @@
 		return 'transform: translateX(' + trackOffset.value.toString() + 'px);'
 	})
 
-	/** scroll-into-view 锚点（滚动 / 收缩布局对齐当前标签） */
-	const tabAnchor = computed<string>(() => {
+	/**
+	 * 滚动 / 收缩布局激活标签居中：将激活标签中心对齐标题栏视口中心
+	 *
+	 * scroll-into-view 只能把元素滚到起始位置（末位标签贴边裁切、无法居中），改为 scroll-left
+	 * 程序化滚动；标题项按 id 深度优先查找（Web 端 scroll-view 有编译器内部包装层，不能假设
+	 * 直接子节点结构）。Web 端同步测量，App / 小程序端 UniElement 无同步 getBoundingClientRect，
+	 * 走 getBoundingClientRectAsync（平台分支对齐 m-sticky / 本组件 scrollspy 同名机制）。
+	 */
+	function centerActiveTab() {
+		if (!canScroll.value) return
+		const viewport = navScrollRef.value
+		if (viewport == null) return
 		const i = activeIndex.value
-		return i >= 0 ? 'm-tabs-tab-' + i.toString() : ''
-	})
+		if (i < 0 || i >= navItems.value.length) return
+		const tabEl = findDescendantById(viewport, 'm-tabs-tab-' + i.toString())
+		if (tabEl == null) return
+		// #ifdef WEB
+		const tabRect = tabEl.getBoundingClientRect()
+		const viewRect = viewport.getBoundingClientRect()
+		scrollToTabCenter(tabRect.left + tabRect.width / 2 - viewRect.left - viewRect.width / 2)
+		// #endif
+		// #ifndef WEB
+		tabEl.getBoundingClientRectAsync()!.then((trect: DOMRect) => {
+			viewport.getBoundingClientRectAsync()!.then((vrect: DOMRect) => {
+				scrollToTabCenter(trect.left + trect.width / 2 - vrect.left - vrect.width / 2)
+			})
+		})
+		// #endif
+	}
+
+	/**
+	 * 按激活标签中心相对视口中心的偏差执行居中滚动（centerActiveTab 的 Web 同步 / 异步双路径共用）
+	 *
+	 * 目标值基于实际 scrollLeft（rootRef 的 getter 已被 uni-h5 重定义到内部真实滚动层）计算；
+	 * 超界目标由 scroll-view 内部钳制（超出 max 的 scroll-left 落在边界，位置经 @scroll 回灌镜像）。
+	 *
+	 * @param delta 标签中心相对视口中心的偏差（px，正值标签偏右需向右滚）
+	 */
+	function scrollToTabCenter(delta: number) {
+		if (delta == 0) return
+		const viewport = navScrollRef.value
+		if (viewport == null) return
+		navScrollLeft.value = Math.max(viewport.scrollLeft + delta, 0)
+	}
+
+	/**
+	 * 深度优先查找指定 id 的后代元素
+	 *
+	 * Web 端 scroll-view 渲染为多层包装容器，标题项不一定是 ref 节点的直接子节点，
+	 * 按 id 查找对包装层数量不敏感；搜索范围限定在自身标题栏子树内（多实例 id 互不串扰）。
+	 */
+	function findDescendantById(el: UniElement, id: string): UniElement | null {
+		const attr = el.getAttribute('id')
+		if (el.id == id || (attr != null && attr == id)) return el
+		for (let i = 0; i < el.children.length; i++) {
+			const found = findDescendantById(el.children[i], id)
+			if (found != null) return found
+		}
+		return null
+	}
 
 	/**
 	 * 数字或纯数字字符串补 px（"40" → "40px"，"40px" 原样）
@@ -586,6 +656,7 @@
 		}
 		animateLine(ov, nv)
 		animateTrack(ov, nv)
+		centerActiveTab()
 	}, { flush: 'post' })
 
 	// ========== swipeable 手势 ==========
@@ -857,6 +928,7 @@
 		if (activeIndex.value >= 0 && !trackMode.value) {
 			ctx.renderSet.value = [activeIndex.value]
 		}
+		centerActiveTab()
 	})
 
 	defineExpose({
@@ -915,6 +987,10 @@
 	.m-tabs__nav-row--scroll {
 		flex-direction: row;
 		height: 100%;
+		/* view 默认 overflow hidden 会把溢出标题裁在行内，scroll-view 的滚动区域因此看不到
+		   溢出内容（scrollWidth == offsetWidth），scroll-left / 触摸滚动全被钳死——放行溢出，
+		   裁剪交由 scroll-view（真实滚动层）负责 */
+		overflow: visible;
 	}
 
 	/* ========== 标题项 ========== */

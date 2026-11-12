@@ -494,3 +494,11 @@
 - **先问「测量结果真的被消费吗」**：m-tabs `measureWidth` 原本在 onMounted / watch(items) 无条件执行，但 selfWidth 仅被 freeLine 布局与 swipeable 消费——加 `if (!freeLineMode.value && !props.swipeable) return` 跳过大部分场景的测量，比全量异步化更省（issue 报告者的建议 1）
 - **mp 端产物验证捷径**：`cli publish --platform mp-weixin --project <绝对路径>`（查文档确认格式）编译后 grep 产物 `uni_modules/m-ui-x/components/<name>/<name>.js` 统计 `getBoundingClientRect[A-Za-z]*` 调用——修复后应为 0 个同步调用；运行时复现需微信开发者工具
 - **Web 端 dev server 的 public base 是 `/unix-ui/playground/`**：直开 `localhost:5174/pages-sub/...` 只得到配置提示页，须带前缀 `localhost:5174/unix-ui/playground/pages-sub/...`
+
+### 82. scroll-x 废弃 + view 默认 overflow hidden 双重钳死横向滚动（2026-11-12 m-tabs 居中修复）
+- **`scroll-x` 已废弃**（uni-app x 改 `direction` 属性，默认 `vertical`）：仅设 `scroll-x` 时 uni-h5 内部滚动层 `overflow-x: hidden`，横向触摸滚动与 `scroll-left` / `scroll-into-view` 程序化滚动全部静默失效——`_scrollLeftChanged` 被 `realScrollX` 门控（只认 `direction === 'horizontal' | 'all'`），prop 传了、DOM 属性也对、功能不生效时直接读 HBuilderX 运行时源码（`plugins/uniapp-cli-vite/node_modules/@dcloudio/uni-h5/dist-x-vapor/uni-h5.es.js`，vapor 与 VDOM 同实现）
+- **view 默认 `overflow: hidden` 会把溢出内容从外层滚动区域「藏起来」**：scroll-view 的直接子层若是默认裁剪的 view（m-tabs 标题行），溢出内容被裁在行内，外层 `scrollWidth == offsetWidth`，源码钳制公式 `scrollToValue > scrollWidth - offsetWidth` 恒成立，一切滚动目标被压回 0——修法是内容行 `overflow: visible`（ucss 暂仅 view 支持 visible），裁剪交回 scroll-view
+- **scroll-view 编程滚动正路是 `:scroll-left` prop + `@scroll` 回灌镜像**：rootRef 的 `scrollLeft` getter/setter 被 `Object.defineProperties` 重定义到内部 main 层（getter 可读实际位置）；prop 写入若无动画直接 `main.scrollLeft = val`，动画走 content transform（transitionend 才同步 scrollLeft，期间 scroll 事件不触发）；手动滚动后绑定值若与上次同值不重触发，靠 `@scroll` 回灌 `e.detail.scrollLeft` 保持镜像一致
+- **Web 端 scroll-view 有编译器内部包装层**（uni-scroll-view × 2 + uni-scroll-view-content），`UniElement.children[0]` 不是业务子节点、`el.id` 属性可能不映射 DOM id——按 id 定位子元素用 `getAttribute('id')` + 深度优先（children 递归），不要假设直接子节点结构
+- **取证工具链**：窄视口交互验证用 puppeteer（HBuilderX `plugins/uniapp-debugger/node_modules/puppeteer-cn-2` + `executablePath` 指向本机 Chrome，`page.mouse.click` 真实事件；合成 `dispatchEvent` 触发不了组件回调，见 #72）；无头 `--dump-dom` 对异步加载 SPA 有竞态不可靠；`querySelector('.m-tabs__title--active')` 这类全局选择器会抓到页面第一个实例，须先限定实例子树再查
+- **m-cascader 层级 tabs 同款问题同款修复**（`scroll-x` → `direction="horizontal"` + 行 `overflow: visible`）；排查中曾误把宽视口下「内容不溢出、scrollLeft=0 的正确钳制」当成 bug——验证滚动行为必须窄视口

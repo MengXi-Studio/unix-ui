@@ -1,6 +1,6 @@
 {
 	"name": "@meng-xi/unix-ui-docs",
-	"version": "0.4.1",
+	"version": "0.4.2",
 	"private": true,
 	"description": "@meng-xi/unix-ui 使用文档",
 	"type": "module",

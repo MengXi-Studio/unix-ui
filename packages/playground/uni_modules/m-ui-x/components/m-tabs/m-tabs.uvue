@@ -2,14 +2,15 @@
 	<!-- 标签页容器：标签栏（sticky 时由 m-sticky 包裹吸附）+ 内容区（m-tab 子项承载）。
 	     双形态：m-tab 子组件插槽式（内容区渲染）或 options 数组纯标签栏（无内容区）。
 	     scrollspy 滚动导航依赖页面回传 scroll-top（对齐 m-sticky 受控协议）。 -->
-	<view ref="rootRef" :class="rootClass" :style="rootStyle">
+	<view ref="rootRef" id="m-tabs-root" :class="rootClass" :style="rootStyle">
 		<!-- 标签栏：sticky 吸附分支（模板无法抽公共块，两分支重复渲染同一结构） -->
 		<m-sticky v-if="sticky && showHeader" :scroll-top="scrollTop" :offset-top="offsetTop" @change="onStickyChange">
-			<view ref="navRef" class="m-tabs__nav" :class="navClass">
+			<view ref="navRef" id="m-tabs-nav" class="m-tabs__nav" :class="navClass">
 				<view v-if="slots['nav-left'] != null" class="m-tabs__nav-extra">
 					<slot name="nav-left"></slot>
 				</view>
 				<scroll-view
+					id="m-tabs-nav-scroll"
 					class="m-tabs__nav-scroll"
 					:direction="canScroll ? 'horizontal' : 'none'"
 					:scroll-left="navScrollLeft"
@@ -38,15 +39,16 @@
 				<view v-if="slots['nav-right'] != null" class="m-tabs__nav-extra">
 					<slot name="nav-right"></slot>
 				</view>
-				<view v-if="showFreeLine" ref="lineRef" class="m-tabs__line" :style="lineStyle"></view>
+				<view v-if="showFreeLine" ref="lineRef" id="m-tabs-line" class="m-tabs__line" :style="lineStyle"></view>
 			</view>
 		</m-sticky>
 		<template v-else-if="showHeader">
-			<view ref="navRef" class="m-tabs__nav" :class="navClass">
+			<view ref="navRef" id="m-tabs-nav" class="m-tabs__nav" :class="navClass">
 				<view v-if="slots['nav-left'] != null" class="m-tabs__nav-extra">
 					<slot name="nav-left"></slot>
 				</view>
 				<scroll-view
+					id="m-tabs-nav-scroll"
 					class="m-tabs__nav-scroll"
 					:direction="canScroll ? 'horizontal' : 'none'"
 					:scroll-left="navScrollLeft"
@@ -75,7 +77,7 @@
 				<view v-if="slots['nav-right'] != null" class="m-tabs__nav-extra">
 					<slot name="nav-right"></slot>
 				</view>
-				<view v-if="showFreeLine" ref="lineRef" class="m-tabs__line" :style="lineStyle"></view>
+				<view v-if="showFreeLine" ref="lineRef" id="m-tabs-line" class="m-tabs__line" :style="lineStyle"></view>
 			</view>
 		</template>
 
@@ -273,6 +275,12 @@
 	 * Web 端也不映射 DOM id（见 LESSONS #82）。
 	 */
 	function findDescendantById(el: UniElement, id: string): UniElement | null {
+		// #ifdef MP
+		// 小程序端 UniElement 无 children（子树不可遍历），按 id 查找不可用——
+		// 调用点判空降级（测量走 queryRectById）
+		return null
+		// #endif
+		// #ifndef MP
 		const attr = el.getAttribute('id')
 		if (attr != null && attr == id) return el
 		for (let i = 0; i < el.children.length; i++) {
@@ -280,6 +288,7 @@
 			if (found != null) return found
 		}
 		return null
+		// #endif
 	}
 
 	/**
@@ -319,12 +328,19 @@
 	 * @return 滚动容器元素（未找到为 null）
 	 */
 	function findScrollParent(start: UniElement | null): UniElement | null {
+		// #ifdef MP
+		// 小程序端 UniElement 无 parentElement（祖先不可遍历），滚动容器探测不可用——
+		// 返回 null（scrollspy 判定按页面级滚动语义退化，点击定位回退 uni.pageScrollTo）
+		return null
+		// #endif
+		// #ifndef MP
 		let cur = start != null ? start.parentElement : null
 		while (cur != null) {
 			if (isScrollCandidate(cur) && isReallyScrollable(cur)) return cur
 			cur = cur.parentElement
 		}
 		return null
+		// #endif
 	}
 
 	/**
@@ -335,6 +351,31 @@
 		spyHolder = findScrollParent(rootRef.value)
 		spyHolderSearched = true
 	}
+
+	// #ifdef MP
+	/** 组件实例（createSelectorQuery 的 in 作用域参数；setup 期一次性获取） */
+	const mpInstance = getCurrentInstance()
+
+	/**
+	 * 小程序端测量：按 id 在组件实例作用域内查询节点矩形（多实例安全）
+	 *
+	 * 小程序端 UniElement 无 children / parentElement（子树不可遍历），且
+	 * getBoundingClientRectAsync 仅支持有 id 的元素——统一走 createSelectorQuery
+	 * 按 id 直查（标题 / 底部条 / 标签栏 / 内容块均带 id）。
+	 *
+	 * @param id 目标元素 id（组件实例内唯一即可）
+	 * @param cb 测量回调（DOMRect 兼容结构，未查到传 null）
+	 */
+	const queryRectById = (id: string, cb: (rect: DOMRect | null) => void) => {
+		uni.createSelectorQuery().in(mpInstance!.proxy!)
+			.select('#' + id)
+			.boundingClientRect()
+			.exec((ret: Array<any>) => {
+				const first = ret.length > 0 ? ret[0] : null
+				cb(first as DOMRect | null)
+			})
+	}
+	// #endif
 
 	/**
 	 * 标题栏滚动回灌：镜像实际滚动位置（保持 scroll-left 绑定值与真实位置一致）
@@ -550,6 +591,17 @@
 		if (viewport == null) return
 		const i = activeIndex.value
 		if (i < 0 || i >= navItems.value.length) return
+		// #ifdef MP
+		// 小程序端：按 id 组件实例作用域查询（nav-scroll 视口 + 激活标题）
+		queryRectById('m-tabs-nav-scroll', (vrect: DOMRect | null) => {
+			if (vrect == null) return
+			queryRectById('m-tabs-tab-' + i.toString(), (trect: DOMRect | null) => {
+				if (trect == null) return
+				scrollToTabCenter(trect.left + trect.width / 2 - vrect.left - vrect.width / 2)
+			})
+		})
+		// #endif
+		// #ifndef MP
 		const tabEl = findDescendantById(viewport, 'm-tabs-tab-' + i.toString())
 		if (tabEl == null) return
 		// #ifdef WEB
@@ -563,6 +615,7 @@
 				scrollToTabCenter(trect.left + trect.width / 2 - vrect.left - vrect.width / 2)
 			})
 		})
+		// #endif
 		// #endif
 	}
 
@@ -654,6 +707,18 @@
 		if (el == null) return
 		const navEl = navRef.value
 		if (navEl == null) return
+		// #ifdef MP
+		// 小程序端：滚动容器不可探测（holderTop 取 0，页面级滚动语义），按 id 查询
+		// 内容块与标签栏矩形；scroll-view 内嵌场景 pageScrollTo 无效为已知降级
+		queryRectById('m-tabs-pane-' + target.toString(), (prect: DOMRect | null) => {
+			if (prect == null) return
+			queryRectById('m-tabs-nav', (nrect: DOMRect | null) => {
+				const navH = nrect != null ? nrect.height : 44
+				scrollByToPane(prect.top, null, navH)
+			})
+		})
+		// #endif
+		// #ifndef MP
 		// #ifdef WEB
 		const navH = navEl.getBoundingClientRect().height
 		ensureSpyHolder()
@@ -691,6 +756,7 @@
 			navH = nrect.height
 			done()
 		})
+		// #endif
 		// #endif
 	}
 
@@ -747,11 +813,15 @@
 		const from = lineLeft.value
 		lineLeft.value = to
 		if (from == to) return
+		// #ifndef MP
+		// 小程序端 UniElement.animate 的 transform keyframes 支持未证实（vendor 实现按 id 桥接
+		// 原生节点），保守直接落位（lineStyle 响应式驱动位置正确，仅切换动画降级）
 		const keyframes: UniAnimationKeyframe[] = [
 			{ transform: 'translateX(' + from.toString() + 'px)', offset: 0 },
 			{ transform: 'translateX(' + to.toString() + 'px)', offset: 1 }
 		]
 		el.animate(keyframes, { duration: Math.round(props.duration * 1000) })
+		// #endif
 	}
 
 	/**
@@ -767,9 +837,20 @@
 		if (!freeLineMode.value) return
 		const el = lineRef.value
 		if (el == null) return
+		const lw = props.lineWidth != '' ? parsePx(props.lineWidth) : 40
+		// #ifdef MP
+		// 小程序端：按 id 组件实例作用域查询（标签栏原点 + 激活标题；line 不可遍历）
+		queryRectById('m-tabs-nav', (navRect: DOMRect | null) => {
+			if (navRect == null) return
+			queryRectById('m-tabs-tab-' + newIndex.toString(), (trect: DOMRect | null) => {
+				if (trect == null) return
+				applyLine(el, trect.left + trect.width / 2 - navRect.left - lw / 2)
+			})
+		})
+		// #endif
+		// #ifndef MP
 		const navEl = el.parentElement
 		if (navEl == null) return
-		const lw = props.lineWidth != '' ? parsePx(props.lineWidth) : 40
 		const titleEl = findDescendantById(navEl, 'm-tabs-tab-' + newIndex.toString())
 		if (titleEl == null) return
 		// #ifdef WEB
@@ -783,6 +864,7 @@
 				applyLine(el, trect.left + trect.width / 2 - navRect.left - lw / 2)
 			})
 		})
+		// #endif
 		// #endif
 	}
 
@@ -969,9 +1051,32 @@
 		if (items.length == 0) return
 		const navEl = navRef.value
 		if (navEl == null) return
-		ensureSpyHolder()
+		// #ifdef MP
+		// 小程序端：滚动容器不可探测（holderTop 取 0，页面级滚动语义），全部按 id 查询
+		let pending = 0
+		let navH = 0
 		const tops = new Map<number, number>()
+		const done = () => {
+			pending--
+			if (pending == 0) applyScrollSpy(tops, props.offsetTop + navH)
+		}
+		pending++
+		queryRectById('m-tabs-nav', (nrect: DOMRect | null) => {
+			if (nrect != null) navH = nrect.height
+			done()
+		})
+		for (let i = 0; i < items.length; i++) {
+			pending++
+			queryRectById('m-tabs-pane-' + items[i].index.toString(), (prect: DOMRect | null) => {
+				if (prect != null) tops.set(i, prect.top)
+				done()
+			})
+		}
+		// #endif
+		// #ifndef MP
+		ensureSpyHolder()
 		// #ifdef WEB
+		const tops = new Map<number, number>()
 		for (let i = 0; i < items.length; i++) {
 			const el = ctx.paneEls.get(items[i].key)
 			if (el != null) tops.set(i, el.getBoundingClientRect().top)
@@ -981,36 +1086,38 @@
 		applyScrollSpy(tops, holderTop + props.offsetTop + navH)
 		// #endif
 		// #ifndef WEB
+		const tops = new Map<number, number>()
+		let pendingAsync = 0
+		let navHAsync = 0
+		let holderTop = 0
+		const doneAsync = () => {
+			pendingAsync--
+			if (pendingAsync == 0) applyScrollSpy(tops, holderTop + props.offsetTop + navHAsync)
+		}
+		pendingAsync++
+		navEl.getBoundingClientRectAsync()!.then((nrect: DOMRect) => {
+			navHAsync = nrect.height
+			doneAsync()
+		})
 		// spyHolder 是被闭包捕获的可变局部变量，Kotlin 禁止对它 smart cast——使用点先读入不可变快照
 		const spyHolderSnapshot = spyHolder
-		let pending = 0
-		let navH = 0
-		let holderTop = 0
-		const done = () => {
-			pending--
-			if (pending == 0) applyScrollSpy(tops, holderTop + props.offsetTop + navH)
-		}
-		pending++
-		navEl.getBoundingClientRectAsync()!.then((nrect: DOMRect) => {
-			navH = nrect.height
-			done()
-		})
 		if (spyHolderSnapshot != null) {
-			pending++
+			pendingAsync++
 			spyHolderSnapshot.getBoundingClientRectAsync()!.then((hrect: DOMRect) => {
 				holderTop = hrect.top
-				done()
+				doneAsync()
 			})
 		}
 		for (let i = 0; i < items.length; i++) {
 			const el = ctx.paneEls.get(items[i].key)
 			if (el == null) continue
-			pending++
+			pendingAsync++
 			el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
 				tops.set(i, rect.top)
-				done()
+				doneAsync()
 			})
 		}
+		// #endif
 		// #endif
 	}
 

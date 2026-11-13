@@ -1,10 +1,11 @@
 ## 0.5.0 (2026-11-13)
 
-- 新增 `m-color-picker` / `m-color-picker-popup` / `m-color-picker-input` 颜色选择器三件套（对标 Sard ColorPicker）：饱和度-明度面板 + 色相 / 透明度滑块，`v-model:value` 字符串受控，`format` 支持 `hex` / `rgb` / `hsl`（hex 带透明度输出 8 位），`show-format` 格式切换、`presets` / `show-presets` 预设色、`show-inputs` R/G/B/A 数值输入、`show-recent` 最近使用颜色（最多 8 个）、`show-eyedropper` 吸管取色（仅 Web，`#ifdef WEB`）；面板按 App 端单层 `linear-gradient` 约束用 3 层绝对定位叠加；弹层为「取消 / 标题 / 确定」+ 草稿值（确定回写、取消丢弃），输入框为只读触发器 + 色块预览 + 字段标签 + 自绘清空；新增 `$m-color-picker-*` 主题变量
-- 新增 `m-checkbox-group` / `m-checkbox` / `m-checkbox-popup` / `m-checkbox-input` 复选框四组件（对标 Vant Checkbox / CheckboxGroup）：多选集合 `v-model:value`（`Array<string | number>` 联合类型数组，`'1'` 与 `1` 字符串化比较视为同一项）；单项双形态（组内按 name 勾选 / 独立 `v-model` 布尔自持）、square / round 形状、label-position 左右互换、label-disabled、indeterminate 不确定横杠、icon / default 插槽（作用域 `{ checked, disabled }`）、expose `toggle()`；弹层 options 数组驱动 + field-names 映射 + footer 插槽；输入框「、」连接回显（超 2 项截断「等 N 项」）+ 自绘清空按钮；新增 `$m-checkbox-*` 主题变量
-- 新增 `m-fab` / `m-fab-item` 悬浮按钮（对标 Sard Fab）：入口圆钮固定于视口指定位置，点击展开扩展按钮列表、点击后自动收起；四角定位（`top` / `right` / `bottom` / `left`）、`background` / `color` 自定义配色（子项继承容器）、`hide-name` 隐藏名称、`entry` / `name` 插槽自定义、`overlay-closable` 遮罩点击收起、`draggable` 拖拽（`axis` 方向限制 / `margin-x` `margin-y` 边界钳制 / `magnet` 松手吸附 / `v-model:offset` 中心点坐标回写）；展开收起为逐项 stagger 过渡（收起逆序），新增 `$m-fab-*` 主题变量
-- 新增 `m-date-strip` 日期横条（对标 Sard DateStrip）：横向滚动展示一段连续日期（默认今天前 7 天 ~ 后 7 天），`type` 支持 `single` / `multiple` / `range`，点选即生效；`value-format` 非空时 `v-model:value` 双向绑定字符串（`parseDate` / `formatDate` 转换）；`max-range` 超限拒绝并派发 `over-range`（对齐 m-calendar 命名）；`allow-same-day`、`start-date-text` / `end-date-text` / `same-date-text` 端点文案；`disabled-date` 灰显禁用 + `click-disabled-date`，`filter` 剔除不展示；`show-lunar` 展示农历；`formatter` 复用 `CalendarDayItem`，并提供 `item` / `top-info` / `bottom-info` 插槽；挂载与外部值变更时自动居中选中项；新增 `$m-date-strip-*` 主题变量
-- 新增日期工具函数集 `utils/date.uts`（对标 Sard Date 工具函数）：公共入口按能力分层为 `utils/date/`（core / compare / arith / boundary / grid / format / lunar）七个纯函数模块，共 69 个具名导出——基础原语、比较、算术与差值、周月年边界与区间枚举、固定 6×7 月历网格与周序号 / 季度、格式化解析（13 基线 token + `W` / `Q` / `A` / `a`，`[]` 字面量转义）、农历 1900-2100 全量换算与干支 / 生肖 / 月名 / 日名 / 时辰名；全部纯函数不可变、按本地零点计算、失败返回 `null`；引入方式 `import { formatDate } from '@/uni_modules/m-ui-x/utils/date.uts'`；`m-calendar` 通用日期函数同步改用该工具集（旧导入路径由 `calendar.uts` re-export 保持兼容）
+- 新增 `m-color-picker` / `m-color-picker-popup` / `m-color-picker-input` 颜色选择器三件套：饱和度-明度面板 + 色相 / 透明度滑块，`v-model:value` 字符串受控，`format` 支持 `hex` / `rgb` / `hsl`（hex 带透明度输出 8 位），`show-format` 格式切换、`presets` / `show-presets` 预设色、`show-inputs` R/G/B/A 数值输入、`show-recent` 最近使用颜色（最多 8 个）、`show-eyedropper` 吸管取色（仅 Web，`#ifdef WEB`）；面板按 App 端单层 `linear-gradient` 约束用 3 层绝对定位叠加；弹层为「取消 / 标题 / 确定」+ 草稿值（确定回写、取消丢弃），输入框为只读触发器 + 色块预览 + 字段标签 + 自绘清空；新增 `$m-color-picker-*` 主题变量
+- 新增 `m-checkbox-group` / `m-checkbox` / `m-checkbox-popup` / `m-checkbox-input` 复选框四组件：多选集合 `v-model:value`（`Array<string | number>` 联合类型数组，`'1'` 与 `1` 字符串化比较视为同一项）；单项双形态（组内按 name 勾选 / 独立 `v-model` 布尔自持）、square / round 形状、label-position 左右互换、label-disabled、indeterminate 不确定横杠、icon / default 插槽（作用域 `{ checked, disabled }`）、expose `toggle()`；弹层 options 数组驱动 + field-names 映射 + footer 插槽；输入框「、」连接回显（超 2 项截断「等 N 项」）+ 自绘清空按钮；新增 `$m-checkbox-*` 主题变量
+- 新增 `m-fab` / `m-fab-item` 悬浮按钮：入口圆钮固定于视口指定位置，点击展开扩展按钮列表、点击后自动收起；四角定位（`top` / `right` / `bottom` / `left`）、`background` / `color` 自定义配色（子项继承容器）、`hide-name` 隐藏名称、`entry` / `name` 插槽自定义、`overlay-closable` 遮罩点击收起、`draggable` 拖拽（`axis` 方向限制 / `margin-x` `margin-y` 边界钳制 / `magnet` 松手吸附 / `v-model:offset` 中心点坐标回写）；展开收起为逐项 stagger 过渡（收起逆序），新增 `$m-fab-*` 主题变量
+- 新增 `m-date-strip` 日期横条：横向滚动展示一段连续日期（默认今天前 7 天 ~ 后 7 天），`type` 支持 `single` / `multiple` / `range`，点选即生效；`value-format` 非空时 `v-model:value` 双向绑定字符串（`parseDate` / `formatDate` 转换）；`max-range` 超限拒绝并派发 `over-range`（对齐 m-calendar 命名）；`allow-same-day`、`start-date-text` / `end-date-text` / `same-date-text` 端点文案；`disabled-date` 灰显禁用 + `click-disabled-date`，`filter` 剔除不展示；`show-lunar` 展示农历；`formatter` 复用 `CalendarDayItem`，并提供 `item` / `top-info` / `bottom-info` 插槽；挂载与外部值变更时自动居中选中项；新增 `$m-date-strip-*` 主题变量
+- 新增日期工具函数集 `utils/date.uts`：公共入口按能力分层为 `utils/date/`（core / compare / arith / boundary / grid / format / lunar）七个纯函数模块，共 69 个具名导出——基础原语、比较、算术与差值、周月年边界与区间枚举、固定 6×7 月历网格与周序号 / 季度、格式化解析（13 基线 token + `W` / `Q` / `A` / `a`，`[]` 字面量转义）、农历 1900-2100 全量换算与干支 / 生肖 / 月名 / 日名 / 时辰名；全部纯函数不可变、按本地零点计算、失败返回 `null`；引入方式 `import { formatDate } from '@/uni_modules/m-ui-x/utils/date.uts'`；`m-calendar` 通用日期函数同步改用该工具集（旧导入路径由 `calendar.uts` re-export 保持兼容）
+- 修复 `m-tabs` options 平分模式首帧底部条未定位（[#10](https://github.com/MengXi-Studio/unix-ui/issues/10)）：options 形态没有 `m-tab` 子组件，`ctx.items` 恒为空，`watch(ctx.items)` 中的 `animateLine` 不会触发；初始 `activeIndex` 与解析结果相同也不会触发 `watch(activeIndex)`，`lineLeft` 保持初值 0，首屏底部条贴在标签栏最左缘（点击任意标签后才归位）。`onMounted` 在初始激活解析与渲染集合初始化后补一次 `nextTick` 首定位（`firstSet` 首次直接落位、不播动画），Web 同步测量、小程序在节点渲染完成后按 id 异步查询
 
 ## 0.4.2 (2026-11-12)
 
@@ -32,7 +33,7 @@
 
 ## 0.3.0 (2026-11-05)
 
-- 新增 `m-cascader` / `m-cascader-popup` / `m-cascader-input` 级联选择三组件：对标 Vant Cascader，按「面板 / 弹出框 / 输入框」拆分——m-cascader 纯平铺面板（`v-model:value` 叶子值 `string | number`、options 为动态类型
+- 新增 `m-cascader` / `m-cascader-popup` / `m-cascader-input` 级联选择三组件：按「面板 / 弹出框 / 输入框」拆分——m-cascader 纯平铺面板（`v-model:value` 叶子值 `string | number`、options 为动态类型
   `UTSJSONObject[]` 支持 `field-names` 字段名映射与异步加载（空数组视为叶子直接 finish）、`swipeable` 手势滑动换层、`active-color` 主题色、`options-height` 选项区高度；change / finish / close / click-tab 事件与 title /
   option / options-top /
   options-bottom 四插槽）；m-cascader-popup 基于 m-popup 组合的弹层级联（弹层 props 全透传、finish 后自动关闭、事件与插槽条件转发）；m-cascader-input 基于 m-input 只读触发器 + 弹层组合（`v-model:value`
@@ -62,7 +63,7 @@
 ## 0.2.0 (2026-11-03)
 
 - 新增 `m-overlay` 遮罩层组件：`show` 显示驱动、`z-index` 层级、`duration` 动画时长（秒，0 禁用动画）、`custom-class` / `custom-style` 样式直达与 `click`
-  事件（遮罩不自动关闭，对齐 Vant 语义）；淡入淡出为 opacity 两态过渡，内置 Web 端 body 滚动锁定（多实例堆叠全关才还原），是弹窗类组件的基础
+  事件（遮罩不自动关闭）；淡入淡出为 opacity 两态过渡，内置 Web 端 body 滚动锁定（多实例堆叠全关才还原），是弹窗类组件的基础
 - 新增 `m-popup` 弹出层组件：五方位（center / top / bottom / left / right）、`round` 分侧圆角、`closeable` 关闭图标（`close-icon` / `close-icon-position` 四角）、`close-on-click-overlay`、遮罩定制（`overlay` /
   `overlay-class` / `overlay-style`）、`z-index` / `duration`、`lazy-render` / `destroy-on-close`、`safe-area-inset-top` / `safe-area-inset-bottom`、`before-close` 关闭前拦截；`v-model:show` 双向绑定与 open / opened /
   close / closed / click / click-overlay / click-close-icon 全事件；center 缩放淡入、四方位平移过渡，基于 m-overlay 组合实现
@@ -73,7 +74,7 @@
 - 新增 `m-toast` 轻提示组件：函数式 API（`showToast` / `showSuccessToast` / `showFailToast` / `showLoadingToast` / `closeToast`，string 简写与 ToastOptions 对象双入参，单例语义）与组件式（`v-model:show` +
   default 插槽）双形态；`type`（text / loading / success / fail）、`position`（top / middle / bottom）、`icon` 自定义图标、`overlay` / `forbidClick` 遮罩与点击拦截、`closeOnClick` /
   `closeOnClickOverlay`、`duration`（loading 型默认 0 不自动关）、`wordBreak` 换行控制（normal / break-all 全端生效，break-word 仅 Web/小程序，App 回退 normal）、`onOpened` / `onClose` 回调与 opened /
-  close 事件；采用「全局函数 + 页面预置容器 + 全局单例桥」方案（uni-app x 无运行时动态挂载能力），API 手感对齐 Vant
+  close 事件；采用「全局函数 + 页面预置容器 + 全局单例桥」方案（uni-app x 无运行时动态挂载能力），API 手感保持一致
 - 新增 `m-compact` 紧凑布局组件：包裹 `m-button` 使相邻项圆角衔接、相邻边框合并为 1px，支持变体混排；`block` 块级撑满（水平 `flex: 1` 等分 / 垂直满宽，子按钮无需逐个设置）、`direction` 水平 / 垂直排列；组内子项 `v-if` /
   `v-for` 动态增删时首、中、尾位置自动重排；0.5px 细边框（hairline）按钮的缩放层同步清理对应侧圆角与边框；基于 provide/inject + reactive 注册序实现位置感知（ucss 无 `:first-child`
   结构选择器），无专属主题变量（圆角 / 边框复用 `$m-button-*` 系列）
@@ -84,12 +85,12 @@
 - 新增 `m-input` 输入框组件：六种类型（text / tel / digit / number / password / textarea）、`clearable` + `clear-trigger` 两时机（focus / always）、`show-word-limit` 字数统计、`border` /
   `inlaid`（清边框内边距嵌入单元格）、`disabled` / `readonly`、textarea `auto-height`；`formatter` + `format-trigger`（onChange / onBlur）、`precision`（保留尾零）、`min` / `max` 失焦数字收敛、`show-eye`
   明文切换；prepend / append 插槽、`v-model` 与 input / change / focus / blur / clear 事件、expose `focus()` / `blur()` 方法；注入 m-compact 上下文，可与 m-button 混排
-- 新增 `m-calendar` / `m-calendar-popup` / `m-calendar-input` 日历三组件（对标 Vant Calendar，按「面板 / 弹出框 / 输入框」拆分）：`m-calendar` 纯平铺日历面板，single / multiple / range 三种选择类型、`switch-mode`
+- 新增 `m-calendar` / `m-calendar-popup` / `m-calendar-input` 日历三组件（按「面板 / 弹出框 / 输入框」拆分）：`m-calendar` 纯平铺日历面板，single / multiple / range 三种选择类型、`switch-mode`
   年月切换导航（month / year-month，导航 clamp 到可选范围）、`formatter` 日期格式化（topInfo / bottomInfo / className / 禁用态）、`first-day-of-week` 周起始日、`row-height`
   行高、月份背景水印（`show-mark`，水平居中）、`height` 面板高度（固定高度内部滚动，副标题随滚动切换为视口月份）、`color` 主题色派生选中方块与范围 bar（支持渐变）、`min-date` / `max-date` 界外禁用、`max-range`
   范围与多选通用超限限制（拒绝 + `over-range` 事件 + m-toast 提示）、`allow-same-day` 起止同日、`default-date` 预选；select / confirm / unselect / over-range / month-show / panel-change / click-subtitle /
   click-disabled-date 事件；title / subtitle / month-title / text / top-info / bottom-info / footer /
-  confirm-text 与四个导航图标插槽（默认渲染内置在面板组件内，与样式同 scope；宿主仅条件转发用户插槽）；月块内标题内置渲染对齐 Vant（首月由副标题承担当月标题，其余月显示），传入 month-title 插槽可自定义；日格行距对齐 Vant（行高即行距，无额外间距）；选中态为 54px 圆角方块盖于范围 bar 之上（`$m-calendar-day-radius`
+  confirm-text 与四个导航图标插槽（默认渲染内置在面板组件内，与样式同 scope；宿主仅条件转发用户插槽）；月块内标题内置渲染（首月由副标题承担当月标题，其余月显示），传入 month-title 插槽可自定义；日格行距对齐 Vant（行高即行距，无额外间距）；选中态为 54px 圆角方块盖于范围 bar 之上（`$m-calendar-day-radius`
   可调）；expose `reset()` / `resetSelection()` / `scrollToDate()` / `getSelectedDate()` / `refreshView()` 方法；`v-model:value`
   双向绑定选中值（类型随 type，优先于 default-date 作初始值，select/unselect/reset 自动回写）；`show-confirm` 默认 `false`
   纯面板选择即所得（选满自动 confirm，弹层组合 m-calendar-popup 默认开启确认按钮）。`m-calendar-popup` 基于 m-popup 组合的弹层日历：弹层 props 全透传（position / round / z-index / duration / 遮罩可关 / 安全区）与

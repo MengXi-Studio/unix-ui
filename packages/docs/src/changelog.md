@@ -12,6 +12,10 @@
 - **m-date-strip 日期横条**：横向滚动展示一段连续日期（默认今天前 7 天 ~ 后 7 天），`type` 支持 `single` / `multiple` / `range`，点选即生效无确认按钮；`v-model:value` 在 `value-format` 非空时双向绑定字符串（内部经 `parseDate` / `formatDate` 转换，非法串按未选中处理）；`max-range` 超限拒绝并派发 `over-range`（对齐 m-calendar 命名，不内置 toast）；`allow-same-day` 允许范围起止同日，端点文案由 `start-date-text` / `end-date-text` / `same-date-text` 定制；`disabled-date` 灰显禁用并派发 `click-disabled-date`，`filter` 直接剔除不展示日期；`show-lunar` 在日号下方展示农历（复用日期工具集 `solarToLunar` + `getLunarDateText`）；`formatter` 复用 `CalendarDayItem` 契约，另提供 `item` / `top-info` / `bottom-info` 作用域插槽；挂载与外部值变更时自动居中选中项；新增 `$m-date-strip-*` 主题变量段（详见 [DateStrip](/components/date-strip)）
 - **日期工具函数集**：新增 `packages/core/utils/date.uts` 公共入口，按能力分层为 `utils/date/`（core / compare / arith / boundary / grid / format / lunar）七个纯函数模块，共 69 个具名导出——基础原语（归一 / 校验 / 时间戳 / 闰年 / 月天数 / 年内天数）、比较（同日 / 同月 / 先后 / 区间 / 今天 / 周末）、算术与差值、周月年边界与区间枚举、固定 6×7 月历网格与周序号 / 季度、格式化解析（13 个基线 token + `W` / `Q` / `A` / `a`，`[]` 字面量转义，解析回校验拦截溢出）、农历 1900-2100 全量换算（闰月负数表示）与干支 / 生肖 / 月名 / 日名 / 时辰名；全部纯函数不可变、按本地零点计算、失败返回 `null`；m-calendar 通用日期函数改用工具集并通过 `calendar.uts` re-export 保持旧导入路径兼容（详见 [Date](/tools/date)）
 
+### 修复
+
+- **m-tabs options 平分模式首帧底部条未定位**（[#10](https://github.com/MengXi-Studio/unix-ui/issues/10)）：options 形态没有 `m-tab` 子组件，`ctx.items` 恒为空，`watch(ctx.items)` 中的 `animateLine` 不会触发；初始 `activeIndex` 与 `resolveActive` 结果相同也不会触发 `watch(activeIndex)`，`lineLeft` 保持初值 0，首屏底部条贴在标签栏最左缘（点击任意标签后才归位）。`onMounted` 在初始激活解析与渲染集合初始化后补一次 `nextTick` 首定位（`firstSet` 首次直接落位、不播动画），Web 同步测量、小程序在节点渲染完成后按 id 异步查询，均不会产生首帧闪动
+
 ## [0.4.2] - 2026-11-12
 
 修复 m-tabs 微信小程序端 `canScroll` 实例 mounted 崩溃（[#8](https://github.com/MengXi-Studio/unix-ui/issues/8)），小程序端滚动布局居中、插槽底部条定位与 scrollspy 判定 / 点击定位恢复；隐藏 Web 端滚动布局标签栏的横向滚动条。

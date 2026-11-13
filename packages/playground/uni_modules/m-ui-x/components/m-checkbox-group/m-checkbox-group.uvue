@@ -18,7 +18,8 @@
 		CheckboxValue,
 		CheckboxValueArray,
 		CheckboxShape,
-		CheckboxDirection
+		CheckboxDirection,
+		emptyCheckboxValues
 	} from './checkbox.uts'
 
 	type Props = {
@@ -43,7 +44,7 @@
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
-		value: (): CheckboxValueArray => [] as CheckboxValueArray,
+		value: (): CheckboxValueArray => emptyCheckboxValues(),
 		disabled: false,
 		max: 0,
 		direction: 'vertical',

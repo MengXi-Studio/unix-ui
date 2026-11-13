@@ -48,7 +48,7 @@
 			v-model:value="basicValue"
 			:options="basicOptions"
 			title="选择标签"
-			@change="logChange('基础弹层')"
+			@change="onBasicChange"
 		>
 			<template #footer>
 				<view class="popup-footer">
@@ -109,7 +109,7 @@
 	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
 	defineUniPage({ title: '复选弹出框 CheckboxPopup', name: 'checkbox-popup' })
 
-	import { CheckboxValueArray, CheckboxFieldNames, checkboxValueText } from '@/uni_modules/m-ui-x/components/m-checkbox-group/checkbox.uts'
+	import { CheckboxValueArray, CheckboxFieldNames, emptyCheckboxValues, checkboxValueText } from '@/uni_modules/m-ui-x/components/m-checkbox-group/checkbox.uts'
 
 	/** 各弹层显隐 */
 	const basicShow = ref(false)
@@ -120,12 +120,12 @@
 	const eventShow = ref(false)
 
 	/** 各弹层选中集合 */
-	const basicValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
-	const fieldsValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
-	const maxValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
-	const dirValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
-	const heightValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
-	const eventValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const basicValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const fieldsValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const maxValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const dirValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const heightValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const eventValue = ref<CheckboxValueArray>(emptyCheckboxValues())
 
 	/** 最近触发的事件文案 */
 	const lastEvent = ref('（无）')
@@ -180,6 +180,13 @@
 	 */
 	function logChange(tag: string, v: CheckboxValueArray) {
 		console.log('checkbox-popup ' + tag + ' change: ' + joinValues(v))
+	}
+
+	/**
+	 * 基础弹层 change 记录（事件不带参数，取当前绑定值）
+	 */
+	function onBasicChange() {
+		logChange('基础弹层', basicValue.value)
 	}
 
 	/**

@@ -64,7 +64,8 @@
 		checkboxOptionLabel,
 		checkboxOptionValue,
 		checkboxValueText,
-		valuesEqual
+		valuesEqual,
+		emptyCheckboxValues
 	} from '../m-checkbox-group/checkbox.uts'
 	import MInput from '../m-input/m-input.uvue'
 	import MCheckboxPopup from '../m-checkbox-popup/m-checkbox-popup.uvue'
@@ -116,7 +117,7 @@
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
-		value: (): CheckboxValueArray => [] as CheckboxValueArray,
+		value: (): CheckboxValueArray => emptyCheckboxValues(),
 		options: null,
 		placeholder: '请选择',
 		disabled: false,
@@ -257,7 +258,7 @@
 	 * 清空：回写空集合并派发 clear（.stop 阻止冒泡到根触发器）
 	 */
 	function onClearClick(e: MouseEvent) {
-		emit('update:value', [] as CheckboxValueArray)
+		emit('update:value', emptyCheckboxValues())
 		emit('clear')
 	}
 </script>

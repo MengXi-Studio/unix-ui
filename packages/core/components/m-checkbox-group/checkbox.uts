@@ -13,8 +13,22 @@ export const CHECKBOX_KEY: string = '__mxi_checkbox_group__'
 /** 单个勾选项标识（UTS 无 any，收窄为字符串 / 数字） */
 export type CheckboxValue = string | number
 
-/** 复选组值（多选集合，UTS 联合类型数组已实测合法：编译运行均通过） */
+/** 复选组值（多选集合） */
 export type CheckboxValueArray = Array<string | number>
+
+/**
+ * 创建空复选值集合
+ *
+ * 空数组字面量直接断言为联合类型别名时，Kotlin 侧无法推断 UTSArray 的元素类型
+ * （生成 `_uA()` 导致 `Cannot infer type argument for 'E'`）；经 ref 泛型构造可生成
+ * 带类型参数的数组，再取 `.value` 返回，供 prop 默认值 / 清空事件 / 组件上下文复用。
+ *
+ * @returns 空集合
+ */
+export function emptyCheckboxValues(): CheckboxValueArray {
+	const box = ref<CheckboxValueArray>([])
+	return box.value
+}
 
 /** 复选框形状：圆形 / 方形 */
 export type CheckboxShape = 'round' | 'square'
@@ -45,7 +59,7 @@ export const DEFAULT_CHECKBOX_FIELD_NAMES: CheckboxFieldNames = {
 /** 复选组注入上下文：维护选中集合与统一视觉规格 */
 export class CheckboxGroupContext {
 	/** 选中项标识集合（组容器写入，子项据此判定勾选态） */
-	value: Ref<CheckboxValueArray> = ref<CheckboxValueArray>([])
+	value: Ref<CheckboxValueArray> = ref<CheckboxValueArray>(emptyCheckboxValues())
 	/** 是否禁用全部复选框 */
 	disabled: Ref<boolean> = ref<boolean>(false)
 	/** 形状 */
@@ -59,7 +73,7 @@ export class CheckboxGroupContext {
 	/** 排列方向 */
 	direction: Ref<CheckboxDirection> = ref<CheckboxDirection>('vertical')
 	/** 注册的 name 集合（reactive 数组，toggleAll / max 判定用） */
-	names: CheckboxValueArray = reactive<CheckboxValueArray>([])
+	names: CheckboxValueArray = reactive<CheckboxValueArray>(emptyCheckboxValues())
 
 	/**
 	 * 注册子项 name（m-checkbox setup 中同步调用）

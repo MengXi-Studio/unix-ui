@@ -140,7 +140,7 @@
 	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
 	defineUniPage({ title: '复选框 Checkbox', name: 'checkbox' })
 
-	import { CheckboxValueArray, checkboxValueText } from '@/uni_modules/m-ui-x/components/m-checkbox-group/checkbox.uts'
+	import { CheckboxValueArray, emptyCheckboxValues, checkboxValueText } from '@/uni_modules/m-ui-x/components/m-checkbox-group/checkbox.uts'
 
 	/** 基础用法选中集合 */
 	const basicValue = ref<CheckboxValueArray>(['a'] as CheckboxValueArray)
@@ -149,23 +149,23 @@
 	/** 禁用演示选中集合（c 项预选中验证禁用选中态） */
 	const disabledValue = ref<CheckboxValueArray>(['c'] as CheckboxValueArray)
 	/** 组容器禁用演示选中集合 */
-	const groupDisabledValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const groupDisabledValue = ref<CheckboxValueArray>(emptyCheckboxValues())
 	/** 形状演示选中集合 */
 	const shapeValue = ref<CheckboxValueArray>(['a'] as CheckboxValueArray)
 	/** 颜色演示选中集合 */
 	const colorValue = ref<CheckboxValueArray>(['a'] as CheckboxValueArray)
 	/** 文本位置演示选中集合 */
-	const labelValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const labelValue = ref<CheckboxValueArray>(emptyCheckboxValues())
 	/** max 演示选中集合 */
-	const maxValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const maxValue = ref<CheckboxValueArray>(emptyCheckboxValues())
 	/** 方向演示选中集合 */
-	const dirValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const dirValue = ref<CheckboxValueArray>(emptyCheckboxValues())
 	/** 插槽演示选中集合 */
-	const slotValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const slotValue = ref<CheckboxValueArray>(emptyCheckboxValues())
 	/** 全选组选中集合 */
 	const allValue = ref<CheckboxValueArray>(['a', 'b'] as CheckboxValueArray)
 	/** 单元格演示选中集合 */
-	const cellValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const cellValue = ref<CheckboxValueArray>(emptyCheckboxValues())
 
 	/** 单元格演示条目 */
 	const cellItems = ref<string[]>(['单元格 a', '单元格 b'])
@@ -188,7 +188,7 @@
 	 */
 	function onToggleAll() {
 		if (allValue.value.length == allNames.length) {
-			allValue.value = [] as CheckboxValueArray
+			allValue.value = emptyCheckboxValues()
 		} else {
 			const next: CheckboxValueArray = []
 			for (let i = 0; i < allNames.length; i++) {
@@ -232,8 +232,9 @@
 	/**
 	 * change 事件日志
 	 */
-	function logChange(tag: string, v: CheckboxValueArray) {
-		console.log('checkbox ' + tag + ' change: ' + joinValues(v))
+	function logChange(tag: string, v: any | null) {
+		const list: CheckboxValueArray = v == null ? emptyCheckboxValues() : (v as CheckboxValueArray)
+		console.log('checkbox ' + tag + ' change: ' + joinValues(list))
 	}
 </script>
 

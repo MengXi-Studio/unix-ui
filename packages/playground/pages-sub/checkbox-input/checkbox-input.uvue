@@ -51,16 +51,16 @@
 	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
 	defineUniPage({ title: '复选输入框 CheckboxInput', name: 'checkbox-input' })
 
-	import { CheckboxValueArray, CheckboxFieldNames, checkboxValueText } from '@/uni_modules/m-ui-x/components/m-checkbox-group/checkbox.uts'
+	import { CheckboxValueArray, CheckboxFieldNames, emptyCheckboxValues, checkboxValueText } from '@/uni_modules/m-ui-x/components/m-checkbox-group/checkbox.uts'
 
 	/** 各演示选中集合 */
-	const basicValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
-	const manyValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
-	const clearValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const basicValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const manyValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const clearValue = ref<CheckboxValueArray>(emptyCheckboxValues())
 	const presetValue = ref<CheckboxValueArray>([110000, 310000] as CheckboxValueArray)
-	const inlaidValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
-	const fieldsValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
-	const maxValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const inlaidValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const fieldsValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const maxValue = ref<CheckboxValueArray>(emptyCheckboxValues())
 
 	/** 城市选项数据（value 为 number 区域编码） */
 	const cityOptions = ref<UTSJSONObject[]>([

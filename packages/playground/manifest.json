@@ -6,9 +6,7 @@
 	"versionCode": "050",
 	"uni-app-x": {
 		"styleIsolationVersion": "2",
-		"vapor-default-script-lang": "uts",
-		"vapor": true,
-		"vapor-render-target": "bytecode"
+		"vapor-default-script-lang": "uts"
 	},
 	"quickapp": {},
 	"mp-weixin": {

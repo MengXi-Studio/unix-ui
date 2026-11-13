@@ -16,6 +16,7 @@
 
 - **m-tabs options 平分模式首帧底部条未定位**（[#10](https://github.com/MengXi-Studio/unix-ui/issues/10)）：options 形态没有 `m-tab` 子组件，`ctx.items` 恒为空，`watch(ctx.items)` 中的 `animateLine` 不会触发；初始 `activeIndex` 与 `resolveActive` 结果相同也不会触发 `watch(activeIndex)`，`lineLeft` 保持初值 0，首屏底部条贴在标签栏最左缘（点击任意标签后才归位）。`onMounted` 在初始激活解析与渲染集合初始化后补一次 `nextTick` 首定位（`firstSet` 首次直接落位、不播动画），Web 同步测量、小程序在节点渲染完成后按 id 异步查询，均不会产生首帧闪动
 - **m-popup 微信小程序端第二次打开无滑入动画**（[#11](https://github.com/MengXi-Studio/unix-ui/issues/11)）：非 Web 端 `triggerPanelIn` 原用 `nextTick` 切换进入态，小程序渲染层会把间隔过近的两次 setData 合帧渲染，面板起始位（`-out`）与遮罩 `display:none` 移除落在同一帧，过渡没有可插值起点，第二次及以后打开直接出现在终位（首次因 `lazyRender` 挂载帧先绘制了起始位而正常）。改为与 m-overlay 淡入一致的 50ms 定时，确保起始位先完成一帧绘制；Web 端双 rAF 分支不变
+- **Android 云端打包编译失败**：空联合类型数组字面量直接断言为 `CheckboxValueArray` 会生成无类型参数的 `_uA()`，Kotlin 侧报 `Cannot infer type argument for 'E'`——新增 `emptyCheckboxValues()` 工厂统一生成带类型参数的空集合，替换复选框组件 prop 默认值、上下文初始值与清空事件；日期横条演示页的作用域插槽参数在 Kotlin 侧为 `Any?`，直接访问 `type` / `text` 会 `Unresolved reference`，改为经类型收窄的辅助函数读取；复选框演示页 `change` 回调参数类型不匹配与缺失参数一并修正
 
 ## [0.4.2] - 2026-11-12
 

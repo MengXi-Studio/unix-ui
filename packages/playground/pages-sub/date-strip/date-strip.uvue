@@ -78,16 +78,16 @@
 				<view class="card">
 					<m-date-strip type="single">
 						<template #top-info="{ day }">
-							<text class="demo-slot-top">{{ day.type == 'selected' ? '已选' : '' }}</text>
+							<text class="demo-slot-top">{{ slotTopText(day) }}</text>
 						</template>
 						<template #bottom-info="{ day }">
-							<text class="demo-slot-bottom">{{ day.type == 'selected' ? '✓' : '' }}</text>
+							<text class="demo-slot-bottom">{{ slotBottomText(day) }}</text>
 						</template>
 					</m-date-strip>
 					<text class="caption">top-info / bottom-info 作用域插槽（day 为 CalendarDayItem）；另有 item 插槽可完全自定义单项内容</text>
 					<m-date-strip type="multiple" custom-style="margin-top: 16px;">
 						<template #item="{ item }">
-							<text class="demo-slot-item">{{ item.text }}</text>
+							<text class="demo-slot-item">{{ slotItemText(item) }}</text>
 						</template>
 					</m-date-strip>
 					<text class="caption">item 插槽：完全接管单项渲染（item 为 CalendarDayItem，date / type / text 均可用）</text>
@@ -189,6 +189,32 @@
 	/** 点击禁用日期记录 */
 	const onDisabledClick = (date: Date) => {
 		filterLog.value = 'click-disabled-date → ' + formatDate(date, 'YYYY-MM-DD')
+	}
+
+	// ========== 7 插槽（作用域参数在 Kotlin 侧为 Any?，需经类型收窄后再取字段） ==========
+
+	/** top-info 插槽文案 */
+	const slotTopText = (day: any | null): string => {
+		if (day == null) {
+			return ''
+		}
+		return (day as CalendarDayItem).type == 'selected' ? '已选' : ''
+	}
+
+	/** bottom-info 插槽文案 */
+	const slotBottomText = (day: any | null): string => {
+		if (day == null) {
+			return ''
+		}
+		return (day as CalendarDayItem).type == 'selected' ? '✓' : ''
+	}
+
+	/** item 插槽文案 */
+	const slotItemText = (item: any | null): string => {
+		if (item == null) {
+			return ''
+		}
+		return (item as CalendarDayItem).text
 	}
 </script>
 

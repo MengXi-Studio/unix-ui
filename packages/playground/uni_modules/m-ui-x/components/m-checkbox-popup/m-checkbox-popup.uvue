@@ -59,7 +59,7 @@
 	 * 对齐 cascader-popup 的 options 驱动先例），不要求使用者写子组件模板；
 	 * 弹层行为归 m-popup，勾选集合经 m-checkbox-group 受控并回写。
 	 */
-	import { CheckboxValueArray, CheckboxShape, CheckboxDirection, CheckboxLabelPosition, CheckboxFieldNames, DEFAULT_CHECKBOX_FIELD_NAMES, checkboxOptionLabel, checkboxOptionValue, checkboxOptionDisabled } from '../m-checkbox-group/checkbox.uts'
+	import { CheckboxValueArray, CheckboxShape, CheckboxDirection, CheckboxLabelPosition, CheckboxFieldNames, DEFAULT_CHECKBOX_FIELD_NAMES, checkboxOptionLabel, checkboxOptionValue, checkboxOptionDisabled, emptyCheckboxValues } from '../m-checkbox-group/checkbox.uts'
 	import { IconName } from '../m-icon/icons.uts'
 	import MPopup from '../m-popup/m-popup.uvue'
 	import MIcon from '../m-icon/m-icon.uvue'
@@ -129,7 +129,7 @@
 
 	const props = withDefaults(defineProps<Props>(), {
 		show: false,
-		value: (): CheckboxValueArray => [] as CheckboxValueArray,
+		value: (): CheckboxValueArray => emptyCheckboxValues(),
 		options: null,
 		title: '',
 		showHeader: true,

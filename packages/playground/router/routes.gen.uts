@@ -57,6 +57,21 @@ export const routes: RouteConfig[] = [
 		meta: { title: '单元格 Cell' },
 	},
 	{
+		path: 'pages-sub/checkbox-input/checkbox-input',
+		name: 'checkbox-input',
+		meta: { title: '复选输入框 CheckboxInput' },
+	},
+	{
+		path: 'pages-sub/checkbox-popup/checkbox-popup',
+		name: 'checkbox-popup',
+		meta: { title: '复选弹出框 CheckboxPopup' },
+	},
+	{
+		path: 'pages-sub/checkbox/checkbox',
+		name: 'checkbox',
+		meta: { title: '复选框 Checkbox' },
+	},
+	{
 		path: 'pages-sub/compact/compact',
 		name: 'compact',
 		meta: { title: '紧凑布局 Compact' },

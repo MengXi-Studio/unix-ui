@@ -162,6 +162,24 @@ export const demoGroups: DemoGroup[] = [
 				desc: 'm-popup 与 m-cascader 的弹层组合，v-model 控制显隐，选完最后一级自动关闭，支持方位、圆角与安全区配置。'
 			},
 			{
+				name: 'checkbox',
+				zhName: '复选框',
+				enName: 'Checkbox',
+				desc: '在一组备选项中进行多选：组容器 + 单项双形态，支持形状 / 颜色 / 大小定制、max 限制与 indeterminate 全选。'
+			},
+			{
+				name: 'checkbox-input',
+				zhName: '复选输入框',
+				enName: 'CheckboxInput',
+				desc: '复选框的表单输入形态：只读触发器 + 弹层多选，label「、」连接回显、超 2 项截断、自绘清空按钮。'
+			},
+			{
+				name: 'checkbox-popup',
+				zhName: '复选弹出框',
+				enName: 'CheckboxPopup',
+				desc: '复选框的弹层形态：底部弹层多选，options 数组驱动渲染 + field-names 映射 + footer 插槽。'
+			},
+			{
 				name: 'input',
 				zhName: '输入框',
 				enName: 'Input',

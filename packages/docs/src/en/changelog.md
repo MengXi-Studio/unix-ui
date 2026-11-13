@@ -2,10 +2,11 @@
 
 ## [0.5.0] - 2026-11-13
 
-Added the m-fab / m-fab-item floating action button components.
+Added the m-fab / m-fab-item floating action button components and the four m-checkbox components.
 
 ### Added
 
+- **m-checkbox-group / m-checkbox / m-checkbox-popup / m-checkbox-input checkboxes** (modeled on Vant Checkbox / CheckboxGroup): m-checkbox-group is the multi-select container (`v-model:value` is an `Array<string | number>` union array, verified to compile on all targets; `'1'` equals `1` via stringified comparison), distributing shape / checked-color / icon-size / disabled / max / direction to items (overridable per item); m-checkbox is dual-form (joins the group by name, or stands alone with a boolean `v-model`), with square shape, label-position swap, label-disabled (icon still clickable), an indeterminate dash, icon / default slots (scoped `{ checked, disabled }`), and an exposed `toggle()` for whole-row cell toggling; m-checkbox-popup is a bottom sheet (options-driven rendering + field-names mapping + footer slot); m-checkbox-input is a readonly trigger + popup (labels join with 「、」, over 2 items collapse to "N items", custom clear button); new `$m-checkbox-*` theme variables (see [Checkbox](/en/components/checkbox))
 - **m-fab / m-fab-item floating action button** (modeled on Sard Fab): a round entry button pinned to a viewport position expands a list of action buttons on click and collapses after one is tapped; four-corner positioning (`top` / `right` / `bottom` / `left`, theme default offset when omitted, expanding downward when the entry sits in the upper half of the viewport); `background` / `color` customize the entry and item colors (gradients supported, items inherit the container values when omitted); `hide-name` hides the names; the `entry` slot customizes the entry content (scoped `visible`) and the `name` slot customizes the labels; `overlay-closable` renders an overlay while expanded and closes on tap; `draggable` dragging (`axis` with four values, `margin-x` / `margin-y` boundary clamping, `magnet` snapping to the nearest edge on release, `v-model:offset` controlled position reported as the entry center coordinates); expand / collapse are per-item inline transitions (staggered by registration order, reversed on collapse); new `$m-fab-*` theme variables (see [Fab](/en/components/fab))
 
 ## [0.4.2] - 2026-11-12

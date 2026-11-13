@@ -26,6 +26,12 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		cascader: 'pages-sub/cascader/cascader'
 		/** 单元格 Cell */
 		cell: 'pages-sub/cell/cell'
+		/** 复选输入框 CheckboxInput */
+		'checkbox-input': 'pages-sub/checkbox-input/checkbox-input'
+		/** 复选弹出框 CheckboxPopup */
+		'checkbox-popup': 'pages-sub/checkbox-popup/checkbox-popup'
+		/** 复选框 Checkbox */
+		checkbox: 'pages-sub/checkbox/checkbox'
 		/** 紧凑布局 Compact */
 		compact: 'pages-sub/compact/compact'
 		/** 分割线 Divider */

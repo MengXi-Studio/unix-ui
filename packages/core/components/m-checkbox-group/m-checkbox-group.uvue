@@ -1,0 +1,174 @@
+<template>
+	<!-- 复选框组容器：provide 上下文给 m-checkbox 子项（组内子项经 name 参与勾选），
+	     选中集合 v-model:value 受控；toggleAll 经 expose 暴露（对齐 Vant CheckboxGroup）。 -->
+	<view :class="rootClass" :style="customStyle">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-checkbox-group 复选框组：多选集合容器，对标 Vant CheckboxGroup。
+	 * 视觉规格（形状 / 图标尺寸 / 选中色 / 禁用 / max / direction）经上下文统一下发，
+	 * 子项 m-checkbox inject 后按 name 参与勾选；value 变更经 update:value 回写外部。
+	 */
+	import {
+		CHECKBOX_KEY,
+		CheckboxGroupContext,
+		CheckboxValue,
+		CheckboxValueArray,
+		CheckboxShape,
+		CheckboxDirection
+	} from './checkbox.uts'
+
+	type Props = {
+		/** 选中项标识集合（v-model:value） */
+		value?: CheckboxValueArray
+		/** 是否禁用全部复选框 */
+		disabled?: boolean
+		/** 最大可选数（0 不限制；达到上限后其余项点击仅派发 click 不变更） */
+		max?: number
+		/** 排列方向 */
+		direction?: CheckboxDirection
+		/** 图标尺寸（number 补 px / string 原样，统一下发子项） */
+		iconSize?: string | number
+		/** 选中态颜色（统一下发子项，子项 checked-color 优先） */
+		checkedColor?: string
+		/** 形状（统一下发子项，子项 shape 优先） */
+		shape?: CheckboxShape
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: (): CheckboxValueArray => [] as CheckboxValueArray,
+		disabled: false,
+		max: 0,
+		direction: 'vertical',
+		iconSize: '',
+		checkedColor: '',
+		shape: 'round',
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 选中集合变化（v-model:value） */
+		'update:value': [value: CheckboxValueArray]
+		/** 选中集合变化（对齐 Vant change，回传当前选中集合） */
+		change: [value: CheckboxValueArray]
+	}>()
+
+	/** 组上下文（provide 给 m-checkbox） */
+	const ctx = new CheckboxGroupContext()
+	provide(CHECKBOX_KEY, ctx)
+
+	/** 数字 / 纯数字字符串补 px（icon-size 换算） */
+	function addUnit(value: string): string {
+		if (value == '') return ''
+		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
+		return pattern.test(value) ? value + 'px' : value
+	}
+
+	/** 根节点类名：纵向 / 横向变体 + customClass */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-checkbox-group'
+		if (props.direction == 'horizontal') cls += ' m-checkbox-group--horizontal'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	// 视觉规格 props 变更同步上下文（子项只读上下文，不重复声明逻辑）
+	watch((): CheckboxValueArray => props.value, (v: CheckboxValueArray) => {
+		ctx.value.value = v
+	}, { immediate: true })
+
+	watch((): boolean => props.disabled, (v: boolean) => {
+		ctx.disabled.value = v
+	}, { immediate: true })
+
+	watch((): number => props.max, (v: number) => {
+		ctx.max.value = v
+	}, { immediate: true })
+
+	watch((): CheckboxShape => props.shape, (v: CheckboxShape) => {
+		ctx.shape.value = v
+	}, { immediate: true })
+
+	watch((): CheckboxDirection => props.direction, (v: CheckboxDirection) => {
+		ctx.direction.value = v
+	}, { immediate: true })
+
+	/** 选中色与图标尺寸（computed 中转，null 兜底空串） */
+	watch((): string => props.checkedColor, (v: string) => {
+		ctx.checkedColor.value = v
+	}, { immediate: true })
+
+	watch((): string => {
+		if (props.iconSize == '') return ''
+		return addUnit('' + props.iconSize)
+	}, (v: string) => {
+		ctx.iconSize.value = v
+	}, { immediate: true })
+
+	/** 上下文选中集合变化回写外部（子项 toggle 修改 ctx.value 后触发） */
+	watch(ctx.value, (v: CheckboxValueArray) => {
+		emit('update:value', v)
+		emit('change', v)
+	})
+
+	/**
+	 * 切换全部复选框（对齐 Vant toggleAll）：checked 为 true 全选 / false 全不选 / null 取反；
+	 * 跳过禁用子项；受 max 约束（全选时到达上限即停）。
+	 *
+	 * @param checked 目标状态（null 取反）
+	 */
+	function toggleAll(checked: boolean | null) {
+		const target = checked == null ? null : checked
+		if (target == null) {
+			// 取反：以注册序逐个 toggle（已被禁用项在 toggle 内不拦截——禁用拦截在子项点击层）
+			for (let i = 0; i < ctx.names.length; i++) {
+				ctx.toggle(ctx.names[i])
+			}
+			return
+		}
+		const next: CheckboxValueArray = []
+		if (target) {
+			for (let i = 0; i < ctx.names.length; i++) {
+				const name = ctx.names[i]
+				if (next.length >= ctx.max.value && ctx.max.value > 0) {
+					break
+				}
+				next.push(name)
+			}
+		}
+		ctx.value.value = next
+	}
+
+	defineExpose({
+		toggleAll
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 组容器：纵向排列 */
+	.m-checkbox-group {
+		flex-direction: column;
+	}
+
+	/* 横向排列（换行） */
+	.m-checkbox-group--horizontal {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+</style>

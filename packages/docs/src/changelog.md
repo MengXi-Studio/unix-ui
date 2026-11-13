@@ -2,10 +2,11 @@
 
 ## [0.5.0] - 2026-11-13
 
-新增 m-fab / m-fab-item 悬浮按钮组件。
+新增 m-fab / m-fab-item 悬浮按钮组件与 m-checkbox 复选框四组件。
 
 ### 新增
 
+- **m-checkbox-group / m-checkbox / m-checkbox-popup / m-checkbox-input 复选框四组件**（对标 Vant Checkbox / CheckboxGroup）：m-checkbox-group 多选集合容器（`v-model:value` 为 `Array<string | number>` 联合类型数组，已实测全端编译合法；`'1'` 与 `1` 字符串化比较视为同一项），统一下发 shape / checked-color / icon-size / disabled / max / direction（子项可覆盖）；m-checkbox 双形态（组内按 name 参与勾选 / 独立 `v-model` 布尔自持），square 形状、label-position 左右互换、label-disabled 仅禁文本、indeterminate 不确定横杠、icon / default 插槽（作用域 `{ checked, disabled }`）、expose `toggle()`（搭配单元格整行切换）；m-checkbox-popup 底部弹层（options 数组驱动渲染 + field-names 映射 + footer 插槽）；m-checkbox-input 只读触发器 + 弹层（label「、」连接回显、超 2 项截断「等 N 项」、自绘清空按钮）；新增 `$m-checkbox-*` 主题变量段（详见 [Checkbox](/components/checkbox)）
 - **m-fab / m-fab-item 悬浮按钮**（对标 Sard Fab）：入口圆钮固定于视口指定位置，点击展开扩展按钮列表、点击扩展按钮后自动收起；四角定位（`top` / `right` / `bottom` / `left`，未传用主题默认间距，入口在视口上半侧时向下展开）；`background` / `color` 自定义入口与子项配色（支持渐变，子项未设时继承容器）；`hide-name` 隐藏名称；`entry` 插槽自定义入口内容（作用域 `visible`）与 `name` 插槽自定义名称；`overlay-closable` 展开期间渲染遮罩并支持点击收起；`draggable` 拖拽（`axis` 四值限制方向、`margin-x` / `margin-y` 边界钳制、`magnet` 松手吸附最近边、`v-model:offset` 受控位置以入口中心点坐标回写）；展开 / 收起为逐项 inline transition（按注册序 stagger，收起逆序）；新增 `$m-fab-*` 主题变量段（详见 [Fab](/components/fab)）
 
 ## [0.4.2] - 2026-11-12

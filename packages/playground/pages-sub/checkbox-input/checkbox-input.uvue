@@ -1,0 +1,116 @@
+<template>
+	<view class="page">
+		<demo-navbar title="复选输入框" subtitle="CheckboxInput" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-checkbox-input v-model:value="basicValue" :options="cityOptions" title="选择城市" placeholder="请选择城市" />
+					<text class="caption">只读触发器 + 底部弹层；选中项 label「、」连接回显（当前：{{ joinValues(basicValue) }}）</text>
+				</view>
+
+				<text class="section" id="truncate">超长截断</text>
+				<view class="card">
+					<m-checkbox-input v-model:value="manyValue" :options="cityOptions" title="选择城市（超 2 项截断）" />
+					<text class="caption">选中超 2 项截断为「前两项 等 N 项」</text>
+					<m-button size="small" plain style="margin-top: 8px;" @click="selectMany">一键选 3 项</m-button>
+				</view>
+
+				<text class="section" id="clear">清空按钮</text>
+				<view class="card">
+					<m-checkbox-input v-model:value="clearValue" :options="cityOptions" title="可清空" @clear="logClear" />
+					<text class="caption">clearable 有值时显示自绘清空按钮（点击回写空数组，m-input 内置 clearable 位于触发层下会被挡住）</text>
+				</view>
+
+				<text class="section" id="disabled">禁用与形态</text>
+				<view class="card">
+					<m-checkbox-input v-model:value="presetValue" :options="cityOptions" disabled title="禁用" />
+					<text class="caption">disabled：触发层不渲染，无法打开弹层；值仍展示</text>
+					<m-checkbox-input v-model:value="inlaidValue" :options="cityOptions" inlaid title="嵌入式" style="margin-top: 8px;" />
+					<text class="caption">inlaid 嵌入式形态（清边框内边距，适配单元格）</text>
+				</view>
+
+				<text class="section" id="field-names">自定义字段名与 number 值</text>
+				<view class="card">
+					<m-checkbox-input v-model:value="fieldsValue" :options="codeOptions" :field-names="customFields" title="选择地区编码" />
+					<text class="caption">field-names 映射（name / code）；value 为 number（区域编码），回显 label 或值文本</text>
+				</view>
+
+				<text class="section" id="max">最大可选数</text>
+				<view class="card">
+					<m-checkbox-input v-model:value="maxValue" :options="cityOptions" :max="2" title="最多选 2 项" />
+					<text class="caption">max=2 透传弹层：选满后其余项不可再勾（当前：{{ joinValues(maxValue) }}）</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '复选输入框 CheckboxInput', name: 'checkbox-input' })
+
+	import { CheckboxValueArray, CheckboxFieldNames, checkboxValueText } from '@/uni_modules/m-ui-x/components/m-checkbox-group/checkbox.uts'
+
+	/** 各演示选中集合 */
+	const basicValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const manyValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const clearValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const presetValue = ref<CheckboxValueArray>([110000, 310000] as CheckboxValueArray)
+	const inlaidValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const fieldsValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+	const maxValue = ref<CheckboxValueArray>([] as CheckboxValueArray)
+
+	/** 城市选项数据（value 为 number 区域编码） */
+	const cityOptions = ref<UTSJSONObject[]>([
+		{ label: '北京', value: 110000 },
+		{ label: '上海', value: 310000 },
+		{ label: '广州', value: 440100 },
+		{ label: '深圳', value: 440300 },
+		{ label: '杭州', value: 330100 }
+	] as UTSJSONObject[])
+
+	/** 自定义字段名选项数据（name / code） */
+	const codeOptions = ref<UTSJSONObject[]>([
+		{ name: '华东区', code: 'east' },
+		{ name: '华南区', code: 'south' },
+		{ name: '华北区', code: 'north' }
+	] as UTSJSONObject[])
+
+	/** 自定义字段名映射 */
+	const customFields = ref<CheckboxFieldNames>({ label: 'name', value: 'code', disabled: 'disabled' } as CheckboxFieldNames)
+
+	/**
+	 * 值集合的展示文本（「、」连接）
+	 */
+	function joinValues(v: CheckboxValueArray): string {
+		const parts: string[] = []
+		for (let i = 0; i < v.length; i++) {
+			parts.push(checkboxValueText(v[i]))
+		}
+		return '[' + parts.join('、') + ']'
+	}
+
+	/**
+	 * 一键选 3 项（验证截断文案）
+	 */
+	function selectMany() {
+		manyValue.value = [110000, 310000, 440100] as CheckboxValueArray
+	}
+
+	/**
+	 * 清空事件日志
+	 */
+	function logClear() {
+		console.log('checkbox-input clear')
+	}
+</script>
+
+<style lang="scss">
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

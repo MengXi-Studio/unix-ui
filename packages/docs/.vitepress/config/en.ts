@@ -100,6 +100,9 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Cascader', link: '/en/components/cascader' },
 						{ text: 'CascaderInput', link: '/en/components/cascader-input' },
 						{ text: 'CascaderPopup', link: '/en/components/cascader-popup' },
+						{ text: 'Checkbox', link: '/en/components/checkbox' },
+						{ text: 'CheckboxInput', link: '/en/components/checkbox-input' },
+						{ text: 'CheckboxPopup', link: '/en/components/checkbox-popup' },
 						{ text: 'Input', link: '/en/components/input' }
 					]
 				},

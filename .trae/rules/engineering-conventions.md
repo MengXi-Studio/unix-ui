@@ -1,4 +1,4 @@
-# 架构开发规则（unix-ui）
+# 工程开发规范（unix-ui）
 
 > 本规则约束在本项目中的一切代码生成行为。pnpm monorepo 三包职责、同步机制与主题契约见本文件；
 > 与本规则冲突的写法一律视为错误实现，即使 AI 认为「更简洁」或「TS 里惯用」。
@@ -74,6 +74,12 @@ packages/docs（VitePress 双语文档站，手工维护）
 
 - playground 工程基座（manifest 的 vapor / devServer 端口、index.html 入口）改动需向用户说明理由。
 - core 保持纯组件库：禁止全局副作用、禁止依赖 playground 专属配置、禁止引入 vars.scss 之外的样式资源。
+
+### 6.1 组件排序（强制）
+
+- **组内按组件名字母序升序**：`playground/pages/index/demo-components.uts` 各分组的 `components` 数组、文档侧栏 `docs/.vitepress/config/zh.ts` 与 `en.ts` 各分组的 `items`，一律按组件名（kebab-case 小写标识，对应 `name`）字母升序排列；分组之间的先后顺序保持现状，禁止按新增时间追加到组末。
+- **三处同序**：同一分组的组件顺序在 `demo-components.uts`、`zh.ts`、`en.ts` 中必须完全一致（中英文侧栏的英文项目名也同序），新增组件须插入到正确位置而非追加。
+- 示例（表单组件组）：`calendar → calendar-input → calendar-popup → cascader → cascader-input → cascader-popup → checkbox → checkbox-input → checkbox-popup → input`。
 
 ## 7. 验证（core-protocol DoD 的项目级补充）
 

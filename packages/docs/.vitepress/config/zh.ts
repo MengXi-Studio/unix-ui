@@ -113,6 +113,9 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Cascader 级联选择', link: '/components/cascader' },
 						{ text: 'CascaderInput 级联输入框', link: '/components/cascader-input' },
 						{ text: 'CascaderPopup 级联弹出框', link: '/components/cascader-popup' },
+						{ text: 'Checkbox 复选框', link: '/components/checkbox' },
+						{ text: 'CheckboxInput 复选输入框', link: '/components/checkbox-input' },
+						{ text: 'CheckboxPopup 复选弹出框', link: '/components/checkbox-popup' },
 						{ text: 'Input 输入框', link: '/components/input' }
 					]
 				},

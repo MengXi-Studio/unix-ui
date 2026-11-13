@@ -66,6 +66,24 @@
 					}
 				},
 				{
+					"path": "checkbox-input/checkbox-input",
+					"style": {
+						"navigationBarTitleText": "复选输入框 CheckboxInput"
+					}
+				},
+				{
+					"path": "checkbox-popup/checkbox-popup",
+					"style": {
+						"navigationBarTitleText": "复选弹出框 CheckboxPopup"
+					}
+				},
+				{
+					"path": "checkbox/checkbox",
+					"style": {
+						"navigationBarTitleText": "复选框 Checkbox"
+					}
+				},
+				{
 					"path": "compact/compact",
 					"style": {
 						"navigationBarTitleText": "紧凑布局 Compact"

@@ -1,5 +1,6 @@
 ## 0.5.0 (2026-11-13)
 
+- 新增 `m-checkbox-group` / `m-checkbox` / `m-checkbox-popup` / `m-checkbox-input` 复选框四组件（对标 Vant Checkbox / CheckboxGroup）：多选集合 `v-model:value`（`Array<string | number>` 联合类型数组，`'1'` 与 `1` 字符串化比较视为同一项）；单项双形态（组内按 name 勾选 / 独立 `v-model` 布尔自持）、square / round 形状、label-position 左右互换、label-disabled、indeterminate 不确定横杠、icon / default 插槽（作用域 `{ checked, disabled }`）、expose `toggle()`；弹层 options 数组驱动 + field-names 映射 + footer 插槽；输入框「、」连接回显（超 2 项截断「等 N 项」）+ 自绘清空按钮；新增 `$m-checkbox-*` 主题变量
 - 新增 `m-fab` / `m-fab-item` 悬浮按钮（对标 Sard Fab）：入口圆钮固定于视口指定位置，点击展开扩展按钮列表、点击后自动收起；四角定位（`top` / `right` / `bottom` / `left`）、`background` / `color` 自定义配色（子项继承容器）、`hide-name` 隐藏名称、`entry` / `name` 插槽自定义、`overlay-closable` 遮罩点击收起、`draggable` 拖拽（`axis` 方向限制 / `margin-x` `margin-y` 边界钳制 / `magnet` 松手吸附 / `v-model:offset` 中心点坐标回写）；展开收起为逐项 stagger 过渡（收起逆序），新增 `$m-fab-*` 主题变量
 
 ## 0.4.2 (2026-11-12)

@@ -342,3 +342,49 @@ $m-fab-item-name-line-height: 16px !default;
 $m-fab-item-name-padding: 4px 8px !default;
 /** 子项名称圆角 */
 $m-fab-item-name-radius: $m-radius-md !default;
+
+/* ========== Checkbox 复选框 ========== */
+/** 单项内边距 */
+$m-checkbox-padding: 10px 16px !default;
+/** 勾选图标尺寸 */
+$m-checkbox-icon-size: 20px !default;
+/** 未选中图标颜色（描边） */
+$m-checkbox-icon-color: $m-color-primary !default;
+/** 图标与文本间距 */
+$m-checkbox-label-gap: 8px !default;
+/** 文本字号 */
+$m-checkbox-label-font-size: 14px !default;
+/** 文本行高 */
+$m-checkbox-label-line-height: 20px !default;
+/** 文本颜色 */
+$m-checkbox-label-color: $m-text-color !default;
+/** 文本选中颜色 */
+$m-checkbox-label-checked-color: $m-text-color !default;
+/** 文本禁用颜色 */
+$m-checkbox-label-disabled-color: $m-text-color-fourth !default;
+/** 禁用态图标透明度 */
+$m-checkbox-disabled-opacity: $m-disabled-opacity !default;
+/** 弹层背景色 */
+$m-checkbox-popup-background: $m-white !default;
+/** 弹层头部内边距 */
+$m-checkbox-popup-header-padding: 14px 16px !default;
+/** 弹层标题字号 */
+$m-checkbox-popup-title-font-size: 16px !default;
+/** 弹层标题颜色 */
+$m-checkbox-popup-title-color: $m-text-color !default;
+/** 弹层关闭图标字号 */
+$m-checkbox-popup-close-icon-size: 18px !default;
+/** 弹层关闭图标颜色 */
+$m-checkbox-popup-close-icon-color: $m-text-color-fourth !default;
+/** 弹层选项区高度 */
+$m-checkbox-popup-options-height: 278px !default;
+/** 输入框触发层层级 */
+$m-checkbox-input-trigger-z-index: 1 !default;
+/** 输入框清空按钮层级 */
+$m-checkbox-input-clear-z-index: 2 !default;
+/** 输入框清空按钮宽度 */
+$m-checkbox-input-clear-width: 40px !default;
+/** 输入框清空图标字号 */
+$m-checkbox-input-clear-icon-size: 16px !default;
+/** 输入框清空图标颜色 */
+$m-checkbox-input-clear-color: $m-text-color-fourth !default;

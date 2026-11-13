@@ -92,6 +92,11 @@ export const routes: RouteConfig[] = [
 		meta: { title: '紧凑布局 Compact' },
 	},
 	{
+		path: 'pages-sub/date-strip/date-strip',
+		name: 'date-strip',
+		meta: { title: '日期横条 Date Strip' },
+	},
+	{
 		path: 'pages-sub/divider/divider',
 		name: 'divider',
 		meta: { title: '分割线 Divider' },

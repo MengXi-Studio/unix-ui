@@ -1,0 +1,618 @@
+<template>
+	<!-- 日期横条：横向滚动展示一段连续日期，点选即生效（无确认按钮）。
+	     single / multiple / range 共享同一 selectedTs（本地零点时间戳）状态，值形态由 type 决定。
+	     范围中段底色由相邻项背景无缝拼接（项间不留 gap），端点项承担圆角。 -->
+	<view class="m-date-strip" :class="customClass" :style="customStyle">
+		<scroll-view
+			class="m-date-strip__scroll"
+			direction="horizontal"
+			:show-scrollbar="false"
+			:scroll-left="scrollLeft"
+		>
+			<view class="m-date-strip__track">
+				<view
+					v-for="(item, i) in items"
+					:key="i"
+					class="m-date-strip__item"
+					:class="itemClass(item)"
+					@click="onItemClick(item)"
+				>
+					<slot v-if="slots['item'] != null" name="item" :item="item.day"></slot>
+					<template v-else>
+						<slot v-if="slots['top-info'] != null" name="top-info" :day="item.day"></slot>
+						<text v-else-if="item.day.topInfo != ''" :class="infoClass(item)">{{ item.day.topInfo }}</text>
+						<text :class="weekClass(item)">{{ item.weekText }}</text>
+						<text :class="dayClass(item)">{{ item.day.text }}</text>
+						<slot v-if="slots['bottom-info'] != null" name="bottom-info" :day="item.day"></slot>
+						<text v-else-if="item.day.bottomInfo != ''" :class="infoClass(item)">{{ item.day.bottomInfo }}</text>
+					</template>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-date-strip 日期横条：对标 Sard DateStrip（交互主参考）。
+	 * 日期计算全部复用 utils/date（按需引入，不引 utils/index.uts）：
+	 * 默认范围 ±7 天、日序列、今日判定、天数差、周几文案、value-format、农历文案。
+	 * 超限命名对齐 m-calendar：max-range / over-range。
+	 */
+	import {
+		CalendarType,
+		CalendarDayItem,
+		CalendarDayType,
+		CalendarFormatter
+	} from '../m-calendar/calendar.uts'
+	import {
+		addDays,
+		eachDayOfInterval,
+		formatDate,
+		fromTimestamp,
+		getDayDiff,
+		getDayStart,
+		getLunarDateText,
+		getWeekdayName,
+		isSameDay,
+		parseDate,
+		solarToLunar
+	} from '../../utils/date.uts'
+
+	/** 对外值形态：valueFormat 为空时为 Date 口径，非空时为字符串口径 */
+	type DateStripValue = Date | Date[] | string | string[] | null
+
+	/** 日期项（day 复用 CalendarDayItem，保证 formatter 契约与 m-calendar 一致） */
+	type DateStripItem = {
+		/** 日期格数据（date / type / text / topInfo / bottomInfo / className） */
+		day: CalendarDayItem
+		/** 本地零点时间戳（选择比较用） */
+		ts: number
+		/** 顶部文案：周几或范围端点文案 */
+		weekText: string
+		/** 是否为「今天」 */
+		isToday: boolean
+	}
+
+	type Props = {
+		/** 选择类型：single 单选 / multiple 多选 / range 范围 */
+		type?: CalendarType
+		/** 选中值（v-model:value）；valueFormat 为空时 Date 口径，非空时字符串口径 */
+		value?: DateStripValue
+		/** 值格式（如 YYYY-MM-DD）；非空时 v-model 使用字符串 */
+		valueFormat?: string
+		/** 最小可选日（null 取 currentDate - 7 天） */
+		minDate?: Date
+		/** 最大可选日（null 取 currentDate + 7 天） */
+		maxDate?: Date
+		/** 「今天」判定基准（null 取当前时间） */
+		currentDate?: Date
+		/** 禁用判定（true 禁用并灰显，仍展示） */
+		disabledDate?: ((date: Date) => boolean)
+		/** 过滤判定（false 不展示） */
+		filter?: ((date: Date) => boolean)
+		/** 范围 / 多选最多可选天数（含两端计数；-1 不限制） */
+		maxRange?: number
+		/** 范围选择是否允许起止同日 */
+		allowSameDay?: boolean
+		/** 日期项格式化（最后统一应用，可覆盖文案 / 类名 / 标记） */
+		formatter?: CalendarFormatter
+		/** 是否在日号下方展示农历文案 */
+		showLunar?: boolean
+		/** 范围起点文案 */
+		startDateText?: string
+		/** 范围终点文案 */
+		endDateText?: string
+		/** 起止同日文案 */
+		sameDateText?: string
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		type: 'single',
+		value: null,
+		valueFormat: '',
+		minDate: null,
+		maxDate: null,
+		currentDate: null,
+		disabledDate: null,
+		filter: null,
+		maxRange: -1,
+		allowSameDay: false,
+		formatter: null,
+		showLunar: false,
+		startDateText: '开始',
+		endDateText: '结束',
+		sameDateText: '开始/结束',
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 选中值变化（v-model:value） */
+		'update:value': [value: DateStripValue]
+		/** 用户点击导致值变化 */
+		change: [value: DateStripValue]
+		/** 超出 max-range（值不变） */
+		'over-range': []
+		/** 点击禁用日期 */
+		'click-disabled-date': [date: Date]
+	}>()
+
+	const slots = useSlots()
+
+	// ========== 状态 ==========
+
+	/** 当前选中日（本地零点时间戳，按点击顺序；range 为 [start] 或 [start, end]） */
+	const selectedTs = ref<number[]>([])
+
+	/** 横向滚动位置（px，居中选中项用） */
+	const scrollLeft = ref<number>(0)
+
+	// ========== 日期范围与序列 ==========
+
+	/** 今日基准（本地零点） */
+	function currentToday(): Date {
+		return props.currentDate != null ? getDayStart(props.currentDate!) : getDayStart(new Date())
+	}
+
+	/** 可选最小日 */
+	function currentMin(): Date {
+		return props.minDate != null ? getDayStart(props.minDate!) : addDays(currentToday(), -7)
+	}
+
+	/** 可选最大日 */
+	function currentMax(): Date {
+		return props.maxDate != null ? getDayStart(props.maxDate!) : addDays(currentToday(), 7)
+	}
+
+	/** 展示日期序列：min ~ max 逐日生成后按 filter 剔除 */
+	const dates = computed<Date[]>(() => {
+		const all = eachDayOfInterval(currentMin(), currentMax())
+		const filterFn = props.filter
+		if (filterFn == null) {
+			return all
+		}
+		const list: Date[] = []
+		for (let i = 0; i < all.length; i++) {
+			if (filterFn(all[i])) {
+				list.push(all[i])
+			}
+		}
+		return list
+	})
+
+	// ========== 选择状态 ==========
+
+	/** 时间戳数组等值判断（顺序敏感） */
+	function sameTs(a: number[], b: number[]): boolean {
+		if (a.length != b.length) {
+			return false
+		}
+		for (let i = 0; i < a.length; i++) {
+			if (a[i] != b[i]) {
+				return false
+			}
+		}
+		return true
+	}
+
+	/** 外部值 → 内部时间戳数组（解析失败按未选中处理） */
+	function normalizeFromValue(v: DateStripValue): number[] {
+		const out: number[] = []
+		if (v == null) {
+			return out
+		}
+		if (v instanceof Date) {
+			out.push(getDayStart(v).getTime())
+			return out
+		}
+		if (typeof v == 'string') {
+			const d = parseDate(v, props.valueFormat)
+			if (d != null) {
+				out.push(getDayStart(d).getTime())
+			}
+			return out
+		}
+		const arr = v as (Date | string)[]
+		for (let i = 0; i < arr.length; i++) {
+			const entry = arr[i]
+			if (entry instanceof Date) {
+				out.push(getDayStart(entry).getTime())
+			} else {
+				const d = parseDate(entry as string, props.valueFormat)
+				if (d != null) {
+					out.push(getDayStart(d).getTime())
+				}
+			}
+		}
+		return out
+	}
+
+	/** 内部时间戳数组 → 对外值（valueFormat 非空时输出字符串） */
+	function toExternalValue(): DateStripValue {
+		const list = selectedTs.value
+		if (props.type == 'single') {
+			if (list.length == 0) {
+				return null
+			}
+			const d = fromTimestamp(list[0])
+			if (d == null) {
+				return null
+			}
+			return props.valueFormat != '' ? formatDate(d, props.valueFormat) : d
+		}
+		if (props.valueFormat != '') {
+			const texts: string[] = []
+			for (let i = 0; i < list.length; i++) {
+				const d = fromTimestamp(list[i])
+				if (d != null) {
+					texts.push(formatDate(d, props.valueFormat))
+				}
+			}
+			return texts
+		}
+		const datesOut: Date[] = []
+		for (let i = 0; i < list.length; i++) {
+			const d = fromTimestamp(list[i])
+			if (d != null) {
+				datesOut.push(d)
+			}
+		}
+		return datesOut
+	}
+
+	/** 超出 max-range：emit 后拒绝本次选择（值不变） */
+	function rejectOverRange() {
+		emit('over-range')
+	}
+
+	/** 日期项点击：按 type 更新选择状态并回写 */
+	const onItemClick = (item: DateStripItem) => {
+		if (item.day.type == 'disabled') {
+			emit('click-disabled-date', item.day.date)
+			return
+		}
+		const ts = item.ts
+		const next: number[] = []
+		if (props.type == 'single') {
+			next.push(ts)
+		} else if (props.type == 'multiple') {
+			// 复制当前选择（不可变更新）
+			for (let i = 0; i < selectedTs.value.length; i++) {
+				next.push(selectedTs.value[i])
+			}
+			const index = next.indexOf(ts)
+			if (index != -1) {
+				next.splice(index, 1)
+			} else {
+				if (props.maxRange > 0 && next.length >= props.maxRange) {
+					rejectOverRange()
+					return
+				}
+				next.push(ts)
+			}
+		} else {
+			// range：空 / 已完成 → 重新开始；单起点 → 完成（同日按 allowSameDay 处理）
+			if (selectedTs.value.length == 1) {
+				const start = selectedTs.value[0]
+				if (ts == start) {
+					if (!props.allowSameDay) {
+						return
+					}
+					next.push(start)
+					next.push(ts)
+				} else if (ts < start) {
+					next.push(ts)
+					next.push(start)
+				} else {
+					next.push(start)
+					next.push(ts)
+				}
+				if (props.maxRange > 0 && getDayDiff(fromTimestamp(next[1])!, fromTimestamp(next[0])!) + 1 > props.maxRange) {
+					rejectOverRange()
+					return
+				}
+			} else {
+				next.push(ts)
+			}
+		}
+		selectedTs.value = next
+		const value = toExternalValue()
+		emit('update:value', value)
+		emit('change', value)
+	}
+
+	// ========== 展示数据 ==========
+
+	/** 是否范围端点类型 */
+	function isEdgeType(type: CalendarDayType): boolean {
+		return type == 'start' || type == 'end' || type == 'start-end'
+	}
+
+	/** 是否选中块类型 */
+	function isBlockType(type: CalendarDayType): boolean {
+		return type == 'selected' || type == 'multiple-selected'
+	}
+
+	/** 单个日期的时间戳是否落在范围中间 */
+	function isRangeMiddle(ts: number, list: number[]): boolean {
+		if (props.type != 'range' || list.length < 2) {
+			return false
+		}
+		return ts > list[0] && ts < list[1]
+	}
+
+	/** 农历文案（showLunar 关闭或越界返回空串） */
+	function lunarText(date: Date): string {
+		if (!props.showLunar) {
+			return ''
+		}
+		const lunar = solarToLunar(date.getFullYear(), date.getMonth(), date.getDate())
+		if (lunar == null) {
+			return ''
+		}
+		return getLunarDateText(lunar.year, lunar.month, lunar.day)
+	}
+
+	/** 日期项列表（选择态 / 禁用态 / 今日态 + 农历 + formatter 收尾） */
+	const items = computed<DateStripItem[]>(() => {
+		const list: DateStripItem[] = []
+		const ds = dates.value
+		const sel = selectedTs.value
+		const today = currentToday()
+		const disabledFn = props.disabledDate
+		const formatter = props.formatter
+		for (let i = 0; i < ds.length; i++) {
+			const date = ds[i]
+			const ts = date.getTime()
+			let type: CalendarDayType = ''
+			if (props.type == 'single') {
+				if (sel.length > 0 && sel[0] == ts) {
+					type = 'selected'
+				}
+			} else if (props.type == 'multiple') {
+				if (sel.indexOf(ts) != -1) {
+					type = 'multiple-selected'
+				}
+			} else {
+				if (sel.length >= 2 && ts == sel[0] && ts == sel[1]) {
+					type = 'start-end'
+				} else if (sel.length > 0 && ts == sel[0]) {
+					type = 'start'
+				} else if (sel.length >= 2 && ts == sel[1]) {
+					type = 'end'
+				} else if (isRangeMiddle(ts, sel)) {
+					type = 'middle'
+				}
+			}
+			if (disabledFn != null && disabledFn(date)) {
+				type = 'disabled'
+			}
+			let weekText = getWeekdayName(date)
+			if (type == 'start') {
+				weekText = props.startDateText
+			} else if (type == 'end') {
+				weekText = props.endDateText
+			} else if (type == 'start-end') {
+				weekText = props.sameDateText
+			}
+			let day = {
+				date: date,
+				type: type,
+				text: date.getDate().toString(),
+				topInfo: '',
+				bottomInfo: lunarText(date),
+				className: ''
+			} as CalendarDayItem
+			if (formatter != null) {
+				day = formatter(day)
+			}
+			list.push({ day: day, ts: ts, weekText: weekText, isToday: isSameDay(date, today) } as DateStripItem)
+		}
+		return list
+	})
+
+	// ========== 样式类 ==========
+
+	/** 日期项类名（含 formatter 注入的 className） */
+	function itemClass(item: DateStripItem): string {
+		const type = item.day.type
+		let cls = ''
+		if (type == 'disabled') {
+			cls = 'm-date-strip__item--disabled'
+		} else if (type == 'start') {
+			cls = 'm-date-strip__item--start'
+		} else if (type == 'end') {
+			cls = 'm-date-strip__item--end'
+		} else if (type == 'start-end') {
+			cls = 'm-date-strip__item--start-end'
+		} else if (type == 'middle') {
+			cls = 'm-date-strip__item--middle'
+		} else if (isBlockType(type)) {
+			cls = 'm-date-strip__item--selected'
+		}
+		if (item.day.className != '') {
+			cls = cls == '' ? item.day.className : cls + ' ' + item.day.className
+		}
+		return cls
+	}
+
+	/** 顶部周几 / 端点文案类名 */
+	function weekClass(item: DateStripItem): string {
+		const type = item.day.type
+		if (isBlockType(type) || isEdgeType(type)) {
+			return 'm-date-strip__week m-date-strip__week--selected'
+		}
+		if (type == 'middle') {
+			return 'm-date-strip__week m-date-strip__week--middle'
+		}
+		return 'm-date-strip__week'
+	}
+
+	/** 日号类名 */
+	function dayClass(item: DateStripItem): string {
+		const type = item.day.type
+		if (type == 'disabled') {
+			return 'm-date-strip__day m-date-strip__day--disabled'
+		}
+		if (isBlockType(type) || isEdgeType(type)) {
+			return 'm-date-strip__day m-date-strip__day--selected'
+		}
+		if (type == 'middle' || item.isToday) {
+			return 'm-date-strip__day m-date-strip__day--primary'
+		}
+		return 'm-date-strip__day'
+	}
+
+	/** 附加信息（农历 / formatter 文案）类名 */
+	function infoClass(item: DateStripItem): string {
+		const type = item.day.type
+		if (isBlockType(type) || isEdgeType(type)) {
+			return 'm-date-strip__info m-date-strip__info--selected'
+		}
+		return 'm-date-strip__info'
+	}
+
+	// ========== 滚动定位 ==========
+
+	/** 居中到指定时间戳（-1 回到起点）；仅挂载与外部值变更时调用，避免点击后抖动 */
+	function centerOnTs(ts: number) {
+		const ds = dates.value
+		let index = -1
+		for (let i = 0; i < ds.length; i++) {
+			if (ds[i].getTime() == ts) {
+				index = i
+				break
+			}
+		}
+		if (index == -1) {
+			scrollLeft.value = 0
+			return
+		}
+		const screenWidth = uni.getSystemInfoSync().windowWidth
+		const itemWidth = 64
+		const target = index * itemWidth - (screenWidth - itemWidth) / 2
+		scrollLeft.value = target > 0 ? target : 0
+	}
+
+	// ========== 外部值同步（先用后声明：watch 置于所有被调函数之后） ==========
+
+	watch((): DateStripValue => props.value, (nv: DateStripValue) => {
+		const next = normalizeFromValue(nv)
+		if (sameTs(next, selectedTs.value)) {
+			return
+		}
+		selectedTs.value = next
+		centerOnTs(next.length > 0 ? next[0] : -1)
+	})
+
+	onMounted(() => {
+		const init = normalizeFromValue(props.value)
+		selectedTs.value = init
+		nextTick(() => {
+			centerOnTs(init.length > 0 ? init[0] : -1)
+		})
+	})
+</script>
+
+<style lang="scss">
+	@import '../../theme/vars.scss';
+
+	.m-date-strip {
+		width: 100%;
+		background-color: $m-date-strip-background;
+	}
+
+	.m-date-strip__scroll {
+		width: 100%;
+	}
+
+	.m-date-strip__track {
+		flex-direction: row;
+		align-items: center;
+		padding-top: $m-date-strip-track-padding;
+		padding-bottom: $m-date-strip-track-padding;
+	}
+
+	.m-date-strip__item {
+		width: $m-date-strip-item-width;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding-top: $m-date-strip-item-padding-y;
+		padding-bottom: $m-date-strip-item-padding-y;
+		border-radius: $m-date-strip-item-border-radius;
+	}
+
+	.m-date-strip__item--selected {
+		background-color: $m-date-strip-item-bg-selected;
+	}
+
+	.m-date-strip__item--start {
+		background-color: $m-date-strip-item-bg-selected;
+		border-radius: $m-date-strip-item-border-radius 0 0 $m-date-strip-item-border-radius;
+	}
+
+	.m-date-strip__item--end {
+		background-color: $m-date-strip-item-bg-selected;
+		border-radius: 0 $m-date-strip-item-border-radius $m-date-strip-item-border-radius 0;
+	}
+
+	.m-date-strip__item--start-end {
+		background-color: $m-date-strip-item-bg-selected;
+	}
+
+	.m-date-strip__item--middle {
+		background-color: $m-date-strip-item-bg-middle;
+	}
+
+	.m-date-strip__item--disabled {
+		background-color: transparent;
+	}
+
+	.m-date-strip__week {
+		font-size: $m-date-strip-item-week-font-size;
+		line-height: 16px;
+		color: $m-date-strip-item-week-color;
+	}
+
+	.m-date-strip__week--selected {
+		color: $m-date-strip-item-color-selected;
+	}
+
+	.m-date-strip__week--middle {
+		color: $m-color-primary;
+	}
+
+	.m-date-strip__day {
+		font-size: $m-date-strip-item-day-font-size;
+		line-height: 22px;
+		color: $m-date-strip-item-color;
+	}
+
+	.m-date-strip__day--selected {
+		color: $m-date-strip-item-color-selected;
+	}
+
+	.m-date-strip__day--primary {
+		color: $m-color-primary;
+	}
+
+	.m-date-strip__day--disabled {
+		color: $m-date-strip-item-color-disabled;
+	}
+
+	.m-date-strip__info {
+		font-size: $m-date-strip-item-info-font-size;
+		line-height: 14px;
+		color: $m-date-strip-item-info-color;
+	}
+
+	.m-date-strip__info--selected {
+		color: $m-date-strip-item-color-selected;
+	}
+</style>

@@ -1,0 +1,226 @@
+<template>
+	<view class="page">
+		<demo-navbar title="日期横条" subtitle="Date Strip" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+
+				<text class="section" id="basic">基础单选</text>
+				<view class="card">
+					<m-date-strip v-model:value="basicValue" @change="onBasicChange" />
+					<view class="event-log">
+						<text class="event-text">最近事件：{{ basicLog }}</text>
+					</view>
+					<text class="caption">默认范围今天 -7 ~ +7 天；点击即选中并回写 v-model:value，change 同步派发；横向滚动，挂载时居中选中项</text>
+				</view>
+
+				<text class="section" id="multiple">多选与超限</text>
+				<view class="card">
+					<m-date-strip
+						type="multiple"
+						:max-range="3"
+						@change="onMultiChange"
+						@over-range="onMultiOverRange"
+					/>
+					<view class="event-log">
+						<text class="event-text">最近事件：{{ multiLog }}</text>
+					</view>
+					<text class="caption">type=multiple 点击切换选中；max-range=3 超限时拒绝并派发 over-range（值不变）</text>
+				</view>
+
+				<text class="section" id="range">范围与端点文案</text>
+				<view class="card">
+					<m-date-strip
+						type="range"
+						:allow-same-day="true"
+						start-date-text="入住"
+						end-date-text="离店"
+						same-date-text="当天"
+						@change="onRangeChange"
+					/>
+					<view class="event-log">
+						<text class="event-text">最近事件：{{ rangeLog }}</text>
+					</view>
+					<text class="caption">type=range 首点起点 / 次点终点（早于起点自动交换）；allow-same-day 允许同日；start/end/same-date-text 自定义端点顶行文案</text>
+				</view>
+
+				<text class="section" id="format">value-format 字符串绑定</text>
+				<view class="card">
+					<m-date-strip v-model:value="formatValue" value-format="YYYY-MM-DD" @change="onFormatChange" />
+					<view class="event-log">
+						<text class="event-text">当前值：{{ formatLog }}</text>
+					</view>
+					<text class="caption">value-format=YYYY-MM-DD 时 v-model 为字符串（内部经 parseDate / formatDate 双向转换，非法串按未选中处理）</text>
+				</view>
+
+				<text class="section" id="lunar">农历文案</text>
+				<view class="card">
+					<m-date-strip :min-date="lunarMin" :max-date="lunarMax" :current-date="lunarMin" show-lunar />
+					<text class="caption">show-lunar 在日号下方展示农历（solarToLunar + getLunarDateText）；限定 2024-09-10 ~ 2024-09-20，可核对 09-17 为「八月十五」</text>
+				</view>
+
+				<text class="section" id="filter">过滤 / 禁用 / formatter</text>
+				<view class="card">
+					<m-date-strip
+						type="range"
+						:filter="hideSunday"
+						:disabled-date="disableDayAfterTomorrow"
+						:formatter="stripFormatter"
+						@click-disabled-date="onDisabledClick"
+					/>
+					<view class="event-log">
+						<text class="event-text">最近事件：{{ filterLog }}</text>
+					</view>
+					<text class="caption">filter 返回 false 的周日不渲染；disabled-date 后天（11-16）灰显禁用；formatter 给周六加底色、给今天加「今天」底标</text>
+				</view>
+
+				<text class="section" id="slots">插槽</text>
+				<view class="card">
+					<m-date-strip type="single">
+						<template #top-info="{ day }">
+							<text class="demo-slot-top">{{ day.type == 'selected' ? '已选' : '' }}</text>
+						</template>
+						<template #bottom-info="{ day }">
+							<text class="demo-slot-bottom">{{ day.type == 'selected' ? '✓' : '' }}</text>
+						</template>
+					</m-date-strip>
+					<text class="caption">top-info / bottom-info 作用域插槽（day 为 CalendarDayItem）；另有 item 插槽可完全自定义单项内容</text>
+					<m-date-strip type="multiple" custom-style="margin-top: 16px;">
+						<template #item="{ item }">
+							<text class="demo-slot-item">{{ item.text }}</text>
+						</template>
+					</m-date-strip>
+					<text class="caption">item 插槽：完全接管单项渲染（item 为 CalendarDayItem，date / type / text 均可用）</text>
+				</view>
+
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '日期横条 Date Strip', name: 'date-strip' })
+	import { CalendarDayItem } from '@/uni_modules/m-ui-x/components/m-calendar/calendar.uts'
+	import { addDays, formatDate } from '@/uni_modules/m-ui-x/utils/date.uts'
+
+	/** 选择值转文本（single 为单值，multiple / range 为数组） */
+	function fmtValue(value: Date | Date[]): string {
+		if (value instanceof Date) {
+			return formatDate(value, 'YYYY-MM-DD')
+		}
+		const arr = value as Date[]
+		const parts: string[] = []
+		for (let i = 0; i < arr.length; i++) {
+			parts.push(formatDate(arr[i], 'YYYY-MM-DD'))
+		}
+		return parts.join(' ~ ')
+	}
+
+	// ========== 1 基础单选 ==========
+	const basicValue = ref<Date | null>(null)
+	const basicLog = ref<string>('（点击日期试试）')
+
+	/** 基础单选 change 记录 */
+	const onBasicChange = (value: Date | Date[]) => {
+		basicLog.value = 'change → ' + fmtValue(value) + '；v-model → ' + (basicValue.value != null ? formatDate(basicValue.value!, 'YYYY-MM-DD') : 'null')
+	}
+
+	// ========== 2 多选与超限 ==========
+	const multiLog = ref<string>('（最多选 3 天）')
+
+	/** 多选 change 记录 */
+	const onMultiChange = (value: Date | Date[]) => {
+		multiLog.value = 'change → ' + fmtValue(value)
+	}
+
+	/** 超限记录（值不变） */
+	const onMultiOverRange = () => {
+		multiLog.value = 'over-range → 已拒绝（最多 3 天）'
+	}
+
+	// ========== 3 范围与端点文案 ==========
+	const rangeLog = ref<string>('（依次点起点与终点）')
+
+	/** 范围 change 记录 */
+	const onRangeChange = (value: Date | Date[]) => {
+		rangeLog.value = 'change → ' + fmtValue(value)
+	}
+
+	// ========== 4 value-format ==========
+	const formatValue = ref<string | null>(null)
+	const formatLog = ref<string>('null')
+
+	/** 字符串值变化记录 */
+	const onFormatChange = (value: Date | Date[] | string | string[] | null) => {
+		formatLog.value = value != null ? value.toString() : 'null'
+	}
+
+	// ========== 5 农历 ==========
+	const lunarMin = new Date(2024, 8, 10)
+	const lunarMax = new Date(2024, 8, 20)
+
+	// ========== 6 过滤 / 禁用 / formatter ==========
+	const filterLog = ref<string>('（周日不展示，明日禁用）')
+
+	/** 过滤：隐藏周日 */
+	const hideSunday = (date: Date): boolean => {
+		return date.getDay() != 0
+	}
+
+	/** 禁用：后天（明天为周日会被 filter 剔除，故取后天验证禁用态） */
+	const disableDayAfterTomorrow = (date: Date): boolean => {
+		const target = addDays(new Date(), 2)
+		return date.getFullYear() == target.getFullYear() && date.getMonth() == target.getMonth() && date.getDate() == target.getDate()
+	}
+
+	/** formatter：周六加底色，今天加底标 */
+	const stripFormatter = (day: CalendarDayItem): CalendarDayItem => {
+		if (day.date.getDay() == 6) {
+			day.className = 'demo-weekend'
+		}
+		const today = new Date()
+		if (day.date.getFullYear() == today.getFullYear() && day.date.getMonth() == today.getMonth() && day.date.getDate() == today.getDate()) {
+			day.bottomInfo = '今天'
+		}
+		return day
+	}
+
+	/** 点击禁用日期记录 */
+	const onDisabledClick = (date: Date) => {
+		filterLog.value = 'click-disabled-date → ' + formatDate(date, 'YYYY-MM-DD')
+	}
+</script>
+
+<style lang="scss">
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	.demo-weekend {
+		background-color: #f7f8fa;
+	}
+	.demo-slot-top {
+		font-size: 10px;
+		line-height: 14px;
+		color: #ee0a24;
+	}
+	.demo-slot-bottom {
+		font-size: 10px;
+		line-height: 14px;
+		color: #07c160;
+	}
+	.demo-slot-item {
+		font-size: 14px;
+		color: #1989fa;
+		padding: 6px 0;
+	}
+</style>

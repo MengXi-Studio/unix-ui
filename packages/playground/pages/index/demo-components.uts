@@ -198,6 +198,12 @@ export const demoGroups: DemoGroup[] = [
 				desc: '颜色选择器的弹层形态：取消 / 标题 / 确定头部，确定后回写，取消丢弃本次改动。'
 			},
 			{
+				name: 'date-strip',
+				zhName: '日期横条',
+				enName: 'DateStrip',
+				desc: '横向日期条，支持单选、多选、范围选择、value-format 字符串绑定、农历文案、过滤禁用与插槽定制。'
+			},
+			{
 				name: 'input',
 				zhName: '输入框',
 				enName: 'Input',

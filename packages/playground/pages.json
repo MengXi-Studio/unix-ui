@@ -108,6 +108,12 @@
 					}
 				},
 				{
+					"path": "date-strip/date-strip",
+					"style": {
+						"navigationBarTitleText": "日期横条 Date Strip"
+					}
+				},
+				{
 					"path": "divider/divider",
 					"style": {
 						"navigationBarTitleText": "分割线 Divider"

@@ -500,3 +500,35 @@ $m-color-picker-input-clear-width: 40px !default;
 $m-color-picker-input-clear-icon-size: 16px !default;
 /** 输入框清空图标颜色 */
 $m-color-picker-input-clear-color: $m-text-color-fourth !default;
+
+/* ========== m-date-strip（日期横条） ========== */
+/** 条带背景 */
+$m-date-strip-background: $m-white !default;
+/** 轨道上下内边距 */
+$m-date-strip-track-padding: 4px !default;
+/** 单项宽度（固定宽度触发横向滚动） */
+$m-date-strip-item-width: 64px !default;
+/** 单项上下内边距 */
+$m-date-strip-item-padding-y: 8px !default;
+/** 单项圆角（范围端点按方向取角） */
+$m-date-strip-item-border-radius: 4px !default;
+/** 选中 / 范围端点底色 */
+$m-date-strip-item-bg-selected: $m-color-primary !default;
+/** 范围中段底色 */
+$m-date-strip-item-bg-middle: rgba($m-color-primary, 0.1) !default;
+/** 周几文案字号 */
+$m-date-strip-item-week-font-size: 12px !default;
+/** 周几文案颜色 */
+$m-date-strip-item-week-color: $m-text-color-tertiary !default;
+/** 日号字号 */
+$m-date-strip-item-day-font-size: 16px !default;
+/** 日号颜色 */
+$m-date-strip-item-color: $m-text-color !default;
+/** 选中态文本色 */
+$m-date-strip-item-color-selected: $m-white !default;
+/** 禁用日文本色 */
+$m-date-strip-item-color-disabled: $m-text-color-fourth !default;
+/** 农历 / 附加文案字号 */
+$m-date-strip-item-info-font-size: 10px !default;
+/** 农历 / 附加文案颜色 */
+$m-date-strip-item-info-color: $m-text-color-tertiary !default;

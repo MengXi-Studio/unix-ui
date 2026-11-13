@@ -32,6 +32,12 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		'checkbox-popup': 'pages-sub/checkbox-popup/checkbox-popup'
 		/** 复选框 Checkbox */
 		checkbox: 'pages-sub/checkbox/checkbox'
+		/** 颜色选择器输入框 ColorPickerInput */
+		'color-picker-input': 'pages-sub/color-picker-input/color-picker-input'
+		/** 颜色选择器弹出框 ColorPickerPopup */
+		'color-picker-popup': 'pages-sub/color-picker-popup/color-picker-popup'
+		/** 颜色选择器 ColorPicker */
+		'color-picker': 'pages-sub/color-picker/color-picker'
 		/** 紧凑布局 Compact */
 		compact: 'pages-sub/compact/compact'
 		/** 分割线 Divider */

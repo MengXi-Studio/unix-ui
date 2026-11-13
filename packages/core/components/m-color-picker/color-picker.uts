@@ -1,0 +1,462 @@
+/**
+ * 颜色值类型与颜色空间转换算法（m-color-picker 三件套共享）
+ *
+ * 仅做纯函数计算：字符串解析（hex / rgb / hsl）→ RGBA、RGBA ↔ HSV / HSL 互转、
+ * 按指定格式序列化输出、渐变色 CSS 拼接。无跨实例状态，面板 / 弹层 / 输入框共用。
+ */
+
+/** 颜色输出格式 */
+export type ColorFormat = 'hex' | 'rgb' | 'hsl'
+
+/** RGBA 颜色（r / g / b 取 0-255，a 取 0-1） */
+export type RgbaColor = {
+	r: number
+	g: number
+	b: number
+	a: number
+}
+
+/** HSV 颜色（h 取 0-360，s / v 取 0-100；面板 x 轴对应 s，y 轴对应 v） */
+export type HsvColor = {
+	h: number
+	s: number
+	v: number
+}
+
+/** HSL 颜色（h 取 0-360，s / l 取 0-100） */
+export type HslColor = {
+	h: number
+	s: number
+	l: number
+}
+
+/** 默认颜色（未传值或解析失败时兜底，对齐 Sard 默认值 #1989FA） */
+export const DEFAULT_COLOR_PICKER_VALUE = '#1989FA'
+
+/** 默认预定义颜色（show-presets 开启且未传 presets 时使用） */
+export const DEFAULT_COLOR_PRESETS: string[] = [
+	'#1989FA',
+	'#2ECC71',
+	'#F59E0B',
+	'#EF4444',
+	'#8B5CF6',
+	'#06B6D4',
+	'#EC4899',
+	'#0F172A',
+	'#FFFFFF',
+	'#000000'
+]
+
+/** 色相条渐变（0° → 360° 七个色标；App 端 background-image 仅支持单层 linear-gradient） */
+export const COLOR_HUE_GRADIENT =
+	'linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)'
+
+/**
+ * 数值钳制
+ *
+ * @param value 原始值
+ * @param min 下限
+ * @param max 上限
+ * @returns 落在 [min, max] 区间内的值
+ */
+export function clampNumber(value: number, min: number, max: number): number {
+	if (value < min) return min
+	if (value > max) return max
+	return value
+}
+
+/**
+ * 字符串转数值（非法输入回退 0；不依赖 parseInt 以规避原生端 radix 差异）
+ *
+ * @param text 数值文本
+ * @returns 解析结果，NaN 归零
+ */
+function numberFromText(text: string): number {
+	const v = parseFloat(text)
+	// UTS / Kotlin 下 NaN != NaN 恒真，用于识别非法解析
+	if (v != v) return 0
+	return v
+}
+
+/**
+ * 单个十六进制位转数值
+ *
+ * @param ch 单个字符
+ * @returns 0-15，非法字符返回 -1
+ */
+function hexDigitValue(ch: string): number {
+	const code = ch.charCodeAt(0)
+	// charCodeAt 可空（Number?）：空串等场景返回 null，需先行空安全短路
+	if (code == null) return -1
+	if (code >= 48 && code <= 57) return code - 48
+	if (code >= 65 && code <= 70) return code - 55
+	if (code >= 97 && code <= 102) return code - 87
+	return -1
+}
+
+/**
+ * 两位十六进制文本转数值
+ *
+ * @param text 两位十六进制字符
+ * @returns 0-255，任一字符非法返回 0
+ */
+function hexPairValue(text: string): number {
+	const hi = hexDigitValue(text.substring(0, 1))
+	const lo = hexDigitValue(text.substring(1, 2))
+	if (hi < 0 || lo < 0) return 0
+	return hi * 16 + lo
+}
+
+/**
+ * 数值转两位十六进制文本
+ *
+ * @param value 0-255 的通道值
+ * @returns 两位小写十六进制（如 250 → 'fa'）
+ */
+function hexPairText(value: number): string {
+	const chars = '0123456789abcdef'
+	const v = Math.round(clampNumber(value, 0, 255))
+	const hi = Math.floor(v / 16)
+	const lo = v % 16
+	return chars.substring(hi, hi + 1) + chars.substring(lo, lo + 1)
+}
+
+/**
+ * 提取函数式颜色括号内的参数文本
+ *
+ * @param text 形如 rgb(1, 2, 3) / hsla(210, 96%, 54%, 0.6)
+ * @returns 括号内文本（未找到括号返回空串）
+ */
+function colorBody(text: string): string {
+	const left = text.indexOf('(')
+	const right = text.indexOf(')')
+	if (left < 0 || right <= left) return ''
+	return text.substring(left + 1, right)
+}
+
+/**
+ * 通道文本转数值（支持百分比：RGB 百分比按 255 换算、alpha / HSL 百分比按 100 或 1 换算）
+ *
+ * @param text 单个通道文本（可带 % 后缀）
+ * @param scale 百分比基准值（RGB 通道 255 / HSL 的 s、l 100 / alpha 1）
+ * @returns 通道数值
+ */
+function channelValue(text: string, scale: number): number {
+	const t = text.trim()
+	if (t.endsWith('%')) {
+		return numberFromText(t.substring(0, t.length - 1)) / 100 * scale
+	}
+	return numberFromText(t)
+}
+
+/**
+ * HSL 转 RGBA
+ *
+ * @param h 色相 0-360
+ * @param s 饱和度 0-100
+ * @param l 亮度 0-100
+ * @param alpha 透明度 0-1
+ * @returns RGBA 颜色
+ */
+export function hslToRgba(h: number, s: number, l: number, alpha: number): RgbaColor {
+	const hue = ((h % 360) + 360) % 360
+	const sat = clampNumber(s, 0, 100) / 100
+	const lig = clampNumber(l, 0, 100) / 100
+	const c = (1 - Math.abs(2 * lig - 1)) * sat
+	const x = c * (1 - Math.abs((hue / 60) % 2 - 1))
+	const m = lig - c / 2
+	let r1 = 0
+	let g1 = 0
+	let b1 = 0
+	if (hue < 60) {
+		r1 = c
+		g1 = x
+		b1 = 0
+	} else if (hue < 120) {
+		r1 = x
+		g1 = c
+		b1 = 0
+	} else if (hue < 180) {
+		r1 = 0
+		g1 = c
+		b1 = x
+	} else if (hue < 240) {
+		r1 = 0
+		g1 = x
+		b1 = c
+	} else if (hue < 300) {
+		r1 = x
+		g1 = 0
+		b1 = c
+	} else {
+		r1 = c
+		g1 = 0
+		b1 = x
+	}
+	const result: RgbaColor = {
+		r: Math.round((r1 + m) * 255),
+		g: Math.round((g1 + m) * 255),
+		b: Math.round((b1 + m) * 255),
+		a: clampNumber(alpha, 0, 1)
+	}
+	return result
+}
+
+/**
+ * 解析颜色字符串为 RGBA
+ *
+ * 支持 #RGB / #RGBA / #RRGGBB / #RRGGBBAA、rgb() / rgba()、hsl() / hsla()；
+ * 空串与非法输入回退默认色（#1989FA）。
+ *
+ * @param input 颜色字符串
+ * @returns RGBA 颜色
+ */
+export function parseColor(input: string): RgbaColor {
+	const fallback: RgbaColor = { r: 25, g: 137, b: 250, a: 1 }
+	const raw = input.trim()
+	if (raw == '') return fallback
+	const lower = raw.toLowerCase()
+	if (lower.startsWith('#')) {
+		let hex = lower.substring(1)
+		if (hex.length == 3 || hex.length == 4) {
+			let expanded = ''
+			for (let i = 0; i < hex.length; i++) {
+				const ch = hex.substring(i, i + 1)
+				expanded += ch + ch
+			}
+			hex = expanded
+		}
+		if (hex.length != 6 && hex.length != 8) return fallback
+		const r = hexPairValue(hex.substring(0, 2))
+		const g = hexPairValue(hex.substring(2, 4))
+		const b = hexPairValue(hex.substring(4, 6))
+		const a = hex.length == 8 ? hexPairValue(hex.substring(6, 8)) / 255 : 1
+		const hexColor: RgbaColor = { r: r, g: g, b: b, a: a }
+		return hexColor
+	}
+	if (lower.startsWith('rgb')) {
+		const parts = colorBody(lower).split(',')
+		if (parts.length < 3) return fallback
+		const r = channelValue(parts[0], 255)
+		const g = channelValue(parts[1], 255)
+		const b = channelValue(parts[2], 255)
+		const a = parts.length > 3 ? channelValue(parts[3], 1) : 1
+		const rgbColor: RgbaColor = {
+			r: Math.round(clampNumber(r, 0, 255)),
+			g: Math.round(clampNumber(g, 0, 255)),
+			b: Math.round(clampNumber(b, 0, 255)),
+			a: clampNumber(a, 0, 1)
+		}
+		return rgbColor
+	}
+	if (lower.startsWith('hsl')) {
+		const parts = colorBody(lower).split(',')
+		if (parts.length < 3) return fallback
+		const hText = parts[0].trim()
+		let h = numberFromText(hText)
+		if (hText.endsWith('deg')) h = numberFromText(hText.substring(0, hText.length - 3))
+		const s = channelValue(parts[1], 100)
+		const l = channelValue(parts[2], 100)
+		const a = parts.length > 3 ? channelValue(parts[3], 1) : 1
+		return hslToRgba(h, s, l, a)
+	}
+	return fallback
+}
+
+/**
+ * RGBA 转 HSV
+ *
+ * @param c RGBA 颜色
+ * @returns HSV 颜色（h 0-360 / s 0-100 / v 0-100）
+ */
+export function rgbToHsv(c: RgbaColor): HsvColor {
+	const r = c.r / 255
+	const g = c.g / 255
+	const b = c.b / 255
+	const max = Math.max(r, Math.max(g, b))
+	const min = Math.min(r, Math.min(g, b))
+	const delta = max - min
+	let h = 0
+	if (delta != 0) {
+		if (max == r) {
+			h = 60 * (((g - b) / delta) % 6)
+		} else if (max == g) {
+			h = 60 * ((b - r) / delta + 2)
+		} else {
+			h = 60 * ((r - g) / delta + 4)
+		}
+	}
+	if (h < 0) h += 360
+	const s = max == 0 ? 0 : delta / max * 100
+	const result: HsvColor = { h: h, s: s, v: max * 100 }
+	return result
+}
+
+/**
+ * HSV 转 RGBA
+ *
+ * @param hsv HSV 颜色
+ * @param alpha 透明度 0-1
+ * @returns RGBA 颜色
+ */
+export function hsvToRgb(hsv: HsvColor, alpha: number): RgbaColor {
+	const hue = ((hsv.h % 360) + 360) % 360
+	const s = clampNumber(hsv.s, 0, 100) / 100
+	const v = clampNumber(hsv.v, 0, 100) / 100
+	const c = v * s
+	const hh = hue / 60
+	const x = c * (1 - Math.abs(hh % 2 - 1))
+	const m = v - c
+	let r1 = 0
+	let g1 = 0
+	let b1 = 0
+	if (hh < 1) {
+		r1 = c
+		g1 = x
+		b1 = 0
+	} else if (hh < 2) {
+		r1 = x
+		g1 = c
+		b1 = 0
+	} else if (hh < 3) {
+		r1 = 0
+		g1 = c
+		b1 = x
+	} else if (hh < 4) {
+		r1 = 0
+		g1 = x
+		b1 = c
+	} else if (hh < 5) {
+		r1 = x
+		g1 = 0
+		b1 = c
+	} else {
+		r1 = c
+		g1 = 0
+		b1 = x
+	}
+	const result: RgbaColor = {
+		r: Math.round((r1 + m) * 255),
+		g: Math.round((g1 + m) * 255),
+		b: Math.round((b1 + m) * 255),
+		a: clampNumber(alpha, 0, 1)
+	}
+	return result
+}
+
+/**
+ * RGBA 转 HSL
+ *
+ * @param c RGBA 颜色
+ * @returns HSL 颜色（h 0-360 / s 0-100 / l 0-100）
+ */
+export function rgbToHsl(c: RgbaColor): HslColor {
+	const r = c.r / 255
+	const g = c.g / 255
+	const b = c.b / 255
+	const max = Math.max(r, Math.max(g, b))
+	const min = Math.min(r, Math.min(g, b))
+	const delta = max - min
+	const l = (max + min) / 2
+	let h = 0
+	let s = 0
+	if (delta != 0) {
+		s = delta / (1 - Math.abs(2 * l - 1))
+		if (max == r) {
+			h = 60 * (((g - b) / delta) % 6)
+		} else if (max == g) {
+			h = 60 * ((b - r) / delta + 2)
+		} else {
+			h = 60 * ((r - g) / delta + 4)
+		}
+	}
+	if (h < 0) h += 360
+	const result: HslColor = { h: h, s: s * 100, l: l * 100 }
+	return result
+}
+
+/**
+ * 透明度文本（保留两位小数并去掉多余小数位）
+ *
+ * @param alpha 0-1
+ * @returns 如 '0.6' / '1'
+ */
+function alphaText(alpha: number): string {
+	const v = Math.round(clampNumber(alpha, 0, 1) * 100) / 100
+	return v.toString()
+}
+
+/**
+ * 按格式序列化颜色
+ *
+ * @param c RGBA 颜色
+ * @param format 输出格式（hex / rgb / hsl）
+ * @param showAlpha 是否输出透明度（hex 为 8 位 #RRGGBBAA）
+ * @returns 颜色字符串
+ */
+export function formatColor(c: RgbaColor, format: ColorFormat, showAlpha: boolean): string {
+	if (format == 'hex') {
+		let hex = '#' + hexPairText(c.r) + hexPairText(c.g) + hexPairText(c.b)
+		if (showAlpha) hex += hexPairText(c.a * 255)
+		return hex
+	}
+	if (format == 'hsl') {
+		const hsl = rgbToHsl(c)
+		const h = Math.round(hsl.h).toString()
+		const s = Math.round(hsl.s).toString()
+		const l = Math.round(hsl.l).toString()
+		if (showAlpha) {
+			return 'hsla(' + h + ', ' + s + '%, ' + l + '%, ' + alphaText(c.a) + ')'
+		}
+		return 'hsl(' + h + ', ' + s + '%, ' + l + '%)'
+	}
+	const r = Math.round(clampNumber(c.r, 0, 255)).toString()
+	const g = Math.round(clampNumber(c.g, 0, 255)).toString()
+	const b = Math.round(clampNumber(c.b, 0, 255)).toString()
+	if (showAlpha) {
+		return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alphaText(c.a) + ')'
+	}
+	return 'rgb(' + r + ', ' + g + ', ' + b + ')'
+}
+
+/**
+ * 生成带指定透明度的 rgba() 文本（用于渐变与预览底色）
+ *
+ * @param c RGBA 颜色（取 r / g / b）
+ * @param alpha 目标透明度 0-1
+ * @returns rgba() 字符串
+ */
+export function rgbaCss(c: RgbaColor, alpha: number): string {
+	const r = Math.round(clampNumber(c.r, 0, 255)).toString()
+	const g = Math.round(clampNumber(c.g, 0, 255)).toString()
+	const b = Math.round(clampNumber(c.b, 0, 255)).toString()
+	return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alphaText(alpha) + ')'
+}
+
+/**
+ * 透明度条渐变（透明 → 当前色）
+ *
+ * @param c 当前 RGBA 颜色
+ * @returns 单层 linear-gradient 文本
+ */
+export function alphaTrackGradient(c: RgbaColor): string {
+	return 'linear-gradient(to right, ' + rgbaCss(c, 0) + ', ' + rgbaCss(c, 1) + ')'
+}
+
+/**
+ * 判断两个颜色文本是否等价（用于预设色 / 最近色选中态比对）
+ *
+ * @param a 颜色文本 A
+ * @param b 颜色文本 B
+ * @returns 通道近似相等的布尔结果
+ */
+export function colorsEqual(a: string, b: string): boolean {
+	if (a == b) return true
+	const ca = parseColor(a)
+	const cb = parseColor(b)
+	if (Math.abs(ca.r - cb.r) > 1) return false
+	if (Math.abs(ca.g - cb.g) > 1) return false
+	if (Math.abs(ca.b - cb.b) > 1) return false
+	if (Math.abs(ca.a - cb.a) > 0.01) return false
+	return true
+}

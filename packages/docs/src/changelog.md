@@ -2,10 +2,11 @@
 
 ## [0.5.0] - 2026-11-13
 
-新增 m-fab / m-fab-item 悬浮按钮组件与 m-checkbox 复选框四组件。
+新增 m-color-picker 颜色选择器三件套、m-fab / m-fab-item 悬浮按钮组件与 m-checkbox 复选框四组件。
 
 ### 新增
 
+- **m-color-picker / m-color-picker-popup / m-color-picker-input 颜色选择器三件套**（对标 Sard ColorPicker）：m-color-picker 饱和度-明度面板 + 色相滑块（`show-alpha` 增加透明度条与 A 分量），`v-model:value` 字符串受控，`format` 支持 `hex` / `rgb` / `hsl`（hex 带透明度输出 8 位 `#RRGGBBAA`，传入值兼容 `#RGB` / `#RGBA` / `#RRGGBB` / `#RRGGBBAA` / `rgb()` / `rgba()` / `hsl()` / `hsla()`）；`show-format` 面板内切换格式、`presets` / `show-presets` 预设色（未传用内置常用色）、`show-inputs` R/G/B/A 数值输入（失焦提交 + 范围钳制）、`show-recent` 最近使用颜色（最多 8 个，手势结束或选色后记录）、`show-eyedropper` 吸管取色（`#ifdef WEB` 条件编译，Chromium EyeDropper，非 Web 端不渲染入口）；面板渐变按 App 端 `background-image` 仅支持单层 `linear-gradient` 的约束用 3 个绝对定位层叠加（纯色相 + 横向白 + 纵向黑）；m-color-picker-popup 为「取消 / 标题 / 确定」头部 + 内部草稿值（确定回写并关闭、取消与遮罩关闭丢弃），`show-confirm=false` 时选择即生效；m-color-picker-input 只读触发器 + 左侧色块预览 + 可选字段标签 + 自绘清空 + 弹层选色；新增 `$m-color-picker-*` 主题变量段（详见 [ColorPicker](/components/color-picker)）
 - **m-checkbox-group / m-checkbox / m-checkbox-popup / m-checkbox-input 复选框四组件**（对标 Vant Checkbox / CheckboxGroup）：m-checkbox-group 多选集合容器（`v-model:value` 为 `Array<string | number>` 联合类型数组，已实测全端编译合法；`'1'` 与 `1` 字符串化比较视为同一项），统一下发 shape / checked-color / icon-size / disabled / max / direction（子项可覆盖）；m-checkbox 双形态（组内按 name 参与勾选 / 独立 `v-model` 布尔自持），square 形状、label-position 左右互换、label-disabled 仅禁文本、indeterminate 不确定横杠、icon / default 插槽（作用域 `{ checked, disabled }`）、expose `toggle()`（搭配单元格整行切换）；m-checkbox-popup 底部弹层（options 数组驱动渲染 + field-names 映射 + footer 插槽）；m-checkbox-input 只读触发器 + 弹层（label「、」连接回显、超 2 项截断「等 N 项」、自绘清空按钮）；新增 `$m-checkbox-*` 主题变量段（详见 [Checkbox](/components/checkbox)）
 - **m-fab / m-fab-item 悬浮按钮**（对标 Sard Fab）：入口圆钮固定于视口指定位置，点击展开扩展按钮列表、点击扩展按钮后自动收起；四角定位（`top` / `right` / `bottom` / `left`，未传用主题默认间距，入口在视口上半侧时向下展开）；`background` / `color` 自定义入口与子项配色（支持渐变，子项未设时继承容器）；`hide-name` 隐藏名称；`entry` 插槽自定义入口内容（作用域 `visible`）与 `name` 插槽自定义名称；`overlay-closable` 展开期间渲染遮罩并支持点击收起；`draggable` 拖拽（`axis` 四值限制方向、`margin-x` / `margin-y` 边界钳制、`magnet` 松手吸附最近边、`v-model:offset` 受控位置以入口中心点坐标回写）；展开 / 收起为逐项 inline transition（按注册序 stagger，收起逆序）；新增 `$m-fab-*` 主题变量段（详见 [Fab](/components/fab)）
 

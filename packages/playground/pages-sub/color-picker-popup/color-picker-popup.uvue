@@ -1,0 +1,151 @@
+<template>
+	<view class="page">
+		<demo-navbar title="颜色选择器弹出框" subtitle="ColorPickerPopup" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="basicShow = true">打开颜色选择器</m-button>
+					<text class="caption">头部「取消 / 选择颜色 / 确定」，点确定才回写（当前：{{ basicColor }}）</text>
+				</view>
+
+				<text class="section" id="no-confirm">无确认按钮</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="realtimeShow = true">show-confirm=false</m-button>
+					<text class="caption">关闭确认按钮后选择即生效，遮罩关闭不丢弃（当前：{{ realtimeColor }}）</text>
+				</view>
+
+				<text class="section" id="position">弹出方位</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="centerShow = true">position="center"</m-button>
+					<text class="caption">居中弹层，宽度自适应内容（当前：{{ centerColor }}）</text>
+				</view>
+
+				<text class="section" id="full">完整能力</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="fullShow = true">透明度 + 预设 + 格式 + 数值 + 最近色</m-button>
+					<text class="caption">全部面板能力在弹层内的组合（当前：{{ fullColor }}）</text>
+				</view>
+
+				<text class="section" id="events">事件</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="eventShow = true">confirm / cancel / update:show</m-button>
+					<text class="caption">最近事件：{{ lastEvent }}</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 基础用法 -->
+		<m-color-picker-popup
+			v-model:show="basicShow"
+			v-model:value="basicColor"
+			title="选择产线颜色"
+			@confirm="onConfirmLog"
+			@cancel="onCancelLog"
+		/>
+
+		<!-- 无确认按钮 -->
+		<m-color-picker-popup
+			v-model:show="realtimeShow"
+			v-model:value="realtimeColor"
+			title="实时生效"
+			:show-confirm="false"
+			show-alpha
+		/>
+
+		<!-- 居中弹层 -->
+		<m-color-picker-popup
+			v-model:show="centerShow"
+			v-model:value="centerColor"
+			title="居中弹层"
+			position="center"
+			:round="true"
+			show-presets
+		/>
+
+		<!-- 完整能力 -->
+		<m-color-picker-popup
+			v-model:show="fullShow"
+			v-model:value="fullColor"
+			title="完整能力"
+			show-alpha
+			show-format
+			show-presets
+			show-inputs
+			show-recent
+			show-eyedropper
+		/>
+
+		<!-- 事件 -->
+		<m-color-picker-popup
+			v-model:show="eventShow"
+			v-model:value="eventColor"
+			title="事件演示"
+			@confirm="onConfirmLog"
+			@cancel="onCancelLog"
+			@update:show="onShowChange"
+		/>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '颜色选择器弹出框 ColorPickerPopup', name: 'color-picker-popup' })
+
+	/** 基础用法弹层显隐 */
+	const basicShow = ref<boolean>(false)
+	/** 基础用法颜色 */
+	const basicColor = ref<string>('#1989FA')
+	/** 实时生效弹层显隐 */
+	const realtimeShow = ref<boolean>(false)
+	/** 实时生效颜色 */
+	const realtimeColor = ref<string>('rgba(25, 137, 250, 0.6)')
+	/** 居中弹层显隐 */
+	const centerShow = ref<boolean>(false)
+	/** 居中弹层颜色 */
+	const centerColor = ref<string>('#2ECC71')
+	/** 完整能力弹层显隐 */
+	const fullShow = ref<boolean>(false)
+	/** 完整能力颜色 */
+	const fullColor = ref<string>('rgba(139, 92, 246, 0.8)')
+	/** 事件演示弹层显隐 */
+	const eventShow = ref<boolean>(false)
+	/** 事件演示颜色 */
+	const eventColor = ref<string>('#EF4444')
+	/** 最近事件日志 */
+	const lastEvent = ref<string>('无')
+
+	/**
+	 * 确认事件日志
+	 *
+	 * @param v 确认的颜色值
+	 */
+	function onConfirmLog(v: string) {
+		lastEvent.value = 'confirm: ' + v
+	}
+
+	/**
+	 * 取消事件日志
+	 */
+	function onCancelLog() {
+		lastEvent.value = 'cancel（丢弃本次改动）'
+	}
+
+	/**
+	 * 弹层显隐日志
+	 *
+	 * @param v 目标显隐状态
+	 */
+	function onShowChange(v: boolean) {
+		lastEvent.value = 'update:show: ' + v.toString()
+	}
+</script>
+
+<style lang="scss">
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

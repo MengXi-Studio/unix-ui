@@ -1,0 +1,919 @@
+<template>
+	<!-- 颜色选择器面板：饱和度-明度面板（三层渐变叠加）+ 色相条 +（可选）透明度条、
+	     数值输入、格式切换、预定义色 / 最近色、Web 端吸管取色。 -->
+	<view :class="rootClass" :style="customStyle">
+		<!-- 饱和度-明度面板：底层纯色相，中层横向白渐变，顶层纵向黑渐变 -->
+		<view
+			id="m-color-picker-panel"
+			ref="panelRef"
+			class="m-color-picker__panel"
+			:style="panelStyle"
+			@touchstart="onPanelTouch"
+			@touchmove="onPanelTouch"
+			@touchend="onGestureEnd"
+		>
+			<view class="m-color-picker__panel-hue" :style="panelHueStyle"></view>
+			<view class="m-color-picker__panel-white"></view>
+			<view class="m-color-picker__panel-black"></view>
+			<view class="m-color-picker__thumb" :style="panelThumbStyle"></view>
+		</view>
+
+		<!-- 色相条 -->
+		<view
+			id="m-color-picker-hue"
+			ref="hueRef"
+			class="m-color-picker__track"
+			@touchstart="onHueTouch"
+			@touchmove="onHueTouch"
+			@touchend="onGestureEnd"
+		>
+			<view class="m-color-picker__hue-fill"></view>
+			<view class="m-color-picker__track-thumb" :style="hueThumbStyle"></view>
+		</view>
+
+		<!-- 透明度条：棋盘格底 + 当前色渐变覆盖 -->
+		<view
+			v-if="props.showAlpha"
+			id="m-color-picker-alpha"
+			ref="alphaRef"
+			class="m-color-picker__track"
+			@touchstart="onAlphaTouch"
+			@touchmove="onAlphaTouch"
+			@touchend="onGestureEnd"
+		>
+			<view class="m-color-picker__checker">
+				<view v-for="(cell, ci) in checkerCells" :key="ci" :class="checkerCellClass(cell)"></view>
+			</view>
+			<view class="m-color-picker__alpha-fill" :style="alphaFillStyle"></view>
+			<view class="m-color-picker__track-thumb" :style="alphaThumbStyle"></view>
+		</view>
+
+		<!-- 数值输入：R / G / B / A（A 为百分比） -->
+		<view v-if="props.showInputs" class="m-color-picker__inputs">
+			<view class="m-color-picker__input-item">
+				<text class="m-color-picker__input-label">R</text>
+				<input
+					class="m-color-picker__input"
+					:value="inputR"
+					type="number"
+					:disabled="props.disabled"
+					@input="onInputR"
+					@blur="onInputCommit"
+					@confirm="onInputCommit"
+				/>
+			</view>
+			<view class="m-color-picker__input-item">
+				<text class="m-color-picker__input-label">G</text>
+				<input
+					class="m-color-picker__input"
+					:value="inputG"
+					type="number"
+					:disabled="props.disabled"
+					@input="onInputG"
+					@blur="onInputCommit"
+					@confirm="onInputCommit"
+				/>
+			</view>
+			<view class="m-color-picker__input-item">
+				<text class="m-color-picker__input-label">B</text>
+				<input
+					class="m-color-picker__input"
+					:value="inputB"
+					type="number"
+					:disabled="props.disabled"
+					@input="onInputB"
+					@blur="onInputCommit"
+					@confirm="onInputCommit"
+				/>
+			</view>
+			<view v-if="props.showAlpha" class="m-color-picker__input-item">
+				<text class="m-color-picker__input-label">A</text>
+				<input
+					class="m-color-picker__input"
+					:value="inputA"
+					type="number"
+					:disabled="props.disabled"
+					@input="onInputA"
+					@blur="onInputCommit"
+					@confirm="onInputCommit"
+				/>
+			</view>
+		</view>
+
+		<!-- 格式切换 + 当前值 -->
+		<view v-if="props.showFormat" class="m-color-picker__formats">
+			<view v-for="(f, fi) in formatList" :key="fi" :class="formatClass(f)" @click="onFormatClick(f)">
+				<text :class="formatTextClass(f)">{{ f }}</text>
+			</view>
+			<text class="m-color-picker__current">{{ currentText }}</text>
+		</view>
+
+		<!-- 预定义颜色 -->
+		<view v-if="props.showPresets" class="m-color-picker__swatches">
+			<view v-for="(p, pi) in presetList" :key="pi" :class="swatchClass(p)" @click="onSwatchClick(p)">
+				<view class="m-color-picker__swatch-fill" :style="'background: ' + p + ';'"></view>
+			</view>
+		</view>
+
+		<!-- 最近使用颜色（交互结束后记录，最多 8 个） -->
+		<view v-if="props.showRecent && recentColors.length > 0" class="m-color-picker__swatches">
+			<view v-for="(r, ri) in recentColors" :key="ri" :class="swatchClass(r)" @click="onSwatchClick(r)">
+				<view class="m-color-picker__swatch-fill" :style="'background: ' + r + ';'"></view>
+			</view>
+		</view>
+
+		<!-- 吸管取色：仅 Web（Chromium EyeDropper API），其余平台不渲染入口 -->
+		<!-- #ifdef WEB -->
+		<view v-if="props.showEyedropper" class="m-color-picker__eyedropper" @click="onEyedropperClick">
+			<m-icon name="eye" custom-class="m-color-picker__eyedropper-icon" />
+			<text class="m-color-picker__eyedropper-text">吸取颜色</text>
+		</view>
+		<!-- #endif -->
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-color-picker 颜色选择器面板（对标 Sard ColorPicker）。
+	 * 内部状态为 HSV + alpha（面板拖动换算是 HSV 空间），对外只暴露颜色字符串：
+	 * v-model:value 受控，输出按 format（hex / rgb / hsl）与 show-alpha 序列化。
+	 * 交互：面板触摸改 s / v、色相条改 h、透明度条改 a；touchend 记录最近色。
+	 * 渐变分层：App 端 background-image 仅支持单层 linear-gradient，故面板用 3 个
+	 * 绝对定位 view 各放一条渐变叠加，避免多重背景失效。
+	 */
+	import {
+		ColorFormat,
+		RgbaColor,
+		HsvColor,
+		DEFAULT_COLOR_PICKER_VALUE,
+		DEFAULT_COLOR_PRESETS,
+		clampNumber,
+		parseColor,
+		formatColor,
+		rgbToHsv,
+		hsvToRgb,
+		alphaTrackGradient,
+		colorsEqual
+	} from './color-picker.uts'
+	import MIcon from '../m-icon/m-icon.uvue'
+
+	type Props = {
+		/** 当前颜色值（v-model:value） */
+		value?: string
+		/** 是否启用透明度选择 */
+		showAlpha?: boolean
+		/** 输出颜色格式 */
+		format?: ColorFormat
+		/** 是否显示格式切换 */
+		showFormat?: boolean
+		/** 预定义颜色列表（空或未传时用内置常用色） */
+		presets?: string[]
+		/** 是否显示预定义颜色 */
+		showPresets?: boolean
+		/** 是否显示 R / G / B / A 数值输入 */
+		showInputs?: boolean
+		/** 是否显示最近使用颜色 */
+		showRecent?: boolean
+		/** 是否显示吸管取色入口（仅 Web 端生效） */
+		showEyedropper?: boolean
+		/** 面板高度 px（0 用主题变量） */
+		panelHeight?: number
+		/** 是否禁用（不响应交互） */
+		disabled?: boolean
+		/** 是否只读（不响应交互，视觉无禁用态） */
+		readonly?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: DEFAULT_COLOR_PICKER_VALUE,
+		showAlpha: false,
+		format: 'rgb',
+		showFormat: false,
+		presets: null,
+		showPresets: false,
+		showInputs: false,
+		showRecent: false,
+		showEyedropper: false,
+		panelHeight: 0,
+		disabled: false,
+		readonly: false,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 颜色变化（v-model:value） */
+		'update:value': [value: string]
+		/** 颜色变化 */
+		change: [value: string]
+		/** 格式切换（v-model:format） */
+		'update:format': [format: ColorFormat]
+		/** 格式切换 */
+		'format-change': [format: ColorFormat]
+	}>()
+
+	/** 棋盘格单元数量（透明度条底纹，宽度按单元格固定值铺满） */
+	const CHECKER_CELL_COUNT = 32
+	/** 最近使用颜色上限 */
+	const RECENT_LIMIT = 8
+	/** 格式切换候选 */
+	const formatList: ColorFormat[] = ['hex', 'rgb', 'hsl']
+
+	/** 面板节点（触摸换算与矩形测量） */
+	const panelRef = ref<UniElement | null>(null)
+	/** 色相条节点 */
+	const hueRef = ref<UniElement | null>(null)
+	/** 透明度条节点 */
+	const alphaRef = ref<UniElement | null>(null)
+
+	/** 面板矩形缓存（视口坐标） */
+	const panelRect = ref<DOMRect | null>(null)
+	/** 色相条矩形缓存 */
+	const hueRect = ref<DOMRect | null>(null)
+	/** 透明度条矩形缓存 */
+	const alphaRect = ref<DOMRect | null>(null)
+
+	/** 色相 0-360 */
+	const hue = ref(0)
+	/** 饱和度 0-100（面板 x 轴） */
+	const saturation = ref(100)
+	/** 明度 0-100（面板 y 轴，向上递增） */
+	const brightness = ref(100)
+	/** 透明度 0-1 */
+	const alpha = ref(1)
+
+	/** 当前生效的输出格式（受控 props.format 的内部镜像） */
+	const selectedFormat = ref<ColorFormat>('rgb')
+	/** 最近使用颜色（showRecent 时维护） */
+	const recentColors = ref<string[]>([])
+	/** 已派发的颜色文本（回灌去重用，避免外部回传导致状态抖动） */
+	let lastEmitted = ''
+
+	/** 数值输入框文本（规范化展示，提交时解析） */
+	const inputR = ref('25')
+	const inputG = ref('137')
+	const inputB = ref('250')
+	const inputA = ref('100')
+
+	/** 棋盘格单元索引数组（模板 v-for 用） */
+	const checkerCells: number[] = []
+	for (let i = 0; i < CHECKER_CELL_COUNT; i++) {
+		checkerCells.push(i)
+	}
+
+	/** 根节点类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-color-picker'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 面板内联样式：panelHeight 覆盖主题高度 */
+	const panelStyle = computed<string>(() => {
+		if (props.panelHeight > 0) return 'height: ' + props.panelHeight.toString() + 'px;'
+		return ''
+	})
+
+	/** 面板底色：当前色相的纯色（hsl 不写入样式，换算为 rgb 以保证全端可用） */
+	const panelHueStyle = computed<string>(() => {
+		const pure = hsvToRgb({ h: hue.value, s: 100, v: 100 }, 1)
+		return 'background-color: ' + formatColor(pure, 'rgb', false) + ';'
+	})
+
+	/** 面板 thumb 位置：x = 饱和度百分比，y = 100 - 明度百分比 */
+	const panelThumbStyle = computed<string>(() => {
+		const left = saturation.value.toString()
+		const top = (100 - brightness.value).toString()
+		return 'left: ' + left + '%; top: ' + top + '%;'
+	})
+
+	/** 色相 thumb 位置 */
+	const hueThumbStyle = computed<string>(() => {
+		return 'left: ' + (hue.value / 360 * 100).toString() + '%;'
+	})
+
+	/** 透明度 thumb 位置 */
+	const alphaThumbStyle = computed<string>(() => {
+		return 'left: ' + (alpha.value * 100).toString() + '%;'
+	})
+
+	/** 当前 RGBA（面板状态派生） */
+	const currentRgba = computed<RgbaColor>(() => {
+		const hsv: HsvColor = { h: hue.value, s: saturation.value, v: brightness.value }
+		return hsvToRgb(hsv, alpha.value)
+	})
+
+	/** 当前颜色文本（按格式与透明度序列化） */
+	const currentText = computed<string>(() => {
+		return formatColor(currentRgba.value, selectedFormat.value, props.showAlpha)
+	})
+
+	/** 透明度条渐变：透明 → 当前色 */
+	const alphaFillStyle = computed<string>(() => {
+		return 'background-image: ' + alphaTrackGradient(currentRgba.value) + ';'
+	})
+
+	/** 预定义颜色列表（未传用内置常用色） */
+	const presetList = computed<string[]>(() => {
+		const p = props.presets
+		if (p != null && p.length > 0) return p
+		return DEFAULT_COLOR_PRESETS
+	})
+
+	/**
+	 * 是否可交互（禁用 / 只读均不响应）
+	 */
+	function isInteractive(): boolean {
+		return !props.disabled && !props.readonly
+	}
+
+	/**
+	 * 文本转数值（非法输入回退 0）
+	 *
+	 * @param text 数值文本
+	 * @returns 解析结果
+	 */
+	function numberText(text: string): number {
+		const v = parseFloat(text)
+		if (v != v) return 0
+		return v
+	}
+
+	/**
+	 * 同步数值输入框文本（内部状态变化后规范化展示）
+	 */
+	function syncInputTexts() {
+		const c = currentRgba.value
+		inputR.value = Math.round(c.r).toString()
+		inputG.value = Math.round(c.g).toString()
+		inputB.value = Math.round(c.b).toString()
+		inputA.value = Math.round(c.a * 100).toString()
+	}
+
+	/**
+	 * 派发当前颜色（与上次派发等价时跳过，避免外部回灌导致抖动）
+	 */
+	function emitCurrent() {
+		const text = currentText.value
+		if (text == lastEmitted) return
+		lastEmitted = text
+		emit('update:value', text)
+		emit('change', text)
+	}
+
+	/**
+	 * 记录最近使用颜色（去重、最新在前、上限 8 个）
+	 *
+	 * @param text 颜色文本
+	 */
+	function pushRecent(text: string) {
+		if (!props.showRecent) return
+		const list: string[] = []
+		list.push(text)
+		const old = recentColors.value
+		for (let i = 0; i < old.length; i++) {
+			if (list.length >= RECENT_LIMIT) break
+			if (!colorsEqual(old[i], text)) list.push(old[i])
+		}
+		recentColors.value = list
+	}
+
+	/**
+	 * 应用一组 HSV + alpha 状态并派发颜色
+	 *
+	 * @param h 色相
+	 * @param s 饱和度 0-100
+	 * @param v 明度 0-100
+	 * @param a 透明度 0-1
+	 */
+	function applyState(h: number, s: number, v: number, a: number) {
+		hue.value = clampNumber(h, 0, 360)
+		saturation.value = clampNumber(s, 0, 100)
+		brightness.value = clampNumber(v, 0, 100)
+		alpha.value = clampNumber(a, 0, 1)
+		syncInputTexts()
+		emitCurrent()
+	}
+
+	/**
+	 * 应用外部颜色文本（预设 / 最近色 / 吸管结果）
+	 *
+	 * @param text 颜色字符串
+	 */
+	function applyColorText(text: string) {
+		const c = parseColor(text)
+		const hsv = rgbToHsv(c)
+		hue.value = hsv.h
+		saturation.value = hsv.s
+		brightness.value = hsv.v
+		alpha.value = c.a
+		syncInputTexts()
+		emitCurrent()
+		pushRecent(currentText.value)
+	}
+
+	/**
+	 * 测量单个节点矩形（三分支：Web 同步 / 小程序 id 查询 / App 异步）
+	 *
+	 * @param id 节点 id（小程序端查询用）
+	 * @param el 节点引用（Web / App 用）
+	 * @param apply 矩形回写回调
+	 */
+	function measureNode(id: string, el: UniElement | null, apply: (rect: DOMRect | null) => void) {
+		// #ifdef WEB
+		if (el != null) apply(el.getBoundingClientRect())
+		// #endif
+		// #ifdef MP
+		const instance = getCurrentInstance()
+		uni.createSelectorQuery().in(instance!.proxy!)
+			.select('#' + id)
+			.boundingClientRect()
+			.exec((ret: Array<any>) => {
+				const first = ret.length > 0 ? ret[0] : null
+				apply(first as DOMRect | null)
+			})
+		// #endif
+		// #ifdef APP
+		if (el != null) {
+			el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+				apply(rect)
+			})
+		}
+		// #endif
+	}
+
+	/**
+	 * 测量全部交互节点（挂载后调用；窗口尺寸变化不处理，重新打开弹层时由父级重挂载）
+	 */
+	function measureAll() {
+		measureNode('m-color-picker-panel', panelRef.value, (rect: DOMRect | null) => {
+			panelRect.value = rect
+		})
+		measureNode('m-color-picker-hue', hueRef.value, (rect: DOMRect | null) => {
+			hueRect.value = rect
+		})
+		measureNode('m-color-picker-alpha', alphaRef.value, (rect: DOMRect | null) => {
+			alphaRect.value = rect
+		})
+	}
+
+	onMounted(() => {
+		measureAll()
+	})
+
+	/**
+	 * 面板触摸：按矩形换算饱和度 / 明度
+	 *
+	 * @param e 触摸事件
+	 */
+	const onPanelTouch = (e: TouchEvent) => {
+		if (!isInteractive()) return
+		if (e.touches.length == 0) return
+		const t = e.touches[0]
+		const rect = panelRect.value
+		if (rect == null) {
+			measureAll()
+			return
+		}
+		if (rect.width <= 0 || rect.height <= 0) return
+		const x = clampNumber((t.clientX - rect.left) / rect.width, 0, 1)
+		const y = clampNumber((t.clientY - rect.top) / rect.height, 0, 1)
+		applyState(hue.value, x * 100, (1 - y) * 100, alpha.value)
+	}
+
+	/**
+	 * 色相条触摸：按矩形换算色相
+	 *
+	 * @param e 触摸事件
+	 */
+	const onHueTouch = (e: TouchEvent) => {
+		if (!isInteractive()) return
+		if (e.touches.length == 0) return
+		const t = e.touches[0]
+		const rect = hueRect.value
+		if (rect == null) {
+			measureAll()
+			return
+		}
+		if (rect.width <= 0) return
+		const x = clampNumber((t.clientX - rect.left) / rect.width, 0, 1)
+		applyState(x * 360, saturation.value, brightness.value, alpha.value)
+	}
+
+	/**
+	 * 透明度条触摸：按矩形换算透明度
+	 *
+	 * @param e 触摸事件
+	 */
+	const onAlphaTouch = (e: TouchEvent) => {
+		if (!isInteractive()) return
+		if (e.touches.length == 0) return
+		const t = e.touches[0]
+		const rect = alphaRect.value
+		if (rect == null) {
+			measureAll()
+			return
+		}
+		if (rect.width <= 0) return
+		const x = clampNumber((t.clientX - rect.left) / rect.width, 0, 1)
+		applyState(hue.value, saturation.value, brightness.value, x)
+	}
+
+	/**
+	 * 手势结束：记录最近使用颜色
+	 */
+	const onGestureEnd = (_: TouchEvent) => {
+		if (!isInteractive()) return
+		pushRecent(currentText.value)
+	}
+
+	/**
+	 * 格式切换：派发 update:format / format-change 并按新格式重发颜色
+	 *
+	 * @param f 目标格式
+	 */
+	const onFormatClick = (f: ColorFormat) => {
+		if (props.disabled) return
+		if (selectedFormat.value != f) {
+			selectedFormat.value = f
+			emit('update:format', f)
+			emit('format-change', f)
+		}
+		emitCurrent()
+	}
+
+	/**
+	 * 预设 / 最近色点击：应用到面板并记录最近色
+	 *
+	 * @param color 颜色文本
+	 */
+	const onSwatchClick = (color: string) => {
+		if (!isInteractive()) return
+		applyColorText(color)
+	}
+
+	/**
+	 * 数值输入提交：解析 R / G / B / A 并同步面板状态
+	 */
+	const onInputCommit = () => {
+		if (!isInteractive()) return
+		const r = clampNumber(numberText(inputR.value), 0, 255)
+		const g = clampNumber(numberText(inputG.value), 0, 255)
+		const b = clampNumber(numberText(inputB.value), 0, 255)
+		const a = clampNumber(numberText(inputA.value), 0, 100) / 100
+		const rgba: RgbaColor = { r: Math.round(r), g: Math.round(g), b: Math.round(b), a: a }
+		const hsv = rgbToHsv(rgba)
+		hue.value = hsv.h
+		saturation.value = hsv.s
+		brightness.value = hsv.v
+		alpha.value = a
+		syncInputTexts()
+		emitCurrent()
+	}
+
+	/** R 输入框回写 */
+	const onInputR = (e: UniInputEvent) => {
+		inputR.value = e.detail.value
+	}
+
+	/** G 输入框回写 */
+	const onInputG = (e: UniInputEvent) => {
+		inputG.value = e.detail.value
+	}
+
+	/** B 输入框回写 */
+	const onInputB = (e: UniInputEvent) => {
+		inputB.value = e.detail.value
+	}
+
+	/** A 输入框回写 */
+	const onInputA = (e: UniInputEvent) => {
+		inputA.value = e.detail.value
+	}
+
+	/**
+	 * 吸管取色（仅 Web：Chromium EyeDropper API；不支持时 toast 提示）
+	 */
+	const onEyedropperClick = () => {
+		// #ifdef WEB
+		const win: any = window
+		const ctor: any = win.EyeDropper
+		if (ctor == null) {
+			uni.showToast({ title: '当前浏览器不支持吸管取色', icon: 'none' })
+			return
+		}
+		const dropper: any = new ctor()
+		const task: any = dropper.open()
+		task.then((res: any) => {
+			const picked: string = res.sRGBHex as string
+			if (isInteractive()) applyColorText(picked)
+		}).catch((_: any) => {
+			// 用户取消取色（Esc / 点击页面）无需处理
+		})
+		// #endif
+	}
+
+	/** 棋盘格单元类名（偶数白 / 奇数灰，形成竖条纹底纹） */
+	function checkerCellClass(index: number): string {
+		if (index % 2 == 0) return 'm-color-picker__checker-cell m-color-picker__checker-cell--light'
+		return 'm-color-picker__checker-cell'
+	}
+
+	/**
+	 * 格式按钮类名
+	 *
+	 * @param f 格式
+	 * @returns 选中态含 --active 修饰类
+	 */
+	function formatClass(f: ColorFormat): string {
+		if (selectedFormat.value == f) return 'm-color-picker__format m-color-picker__format--active'
+		return 'm-color-picker__format'
+	}
+
+	/**
+	 * 格式按钮文本类名
+	 *
+	 * @param f 格式
+	 * @returns 选中态含 --active 修饰类
+	 */
+	function formatTextClass(f: ColorFormat): string {
+		if (selectedFormat.value == f) return 'm-color-picker__format-text m-color-picker__format-text--active'
+		return 'm-color-picker__format-text'
+	}
+
+	/**
+	 * 色块类名（当前色与色块等价时高亮描边）
+	 *
+	 * @param color 色块颜色
+	 * @returns 选中态含 --active 修饰类
+	 */
+	function swatchClass(color: string): string {
+		if (colorsEqual(color, currentText.value)) return 'm-color-picker__swatch m-color-picker__swatch--active'
+		return 'm-color-picker__swatch'
+	}
+
+	/** 外部值变更同步面板状态（与本组件派发值等价时跳过） */
+	watch((): string => props.value, (v: string) => {
+		if (lastEmitted != '' && colorsEqual(v, lastEmitted)) return
+		const c = parseColor(v)
+		const hsv = rgbToHsv(c)
+		hue.value = hsv.h
+		saturation.value = hsv.s
+		brightness.value = hsv.v
+		alpha.value = c.a
+		syncInputTexts()
+	}, { immediate: true })
+
+	/** 外部格式变更同步内部镜像 */
+	watch((): ColorFormat => props.format, (v: ColorFormat) => {
+		selectedFormat.value = v
+	}, { immediate: true })
+
+	/** 暴露给弹层：弹层打开动画结束后重新测量交互节点（动画期间 rect 带位移） */
+	defineExpose({
+		refresh: measureAll
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根容器 ========== */
+	.m-color-picker {
+		width: 100%;
+	}
+
+	/* ========== 饱和度-明度面板 ========== */
+	.m-color-picker__panel {
+		position: relative;
+		width: 100%;
+		height: $m-color-picker-panel-height;
+		border-radius: $m-color-picker-panel-radius;
+		overflow: hidden;
+		background-color: $m-color-primary;
+	}
+
+	.m-color-picker__panel-hue {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+	}
+
+	.m-color-picker__panel-white {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-image: linear-gradient(to right, #ffffff 0%, rgba(255, 255, 255, 0) 100%);
+	}
+
+	.m-color-picker__panel-black {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-image: linear-gradient(to top, #000000 0%, rgba(0, 0, 0, 0) 100%);
+	}
+
+	.m-color-picker__thumb {
+		position: absolute;
+		width: $m-color-picker-thumb-size;
+		height: $m-color-picker-thumb-size;
+		border-radius: $m-radius-max;
+		border: $m-color-picker-thumb-border-width solid $m-color-picker-thumb-border-color;
+		transform: translate(-50%, -50%);
+	}
+
+	/* ========== 滑块轨道（色相条 / 透明度条共用） ========== */
+	.m-color-picker__track {
+		position: relative;
+		width: 100%;
+		height: $m-color-picker-track-height;
+		margin-top: $m-color-picker-track-margin-top;
+		border-radius: $m-radius-max;
+	}
+
+	.m-color-picker__hue-fill {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: $m-radius-max;
+		background-image: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+	}
+
+	.m-color-picker__checker {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		flex-direction: row;
+		overflow: hidden;
+		border-radius: $m-radius-max;
+		background-color: $m-white;
+	}
+
+	.m-color-picker__checker-cell {
+		width: $m-color-picker-checker-cell-width;
+		height: 100%;
+		background-color: $m-color-picker-checker-color;
+	}
+
+	.m-color-picker__checker-cell--light {
+		background-color: $m-white;
+	}
+
+	.m-color-picker__alpha-fill {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: $m-radius-max;
+	}
+
+	.m-color-picker__track-thumb {
+		position: absolute;
+		top: 50%;
+		width: $m-color-picker-thumb-size;
+		height: $m-color-picker-thumb-size;
+		border-radius: $m-radius-max;
+		border: $m-color-picker-thumb-border-width solid $m-color-picker-thumb-border-color;
+		transform: translate(-50%, -50%);
+	}
+
+	/* ========== 数值输入 ========== */
+	.m-color-picker__inputs {
+		flex-direction: row;
+		margin-top: $m-color-picker-inputs-margin-top;
+	}
+
+	.m-color-picker__input-item {
+		flex: 1;
+		flex-direction: column;
+		margin-right: $m-color-picker-input-gap;
+	}
+
+	.m-color-picker__input-label {
+		font-size: $m-color-picker-input-label-font-size;
+		line-height: $m-color-picker-input-label-line-height;
+		color: $m-text-color-tertiary;
+	}
+
+	.m-color-picker__input {
+		height: $m-color-picker-input-height;
+		padding: 0 6px;
+		border-width: $m-border-width;
+		border-style: solid;
+		border-color: $m-color-default-border;
+		border-radius: $m-radius-md;
+		font-size: $m-color-picker-input-font-size;
+		color: $m-text-color;
+		background-color: $m-white;
+	}
+
+	/* ========== 格式切换 ========== */
+	.m-color-picker__formats {
+		flex-direction: row;
+		align-items: center;
+		margin-top: $m-color-picker-format-margin-top;
+	}
+
+	.m-color-picker__format {
+		padding: $m-color-picker-format-padding;
+		margin-right: $m-color-picker-format-gap;
+		border-radius: $m-radius-max;
+		background-color: $m-color-picker-format-background;
+	}
+
+	.m-color-picker__format--active {
+		background-color: $m-color-picker-format-active-background;
+	}
+
+	.m-color-picker__format-text {
+		font-size: $m-color-picker-format-font-size;
+		line-height: $m-color-picker-format-line-height;
+		color: $m-color-picker-format-color;
+	}
+
+	.m-color-picker__format-text--active {
+		color: $m-color-picker-format-active-color;
+	}
+
+	.m-color-picker__current {
+		flex: 1;
+		margin-left: $m-color-picker-format-gap;
+		font-size: $m-color-picker-format-font-size;
+		line-height: $m-color-picker-format-line-height;
+		color: $m-text-color-tertiary;
+		text-align: right;
+	}
+
+	/* ========== 预设色 / 最近色 ========== */
+	.m-color-picker__swatches {
+		flex-direction: row;
+		flex-wrap: wrap;
+		margin-top: $m-color-picker-swatches-margin-top;
+	}
+
+	.m-color-picker__swatch {
+		width: $m-color-picker-swatch-size;
+		height: $m-color-picker-swatch-size;
+		margin-right: $m-color-picker-swatch-gap;
+		margin-bottom: $m-color-picker-swatch-gap;
+		padding: $m-color-picker-swatch-padding;
+		border-width: $m-border-width;
+		border-style: solid;
+		border-color: $m-color-picker-swatch-border-color;
+		border-radius: $m-radius-md;
+		background-color: $m-white;
+	}
+
+	.m-color-picker__swatch--active {
+		border-color: $m-color-picker-swatch-active-border-color;
+		border-width: 2px;
+	}
+
+	.m-color-picker__swatch-fill {
+		flex: 1;
+		border-radius: 4px;
+	}
+
+	/* ========== 吸管（仅 Web 渲染） ========== */
+	.m-color-picker__eyedropper {
+		flex-direction: row;
+		align-items: center;
+		align-self: flex-start;
+		margin-top: $m-color-picker-swatches-margin-top;
+		padding: $m-color-picker-eyedropper-padding;
+		border-radius: $m-radius-md;
+		background-color: $m-color-picker-eyedropper-background;
+	}
+
+	.m-color-picker__eyedropper-icon {
+		font-size: $m-color-picker-eyedropper-icon-size;
+		color: $m-color-picker-eyedropper-color;
+	}
+
+	.m-color-picker__eyedropper-text {
+		margin-left: 4px;
+		font-size: $m-color-picker-eyedropper-font-size;
+		line-height: $m-color-picker-eyedropper-line-height;
+		color: $m-color-picker-eyedropper-color;
+	}
+</style>

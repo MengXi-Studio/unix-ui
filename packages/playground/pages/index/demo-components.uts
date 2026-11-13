@@ -180,6 +180,24 @@ export const demoGroups: DemoGroup[] = [
 				desc: '复选框的弹层形态：底部弹层多选，options 数组驱动渲染 + field-names 映射 + footer 插槽。'
 			},
 			{
+				name: 'color-picker',
+				zhName: '颜色选择器',
+				enName: 'ColorPicker',
+				desc: '饱和度-明度面板 + 色相 / 透明度滑块，支持 hex / rgb / hsl 输出、格式切换、预设色、数值输入、最近色与 Web 端吸管取色。'
+			},
+			{
+				name: 'color-picker-input',
+				zhName: '颜色选择器输入框',
+				enName: 'ColorPickerInput',
+				desc: '颜色选择器的表单输入形态：只读触发器 + 色块预览 + 弹层选色，支持清空与字段标签。'
+			},
+			{
+				name: 'color-picker-popup',
+				zhName: '颜色选择器弹出框',
+				enName: 'ColorPickerPopup',
+				desc: '颜色选择器的弹层形态：取消 / 标题 / 确定头部，确定后回写，取消丢弃本次改动。'
+			},
+			{
 				name: 'input',
 				zhName: '输入框',
 				enName: 'Input',

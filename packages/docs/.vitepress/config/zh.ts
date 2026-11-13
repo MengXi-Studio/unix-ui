@@ -116,6 +116,9 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Checkbox 复选框', link: '/components/checkbox' },
 						{ text: 'CheckboxInput 复选输入框', link: '/components/checkbox-input' },
 						{ text: 'CheckboxPopup 复选弹出框', link: '/components/checkbox-popup' },
+						{ text: 'ColorPicker 颜色选择器', link: '/components/color-picker' },
+						{ text: 'ColorPickerInput 颜色选择器输入框', link: '/components/color-picker-input' },
+						{ text: 'ColorPickerPopup 颜色选择器弹出框', link: '/components/color-picker-popup' },
 						{ text: 'Input 输入框', link: '/components/input' }
 					]
 				},

@@ -84,6 +84,24 @@
 					}
 				},
 				{
+					"path": "color-picker-input/color-picker-input",
+					"style": {
+						"navigationBarTitleText": "颜色选择器输入框 ColorPickerInput"
+					}
+				},
+				{
+					"path": "color-picker-popup/color-picker-popup",
+					"style": {
+						"navigationBarTitleText": "颜色选择器弹出框 ColorPickerPopup"
+					}
+				},
+				{
+					"path": "color-picker/color-picker",
+					"style": {
+						"navigationBarTitleText": "颜色选择器 ColorPicker"
+					}
+				},
+				{
 					"path": "compact/compact",
 					"style": {
 						"navigationBarTitleText": "紧凑布局 Compact"

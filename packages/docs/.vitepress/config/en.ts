@@ -103,6 +103,9 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Checkbox', link: '/en/components/checkbox' },
 						{ text: 'CheckboxInput', link: '/en/components/checkbox-input' },
 						{ text: 'CheckboxPopup', link: '/en/components/checkbox-popup' },
+						{ text: 'ColorPicker', link: '/en/components/color-picker' },
+						{ text: 'ColorPickerInput', link: '/en/components/color-picker-input' },
+						{ text: 'ColorPickerPopup', link: '/en/components/color-picker-popup' },
 						{ text: 'Input', link: '/en/components/input' }
 					]
 				},

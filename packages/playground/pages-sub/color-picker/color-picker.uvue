@@ -1,0 +1,131 @@
+<template>
+	<view class="page">
+		<demo-navbar title="颜色选择器" subtitle="ColorPicker" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-color-picker v-model:value="basicColor" />
+					<text class="caption">默认 rgb 输出，饱和度-明度面板 + 色相条（当前：{{ basicColor }}）</text>
+				</view>
+
+				<text class="section" id="alpha">选择透明度</text>
+				<view class="card">
+					<m-color-picker v-model:value="alphaColor" show-alpha />
+					<text class="caption">show-alpha 增加透明度条与 A 分量（当前：{{ alphaColor }}）</text>
+				</view>
+
+				<text class="section" id="presets">预定义颜色</text>
+				<view class="card">
+					<m-color-picker v-model:value="presetColor" show-presets />
+					<text class="caption">show-presets 展示内置常用色（当前：{{ presetColor }}）</text>
+				</view>
+
+				<text class="section" id="custom-presets">自定义预定义颜色</text>
+				<view class="card">
+					<m-color-picker v-model:value="customColor" show-presets :presets="presets" />
+					<text class="caption">presets 覆盖内置色板（当前：{{ customColor }}）</text>
+				</view>
+
+				<text class="section" id="hex">HEX 格式</text>
+				<view class="card">
+					<m-color-picker v-model:value="hexColor" format="hex" show-alpha />
+					<text class="caption">format="hex"，show-alpha 时输出 8 位 #RRGGBBAA（当前：{{ hexColor }}）</text>
+				</view>
+
+				<text class="section" id="hsl">HSL 格式</text>
+				<view class="card">
+					<m-color-picker v-model:value="hslColor" format="hsl" show-alpha />
+					<text class="caption">format="hsl"（当前：{{ hslColor }}）</text>
+				</view>
+
+				<text class="section" id="format-switch">允许切换格式</text>
+				<view class="card">
+					<m-color-picker v-model:value="switchColor" :format="switchFormat" show-format show-alpha @update:format="onFormatChange" />
+					<text class="caption">show-format 面板内切换 hex / rgb / hsl（当前格式：{{ switchFormat }}，值：{{ switchColor }}）</text>
+				</view>
+
+				<text class="section" id="inputs">数值输入</text>
+				<view class="card">
+					<m-color-picker v-model:value="inputColor" show-inputs show-alpha />
+					<text class="caption">show-inputs 开启 R / G / B / A 数值输入，失焦提交（当前：{{ inputColor }}）</text>
+				</view>
+
+				<text class="section" id="recent">最近使用颜色</text>
+				<view class="card">
+					<m-color-picker v-model:value="recentColor" show-recent show-presets />
+					<text class="caption">show-recent 在手势结束 / 选色后记录最近 8 个颜色（当前：{{ recentColor }}）</text>
+				</view>
+
+				<text class="section" id="eyedropper">吸管取色（仅 Web）</text>
+				<view class="card">
+					<m-color-picker v-model:value="dropperColor" show-eyedropper />
+					<text class="caption">show-eyedropper 在 Web（Chromium）渲染吸管入口，App / 小程序端不渲染（当前：{{ dropperColor }}）</text>
+				</view>
+
+				<text class="section" id="disabled">禁用与只读</text>
+				<view class="card">
+					<m-color-picker v-model:value="disabledColor" disabled />
+					<text class="caption">disabled 不响应交互（当前：{{ disabledColor }}）</text>
+					<m-color-picker v-model:value="readonlyColor" readonly custom-style="margin-top: 12px;" />
+					<text class="caption">readonly 不响应交互且无禁用视觉（当前：{{ readonlyColor }}）</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '颜色选择器 ColorPicker', name: 'color-picker' })
+
+	import { ColorFormat } from '@/uni_modules/m-ui-x/components/m-color-picker/color-picker.uts'
+
+	/** 基础用法颜色 */
+	const basicColor = ref<string>('#1989FA')
+	/** 透明度颜色 */
+	const alphaColor = ref<string>('rgba(25, 137, 250, 0.6)')
+	/** 预定义颜色演示值 */
+	const presetColor = ref<string>('#2ECC71')
+	/** 自定义预定义颜色演示值 */
+	const customColor = ref<string>('#F59E0B')
+	/** HEX 格式颜色 */
+	const hexColor = ref<string>('#1989FA')
+	/** HSL 格式颜色 */
+	const hslColor = ref<string>('hsl(210, 96%, 54%)')
+	/** 可切换格式的颜色 */
+	const switchColor = ref<string>('rgba(25, 137, 250, 0.6)')
+	/** 可切换格式的当前格式 */
+	const switchFormat = ref<ColorFormat>('rgb')
+	/** 数值输入演示颜色 */
+	const inputColor = ref<string>('rgba(46, 204, 113, 0.8)')
+	/** 最近使用颜色演示值 */
+	const recentColor = ref<string>('#8B5CF6')
+	/** 吸管取色演示值 */
+	const dropperColor = ref<string>('#EF4444')
+	/** 禁用态颜色 */
+	const disabledColor = ref<string>('#9CA3AF')
+	/** 只读态颜色 */
+	const readonlyColor = ref<string>('#06B6D4')
+
+	/** 自定义预定义色板 */
+	const presets: string[] = ['#1989FA', '#2ECC71', '#F59E0B', '#EF4444', '#8B5CF6', '#0F172A']
+
+	/**
+	 * 格式切换回写（受控用法：外部维护 format）
+	 *
+	 * @param f 目标格式
+	 */
+	function onFormatChange(f: ColorFormat) {
+		switchFormat.value = f
+	}
+</script>
+
+<style lang="scss">
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

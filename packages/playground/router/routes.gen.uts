@@ -72,6 +72,21 @@ export const routes: RouteConfig[] = [
 		meta: { title: '复选框 Checkbox' },
 	},
 	{
+		path: 'pages-sub/color-picker-input/color-picker-input',
+		name: 'color-picker-input',
+		meta: { title: '颜色选择器输入框 ColorPickerInput' },
+	},
+	{
+		path: 'pages-sub/color-picker-popup/color-picker-popup',
+		name: 'color-picker-popup',
+		meta: { title: '颜色选择器弹出框 ColorPickerPopup' },
+	},
+	{
+		path: 'pages-sub/color-picker/color-picker',
+		name: 'color-picker',
+		meta: { title: '颜色选择器 ColorPicker' },
+	},
+	{
 		path: 'pages-sub/compact/compact',
 		name: 'compact',
 		meta: { title: '紧凑布局 Compact' },

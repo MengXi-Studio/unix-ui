@@ -76,7 +76,6 @@
 		CalendarMonth,
 		CalendarPanelConfig,
 		CalendarFormatter,
-		CALENDAR_DAY_MS,
 		CALENDAR_WEEKDAYS,
 		CALENDAR_DEFAULT_DAY_HEIGHT,
 		CALENDAR_DAY_MARGIN_BOTTOM,
@@ -87,6 +86,7 @@
 		addMonths,
 		getDayDiff
 	} from './calendar.uts'
+	import { addDays, getDaysInMonth, getFirstDayWeekday, startOfMonth } from '../../utils/date.uts'
 	import MCalendarPanel from './m-calendar-panel.uvue'
 	import { showToast } from '../m-toast/toast.uts'
 
@@ -231,7 +231,7 @@
 			return getDayStart(props.maxDate!)
 		}
 		const now = getDayStart(new Date())
-		return new Date(now.getFullYear(), now.getMonth() + 6, now.getDate())
+		return addMonths(now, 6)
 	}
 
 	/** 星期表头：按 firstDayOfWeek 旋转（0 周日起） */
@@ -292,15 +292,15 @@
 	function buildMonth(monthStart: Date, min: Date, max: Date): CalendarMonth {
 		const days: CalendarDayItem[] = []
 		// 周首占位数 =（当月 1 号星期 - firstDayOfWeek + 7）% 7
-		const firstWeekday = new Date(monthStart.getFullYear(), monthStart.getMonth(), 1).getDay()
+		const firstWeekday = getFirstDayWeekday(monthStart.getFullYear(), monthStart.getMonth())
 		const placeholderCount = (firstWeekday - props.firstDayOfWeek + 7) % 7
 		for (let i = 0; i < placeholderCount; i++) {
 			days.push(buildDay(new Date(0), 'placeholder'))
 		}
-		// 当月天数：次月 1 号回退一天（避免「第 0 日」构造的跨端差异）
-		const daysInMonth = new Date(new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1).getTime() - CALENDAR_DAY_MS).getDate()
+		// 当月天数（闰年与跨年由工具函数处理）
+		const daysInMonth = getDaysInMonth(monthStart.getFullYear(), monthStart.getMonth())
 		for (let d = 1; d <= daysInMonth; d++) {
-			const date = new Date(monthStart.getFullYear(), monthStart.getMonth(), d)
+			const date = addDays(monthStart, d - 1)
 			let type: CalendarDayType = ''
 			if (date.getTime() < min.getTime() || date.getTime() > max.getTime()) {
 				type = 'disabled'
@@ -410,8 +410,8 @@
 	function focusMonth(): Date {
 		const min = currentMinDate()
 		const max = currentMaxDate()
-		const minMonth = new Date(min.getFullYear(), min.getMonth(), 1)
-		const maxMonth = new Date(max.getFullYear(), max.getMonth(), 1)
+		const minMonth = startOfMonth(min)
+		const maxMonth = startOfMonth(max)
 		let month = minMonth
 		let ts: number | null = null
 		if (props.type == 'single') {
@@ -425,11 +425,11 @@
 		}
 		if (ts != null) {
 			const d = new Date(ts)
-			month = new Date(d.getFullYear(), d.getMonth(), 1)
+			month = startOfMonth(d)
 		} else {
 			const today = getDayStart(new Date())
 			if (today.getTime() >= min.getTime() && today.getTime() <= max.getTime()) {
-				month = new Date(today.getFullYear(), today.getMonth(), 1)
+				month = startOfMonth(today)
 			}
 		}
 		if (month.getTime() < minMonth.getTime()) {
@@ -479,7 +479,7 @@
 		const list: CalendarMonth[] = []
 		const min = currentMinDate()
 		const max = currentMaxDate()
-		let cursor = new Date(min.getFullYear(), min.getMonth(), 1)
+		let cursor = startOfMonth(min)
 		while (cursor.getTime() <= max.getTime()) {
 			const m = buildMonth(cursor, min, max)
 			// Vant 同款规则：首月月内标题由副标题承担（index !== 0 || !showSubtitle）
@@ -574,7 +574,7 @@
 			target = max
 		}
 		if (props.switchMode != 'none') {
-			currentPanelMonth.value = new Date(target.getFullYear(), target.getMonth(), 1)
+			currentPanelMonth.value = startOfMonth(target)
 			return
 		}
 		let index = -1
@@ -780,8 +780,8 @@
 		}
 		const min = currentMinDate()
 		const max = currentMaxDate()
-		const minMonth = new Date(min.getFullYear(), min.getMonth(), 1)
-		const maxMonth = new Date(max.getFullYear(), max.getMonth(), 1)
+		const minMonth = startOfMonth(min)
+		const maxMonth = startOfMonth(max)
 		if (next.getTime() < minMonth.getTime()) {
 			next = minMonth
 		}

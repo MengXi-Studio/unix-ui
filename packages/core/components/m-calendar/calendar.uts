@@ -7,6 +7,8 @@
  */
 
 /** 通用日期能力统一由 utils 提供，此处保留旧导出路径（m-calendar 系列组件与演示页无需改 import） */
+import { formatDate } from '../../utils/date.uts'
+
 export {
 	CALENDAR_DAY_MS,
 	getDayStart,
@@ -105,7 +107,7 @@ export type CalendarPanelConfig = {
  * 月标题文本：YYYY年M月（固定中文格式，月历组件整体为中文语境）
  */
 export function getMonthTitle(date: Date): string {
-	return date.getFullYear().toString() + '年' + (date.getMonth() + 1).toString() + '月'
+	return formatDate(date, 'YYYY年M月')
 }
 
 /**

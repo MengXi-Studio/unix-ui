@@ -111,6 +111,7 @@
 
 <script setup lang="uts">
 	import { CalendarPanelConfig, CalendarDayItem, CalendarDayType, CALENDAR_WEEKDAYS, dayTextClass, dayInfoTextClass, getMonthTitle, hexToRgba, isCircularDayType, isEdgeDayType } from './calendar.uts'
+	import { formatDate } from '../../utils/date.uts'
 	import MIcon from '../m-icon/m-icon.uvue'
 
 	type Props = {
@@ -278,7 +279,7 @@
 	 * 月水印文本：月份数字（如 10）
 	 */
 	function monthMarkText(date: Date): string {
-		return (date.getMonth() + 1).toString()
+		return formatDate(date, 'M')
 	}
 
 	/**

@@ -47,6 +47,7 @@
 	 * 确认后经 update:value 回写；展示文本由 value 派生（single 单值 / range 区间 / multiple 顿号串）。
 	 */
 	import { CalendarType, CalendarPosition } from '../m-calendar/calendar.uts'
+	import { formatDate } from '../../utils/date.uts'
 
 	type Props = {
 		/** 选中值（v-model:value）：single 为 Date，multiple / range 为 Date[]，null 未选 */
@@ -145,17 +146,10 @@
 	})
 
 	/**
-	 * 两位补零文本（UTS 手动补零，规避 padStart 跨端差异）
-	 */
-	function two(n: number): string {
-		return n < 10 ? '0' + n.toString() : n.toString()
-	}
-
-	/**
 	 * 日期转 YYYY-MM-DD 文本
 	 */
 	function fmtDate(d: Date): string {
-		return d.getFullYear().toString() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate())
+		return formatDate(d, 'YYYY-MM-DD')
 	}
 
 	/** 展示文本：single 单值；range「A ~ B」（未选完仅展示起点）；multiple 顿号串 */

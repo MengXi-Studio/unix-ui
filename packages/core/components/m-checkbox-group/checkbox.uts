@@ -19,15 +19,15 @@ export type CheckboxValueArray = Array<string | number>
 /**
  * 创建空复选值集合
  *
- * 空数组字面量直接断言为联合类型别名时，Kotlin 侧无法推断 UTSArray 的元素类型
- * （生成 `_uA()` 导致 `Cannot infer type argument for 'E'`）；经 ref 泛型构造可生成
- * 带类型参数的数组，再取 `.value` 返回，供 prop 默认值 / 清空事件 / 组件上下文复用。
+ * 空数组字面量直接断言为联合类型别名时，Kotlin 侧生成无类型参数的 `_uA()`，
+ * 触发 `Cannot infer type argument for 'E'`；改用具体元素类型的 ref 泛型构造，
+ * 生成带类型参数的数组后再断言为联合数组（泛型擦除，运行时安全）。
  *
  * @returns 空集合
  */
 export function emptyCheckboxValues(): CheckboxValueArray {
-	const box = ref<CheckboxValueArray>([])
-	return box.value
+	const box = ref<string[]>([])
+	return box.value as CheckboxValueArray
 }
 
 /** 复选框形状：圆形 / 方形 */

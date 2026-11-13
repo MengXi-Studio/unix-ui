@@ -3,7 +3,7 @@
 	     独立使用自持 boolean 状态。图标勾选态用 m-icon 'success'，
 	     不确定态画横杠（indeterminate），禁用态降透明度。 -->
 	<view :class="rootClass" :style="customStyle" @click="onClick">
-		<view class="m-checkbox__icon-wrap" :style="iconWrapStyle" @click="onIconClick">
+		<view :class="iconWrapClass" :style="iconWrapStyle" @click="onIconClick">
 			<slot name="icon" :checked="isChecked" :disabled="isDisabled">
 				<view v-if="indeterminate" class="m-checkbox__indeterminate" :style="indeterminateStyle"></view>
 				<m-icon v-else name="success" :style="iconStyle" custom-class="m-checkbox__icon" />
@@ -149,6 +149,11 @@
 		if (isDisabled.value) cls += ' m-checkbox--disabled'
 		if (props.customClass != '') cls += ' ' + props.customClass
 		return cls
+	})
+
+	/** 图标容器类名（整体禁用时降透明度；ucss 不支持后代选择器，禁用态直接挂在本节点） */
+	const iconWrapClass = computed<string>(() => {
+		return isDisabled.value ? 'm-checkbox__icon-wrap m-checkbox__icon-wrap--disabled' : 'm-checkbox__icon-wrap'
 	})
 
 	/** 图标容器内联样式：icon-size 直达容器宽高（默认走主题类） */
@@ -323,7 +328,7 @@
 	}
 
 	/* 整体禁用：图标降透明度（文本颜色由 label--disabled 控制） */
-	.m-checkbox--disabled .m-checkbox__icon-wrap {
+	.m-checkbox__icon-wrap--disabled {
 		opacity: $m-checkbox-disabled-opacity;
 	}
 </style>

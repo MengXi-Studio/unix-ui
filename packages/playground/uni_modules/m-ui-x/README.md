@@ -83,7 +83,7 @@ $m-button-normal-height: 48px;
 
 - 📖 完整文档（指南 + 组件参考 + 更新日志，中英双语）：[https://mengxi-studio.github.io/unix-ui/](https://mengxi-studio.github.io/unix-ui/)
 - 💻 在线演示（浏览器直接体验）：[Playground](https://mengxi-studio.github.io/unix-ui/playground/)
-- 📱 Android 真机体验：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794497198814-__UNI__F1AA560_1794497186884.apk)
+- 📱 Android 真机体验：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794590278532-__UNI__F1AA560_1794590268233.apk)
 
 ## 更新记录
 

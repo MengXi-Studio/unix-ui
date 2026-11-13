@@ -7,7 +7,7 @@
 - 新增日期工具函数集 `utils/date.uts`：公共入口按能力分层为 `utils/date/`（core / compare / arith / boundary / grid / format / lunar）七个纯函数模块，共 69 个具名导出——基础原语、比较、算术与差值、周月年边界与区间枚举、固定 6×7 月历网格与周序号 / 季度、格式化解析（13 基线 token + `W` / `Q` / `A` / `a`，`[]` 字面量转义）、农历 1900-2100 全量换算与干支 / 生肖 / 月名 / 日名 / 时辰名；全部纯函数不可变、按本地零点计算、失败返回 `null`；引入方式 `import { formatDate } from '@/uni_modules/m-ui-x/utils/date.uts'`；`m-calendar` 通用日期函数同步改用该工具集（旧导入路径由 `calendar.uts` re-export 保持兼容）
 - 修复 `m-tabs` options 平分模式首帧底部条未定位（[#10](https://github.com/MengXi-Studio/unix-ui/issues/10)）：options 形态没有 `m-tab` 子组件，`ctx.items` 恒为空，`watch(ctx.items)` 中的 `animateLine` 不会触发；初始 `activeIndex` 与解析结果相同也不会触发 `watch(activeIndex)`，`lineLeft` 保持初值 0，首屏底部条贴在标签栏最左缘（点击任意标签后才归位）。`onMounted` 在初始激活解析与渲染集合初始化后补一次 `nextTick` 首定位（`firstSet` 首次直接落位、不播动画），Web 同步测量、小程序在节点渲染完成后按 id 异步查询
 - 修复 `m-popup` 微信小程序端第二次打开无滑入动画（[#11](https://github.com/MengXi-Studio/unix-ui/issues/11)）：非 Web 端 `triggerPanelIn` 原用 `nextTick` 切换进入态，小程序渲染层会把间隔过近的两次 setData 合帧渲染，面板起始位（`-out`）与遮罩 `display:none` 移除落在同一帧，过渡没有可插值起点，第二次及以后打开直接出现在终位（首次因 `lazyRender` 挂载帧先绘制了起始位而正常）。改为与 m-overlay 淡入一致的 50ms 定时，确保起始位先完成一帧绘制；Web 端双 rAF 分支不变
-- 修复 Android 云端打包编译失败：空联合类型数组字面量直接断言为 `CheckboxValueArray` 会生成无类型参数的 `_uA()`（Kotlin `Cannot infer type argument for 'E'`），新增 `emptyCheckboxValues()` 工厂统一生成空集合，替换复选框组件 prop 默认值、上下文初始值与清空事件；日期横条演示页作用域插槽参数改为经类型收窄后读取字段（Kotlin 侧为 `Any?`）；复选框演示页 `change` 回调参数类型不匹配与缺失参数一并修正
+- 修复 Android 云端打包编译失败：空联合类型数组字面量直接断言为 `CheckboxValueArray` 会生成无类型参数的 `_uA()`（Kotlin `Cannot infer type argument for 'E'`），新增 `emptyCheckboxValues()` 工厂统一生成空集合，替换复选框组件 prop 默认值、上下文初始值与清空事件；日期横条演示页作用域插槽参数改为经类型收窄后读取字段（Kotlin 侧为 `Any?`）；复选框演示页 `change` 回调参数类型不匹配与缺失参数一并修正；`m-checkbox` 禁用态改用扁平修饰类，消除 ucss 后代选择器 `Invalid selector` 报错
 
 ## 0.4.2 (2026-11-12)
 

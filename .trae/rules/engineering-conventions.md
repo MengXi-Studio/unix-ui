@@ -31,7 +31,7 @@ packages/docs（VitePress 双语文档站，手工维护）
 | 组件前缀 | `m-` | 组件目录与标签名：`components/m-button/m-button.uvue` |
 | 主题变量前缀 | `$m-` | `theme/vars.scss` 全部变量；用户在根 uni.scss 定义同名变量即覆盖 |
 | 同步脚本 | `scripts/sync-uni-modules.mjs` | INCLUDE=`['components','utils','theme','static','LICENSE']`（README 不同步：插件市场格式与 npm 包不同），KEEP=`['package.json','changelog.md','README.md']` |
-| 公共工具函数入口 | `packages/core/utils/date.uts` | 使用者唯一 import 路径；内部实现分层在 `utils/date/`（core / compare / arith / boundary / grid / format / lunar），入口仅做具名 re-export |
+| 公共工具函数入口 | `packages/core/utils/index.uts`（汇总）+ `packages/core/utils/date.uts`（日期模块） | 两个入口导出完全一致，均为 `export *` re-export；内部实现分层在 `utils/date/`（core / compare / arith / boundary / grid / format / lunar） |
 
 ## 3. 新增组件的标准落码顺序
 

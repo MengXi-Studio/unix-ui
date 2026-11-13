@@ -9,7 +9,13 @@ A pure-function date toolkit shipped with the library: formatting / parsing, com
 
 ## Import
 
-With uni_modules:
+With uni_modules (aggregate entry — all utilities in one import):
+
+```ts
+import { formatDate, parseDate, addDays, solarToLunar } from '@/uni_modules/m-ui-x/utils/index.uts'
+```
+
+On-demand import (only the date module):
 
 ```ts
 import { formatDate, parseDate, addDays, solarToLunar } from '@/uni_modules/m-ui-x/utils/date.uts'
@@ -18,10 +24,10 @@ import { formatDate, parseDate, addDays, solarToLunar } from '@/uni_modules/m-ui
 With npm (verify that your project resolves `.uts` modules):
 
 ```ts
-import { formatDate } from '@meng-xi/unix-ui/utils/date.uts'
+import { formatDate } from '@meng-xi/unix-ui/utils/index.uts'
 ```
 
-The entry file only re-exports named functions; implementations are layered under `utils/date/`, so `utils/date.uts` is the single path consumers need.
+Entry files only re-export; implementations are layered under `utils/date/`. `utils/index.uts` is the aggregate entry (`export *`, so new modules are picked up automatically) and `utils/date.uts` is the date-module entry — both expose the same API, so pick whichever fits.
 
 ## Conventions
 

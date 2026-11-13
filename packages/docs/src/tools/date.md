@@ -10,7 +10,13 @@ added: 0.5.0
 
 ## 引入
 
-uni_modules 方式：
+uni_modules 方式（汇总入口，一次拿到全部能力）：
+
+```ts
+import { formatDate, parseDate, addDays, solarToLunar } from '@/uni_modules/m-ui-x/utils/index.uts'
+```
+
+按需引入（只依赖日期模块，路径更短）：
 
 ```ts
 import { formatDate, parseDate, addDays, solarToLunar } from '@/uni_modules/m-ui-x/utils/date.uts'
@@ -19,10 +25,10 @@ import { formatDate, parseDate, addDays, solarToLunar } from '@/uni_modules/m-ui
 npm 方式（需自行确认工程对 `.uts` 模块的解析支持）：
 
 ```ts
-import { formatDate } from '@meng-xi/unix-ui/utils/date.uts'
+import { formatDate } from '@meng-xi/unix-ui/utils/index.uts'
 ```
 
-入口文件仅做具名 re-export，内部按能力分层在 `utils/date/`，使用者只需认准 `utils/date.uts` 一个路径。
+入口文件仅做 re-export，内部按能力分层在 `utils/date/`：`utils/index.uts` 为全量汇总入口（`export *`，新增模块自动带出），`utils/date.uts` 为日期模块入口，两者导出完全一致，按需选择即可。
 
 ## 设计约定
 

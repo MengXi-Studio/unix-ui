@@ -22,7 +22,7 @@ uni_modules/m-ui-x/
 └── ...
 ```
 
-组件即被 [easycom](https://doc.dcloud.net.cn/uni-app-x/component/#easycom) 自动扫描，**无需任何配置**。工具函数从 `@/uni_modules/m-ui-x/utils/date.uts` 引入（详见 [Date 日期工具](/tools/date)）。
+组件即被 [easycom](https://doc.dcloud.net.cn/uni-app-x/component/#easycom) 自动扫描，**无需任何配置**。工具函数从 `@/uni_modules/m-ui-x/utils/index.uts` 引入（或按需引入 `utils/date.uts`，详见 [Date 日期工具](/tools/date)）。
 
 ## 方式二：npm
 

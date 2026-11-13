@@ -22,7 +22,7 @@ uni_modules/m-ui-x/
 └── ...
 ```
 
-Components are picked up automatically by [easycom](https://doc.dcloud.net.cn/uni-app-x/component/#easycom) — **no configuration required**. Import utilities from `@/uni_modules/m-ui-x/utils/date.uts` (see [Date](/en/tools/date)).
+Components are picked up automatically by [easycom](https://doc.dcloud.net.cn/uni-app-x/component/#easycom) — **no configuration required**. Import utilities from `@/uni_modules/m-ui-x/utils/index.uts` (or `utils/date.uts` on demand — see [Date](/en/tools/date)).
 
 ## Option 2: npm
 

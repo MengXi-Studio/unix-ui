@@ -151,7 +151,7 @@
 	/**
 	 * 触发面板进入过渡：面板可能随本次 show 变化新挂载（lazyRender 首开），
 	 * 浏览器在首帧绘制前不产生样式差值，需先以起始位（out）完成一帧渲染，
-	 * 下一帧再切 in 才能触发过渡（Web 端双重 rAF 与 Vue Transition 同款时序，非 Web 端 nextTick）
+	 * 下一帧再切 in 才能触发过渡（Web 端双重 rAF 与 Vue Transition 同款时序，非 Web 端 50ms 定时）
 	 */
 	function triggerPanelIn() {
 		// #ifdef WEB
@@ -162,9 +162,12 @@
 		})
 		// #endif
 		// #ifndef WEB
-		nextTick(() => {
+		// 小程序渲染层对间隔过近的两次 setData 合帧渲染：nextTick（逻辑层微任务）后设置的终态
+		// 会与 display:none 移除合并为同一次绘制，起始位从未绘制导致无滑入动画（第二次打开起复现）。
+		// 与 m-overlay 的淡入同理，改用 50ms 定时确保起始位先完成一帧绘制（在 0.3s 起步的过渡中不可感知）
+		setTimeout(() => {
 			enter.value = true
-		})
+		}, 50)
 		// #endif
 	}
 

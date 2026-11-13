@@ -1,0 +1,522 @@
+/**
+ * 日期工具集 · 格式化 / 解析 / 数值化
+ *
+ * 职责：formatDate / parseDate 双向 token 转换、日期数值化、前后月取值、中文名称、相对时间、ISO 文本。
+ * 口径：仅本地时区；不使用正则与 Intl，解析走手写字符扫描；解析失败返回 null。
+ *
+ * 格式符号（最长 token 优先匹配；[] 包裹片段原样输出，未命中字符原样保留）：
+ * YYYY 四位年 / YY 两位年 / MM 两位月 / M 一位月 / DD 两位日 / D 一位日 /
+ * HH 两位 24 时制小时 / H 一位 24 时制小时 / hh 两位 12 时制小时 / h 一位 12 时制小时 /
+ * mm 两位分 / m 一位分 / ss 两位秒 / s 一位秒 / SSS 毫秒 /
+ * W 周几（中文单字）/ Q 季度 / A 上午下午 / a am pm
+ */
+
+import { isValidDate } from './core.uts'
+import { addMonths } from './arith.uts'
+import { getQuarter } from './grid.uts'
+
+/** 格式化 token 表（按最长优先排序，避免 YYYY 被 YY 抢先匹配） */
+const FORMAT_TOKENS: string[] = ['YYYY', 'SSS', 'YY', 'MM', 'DD', 'HH', 'hh', 'mm', 'ss', 'W', 'Q', 'M', 'D', 'H', 'h', 'm', 's', 'A', 'a']
+
+/** 星期中文单字表（0 = 周日） */
+const WEEKDAY_CHARS: string[] = ['日', '一', '二', '三', '四', '五', '六']
+
+/** 月份中文名称表（0 = 一月） */
+const MONTH_NAMES: string[] = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+
+/**
+ * 数字补零
+ *
+ * @param value 待补零数值（取整数部分）
+ * @param length 目标长度
+ * @returns 左补 0 的文本（负数保留符号位）
+ */
+function padNumber(value: number, length: number): string {
+	let text = Math.floor(Math.abs(value)).toString()
+	while (text.length < length) {
+		text = '0' + text
+	}
+	return value < 0 ? '-' + text : text
+}
+
+/**
+ * 手写数字字符转换（规避 parseInt 在原生端的 radix 行为差异）
+ *
+ * @param text 纯数字文本
+ * @returns 对应数值（空串返回 0）
+ */
+function digitsToNumber(text: string): number {
+	let value = 0
+	for (let i = 0; i < text.length; i++) {
+		const code = text.charCodeAt(i)
+		// charCodeAt 在 UTS 中可空，空安全短路后再运算
+		if (code == null) {
+			continue
+		}
+		value = value * 10 + (code - 48)
+	}
+	return value
+}
+
+/**
+ * 判断字符是否数字
+ *
+ * @param ch 单字符文本
+ * @returns 0-9 返回 true
+ */
+function isDigitChar(ch: string): boolean {
+	const code = ch.charCodeAt(0)
+	if (code == null) {
+		return false
+	}
+	return code >= 48 && code <= 57
+}
+
+/**
+ * 12 时制小时归一（0 点 → 12，13 点 → 1）
+ *
+ * @param hour 24 时制小时
+ * @returns 1-12
+ */
+function toHour12(hour: number): number {
+	const value = hour % 12
+	return value == 0 ? 12 : value
+}
+
+/**
+ * 格式化单个 token
+ *
+ * @param date 合法日期
+ * @param token 格式符号
+ * @returns token 对应的文本
+ */
+function formatToken(date: Date, token: string): string {
+	if (token == 'YYYY') {
+		return padNumber(date.getFullYear(), 4)
+	}
+	if (token == 'YY') {
+		return padNumber(date.getFullYear() % 100, 2)
+	}
+	if (token == 'MM') {
+		return padNumber(date.getMonth() + 1, 2)
+	}
+	if (token == 'M') {
+		return (date.getMonth() + 1).toString()
+	}
+	if (token == 'DD') {
+		return padNumber(date.getDate(), 2)
+	}
+	if (token == 'D') {
+		return date.getDate().toString()
+	}
+	if (token == 'HH') {
+		return padNumber(date.getHours(), 2)
+	}
+	if (token == 'H') {
+		return date.getHours().toString()
+	}
+	if (token == 'hh') {
+		return padNumber(toHour12(date.getHours()), 2)
+	}
+	if (token == 'h') {
+		return toHour12(date.getHours()).toString()
+	}
+	if (token == 'mm') {
+		return padNumber(date.getMinutes(), 2)
+	}
+	if (token == 'm') {
+		return date.getMinutes().toString()
+	}
+	if (token == 'ss') {
+		return padNumber(date.getSeconds(), 2)
+	}
+	if (token == 's') {
+		return date.getSeconds().toString()
+	}
+	if (token == 'SSS') {
+		return padNumber(date.getMilliseconds(), 3)
+	}
+	if (token == 'W') {
+		return WEEKDAY_CHARS[date.getDay()]
+	}
+	if (token == 'Q') {
+		return getQuarter(date).toString()
+	}
+	if (token == 'A') {
+		return date.getHours() < 12 ? '上午' : '下午'
+	}
+	return date.getHours() < 12 ? 'am' : 'pm'
+}
+
+/**
+ * 按格式串格式化日期
+ *
+ * @param date 待格式化日期
+ * @param format 格式串（默认 'YYYY-MM-DD'）
+ * @returns 格式化文本；非法日期返回空串
+ */
+export function formatDate(date: Date, format: string = 'YYYY-MM-DD'): string {
+	if (!isValidDate(date)) {
+		return ''
+	}
+	let result = ''
+	let i = 0
+	while (i < format.length) {
+		const ch = format.substring(i, i + 1)
+		if (ch == '[') {
+			// 字面量片段：跳过后原样输出，不参与 token 匹配
+			let end = i + 1
+			while (end < format.length && format.substring(end, end + 1) != ']') {
+				end++
+			}
+			result += format.substring(i + 1, end)
+			i = end < format.length ? end + 1 : end
+			continue
+		}
+		let matched = ''
+		for (let k = 0; k < FORMAT_TOKENS.length; k++) {
+			const token = FORMAT_TOKENS[k]
+			if (format.substring(i, i + token.length) == token) {
+				matched = token
+				break
+			}
+		}
+		if (matched == '') {
+			result += ch
+			i++
+			continue
+		}
+		result += formatToken(date, matched)
+		i += matched.length
+	}
+	return result
+}
+
+/**
+ * 解析数字 token 的最大位宽
+ *
+ * @param token 格式符号
+ * @returns 允许的最大位数（非数字 token 返回 0）
+ */
+function maxDigitsOf(token: string): number {
+	if (token == 'YYYY') {
+		return 4
+	}
+	if (token == 'SSS') {
+		return 3
+	}
+	if (token == 'W' || token == 'Q' || token == 'A' || token == 'a') {
+		return 0
+	}
+	return 2
+}
+
+/**
+ * 按显式格式串解析日期（内部实现，格式串不可为空）
+ *
+ * @param value 待解析文本
+ * @param format 格式串
+ * @returns 解析成功返回 Date（本地时间）；不匹配、溢出或残余字符均返回 null
+ */
+function parseWithFormat(value: string, format: string): Date | null {
+	const now = new Date()
+	let year = now.getFullYear()
+	let month = 1
+	let day = 1
+	let hour = 0
+	let minute = 0
+	let second = 0
+	let millisecond = 0
+	let hasYear = false
+	let hasMonth = false
+	let hasDay = false
+	let pos = 0
+	let i = 0
+	while (i < format.length) {
+		const ch = format.substring(i, i + 1)
+		if (ch == '[') {
+			// 字面量片段：与输入逐字比对
+			let end = i + 1
+			while (end < format.length && format.substring(end, end + 1) != ']') {
+				end++
+			}
+			const literal = format.substring(i + 1, end)
+			if (value.substring(pos, pos + literal.length) != literal) {
+				return null
+			}
+			pos += literal.length
+			i = end < format.length ? end + 1 : end
+			continue
+		}
+		let token = ''
+		for (let k = 0; k < FORMAT_TOKENS.length; k++) {
+			const candidate = FORMAT_TOKENS[k]
+			if (format.substring(i, i + candidate.length) == candidate) {
+				token = candidate
+				break
+			}
+		}
+		if (token == '') {
+			// 普通字符必须逐字匹配
+			if (value.substring(pos, pos + 1) != ch) {
+				return null
+			}
+			pos++
+			i++
+			continue
+		}
+		if (token == 'W' || token == 'Q') {
+			// 名称类 token 只消费、不参与日期状态
+			if (pos >= value.length) {
+				return null
+			}
+			pos++
+			i += token.length
+			continue
+		}
+		if (token == 'A' || token == 'a') {
+			const head = value.substring(pos, pos + 2)
+			if (head == '上午' || head == '下午' || head == 'am' || head == 'pm' || head == 'AM' || head == 'PM') {
+				pos += 2
+				i += token.length
+				continue
+			}
+			return null
+		}
+		// 数字类 token：1..maxDigits 位变长消费（兼容 2025-7-1 这类非补零输入）
+		const maxDigits = maxDigitsOf(token)
+		let digits = ''
+		while (pos < value.length && digits.length < maxDigits && isDigitChar(value.substring(pos, pos + 1))) {
+			digits += value.substring(pos, pos + 1)
+			pos++
+		}
+		if (digits.length == 0) {
+			return null
+		}
+		const num = digitsToNumber(digits)
+		if (token == 'YYYY') {
+			year = num
+			hasYear = true
+		} else if (token == 'YY') {
+			year = num <= 68 ? 2000 + num : 1900 + num
+			hasYear = true
+		} else if (token == 'MM' || token == 'M') {
+			month = num
+			hasMonth = true
+		} else if (token == 'DD' || token == 'D') {
+			day = num
+			hasDay = true
+		} else if (token == 'HH' || token == 'H') {
+			hour = num
+		} else if (token == 'hh' || token == 'h') {
+			hour = num
+		} else if (token == 'mm' || token == 'm') {
+			minute = num
+		} else if (token == 'ss' || token == 's') {
+			second = num
+		} else {
+			millisecond = num
+		}
+		i += token.length
+	}
+	// 完整消费输入，避免错配格式静默吞掉残余字符
+	if (pos != value.length) {
+		return null
+	}
+	const hasDate = hasYear || hasMonth || hasDay
+	if (!hasDate) {
+		// 仅时间格式：以今天为日期基准
+		year = now.getFullYear()
+		month = now.getMonth() + 1
+		day = now.getDate()
+	} else if (!hasMonth || !hasDay) {
+		return null
+	}
+	if (month < 1 || month > 12) {
+		return null
+	}
+	if (day < 1 || day > 31) {
+		return null
+	}
+	const result = new Date(year, month - 1, day, hour, minute, second, millisecond)
+	// 回校验：拦截 2-30、25 点等被 Date 构造器静默归一化的溢出输入
+	if (result.getFullYear() != year || result.getMonth() != month - 1 || result.getDate() != day) {
+		return null
+	}
+	if (result.getHours() != hour || result.getMinutes() != minute || result.getSeconds() != second) {
+		return null
+	}
+	if (result.getMilliseconds() != millisecond) {
+		return null
+	}
+	return result
+}
+
+/**
+ * 按格式串解析日期文本
+ *
+ * @param value 待解析文本（如 '2025-07-01'）
+ * @param format 格式串；传空串时按常见格式自动探测（YYYY-MM-DD、YYYY-MM-DD HH:mm:ss、ISO 中缀 T、斜杠分隔）
+ * @returns 解析成功返回 Date；失败返回 null
+ */
+export function parseDate(value: string, format: string = ''): Date | null {
+	if (format == '') {
+		const candidates: string[] = ['YYYY-MM-DD', 'YYYY-MM-DD HH:mm:ss', 'YYYY-MM-DDTHH:mm:ss', 'YYYY/MM/DD', 'YYYY/MM/DD HH:mm:ss']
+		for (let i = 0; i < candidates.length; i++) {
+			const parsed = parseWithFormat(value, candidates[i])
+			if (parsed != null) {
+				return parsed
+			}
+		}
+		return null
+	}
+	return parseWithFormat(value, format)
+}
+
+/**
+ * 保证日期入参合法（字符串解析请使用 parseDate）
+ *
+ * @param date 待校验日期（可为 null）
+ * @returns 合法日期的新实例；null 或非法日期返回 null
+ */
+export function toDate(date: Date | null): Date | null {
+	if (!isValidDate(date)) {
+		return null
+	}
+	return new Date(date!.getTime())
+}
+
+/**
+ * 日期数值化：YYYYMMDD
+ *
+ * @param date 待转换日期
+ * @returns 形如 20250701 的整数；非法日期返回 0
+ */
+export function toDateNumber(date: Date): number {
+	if (!isValidDate(date)) {
+		return 0
+	}
+	return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate()
+}
+
+/**
+ * 日期数值化文本：YYYYMMDD
+ *
+ * @param date 待转换日期
+ * @returns 形如 '20250701' 的 8 位文本；非法日期返回空串
+ */
+export function toDateString(date: Date): string {
+	if (!isValidDate(date)) {
+		return ''
+	}
+	return padNumber(date.getFullYear(), 4) + padNumber(date.getMonth() + 1, 2) + padNumber(date.getDate(), 2)
+}
+
+/**
+ * 月份数值化：YYYYMM
+ *
+ * @param date 待转换日期
+ * @returns 形如 202507 的整数；非法日期返回 0
+ */
+export function toMonthNumber(date: Date): number {
+	if (!isValidDate(date)) {
+		return 0
+	}
+	return date.getFullYear() * 100 + date.getMonth() + 1
+}
+
+/**
+ * 取上一月的同一天（日序号超界时钳制到月末）
+ *
+ * @param date 基准日期
+ * @returns 上一个月的新 Date（保留时分秒）
+ */
+export function getPrevMonthDate(date: Date): Date {
+	return addMonths(date, -1)
+}
+
+/**
+ * 取下一月的同一天（日序号超界时钳制到月末）
+ *
+ * @param date 基准日期
+ * @returns 下一个月的新 Date（保留时分秒）
+ */
+export function getNextMonthDate(date: Date): Date {
+	return addMonths(date, 1)
+}
+
+/**
+ * 获取星期中文名称
+ *
+ * @param date 待取值日期
+ * @returns 形如 '星期日' 的文本；非法日期返回空串
+ */
+export function getWeekdayName(date: Date): string {
+	if (!isValidDate(date)) {
+		return ''
+	}
+	return '星期' + WEEKDAY_CHARS[date.getDay()]
+}
+
+/**
+ * 获取月份中文名称
+ *
+ * @param month 月份 0-11
+ * @returns 形如 '七月' 的文本；越界返回空串
+ */
+export function getMonthName(month: number): string {
+	const index = Math.floor(month)
+	if (index < 0 || index > 11) {
+		return ''
+	}
+	return MONTH_NAMES[index]
+}
+
+/**
+ * 相对时间描述（相对 now）
+ *
+ * @param date 待描述日期
+ * @param now 参照时刻（通常为 new Date()）
+ * @returns 形如 '3 分钟前' / '2 天后' 的文本；非法日期返回空串
+ */
+export function formatRelative(date: Date, now: Date): string {
+	if (!isValidDate(date) || !isValidDate(now)) {
+		return ''
+	}
+	const diff = date.getTime() - now.getTime()
+	const abs = Math.abs(diff)
+	const suffix = diff < 0 ? '前' : '后'
+	if (abs < 60000) {
+		return diff < 0 ? '刚刚' : '片刻后'
+	}
+	if (abs < 3600000) {
+		return Math.floor(abs / 60000).toString() + '分钟' + suffix
+	}
+	if (abs < 86400000) {
+		return Math.floor(abs / 3600000).toString() + '小时' + suffix
+	}
+	if (abs < 2592000000) {
+		return Math.floor(abs / 86400000).toString() + '天' + suffix
+	}
+	if (abs < 31536000000) {
+		return Math.floor(abs / 2592000000).toString() + '个月' + suffix
+	}
+	return Math.floor(abs / 31536000000).toString() + '年' + suffix
+}
+
+/**
+ * 输出本地时间 ISO 风格文本
+ *
+ * 与原生 Date#toISOString 的差异：不带时区后缀、不做 UTC 换算（原生端时区能力受限）。
+ *
+ * @param date 待转换日期
+ * @returns 形如 '2025-07-01T10:20:30.000' 的文本；非法日期返回空串
+ */
+export function toISOString(date: Date): string {
+	if (!isValidDate(date)) {
+		return ''
+	}
+	return padNumber(date.getFullYear(), 4) + '-' + padNumber(date.getMonth() + 1, 2) + '-' + padNumber(date.getDate(), 2) +
+		'T' + padNumber(date.getHours(), 2) + ':' + padNumber(date.getMinutes(), 2) + ':' + padNumber(date.getSeconds(), 2) +
+		'.' + padNumber(date.getMilliseconds(), 3)
+}

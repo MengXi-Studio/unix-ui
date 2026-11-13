@@ -1,0 +1,103 @@
+/**
+ * 日期工具集 · 比较
+ *
+ * 职责：同日 / 同月 / 同年判断、先后比较、区间判断、今日与周末判断。
+ * 口径：全部按本地自然日零点比较，时分秒不参与判定。
+ */
+
+import { getDayStart } from './core.uts'
+
+/**
+ * 判断两个日期是否同一自然日
+ *
+ * @param a 日期 A
+ * @param b 日期 B
+ * @returns 年、月、日全部相同返回 true
+ */
+export function isSameDay(a: Date, b: Date): boolean {
+	return a.getFullYear() == b.getFullYear() && a.getMonth() == b.getMonth() && a.getDate() == b.getDate()
+}
+
+/**
+ * 判断两个日期是否同年同月（不比日）
+ *
+ * @param a 日期 A
+ * @param b 日期 B
+ * @returns 年与月均相同返回 true
+ */
+export function isSameMonth(a: Date, b: Date): boolean {
+	return a.getFullYear() == b.getFullYear() && a.getMonth() == b.getMonth()
+}
+
+/**
+ * 判断两个日期是否同年（不比月日）
+ *
+ * @param a 日期 A
+ * @param b 日期 B
+ * @returns 年份相同返回 true
+ */
+export function isSameYear(a: Date, b: Date): boolean {
+	return a.getFullYear() == b.getFullYear()
+}
+
+/**
+ * 判断 a 是否早于 b（按自然日比较，同日不同时刻视为相等）
+ *
+ * @param a 待比较日期
+ * @param b 参照日期
+ * @returns a 的自然日早于 b 时返回 true
+ */
+export function isBefore(a: Date, b: Date): boolean {
+	return getDayStart(a).getTime() < getDayStart(b).getTime()
+}
+
+/**
+ * 判断 a 是否晚于 b（按自然日比较，同日不同时刻视为相等）
+ *
+ * @param a 待比较日期
+ * @param b 参照日期
+ * @returns a 的自然日晚于 b 时返回 true
+ */
+export function isAfter(a: Date, b: Date): boolean {
+	return getDayStart(a).getTime() > getDayStart(b).getTime()
+}
+
+/**
+ * 判断日期是否落在区间内（按自然日比较）
+ *
+ * @param date 待判断日期
+ * @param min 区间起点
+ * @param max 区间终点
+ * @param inclusive 是否包含端点（默认 true）
+ * @returns 命中区间返回 true
+ */
+export function isBetween(date: Date, min: Date, max: Date, inclusive: boolean = true): boolean {
+	const target = getDayStart(date).getTime()
+	const start = getDayStart(min).getTime()
+	const end = getDayStart(max).getTime()
+	if (inclusive) {
+		return target >= start && target <= end
+	}
+	return target > start && target < end
+}
+
+/**
+ * 判断日期是否为今天（按自然日）
+ *
+ * @param date 待判断日期
+ * @returns 与当前自然日相同返回 true
+ */
+export function isToday(date: Date): boolean {
+	return isSameDay(date, new Date())
+}
+
+/**
+ * 判断日期是否为周末（周六或周日）
+ *
+ * @param date 待判断日期
+ * @returns 周六 / 周日返回 true
+ */
+export function isWeekend(date: Date): boolean {
+	const weekday = date.getDay()
+	return weekday == 0 || weekday == 6
+}

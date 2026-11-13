@@ -48,7 +48,8 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 		nav: [
 			{ text: '指南', link: '/guide/introduction' },
 			{ text: '组件', link: '/components/button' },
-			{ text: '更新日志', link: '/changelog' },
+			{ text: '工具', link: '/tools/date' },
+			{ text: '更新日志 v0.5.0', link: '/changelog' },
 			{
 				text: '相关链接',
 				items: [
@@ -142,6 +143,12 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				{
 					text: '导航组件',
 					items: [{ text: 'Tabs 标签页', link: '/components/tabs' }]
+				}
+			],
+			'/tools/': [
+				{
+					text: '工具',
+					items: [{ text: 'Date 日期工具', link: '/tools/date' }]
 				}
 			]
 		}

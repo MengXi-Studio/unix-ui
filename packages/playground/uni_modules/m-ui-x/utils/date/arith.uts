@@ -1,0 +1,85 @@
+/**
+ * 日期工具集 · 算术与差值
+ *
+ * 职责：按日 / 月 / 年加减，日 / 月 / 年差值。
+ * 约定：加减保留原时分秒；月加法的日序号超出目标月天数时钳制到月末（1-31 加一月 → 2-28/29）。
+ * 差值：日差按本地自然日零点计算（Math.round 消除夏令时整点漂移），月 / 年差按自然月 / 自然年整段计数。
+ */
+
+import { DAY_MS, getDayStart, getDaysInMonth } from './core.uts'
+
+/**
+ * 加 n 天（n 可为负）
+ *
+ * @param date 基准日期
+ * @param n 天数增量
+ * @returns 新 Date（保留时分秒，跨月跨年自动进位）
+ */
+export function addDays(date: Date, n: number): Date {
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate() + n, date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds())
+}
+
+/**
+ * 加 n 个月（n 可为负）
+ *
+ * 日序号超出目标月天数时钳制到月末（如 1 月 31 日加 1 月 → 2 月 28/29 日）；
+ * 传入月首日期时结果仍为月首（m-calendar 翻页依赖此性质）。
+ *
+ * @param date 基准日期
+ * @param n 月数增量
+ * @returns 新 Date（保留时分秒）
+ */
+export function addMonths(date: Date, n: number): Date {
+	const targetFirst = new Date(date.getFullYear(), date.getMonth() + n, 1)
+	const daysInTarget = getDaysInMonth(targetFirst.getFullYear(), targetFirst.getMonth())
+	const day = date.getDate() > daysInTarget ? daysInTarget : date.getDate()
+	return new Date(targetFirst.getFullYear(), targetFirst.getMonth(), day, date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds())
+}
+
+/**
+ * 加 n 年（n 可为负）
+ *
+ * 闰日（2-29）在平年钳制到 2-28。
+ *
+ * @param date 基准日期
+ * @param n 年数增量
+ * @returns 新 Date（保留时分秒）
+ */
+export function addYears(date: Date, n: number): Date {
+	return addMonths(date, n * 12)
+}
+
+/**
+ * 自然日差值：a - b
+ *
+ * @param a 被减日期
+ * @param b 减数日期
+ * @returns 天数差（含符号；同日不同时刻为 0）
+ */
+export function getDayDiff(a: Date, b: Date): number {
+	const ta = getDayStart(a).getTime()
+	const tb = getDayStart(b).getTime()
+	return Math.round((ta - tb) / DAY_MS)
+}
+
+/**
+ * 自然月差值：a - b（按年月整段计数，不比日）
+ *
+ * @param a 被减日期
+ * @param b 减数日期
+ * @returns 月数差（含符号）
+ */
+export function getMonthDiff(a: Date, b: Date): number {
+	return (a.getFullYear() * 12 + a.getMonth()) - (b.getFullYear() * 12 + b.getMonth())
+}
+
+/**
+ * 自然年差值：a - b（按年份整段计数，不比月日）
+ *
+ * @param a 被减日期
+ * @param b 减数日期
+ * @returns 年数差（含符号）
+ */
+export function getYearDiff(a: Date, b: Date): number {
+	return a.getFullYear() - b.getFullYear()
+}

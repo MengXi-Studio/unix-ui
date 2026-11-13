@@ -1,0 +1,153 @@
+/**
+ * 日期工具集 · 月历网格 / 周序号 / 季度
+ *
+ * 职责：月历网格占位计算与整月 6×7 网格构建、年内周序号（周日起始 / ISO）、季度。
+ * 口径：月份 0 起；网格固定 6 行 × 7 列共 42 格，首格为网格首日零点。
+ */
+
+import { getDayStart, getDayOfYear, getDaysInMonth } from './core.uts'
+import { addDays } from './arith.uts'
+
+/**
+ * 归一星期起点参数到 0-6
+ *
+ * @param weekStartsOn 原始星期起点（可为任意整数）
+ * @returns 归一后的 0-6（0 = 周日）
+ */
+function normalizeWeekStart(weekStartsOn: number): number {
+	let value = Math.floor(weekStartsOn) % 7
+	if (value < 0) {
+		value += 7
+	}
+	return value
+}
+
+/**
+ * 获取某月 1 号的星期（0 = 周日）
+ *
+ * @param year 四位年份
+ * @param month 月份 0-11
+ * @returns 星期序号 0-6
+ */
+export function getFirstDayWeekday(year: number, month: number): number {
+	return new Date(year, month, 1).getDay()
+}
+
+/**
+ * 获取月历网格中当月 1 号之前的上月占位天数
+ *
+ * @param year 四位年份
+ * @param month 月份 0-11
+ * @param weekStartsOn 周起点（0 = 周日，默认 0）
+ * @returns 占位天数 0-6
+ */
+export function getDaysBeforeFirstDay(year: number, month: number, weekStartsOn: number = 0): number {
+	const firstWeekday = getFirstDayWeekday(year, month)
+	return (firstWeekday - normalizeWeekStart(weekStartsOn) + 7) % 7
+}
+
+/**
+ * 获取月历网格中当月最后一天之后的下月占位天数（补齐整行）
+ *
+ * @param year 四位年份
+ * @param month 月份 0-11
+ * @param weekStartsOn 周起点（0 = 周日，默认 0）
+ * @returns 占位天数 0-6
+ */
+export function getDaysAfterLastDay(year: number, month: number, weekStartsOn: number = 0): number {
+	const used = getDaysBeforeFirstDay(year, month, weekStartsOn) + getDaysInMonth(year, month)
+	const remainder = used % 7
+	return remainder == 0 ? 0 : 7 - remainder
+}
+
+/**
+ * 获取月历网格中展示的上月尾部天数（等价于当月 1 号之前的占位天数）
+ *
+ * @param year 四位年份
+ * @param month 月份 0-11
+ * @param weekStartsOn 周起点（0 = 周日，默认 0）
+ * @returns 上月展示天数 0-6
+ */
+export function getPrevMonthTailDays(year: number, month: number, weekStartsOn: number = 0): number {
+	return getDaysBeforeFirstDay(year, month, weekStartsOn)
+}
+
+/**
+ * 获取月历网格中展示的下月头部天数（补齐整行所需）
+ *
+ * @param year 四位年份
+ * @param month 月份 0-11
+ * @param weekStartsOn 周起点（0 = 周日，默认 0）
+ * @returns 下月展示天数 0-6
+ */
+export function getNextMonthHeadDays(year: number, month: number, weekStartsOn: number = 0): number {
+	return getDaysAfterLastDay(year, month, weekStartsOn)
+}
+
+/**
+ * 构建整月网格（固定 6 行 × 7 列共 42 格）
+ *
+ * 首格为当月 1 号按周起点回退后的网格首日；末尾不足 42 格时用下月日期补齐。
+ *
+ * @param year 四位年份
+ * @param month 月份 0-11
+ * @param weekStartsOn 周起点（0 = 周日，默认 0）
+ * @returns 42 个日期（各日零点，跨月连续）
+ */
+export function buildMonthGrid(year: number, month: number, weekStartsOn: number = 0): Date[] {
+	const before = getDaysBeforeFirstDay(year, month, weekStartsOn)
+	const gridStart = new Date(year, month, 1 - before)
+	const grid: Date[] = []
+	for (let i = 0; i < 42; i++) {
+		grid.push(addDays(gridStart, i))
+	}
+	return grid
+}
+
+/**
+ * 获取年内周序号（周日起始：含 1 月 1 日的那一周为第 1 周）
+ *
+ * @param date 待计算日期
+ * @returns 周序号 1-53
+ */
+export function getWeekOfYear(date: Date): number {
+	const dayOfYear = getDayOfYear(date)
+	const firstWeekday = getFirstDayWeekday(date.getFullYear(), 0)
+	return Math.floor((dayOfYear + firstWeekday - 1) / 7) + 1
+}
+
+/**
+ * 获取 ISO-8601 周序号（周一起始：含 1 月 4 日的那一周为第 1 周）
+ *
+ * @param date 待计算日期
+ * @returns 周序号 1-53（跨年周归属按 ISO 规则）
+ */
+export function getISOWeek(date: Date): number {
+	const dayStart = getDayStart(date)
+	const dayOfYear = getDayOfYear(dayStart)
+	// 周一为 0 的星期索引
+	const mondayIndex = (dayStart.getDay() + 6) % 7
+	const week = Math.floor((dayOfYear - mondayIndex + 9) / 7)
+	if (week < 1) {
+		// 归属上一年最后一周
+		return getISOWeek(new Date(dayStart.getFullYear() - 1, 11, 31))
+	}
+	if (week == 53) {
+		// 仅当 12 月 31 日为周四时该年才有第 53 周
+		const dec31MondayIndex = (new Date(dayStart.getFullYear(), 11, 31).getDay() + 6) % 7
+		if (dec31MondayIndex != 3) {
+			return 1
+		}
+	}
+	return week
+}
+
+/**
+ * 获取季度（1-4）
+ *
+ * @param date 待计算日期
+ * @returns 季度序号 1-4
+ */
+export function getQuarter(date: Date): number {
+	return Math.floor(date.getMonth() / 3) + 1
+}

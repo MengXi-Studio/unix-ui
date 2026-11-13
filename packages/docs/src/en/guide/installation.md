@@ -14,13 +14,15 @@ uni_modules/m-ui-x/
 ├── components/
 │   └── m-button/
 │       └── m-button.uvue
+├── utils/
+│   └── date.uts
 ├── theme/
 │   └── vars.scss
 ├── package.json
 └── ...
 ```
 
-Components are picked up automatically by [easycom](https://doc.dcloud.net.cn/uni-app-x/component/#easycom) — **no configuration required**.
+Components are picked up automatically by [easycom](https://doc.dcloud.net.cn/uni-app-x/component/#easycom) — **no configuration required**. Import utilities from `@/uni_modules/m-ui-x/utils/date.uts` (see [Date](/en/tools/date)).
 
 ## Option 2: npm
 

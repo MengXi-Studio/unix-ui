@@ -14,13 +14,15 @@ uni_modules/m-ui-x/
 ├── components/
 │   └── m-button/
 │       └── m-button.uvue
+├── utils/
+│   └── date.uts
 ├── theme/
 │   └── vars.scss
 ├── package.json
 └── ...
 ```
 
-组件即被 [easycom](https://doc.dcloud.net.cn/uni-app-x/component/#easycom) 自动扫描，**无需任何配置**。
+组件即被 [easycom](https://doc.dcloud.net.cn/uni-app-x/component/#easycom) 自动扫描，**无需任何配置**。工具函数从 `@/uni_modules/m-ui-x/utils/date.uts` 引入（详见 [Date 日期工具](/tools/date)）。
 
 ## 方式二：npm
 

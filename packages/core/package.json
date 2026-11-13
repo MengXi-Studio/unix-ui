@@ -14,6 +14,7 @@
 	],
 	"files": [
 		"components",
+		"utils",
 		"theme",
 		"LICENSE",
 		"README.md",

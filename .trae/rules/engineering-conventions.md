@@ -15,10 +15,11 @@ packages/playground/uni_modules/m-ui-x（easycom 编译验证）
 packages/docs（VitePress 双语文档站，手工维护）
 ```
 
-- **组件源码只改 `packages/core`**；`playground/uni_modules/m-ui-x/` 下的 `components/`、`theme/` 是同步产物，**禁止手改**（下次同步即覆盖丢失）。
+- **组件源码只改 `packages/core`**；`playground/uni_modules/m-ui-x/` 下的 `components/`、`utils/`、`theme/` 是同步产物，**禁止手改**（下次同步即覆盖丢失）。
 - 该目录下仅 `package.json`（插件 id：m-ui-x）与 `changelog.md` 为 KEEP 手工维护文件，其余一律以 core 为准。
 - 修改 core 后必须执行 `pnpm sync:uni-modules` 再编译验证；提交前 `pnpm sync:uni-modules:check` 保证一致性。
 - HBuilderX 编译只扫描工程 `uni_modules/` 目录，node_modules 内的组件不被 easycom 识别——这是同步机制存在的原因，不要试图让 playground 直接消费 core。
+- 依赖方向固定 `components → utils`：`packages/core/utils/` 是纯函数工具层，禁止 import `components/`、`theme/` 与平台 API（`uni.*`）。
 
 ## 2. 命名与包名清单（导入路径与命名以此为准，禁止凭记忆写）
 
@@ -29,7 +30,8 @@ packages/docs（VitePress 双语文档站，手工维护）
 | 文档包 | `@meng-xi/unix-ui-docs` | VitePress 双语站（中文在 `src/` 根，英文在 `src/en/` 镜像） |
 | 组件前缀 | `m-` | 组件目录与标签名：`components/m-button/m-button.uvue` |
 | 主题变量前缀 | `$m-` | `theme/vars.scss` 全部变量；用户在根 uni.scss 定义同名变量即覆盖 |
-| 同步脚本 | `scripts/sync-uni-modules.mjs` | INCLUDE=`['components','theme','static','LICENSE']`（README 不同步：插件市场格式与 npm 包不同），KEEP=`['package.json','changelog.md','README.md']` |
+| 同步脚本 | `scripts/sync-uni-modules.mjs` | INCLUDE=`['components','utils','theme','static','LICENSE']`（README 不同步：插件市场格式与 npm 包不同），KEEP=`['package.json','changelog.md','README.md']` |
+| 公共工具函数入口 | `packages/core/utils/date.uts` | 使用者唯一 import 路径；内部实现分层在 `utils/date/`（core / compare / arith / boundary / grid / format / lunar），入口仅做具名 re-export |
 
 ## 3. 新增组件的标准落码顺序
 
@@ -65,6 +67,7 @@ packages/docs（VitePress 双语文档站，手工维护）
 | 需求 | 唯一落点 |
 | --- | --- |
 | 组件实现 | `packages/core/components/<m-name>/` |
+| 公共工具函数 | `packages/core/utils/<name>.uts`（入口）+ `packages/core/utils/<name>/`（内部分层） |
 | 主题变量 | `packages/core/theme/vars.scss` |
 | 组件演示页 | `packages/playground/pages-sub/<name>/` |
 | 演示页路由声明 | 页面内 `defineUniPage` 宏（pages.json 与 `router/routes.gen.uts` 由 routeGen 插件生成，`router/router.config.uts` 仅存别名等显式扩展） |

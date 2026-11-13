@@ -1,0 +1,176 @@
+/**
+ * 日期工具集 · 基础原语
+ *
+ * 职责：常量、自然日归一、合法性校验、时间戳换算、闰年与月天数、年内天数。
+ * 约定：全部为纯函数（不修改入参）；失败返回 null，不返回 Invalid Date。
+ * 口径：月份 0 起（对齐 JS Date）；全部按本地时区与本地零点计算，不做时区换算。
+ */
+
+/** 一天的毫秒数（自然日差值 / 边界换算用；含历史别名 CALENDAR_DAY_MS） */
+export const DAY_MS: number = 86400000
+
+/** 一天的毫秒数历史别名（m-calendar 旧导入路径兼容用） */
+export const CALENDAR_DAY_MS: number = 86400000
+
+/** 日期拆解结果（月份 0 起，weekday 0 = 周日；均为本地时间） */
+export type DateParts = {
+	/** 四位年份 */
+	year: number
+	/** 月份 0-11（0 = 一月） */
+	month: number
+	/** 日 1-31 */
+	day: number
+	/** 小时 0-23 */
+	hour: number
+	/** 分钟 0-59 */
+	minute: number
+	/** 秒 0-59 */
+	second: number
+	/** 毫秒 0-999 */
+	millisecond: number
+	/** 星期 0-6（0 = 周日） */
+	weekday: number
+}
+
+/**
+ * 判断是否为合法日期
+ *
+ * @param date 待判断日期（可为 null）
+ * @returns 非 null 且时间戳有效时返回 true；Invalid Date 与 null 均返回 false
+ */
+export function isValidDate(date: Date | null): boolean {
+	if (date == null) {
+		return false
+	}
+	const time = date.getTime()
+	// NaN 是唯一不等于自身的值，以此规避 isNaN 在原生端的可用性差异
+	return time == time
+}
+
+/**
+ * 归一当日零点（消除时分秒与跨月比较的干扰）
+ *
+ * @param date 任意时刻的日期
+ * @returns 同一自然日 00:00:00.000 的新 Date 实例
+ */
+export function getDayStart(date: Date): Date {
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+}
+
+/**
+ * 归一当日终点（23:59:59.999）
+ *
+ * @param date 任意时刻的日期
+ * @returns 同一自然日 23:59:59.999 的新 Date 实例
+ */
+export function getDayEnd(date: Date): Date {
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999)
+}
+
+/**
+ * 拆解日期各分量（本地时间）
+ *
+ * @param date 待拆解的日期
+ * @returns 分量对象；非法日期返回 null
+ */
+export function getDateParts(date: Date): DateParts | null {
+	if (!isValidDate(date)) {
+		return null
+	}
+	const parts: DateParts = {
+		year: date.getFullYear(),
+		month: date.getMonth(),
+		day: date.getDate(),
+		hour: date.getHours(),
+		minute: date.getMinutes(),
+		second: date.getSeconds(),
+		millisecond: date.getMilliseconds(),
+		weekday: date.getDay()
+	}
+	return parts
+}
+
+/**
+ * 时间戳转日期
+ *
+ * @param timestamp 毫秒时间戳
+ * @returns 合法 Date；NaN / 溢出等非法输入返回 null
+ */
+export function fromTimestamp(timestamp: number): Date | null {
+	const date = new Date(timestamp)
+	if (!isValidDate(date)) {
+		return null
+	}
+	return date
+}
+
+/**
+ * 日期转时间戳
+ *
+ * @param date 待换算日期（可为 null）
+ * @returns 毫秒时间戳；null 或非法日期返回 null
+ */
+export function toTimestamp(date: Date | null): number | null {
+	if (!isValidDate(date)) {
+		return null
+	}
+	return date!.getTime()
+}
+
+/**
+ * 判断是否闰年（公历规则：4 年一闰、100 年不闰、400 年再闰）
+ *
+ * @param year 四位年份
+ * @returns 闰年返回 true
+ */
+export function isLeapYear(year: number): boolean {
+	return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
+}
+
+/**
+ * 获取某年某月的天数（月份 0 起）
+ *
+ * @param year 四位年份
+ * @param month 月份 0-11
+ * @returns 当月天数（28-31）
+ */
+export function getDaysInMonth(year: number, month: number): number {
+	// 下月第 0 天即本月最后一天，交由 Date 构造器处理跨年与闰年
+	const lastDay = new Date(year, month + 1, 0)
+	return lastDay.getDate()
+}
+
+/**
+ * 获取某年的天数
+ *
+ * @param year 四位年份
+ * @returns 闰年 366，平年 365
+ */
+export function getDaysInYear(year: number): number {
+	return isLeapYear(year) ? 366 : 365
+}
+
+/**
+ * 获取自 Unix 纪元（1970-01-01）起经过的自然日数
+ *
+ * 按本地零点计算，避免 UTC 换算在非零时区产生 ±1 天偏差；纪元前日期返回负数。
+ *
+ * @param date 待换算日期
+ * @returns 自然日数（整数）
+ */
+export function getDaysSinceUnixEpoch(date: Date): number {
+	const localEpoch = new Date(1970, 0, 1)
+	const diff = getDayStart(date).getTime() - localEpoch.getTime()
+	return Math.round(diff / DAY_MS)
+}
+
+/**
+ * 获取日期是当年的第几天（1 起）
+ *
+ * @param date 待计算日期
+ * @returns 年内序号 1-366
+ */
+export function getDayOfYear(date: Date): number {
+	const firstDay = new Date(date.getFullYear(), 0, 1)
+	return getDaysSinceUnixEpoch(date) - getDaysSinceUnixEpoch(firstDay) + 1
+}

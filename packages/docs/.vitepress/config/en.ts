@@ -35,7 +35,8 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 		nav: [
 			{ text: 'Guide', link: '/en/guide/introduction' },
 			{ text: 'Components', link: '/en/components/button' },
-			{ text: 'Changelog', link: '/en/changelog' },
+			{ text: 'Tools', link: '/en/tools/date' },
+			{ text: 'Changelog v0.5.0', link: '/en/changelog' },
 			{
 				text: 'Links',
 				items: [
@@ -129,6 +130,12 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				{
 					text: 'Navigation Components',
 					items: [{ text: 'Tabs', link: '/en/components/tabs' }]
+				}
+			],
+			'/en/tools/': [
+				{
+					text: 'Tools',
+					items: [{ text: 'Date', link: '/en/tools/date' }]
 				}
 			]
 		}

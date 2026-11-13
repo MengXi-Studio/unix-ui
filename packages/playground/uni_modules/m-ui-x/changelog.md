@@ -1,3 +1,7 @@
+## 0.5.0 (2026-11-13)
+
+- 新增 `m-fab` / `m-fab-item` 悬浮按钮（对标 Sard Fab）：入口圆钮固定于视口指定位置，点击展开扩展按钮列表、点击后自动收起；四角定位（`top` / `right` / `bottom` / `left`）、`background` / `color` 自定义配色（子项继承容器）、`hide-name` 隐藏名称、`entry` / `name` 插槽自定义、`overlay-closable` 遮罩点击收起、`draggable` 拖拽（`axis` 方向限制 / `margin-x` `margin-y` 边界钳制 / `magnet` 松手吸附 / `v-model:offset` 中心点坐标回写）；展开收起为逐项 stagger 过渡（收起逆序），新增 `$m-fab-*` 主题变量
+
 ## 0.4.2 (2026-11-12)
 
 - 修复 `m-tabs` Web 端滚动布局标签栏显示横向滚动条：0.4.1 修复滚动失效时内部滚动层恢复 `overflow-x: auto`，浏览器默认滚动条露出（uni-h5 运行时 `show-scrollbar="false"` 只挂类、隐藏滚动条的 CSS 在运行时样式表缺失，Web 端形同虚设）；修复：标签栏 scroll-view 显式 `:show-scrollbar="false"`（App 端生效），Web 端组件内 `#ifdef WEB` 兜底以 `scrollbar-width: none` + `::-webkit-scrollbar` 双覆盖内部真实滚动层，实测滚动条占高 0、可滚性保持

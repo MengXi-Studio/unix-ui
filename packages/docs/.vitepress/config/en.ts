@@ -106,6 +106,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				{
 					text: 'Feedback Components',
 					items: [
+						{ text: 'Fab', link: '/en/components/fab' },
 						{ text: 'Loading', link: '/en/components/loading' },
 						{ text: 'Overlay', link: '/en/components/overlay' },
 						{ text: 'Popup', link: '/en/components/popup' },

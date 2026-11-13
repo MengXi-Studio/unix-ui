@@ -30,6 +30,8 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		compact: 'pages-sub/compact/compact'
 		/** 分割线 Divider */
 		divider: 'pages-sub/divider/divider'
+		/** 悬浮按钮 Fab */
+		fab: 'pages-sub/fab/fab'
 		/** 弹性布局 Flex */
 		flex: 'pages-sub/flex/flex'
 		/** 宫格 Grid */

@@ -173,6 +173,12 @@ export const demoGroups: DemoGroup[] = [
 		title: '反馈组件',
 		components: [
 			{
+				name: 'fab',
+				zhName: '悬浮按钮',
+				enName: 'Fab',
+				desc: '悬浮于视口指定位置的圆形按钮，点击展开扩展按钮列表，支持四角定位、拖拽吸附与位置双向绑定。'
+			},
+			{
 				name: 'loading',
 				zhName: '加载',
 				enName: 'Loading',

@@ -300,3 +300,45 @@ $m-tabs-pill-height: 30px !default;
 $m-tabs-pill-radius: $m-radius-max !default;
 /** line 外边框颜色 */
 $m-tabs-border-color: $m-color-default-border !default;
+
+/* ========== Fab 悬浮按钮 ========== */
+/** 入口按钮直径 */
+$m-fab-size: 48px !default;
+/** 默认角标间距（未传 top / right / bottom / left 时） */
+$m-fab-offset: 24px !default;
+/** 入口按钮背景色 */
+$m-fab-background: $m-color-primary !default;
+/** 入口图标颜色 */
+$m-fab-icon-color: $m-white !default;
+/** 入口图标字号 */
+$m-fab-icon-size: 24px !default;
+/** 入口按钮阴影 */
+$m-fab-shadow: 0 4px 12px rgba(0, 0, 0, 0.16) !default;
+/** 按压态透明度 */
+$m-fab-active-opacity: 0.8 !default;
+/** 层级（与 m-sticky 同层，低于遮罩体系） */
+$m-fab-z-index: 99 !default;
+/** 入口按钮与展开列表的间距 */
+$m-fab-gap: 12px !default;
+/** 子项圆形按钮直径 */
+$m-fab-item-size: 40px !default;
+/** 子项背景色（FabItem 未设置 background 时） */
+$m-fab-item-background: $m-white !default;
+/** 子项图标色（FabItem 未设置 color 时） */
+$m-fab-item-color: $m-color-primary !default;
+/** 子项阴影 */
+$m-fab-item-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !default;
+/** 子项之间的纵向间距 */
+$m-fab-item-gap: 12px !default;
+/** 子项名称气泡背景色 */
+$m-fab-item-name-background: rgba(255, 255, 255, 0.9) !default;
+/** 子项名称文本色 */
+$m-fab-item-name-color: $m-text-color !default;
+/** 子项名称字号 */
+$m-fab-item-name-font-size: 12px !default;
+/** 子项名称行高 */
+$m-fab-item-name-line-height: 16px !default;
+/** 子项名称内边距 */
+$m-fab-item-name-padding: 4px 8px !default;
+/** 子项名称圆角 */
+$m-fab-item-name-radius: $m-radius-md !default;

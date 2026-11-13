@@ -119,6 +119,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				{
 					text: '反馈组件',
 					items: [
+						{ text: 'Fab 悬浮按钮', link: '/components/fab' },
 						{ text: 'Loading 加载', link: '/components/loading' },
 						{ text: 'Overlay 遮罩层', link: '/components/overlay' },
 						{ text: 'Popup 弹出层', link: '/components/popup' },

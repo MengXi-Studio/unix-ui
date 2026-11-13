@@ -78,6 +78,12 @@
 					}
 				},
 				{
+					"path": "fab/fab",
+					"style": {
+						"navigationBarTitleText": "悬浮按钮 Fab"
+					}
+				},
+				{
 					"path": "flex/flex",
 					"style": {
 						"navigationBarTitleText": "弹性布局 Flex"

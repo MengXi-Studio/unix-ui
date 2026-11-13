@@ -1,5 +1,13 @@
 # 更新日志
 
+## [0.5.0] - 2026-11-13
+
+新增 m-fab / m-fab-item 悬浮按钮组件。
+
+### 新增
+
+- **m-fab / m-fab-item 悬浮按钮**（对标 Sard Fab）：入口圆钮固定于视口指定位置，点击展开扩展按钮列表、点击扩展按钮后自动收起；四角定位（`top` / `right` / `bottom` / `left`，未传用主题默认间距，入口在视口上半侧时向下展开）；`background` / `color` 自定义入口与子项配色（支持渐变，子项未设时继承容器）；`hide-name` 隐藏名称；`entry` 插槽自定义入口内容（作用域 `visible`）与 `name` 插槽自定义名称；`overlay-closable` 展开期间渲染遮罩并支持点击收起；`draggable` 拖拽（`axis` 四值限制方向、`margin-x` / `margin-y` 边界钳制、`magnet` 松手吸附最近边、`v-model:offset` 受控位置以入口中心点坐标回写）；展开 / 收起为逐项 inline transition（按注册序 stagger，收起逆序）；新增 `$m-fab-*` 主题变量段（详见 [Fab](/components/fab)）
+
 ## [0.4.2] - 2026-11-12
 
 修复 m-tabs 微信小程序端 `canScroll` 实例 mounted 崩溃（[#8](https://github.com/MengXi-Studio/unix-ui/issues/8)），小程序端滚动布局居中、插槽底部条定位与 scrollspy 判定 / 点击定位恢复；隐藏 Web 端滚动布局标签栏的横向滚动条。

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0] - 2026-11-13
+
+Added the m-fab / m-fab-item floating action button components.
+
+### Added
+
+- **m-fab / m-fab-item floating action button** (modeled on Sard Fab): a round entry button pinned to a viewport position expands a list of action buttons on click and collapses after one is tapped; four-corner positioning (`top` / `right` / `bottom` / `left`, theme default offset when omitted, expanding downward when the entry sits in the upper half of the viewport); `background` / `color` customize the entry and item colors (gradients supported, items inherit the container values when omitted); `hide-name` hides the names; the `entry` slot customizes the entry content (scoped `visible`) and the `name` slot customizes the labels; `overlay-closable` renders an overlay while expanded and closes on tap; `draggable` dragging (`axis` with four values, `margin-x` / `margin-y` boundary clamping, `magnet` snapping to the nearest edge on release, `v-model:offset` controlled position reported as the entry center coordinates); expand / collapse are per-item inline transitions (staggered by registration order, reversed on collapse); new `$m-fab-*` theme variables (see [Fab](/en/components/fab))
+
 ## [0.4.2] - 2026-11-12
 
 Fixes the m-tabs WeChat Mini Program crash at mount for `canScroll` instances ([#8](https://github.com/MengXi-Studio/unix-ui/issues/8)), restoring active-tab centering in the scrollable layout, standalone bottom-line positioning with nav slots, and the scrollspy judgment / click positioning on Mini Program; hides the horizontal scrollbar of the scrollable tab bar on Web.

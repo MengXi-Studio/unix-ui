@@ -67,6 +67,11 @@ export const routes: RouteConfig[] = [
 		meta: { title: '分割线 Divider' },
 	},
 	{
+		path: 'pages-sub/fab/fab',
+		name: 'fab',
+		meta: { title: '悬浮按钮 Fab' },
+	},
+	{
 		path: 'pages-sub/flex/flex',
 		name: 'flex',
 		meta: { title: '弹性布局 Flex' },

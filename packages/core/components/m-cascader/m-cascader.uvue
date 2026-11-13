@@ -68,7 +68,7 @@
 
 <script setup lang="uts">
 	/**
-	 * m-cascader 级联选择面板：对标 Vant Cascader 的平铺形态。
+	 * m-cascader 级联选择面板：平铺形态。
 	 * 多级联动选择：tabs 展示各级已选标题（未选层显示 placeholder），点击选项进入下一级，
 	 * 选到最后一级（children 缺失或为空数组）触发 finish；层级经 swiper 承载支持手势滑动。
 	 * options 为 UTSJSONObject[] 动态类型（field-names 自定义字段名 + 异步加载均经此支持）。
@@ -91,7 +91,7 @@
 	import MIcon from '../m-icon/m-icon.uvue'
 
 	type Props = {
-		/** 选中值（v-model:value，叶子 value；null 未选；string | number 对齐 Vant） */
+		/** 选中值（v-model:value，叶子 value；null 未选；string | number） */
 		value?: CascaderValue
 		/** 级联选项树（动态类型：UTSJSONObject[]，字段名经 field-names 映射） */
 		options?: UTSJSONObject[]
@@ -355,7 +355,7 @@
 		emit('click-tab', index, tabTitles.value[index])
 	}
 
-	/** 手势滑动换层：同步 activeTab（不派发 click-tab，对齐 Vant） */
+	/** 手势滑动换层：同步 activeTab（不派发 click-tab） */
 	const onSwiperChange = (e: UniSwiperChangeEvent) => {
 		const current = e.detail.current
 		if (current < tabTitles.value.length) {

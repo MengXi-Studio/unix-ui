@@ -19,7 +19,7 @@
 
 <script setup lang="uts">
 	/**
-	 * m-checkbox 复选框：对标 Vant Checkbox。
+	 * m-checkbox 复选框。
 	 * 双形态：组内（name + bind-group，经 m-checkbox-group 上下文参与多选）与
 	 * 独立（v-model:boolean 自持状态）。支持 square 形状、禁用（整体 / 仅文本）、
 	 * label-position 左右互换、icon-size / checked-color、indeterminate 不确定态、
@@ -82,7 +82,7 @@
 		'update:modelValue': [value: boolean]
 		/** 勾选状态变化（组内与独立均派发，checked 为本项最新状态） */
 		change: [checked: boolean]
-		/** 点击复选框（含禁用态与达 max 拒绝时，对齐 Vant） */
+		/** 点击复选框（含禁用态与达 max 拒绝时） */
 		click: [event: MouseEvent]
 	}>()
 
@@ -247,7 +247,7 @@
 
 	// 图标区的切换经容器透传：根 click 只派发事件，切换逻辑在 icon-wrap / label 层
 	defineExpose({
-		/** 切换勾选态（搭配单元格组件场景外部调用，对齐 Vant toggle） */
+		/** 切换勾选态（搭配单元格组件场景外部调用） */
 		toggle: doToggle
 	})
 

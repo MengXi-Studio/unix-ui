@@ -484,7 +484,7 @@
 		line-height: $m-toast-line-height;
 		/* uvue flex 子项默认 flex-shrink 0（uvue 规范异于 W3C 的 1），不收缩则文本保持单行宽度溢出气泡、软换行永不触发 */
 		flex-shrink: 1;
-		/* 多行换行时各行水平居中（对齐 Vant） */
+		/* 多行换行时各行水平居中 */
 		text-align: center;
 	}
 	/* ========== message 换行控制变体（word-break：normal / break-all 全端生效，break-word 仅 Web/小程序） ========== */

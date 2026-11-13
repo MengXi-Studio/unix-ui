@@ -7,7 +7,7 @@ added: 0.4.0
 
 ## Introduction
 
-Tabs component for switching content areas (interaction and API aligned with Vant Tab, pill style and options array form referenced from Sard Tabs). Supports `line` / `card` / `pill` styles, mixed index / name matching, horizontal tab bar scrolling, underline and content transition animations, swipe gesture switching, sticky header (reuses [Sticky](/en/components/sticky)), scrollspy navigation and before-change interception.
+Tabs component for switching content areas. Supports `line` / `card` / `pill` styles, mixed index / name matching, horizontal tab bar scrolling, underline and content transition animations, swipe gesture switching, sticky header (reuses [Sticky](/en/components/sticky)), scrollspy navigation and before-change interception.
 
 The component has two forms:
 
@@ -52,7 +52,7 @@ When tab count exceeds `swipe-threshold` (default 5), the tab bar scrolls horizo
 
 ### Disabled Tab {#demo-disabled}
 
-Disabled tabs do not switch on click while `click-tab` still emits (aligned with Vant):
+Disabled tabs do not switch on click while `click-tab` still emits:
 
 ```vue
 <m-tabs :active="0">
@@ -90,7 +90,7 @@ Disabled tabs do not switch on click while `click-tab` still emits (aligned with
 
 ### Content Animation and Swipe {#demo-animated}
 
-`animated` enables the track translation transition; `swipeable` adds left-right swipe gesture switching (gesture switching does not trigger `before-change`, aligned with Vant):
+`animated` enables the track translation transition; `swipeable` adds left-right swipe gesture switching (gesture switching does not trigger `before-change`):
 
 ```vue
 <m-tabs animated :active="0">
@@ -241,7 +241,7 @@ const tabOptions: UTSJSONObject[] = [
 | --- | --- | --- |
 | update:active | Active tab changed (`v-model:active`; tab name, or index when name unset) | name: string \| number |
 | change | Active tab changed (interaction paths only; not emitted by scrollspy scroll linkage or external binding) | name: string \| number \| null, index: number |
-| click-tab | Tab clicked (including disabled, aligned with Vant) | event: TabsClickEvent |
+| click-tab | Tab clicked (including disabled) | event: TabsClickEvent |
 | sticky-change | Sticky state changed (sticky mode, relayed from m-sticky) | isFixed: boolean |
 
 ### TabsClickEvent
@@ -294,9 +294,9 @@ See [Theming](/en/guide/theming) for the full variable list and usage.
 ## Differences from Vant
 
 - Component split: Vant is a single component (Tab parsed by Tabs container); this project splits into `m-tabs` container + `m-tab` item. uni-app x has no VNode moving capability, so titles are rendered by the container from children registration snapshots — therefore **`title` slot and custom title styling are not supported** (content renders in the `m-tab` default slot)
-- `options` array form is an extension of this project (referenced from Sard Tabs): bar-only without content area, `label / value / disabled / dot / badge` fields mapped via `field-names`
+- `options` array form is an extension of this project: bar-only without content area, `label / value / disabled / dot / badge` fields mapped via `field-names`
 - `swipe-threshold` is an extension prop: Vant controls scroll layout via CSS variables; this project switches equal-width / scroll layout by tab count threshold
 - `before-change` is a synchronous boolean version (aligned with `before-close` of `m-popup`); Vant supports async Promise interception
 - Sticky and scrollspy rely on page-passed `scroll-top` (controlled protocol, aligned with m-sticky); Vant listens to page scrolling internally
-- Swipeable switching is a self-orchestrated track translation + touch gesture (uni-app x cannot place children into swiper-item); gesture switching does not trigger `before-change` (aligned with Vant); real-device gesture experience should be verified on App
+- Swipeable switching is a self-orchestrated track translation + touch gesture (uni-app x cannot place children into swiper-item); gesture switching does not trigger `before-change`; real-device gesture experience should be verified on App
 - Tab `render` custom render function is not supported (no VNode in UTS); `badge` is presented as text

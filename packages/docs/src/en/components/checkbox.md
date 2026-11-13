@@ -7,7 +7,7 @@ added: 0.5.0
 
 ## Introduction
 
-Checkbox components (modeled on [Vant Checkbox](https://vant-ui.github.io/vant/#/zh-CN/checkbox)): multi-select within a group of options. Split into four components:
+Checkbox components: multi-select within a group of options. Split into four components:
 
 - `m-checkbox-group`: checkbox group container (selected set via v-model:value, shared visual specs and max)
 - `m-checkbox`: a single checkbox (joins the group by name; standalone usage keeps its own boolean state via v-model)

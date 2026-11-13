@@ -33,7 +33,7 @@
 		customStyle?: string
 	}
 
-	/** scroll 事件载荷（对齐 Vant：scrollTop + isFixed） */
+	/** scroll 事件载荷（scrollTop + isFixed） */
 	type StickyScrollEvent = {
 		/** 当前滚动距离（px） */
 		scrollTop: number
@@ -161,7 +161,7 @@
 		let fixed = false
 		let offsetY = 0
 		if (props.position == 'top') {
-			// 容器已完全滚出可视区域时不再吸附（与 Vant container 语义一致）
+			// 容器已完全滚出可视区域时不再吸附
 			const containerVisible = boxMeasured.value ? (boxPageBottom.value - scrollTop > top) : true
 			fixed = containerVisible && (selfPageTop.value - scrollTop < top + props.offsetTop)
 			if (fixed && boxMeasured.value) {

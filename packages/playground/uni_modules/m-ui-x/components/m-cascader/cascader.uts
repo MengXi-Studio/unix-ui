@@ -10,10 +10,10 @@
  *    getNumber / getArray / getBoolean）完成，跨端安全。
  */
 
-/** 级联选项值类型（对齐 Vant：string | number，内部比较统一归一化为字符串） */
+/** 级联选项值类型（string | number，内部比较统一归一化为字符串） */
 export type CascaderValue = string | number
 
-/** 自定义选项字段名（text / value / children 三键映射，对齐 Vant field-names） */
+/** 自定义选项字段名（text / value / children 三键映射） */
 export type CascaderFieldNames = {
 	/** 选项文字字段名 */
 	text: string
@@ -104,7 +104,7 @@ export function cascaderOptionChildren(opt: UTSJSONObject, fields: CascaderField
 }
 
 /**
- * 读取选项禁用态（disabled 固定键，不经 field-names 映射，对齐 Vant）
+ * 读取选项禁用态（disabled 固定键，不经 field-names 映射）
  */
 export function cascaderOptionDisabled(opt: UTSJSONObject): boolean {
 	const b = opt.getBoolean('disabled')
@@ -112,7 +112,7 @@ export function cascaderOptionDisabled(opt: UTSJSONObject): boolean {
 }
 
 /**
- * 读取选项自定义文字颜色（color 固定键，不经 field-names 映射，对齐 Vant）
+ * 读取选项自定义文字颜色（color 固定键，不经 field-names 映射）
  */
 export function cascaderOptionColor(opt: UTSJSONObject): string {
 	const s = opt.getString('color')

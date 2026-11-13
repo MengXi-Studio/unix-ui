@@ -13,7 +13,7 @@
 				<view class="event-log">
 					<text class="event-text">最近事件：{{ basicLog }}</text>
 				</view>
-				<text class="caption">纯面板形态（poppable 拆分至 m-calendar-popup）；single 默认选中今天；选择即所得（默认无确认按钮，show-confirm 可开启，show-confirm=false 时选满自动 confirm）；v-model:value 双向绑定选中值（优先于 default-date）；首月月内标题由副标题承担（对齐 Vant），后续月渲染月内标题；副标题随内部滚动切换为视口月份；month-show 挂载时触发一次</text>
+				<text class="caption">纯面板形态（poppable 拆分至 m-calendar-popup）；single 默认选中今天；选择即所得（默认无确认按钮，show-confirm 可开启，show-confirm=false 时选满自动 confirm）；v-model:value 双向绑定选中值（优先于 default-date）；首月月内标题由副标题承担，后续月渲染月内标题；副标题随内部滚动切换为视口月份；month-show 挂载时触发一次</text>
 			</view>
 
 			<text class="section" id="multiple">多选与超限</text>

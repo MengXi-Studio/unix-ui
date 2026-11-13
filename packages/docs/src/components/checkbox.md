@@ -7,7 +7,7 @@ added: 0.5.0
 
 ## 介绍
 
-复选框组件（对标 [Vant Checkbox](https://vant-ui.github.io/vant/#/zh-CN/checkbox)）：在一组备选项中进行多选。拆为四个组件：
+复选框组件：在一组备选项中进行多选。拆为四个组件：
 
 - `m-checkbox-group`：复选框组容器（选中集合 v-model:value，统一下发视觉规格与 max）
 - `m-checkbox`：复选框单项（组内按 name 参与勾选，独立使用 v-model 布尔自持）
@@ -208,7 +208,7 @@ added: 0.5.0
 
 - **值类型**：Vant 为 `any[]`；本项目为 `Array<string | number>`（UTS 无 any），且 `'1'` 与 `1` 经字符串化比较视为同一项
 - **组件拆分**：Vant 的 CheckboxGroup + Checkbox 之上，对齐库内三件套先例扩展 `m-checkbox-popup` / `m-checkbox-input` 弹层与输入框形态
-- **toggleAll 参数**：`null` 表示取反（对齐 Vant 不传参取反），取反模式不受 max 约束
+- **toggleAll 参数**：`null` 表示取反，取反模式不受 max 约束
 - **indeterminate**：为 true 时图标固定显示横杠（不依赖勾选态），全选切换由使用者经 `@click` / 集合操作驱动
 - **slot 语法**：uvue 无 v-slot 简写，icon / default 插槽经 `<template #icon="{ checked }">` 声明
 

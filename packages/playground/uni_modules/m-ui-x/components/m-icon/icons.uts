@@ -271,7 +271,7 @@ export type IconName =
 export const iconCodepoints: Map<string, string> = new Map()
 iconCodepoints.set('arrow', '\ue660')
 iconCodepoints.set('arrow-left', '\ue668')
-// 双箭头（连体字形）：码点与 Vant 官方字体一致（e653/e654），随字体文件更新生效
+// 双箭头（连体字形）：码点 e653/e654，随字体文件更新生效
 iconCodepoints.set('arrow-double-left', '\ue653')
 iconCodepoints.set('arrow-double-right', '\ue654')
 iconCodepoints.set('arrow-up', '\ue65f')

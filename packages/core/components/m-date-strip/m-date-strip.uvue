@@ -34,7 +34,7 @@
 
 <script setup lang="uts">
 	/**
-	 * m-date-strip 日期横条：对标 Sard DateStrip（交互主参考）。
+	 * m-date-strip 日期横条：横向滚动日期选择。
 	 * 日期计算全部复用 utils/date（按需引入，不引 utils/index.uts）：
 	 * 默认范围 ±7 天、日序列、今日判定、天数差、周几文案、value-format、农历文案。
 	 * 超限命名对齐 m-calendar：max-range / over-range。

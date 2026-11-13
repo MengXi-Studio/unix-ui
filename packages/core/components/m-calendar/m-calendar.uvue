@@ -63,7 +63,7 @@
 
 <script setup lang="uts">
 	/**
-	 * m-calendar 日历面板（状态机宿主）：对标 Vant Calendar 的平铺形态。
+	 * m-calendar 日历面板（状态机宿主）：平铺形态。
 	 * 选择状态（single / multiple / range）、月份构建、范围判定与超限提示在此，
 	 * 渲染经 CalendarPanelConfig 纯数据下发 m-calendar-panel；超限提示复用 m-toast。
 	 * 弹层形态由 m-calendar-popup 组合 m-popup + 本组件实现（panelMode 概念随拆分移除）。
@@ -182,7 +182,7 @@
 		'update:value': [value: Date | Date[] | null]
 		/** 选择超出 max-range 限制 */
 		'over-range': []
-		/** 聚焦月进入视口（挂载时触发一次；面板滚动不再驱动，对齐 Vant 平铺语义） */
+		/** 聚焦月进入视口（挂载时触发一次；平铺形态下面板滚动不再驱动） */
 		'month-show': [date: Date]
 		/** switch-mode 面板所在月变化（导航触发） */
 		'panel-change': [date: Date]
@@ -206,7 +206,7 @@
 
 	/** switch-mode 当前面板所在月（导航 / scrollToDate 驱动；null 为挂载前瞬态） */
 	const currentPanelMonth = ref<Date | null>(null)
-	/** none 模式副标题（滚动驱动：视口所在月标题；无内部滚动时为初始聚焦月；月块内标题与 Vant 一致并存） */
+	/** none 模式副标题（滚动驱动：视口所在月标题；无内部滚动时为初始聚焦月；月块内标题并存） */
 	const subtitleScrolled = ref<string>('')
 	/** scroll-into-view 锚点（月 id：m-calendar-month-{index}） */
 	const scrollAnchor = ref<string>('')
@@ -225,7 +225,7 @@
 		return getDayStart(new Date())
 	}
 
-	/** 有效最大日期：maxDate 归一零点，null 默认今天 + 6 个月（对齐 Vant 默认跨度） */
+	/** 有效最大日期：maxDate 归一零点，null 默认今天 + 6 个月（默认跨度） */
 	function currentMaxDate(): Date {
 		if (props.maxDate != null) {
 			return getDayStart(props.maxDate!)
@@ -482,7 +482,7 @@
 		let cursor = startOfMonth(min)
 		while (cursor.getTime() <= max.getTime()) {
 			const m = buildMonth(cursor, min, max)
-			// Vant 同款规则：首月月内标题由副标题承担（index !== 0 || !showSubtitle）
+			// 首月月内标题由副标题承担（index !== 0 || !showSubtitle）
 			m.showTitle = list.length > 0 || !props.showSubtitle
 			list.push(m)
 			cursor = addMonths(cursor, 1)

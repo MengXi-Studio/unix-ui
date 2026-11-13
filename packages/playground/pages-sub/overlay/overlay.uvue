@@ -7,7 +7,7 @@
 			<text class="section" id="basic">基础用法</text>
 			<view class="card">
 				<m-button type="primary" @click="openBasic">显示遮罩</m-button>
-				<text class="caption">点击遮罩关闭：遮罩不自动关闭，由调用方在 click 回调中置 show=false（对齐 Vant）</text>
+				<text class="caption">点击遮罩关闭：遮罩不自动关闭，由调用方在 click 回调中置 show=false</text>
 			</view>
 
 			<text class="section" id="content">嵌入内容</text>

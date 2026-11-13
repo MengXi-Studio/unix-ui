@@ -38,7 +38,7 @@
 	})
 
 	const emit = defineEmits<{
-		/** 点击按钮项（派发后自动收起扩展列表，对齐 Sard） */
+		/** 点击按钮项（派发后自动收起扩展列表） */
 		click: [event: MouseEvent]
 	}>()
 
@@ -133,7 +133,7 @@
 	})
 
 	/**
-	 * 点击按钮项：派发 click 并请求容器收起（对齐 Sard）
+	 * 点击按钮项：派发 click 并请求容器收起
 	 */
 	const onClick = (e: MouseEvent) => {
 		emit('click', e)

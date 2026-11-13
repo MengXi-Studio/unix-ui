@@ -37,7 +37,7 @@
 		overlayClass?: string.ClassString
 		/** 遮罩自定义样式（透传内置 m-overlay custom-style） */
 		overlayStyle?: string
-		/** z-index 层级（透传内置 m-overlay；沿用 overlay 体系默认 1，与 Vant 2000+ 动态递增不同） */
+		/** z-index 层级（透传内置 m-overlay；沿用 overlay 体系默认 1） */
 		zIndex?: number
 		/** 动画时长（秒），0 表示无动画（面板过渡与遮罩过渡共用） */
 		duration?: number
@@ -193,7 +193,7 @@
 	}
 
 	/**
-	 * 面板点击：派发 click 事件（对齐 Vant「点击弹出层时触发」）；
+	 * 面板点击：派发 click 事件；
 	 * 模板上 @click.stop 阻止冒泡到遮罩根节点，面板内点击不会误触 click-overlay 与遮罩关闭
 	 */
 	function onPanelClick(e: MouseEvent) {
@@ -208,7 +208,7 @@
 		requestClose('close-button')
 	}
 
-	// 初始即 show=true 的场景：面板直接以终位挂载，不做过渡、不派发 open/opened（对齐 Vant 无 appear 过渡）
+	// 初始即 show=true 的场景：面板直接以终位挂载，不做过渡、不派发 open/opened（无 appear 过渡）
 	onMounted(() => {
 		if (props.show) {
 			rendered.value = true
@@ -307,7 +307,7 @@
 	}
 
 	/* ========== 过渡两态（position × state 组合，扁平展开 10 类） ========== */
-	/* center：scale 缩放 + opacity 淡入淡出，居中位移并入 transform 组（对齐 Vant 观感） */
+	/* center：scale 缩放 + opacity 淡入淡出，居中位移并入 transform 组 */
 	.m-popup--center-in {
 		transform: translate(-50%, -50%) scale(1);
 		opacity: 1;

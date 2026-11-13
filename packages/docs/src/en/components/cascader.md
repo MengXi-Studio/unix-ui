@@ -80,7 +80,7 @@ const onChange = (event: CascaderChangeEvent) => {
 
 ### Custom field names {#demo-field-names}
 
-`field-names` maps the option tree field names (aligned with Vant); the `disabled` / `color` fields remain fixed keys:
+`field-names` maps the option tree field names; the `disabled` / `color` fields remain fixed keys:
 
 ```ts
 const nameFields: CascaderFieldNames = {

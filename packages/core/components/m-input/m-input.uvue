@@ -50,7 +50,7 @@
 				<slot name="append"></slot>
 			</view>
 		</view>
-		<!-- 字数统计行：容器外下方右对齐（与 Vant 的容器内计数展示为已知差异） -->
+		<!-- 字数统计行：容器外下方右对齐 -->
 		<view v-if="showCount" class="m-input__count">
 			<text class="m-input__count-text">{{ countText }}</text>
 		</view>
@@ -87,7 +87,7 @@
 		clearable?: boolean
 		/** 清除图标显示时机 */
 		clearTrigger?: ClearTrigger
-		/** 是否显示边框容器（对齐 Vant 正向语义） */
+		/** 是否显示边框容器（true 显示边框） */
 		border?: boolean
 		/** 嵌入式形态：清边框 / 圆角 / 内边距 / 背景，用于嵌入 m-cell 等 */
 		inlaid?: boolean
@@ -315,7 +315,7 @@
 	}
 
 	/**
-	 * 失焦公共处理：先派发 blur（对齐 Vant 时序），再做 onBlur 格式化 / 数字修正，
+	 * 失焦公共处理：先派发 blur，再做 onBlur 格式化 / 数字修正，
 	 * 最终值与聚焦快照不同才触发 change 事件；:focus 状态立即复位，
 	 * 聚焦视觉走 200ms 宽限期再撤出（等待清除图标 click）
 	 */

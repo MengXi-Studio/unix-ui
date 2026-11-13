@@ -29,7 +29,7 @@
 
 <script setup lang="uts">
 	/**
-	 * m-fab 悬浮按钮：对标 Sard Fab（https://sard.wzt.zone/components/fab）。
+	 * m-fab 悬浮按钮。
 	 * 入口按钮默认右下角，点击展开扩展按钮（m-fab-item）；支持四角定位、
 	 * 自定义配色 / 名称显隐 / 遮罩点击收起 / 拖拽（axis 轴限制 + magnet 松手吸附 + v-model:offset）。
 	 * 展开动画走逐项 inline transition（stagger 延迟 + translateY + scale，ucss 无 @keyframes）；

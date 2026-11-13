@@ -70,7 +70,7 @@
 							<text class="demo-filler__text">吸附条不会超出容器底部，到达边界后向上回顶</text>
 						</view>
 					</m-sticky-box>
-					<text class="caption">m-sticky-box 提供容器边界（对齐 Vant container / Sard StickyBox）</text>
+					<text class="caption">m-sticky-box 提供容器边界</text>
 					<m-sticky-box custom-style="height: 200px; background-color: #f7f8fa; border-radius: 8px; margin-top: 12px;">
 						<view class="demo-box-filler">
 							<text class="demo-filler__text">容器内吸底：吸附条不会越过容器顶部</text>

@@ -7,7 +7,7 @@ added: 0.5.0
 
 ## Introduction
 
-Floating action button (modeled on [Sard Fab](https://sard.wzt.zone/components/fab)): a round entry button pinned to a viewport corner that expands a list of action buttons on click and collapses after one is tapped. Supports four-corner positioning, custom colors, name visibility, overlay click-to-close, and dragging (axis restriction + magnet snapping + two-way position binding).
+Floating action button: a round entry button pinned to a viewport corner that expands a list of action buttons on click and collapses after one is tapped. Supports four-corner positioning, custom colors, name visibility, overlay click-to-close, and dragging (axis restriction + magnet snapping + two-way position binding).
 
 The component is split into two:
 

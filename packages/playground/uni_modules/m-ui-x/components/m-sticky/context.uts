@@ -3,7 +3,7 @@
  *
  * Web 端 CSS sticky 的边界由父容器天然约束；App / 小程序没有原生 sticky，
  * 由 m-sticky-box 把根节点引用注入上下文，子 m-sticky 测量容器上下边界，
- * 吸附时超出边界则回顶（对齐 Vant container / Sard StickyBox 语义）
+ * 吸附时超出边界则回顶（容器边界语义）
  */
 import { ref, type Ref } from 'vue'
 

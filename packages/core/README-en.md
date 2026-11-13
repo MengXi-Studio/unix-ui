@@ -19,7 +19,7 @@
 
 Building UI with raw uni-app x `view` / `text` elements means hand-writing every interaction detail — button pressed states and loading indicators, 0.5px hairline borders, single- / multi-line text ellipsis, badge truncation and offsets — and then re-tuning styles per platform for App / Web / mini-programs. unix-ui converges all of this into a set of ready-to-use components:
 
-- **Familiar with mainstream uni-app component libraries?** Component taxonomy, prop naming and visual specs are fully aligned — zero mental remapping, pick it up at a glance;
+- **Familiar with mainstream uni-app component libraries?** Component taxonomy, prop naming and visual specs follow mainstream conventions — zero mental remapping, pick it up at a glance;
 - **Multi-platform release?** One UTS + uvue codebase compiles to App (Android / iOS / HarmonyOS), Web and mini-programs; platform quirks like hairline borders and scroll containers are handled deterministically inside the library;
 - **Care about theming?** Every visual parameter is a `$m-*` SCSS variable injected at compile time — change one line in the root `uni.scss` and it applies across all components, with zero runtime overhead.
 

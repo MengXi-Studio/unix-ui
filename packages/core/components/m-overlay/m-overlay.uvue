@@ -96,7 +96,7 @@
 	}
 
 	/**
-	 * 隐藏遮罩：立即释放滚动锁（对齐 Vant），duration > 0 时等淡出过渡结束后再解除显示
+	 * 隐藏遮罩：立即释放滚动锁，duration > 0 时等淡出过渡结束后再解除显示
 	 */
 	function closeOverlay() {
 		if (locked) {
@@ -137,13 +137,13 @@
 	})
 
 	/**
-	 * 遮罩点击：透传给调用方（对齐 Vant：遮罩不自动关闭，由调用方在 click 回调置 show=false）
+	 * 遮罩点击：透传给调用方（遮罩不自动关闭，由调用方在 click 回调置 show=false）
 	 */
 	function onClick(e: MouseEvent) {
 		emit('click', e)
 	}
 
-	// 初始即 show=true 的场景：直接进入可见态，不做过渡（对齐 Vant 无 appear 过渡）
+	// 初始即 show=true 的场景：直接进入可见态，不做过渡（无 appear 过渡）
 	onMounted(() => {
 		if (props.show) {
 			visible.value = true

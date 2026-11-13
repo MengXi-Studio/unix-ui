@@ -1,6 +1,6 @@
 <template>
 	<!-- 复选框组容器：provide 上下文给 m-checkbox 子项（组内子项经 name 参与勾选），
-	     选中集合 v-model:value 受控；toggleAll 经 expose 暴露（对齐 Vant CheckboxGroup）。 -->
+	     选中集合 v-model:value 受控；toggleAll 经 expose 暴露。 -->
 	<view :class="rootClass" :style="customStyle">
 		<slot></slot>
 	</view>
@@ -8,7 +8,7 @@
 
 <script setup lang="uts">
 	/**
-	 * m-checkbox-group 复选框组：多选集合容器，对标 Vant CheckboxGroup。
+	 * m-checkbox-group 复选框组：多选集合容器。
 	 * 视觉规格（形状 / 图标尺寸 / 选中色 / 禁用 / max / direction）经上下文统一下发，
 	 * 子项 m-checkbox inject 后按 name 参与勾选；value 变更经 update:value 回写外部。
 	 */
@@ -57,7 +57,7 @@
 	const emit = defineEmits<{
 		/** 选中集合变化（v-model:value） */
 		'update:value': [value: CheckboxValueArray]
-		/** 选中集合变化（对齐 Vant change，回传当前选中集合） */
+		/** 选中集合变化（回传当前选中集合） */
 		change: [value: CheckboxValueArray]
 	}>()
 
@@ -120,7 +120,7 @@
 	})
 
 	/**
-	 * 切换全部复选框（对齐 Vant toggleAll）：checked 为 true 全选 / false 全不选 / null 取反；
+	 * 切换全部复选框：checked 为 true 全选 / false 全不选 / null 取反；
 	 * 跳过禁用子项；受 max 约束（全选时到达上限即停）。
 	 *
 	 * @param checked 目标状态（null 取反）

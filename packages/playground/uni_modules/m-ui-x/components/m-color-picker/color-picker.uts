@@ -30,7 +30,7 @@ export type HslColor = {
 	l: number
 }
 
-/** 默认颜色（未传值或解析失败时兜底，对齐 Sard 默认值 #1989FA） */
+/** 默认颜色（未传值或解析失败时兜底 #1989FA） */
 export const DEFAULT_COLOR_PICKER_VALUE = '#1989FA'
 
 /** 默认预定义颜色（show-presets 开启且未传 presets 时使用） */

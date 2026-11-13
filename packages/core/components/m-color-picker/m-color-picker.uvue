@@ -134,7 +134,7 @@
 
 <script setup lang="uts">
 	/**
-	 * m-color-picker 颜色选择器面板（对标 Sard ColorPicker）。
+	 * m-color-picker 颜色选择器面板。
 	 * 内部状态为 HSV + alpha（面板拖动换算是 HSV 空间），对外只暴露颜色字符串：
 	 * v-model:value 受控，输出按 format（hex / rgb / hsl）与 show-alpha 序列化。
 	 * 交互：面板触摸改 s / v、色相条改 h、透明度条改 a；touchend 记录最近色。

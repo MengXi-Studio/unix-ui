@@ -10,7 +10,7 @@ import { ref, reactive, type Ref } from 'vue'
 /** provide / inject 配对 key */
 export const CHECKBOX_KEY: string = '__mxi_checkbox_group__'
 
-/** 单个勾选项标识（UTS 无 any，Vant any 收窄为字符串 / 数字） */
+/** 单个勾选项标识（UTS 无 any，收窄为字符串 / 数字） */
 export type CheckboxValue = string | number
 
 /** 复选组值（多选集合，UTS 联合类型数组已实测合法：编译运行均通过） */
@@ -31,7 +31,7 @@ export type CheckboxFieldNames = {
 	label: string
 	/** 选项值字段名 */
 	value: string
-	/** 选项禁用字段名（与 Vant 一致固定 disabled，此映射仅作扩展） */
+	/** 选项禁用字段名（固定 disabled，此映射仅作扩展） */
 	disabled: string
 }
 
@@ -141,7 +141,7 @@ export class CheckboxGroupContext {
 
 /**
  * 值相等判定（字符串化比较：string 与 number 的同字面量视为同一项，'1' 与 1 等价——
- * 对齐 Vant any 标识的宽松语义；不用 instanceof 判型，UTS 原始 string/number
+ * 宽松标识语义；不用 instanceof 判型，UTS 原始 string/number
  * 在 Web 端运行时不是包装对象，instanceof 恒 false）
  *
  * @param a 值 A

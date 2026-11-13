@@ -80,7 +80,7 @@ const onChange = (event: CascaderChangeEvent) => {
 
 ### 自定义字段名 {#demo-field-names}
 
-`field-names` 映射选项树的字段名（对齐 Vant）；`disabled` / `color` 字段仍为固定键名：
+`field-names` 映射选项树的字段名；`disabled` / `color` 字段仍为固定键名：
 
 ```ts
 const nameFields: CascaderFieldNames = {
@@ -208,5 +208,5 @@ const nameFields: CascaderFieldNames = {
 - options 为动态类型 `UTSJSONObject[]`（支持 field-names 运行时映射与异步填充），业务侧用 `JSON.parse<UTSJSONObject[]>` 构造；Vant 为静态对象数组
 - `options-height` 为本项目扩展 prop：Vant 仅提供 CSS 变量 `--van-cascader-options-height`，本项目 prop 覆盖主题变量（`0` 时回落变量，默认 384px 同 Vant）
 - tab 定宽（`$m-cascader-tab-max-width` 100px）横向滚动 + `scroll-into-view` 对齐当前 tab；Vant 为等分自适应宽度 + 选中 tab 平滑居中
-- 异步加载不内置 loading：children 为空数组视为叶子直接 `finish`，加载态由业务自行提示（对齐 Vant「业务自行 showLoadingToast」的实际用法）
+- 异步加载不内置 loading：children 为空数组视为叶子直接 `finish`，加载态由业务自行 showLoadingToast 提示
 - 选项 `className` 字段不支持（ucss 无自定义类注入场景），`disabled` / `color` 语义与 Vant 一致

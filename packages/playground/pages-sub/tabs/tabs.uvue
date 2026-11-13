@@ -39,7 +39,7 @@
 						<m-tab title="禁用" disabled>不可达</m-tab>
 						<m-tab title="可选">内容 3</m-tab>
 					</m-tabs>
-					<text class="caption">disabled 标签点击不切换，click-tab 事件照常派发（对齐 Vant）</text>
+					<text class="caption">disabled 标签点击不切换，click-tab 事件照常派发</text>
 				</view>
 
 				<text class="section" id="style">样式风格</text>
@@ -86,7 +86,7 @@
 						<m-tab title="手势 2">swipeable 内容 2</m-tab>
 						<m-tab title="手势 3">swipeable 内容 3</m-tab>
 					</m-tabs>
-					<text class="caption">swipeable + animated 手势跟手切换（手势切换不触发 before-change，对齐 Vant）</text>
+					<text class="caption">swipeable + animated 手势跟手切换（手势切换不触发 before-change）</text>
 				</view>
 
 				<text class="section" id="badge">标题徽标与插槽</text>

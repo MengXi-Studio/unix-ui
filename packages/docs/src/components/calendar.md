@@ -77,7 +77,7 @@ added: 0.2.0
 
 默认由内容撑开（今天起 6 个月），`height` 传 px 等长度值可固定面板高度、内部滚动（配合 `max-date` 缩小范围效果更明显）。
 
-固定高度产生内部滚动后，顶部副标题随滚动实时切换为视口所在月份（对齐 Vant）；面板由内容撑开（页面滚动）时副标题保持初始聚焦月。
+固定高度产生内部滚动后，顶部副标题随滚动实时切换为视口所在月份；面板由内容撑开（页面滚动）时副标题保持初始聚焦月。
 
 注意：uvue 下外部 `:style` 绑定不会透传到组件根节点（Vant 为标准 Vue 组件可直接外部限高），限高请使用 `height` prop 或 `custom-style`。
 
@@ -115,7 +115,7 @@ const dayFormatter = (day: CalendarDayItem): CalendarDayItem => {
 
 ### 插槽 {#demo-slots}
 
-支持 `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` 及确认按钮文字、导航图标等插槽；`text` 为作用域插槽，`day` 为该格数据。月块内标题默认内置渲染（对齐 Vant：首月由副标题承担当月标题故不显示，其余月显示），传入 `month-title` 插槽可自定义。
+支持 `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` 及确认按钮文字、导航图标等插槽；`text` 为作用域插槽，`day` 为该格数据。月块内标题默认内置渲染（首月由副标题承担当月标题故不显示，其余月显示），传入 `month-title` 插槽可自定义。
 
 ```vue
 <m-calendar :show-mark="false" :max-date="maxDate">
@@ -225,7 +225,7 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 | $m-calendar-header-title-height | 标题区高度 | 44px |
 | $m-calendar-header-title-font-size | 标题字号 | 16px |
 | $m-calendar-header-title-color | 标题颜色 | #323233 |
-| $m-calendar-header-box-shadow | 头部投影（对齐 Vant） | 0 2px 10px rgba(125, 126, 128, 0.16) |
+| $m-calendar-header-box-shadow | 头部投影 | 0 2px 10px rgba(125, 126, 128, 0.16) |
 | $m-calendar-header-subtitle-height | 副标题区高度 | 44px |
 | $m-calendar-header-subtitle-font-size | 副标题字号 | 14px |
 | $m-calendar-header-subtitle-color | 副标题颜色 | #323233 |
@@ -266,5 +266,5 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 - 日期 prop 仅接受 `Date` 实例：`min-date` / `max-date` / `default-date` 等需用数值形式构造（`new Date(2026, 9, 29)`，月份 0 基），不支持 Vant 的字符串日期形态
 - `formatter` 仅支持同步函数（UTS 无 Promise 化 formatter），不支持返回 Promise 的异步形态
 - `min-date` / `max-date` 默认值收窄为「今天 ~ 今天 + 6 个月」（Vant 同为今天起 6 个月）
-- 星期表头与月标题文案内置中文（月标题「2026年10月」格式），无 Vant 的 locale 国际化机制；月块标题内置渲染且首月由副标题承担（对齐 Vant），可经 `month-title` 插槽自定义，星期表头暂无插槽
+- 星期表头与月标题文案内置中文（月标题「2026年10月」格式），无 Vant 的 locale 国际化机制；月块标题内置渲染且首月由副标题承担，可经 `month-title` 插槽自定义，星期表头暂无插槽
 - `color` 传渐变等非 `#hex` 值时选中方块跟随渐变、范围 bar 底色回退默认主题色（派生透明度仅支持 `#hex`）

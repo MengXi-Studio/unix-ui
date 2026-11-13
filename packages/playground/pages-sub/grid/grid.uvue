@@ -48,7 +48,7 @@
 
 				<text class="section" id="gutter">格子间距</text>
 				<view class="card">
-					<!-- 浅灰内衬：格子与卡片同为白底，间隙需深色环境衬托（Vant 官网 demo 同为灰底） -->
+					<!-- 浅灰内衬：格子与卡片同为白底，间隙需深色环境衬托 -->
 					<view class="gutter-stage">
 						<m-grid :gutter="10">
 							<m-grid-item icon="cart-o" text="文字" />

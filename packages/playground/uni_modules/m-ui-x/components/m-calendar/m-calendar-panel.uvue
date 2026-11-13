@@ -199,7 +199,7 @@
 	}
 
 	/**
-	 * 范围连接 bar 是否存在：仅中段（端点为全格着色端块，自身即 bar 边界，对齐 Vant range-edge）
+	 * 范围连接 bar 是否存在：仅中段（端点为全格着色端块，自身即 bar 边界）
 	 */
 	function hasBar(type: CalendarDayType): boolean {
 		return type == 'middle' || type == 'multiple-middle'
@@ -436,7 +436,7 @@
 		flex-wrap: wrap;
 	}
 
-	/* 月水印：超大字号低透明度数字，水平垂直双居中于月块（文字压于日期格之下，对齐 Vant）
+	/* 月水印：超大字号低透明度数字，水平垂直双居中于月块（文字压于日期格之下）
 	   垂直居中经 translateY 实现（text-align 承担水平居中，避免依赖双向 translate 的跨端差异） */
 	.m-calendar__month-mark {
 		position: absolute;
@@ -462,7 +462,7 @@
 		position: relative;
 	}
 
-	/* 范围端点：格子本身为主题色端块（全格高宽，仅外侧两角圆，与中段 bar 无缝衔接，对齐 Vant range-edge） */
+	/* 范围端点：格子本身为主题色端块（全格高宽，仅外侧两角圆，与中段 bar 无缝衔接） */
 	.m-calendar__day--edge {
 		background-color: $m-calendar-selected-day-background;
 	}
@@ -510,7 +510,7 @@
 		color: $m-calendar-selected-day-color;
 	}
 
-	/* 中央容器：常规无背景 / 选中标记 54px 圆角方块（对齐 Vant，格宽 ≈54 的移动端下近满格，端点盖于范围 bar 之上） */
+	/* 中央容器：常规无背景 / 选中标记 54px 圆角方块（格宽 ≈54 的移动端下近满格，端点盖于范围 bar 之上） */
 	.m-calendar__day-value {
 		position: relative;
 		z-index: 1;

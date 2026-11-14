@@ -1,3 +1,7 @@
+## 0.5.1 (2026-11-14)
+
+- 修复 `m-tabs` options 平分模式小程序端首帧底部条仍贴左（[#13](https://github.com/MengXi-Studio/unix-ui/issues/13)）：0.5.0 在 `onMounted` 中补的 `nextTick` 只等到逻辑层更新，小程序端渲染层首次 `setData` 尚未提交，`queryRectById` 查不到 `#m-tabs-nav` / `#m-tabs-tab-<i>` 时静默返回、不重试，`lineLeft` 保持 0，首屏底部条仍贴左（点击后才归位）。小程序端改为按 0 / 16 / 50 / 120ms 递增重试 `animateLine`（成功后的重复调用 `from == to`，仅重设同一位置、无副作用），Web / App 保持原 `nextTick` 分支
+
 ## 0.5.0 (2026-11-14)
 
 - 新增 `m-color-picker` / `m-color-picker-popup` / `m-color-picker-input` 颜色选择器三件套：饱和度-明度面板 + 色相 / 透明度滑块，`v-model:value` 字符串受控，`format` 支持 `hex` / `rgb` / `hsl`（hex 带透明度输出 8 位），`show-format` 格式切换、`presets` / `show-presets` 预设色、`show-inputs` R/G/B/A 数值输入、`show-recent` 最近使用颜色（最多 8 个）、`show-eyedropper` 吸管取色（仅 Web，`#ifdef WEB`）；面板按 App 端单层 `linear-gradient` 约束用 3 层绝对定位叠加；弹层为「取消 / 标题 / 确定」+ 草稿值（确定回写、取消丢弃），输入框为只读触发器 + 色块预览 + 字段标签 + 自绘清空；新增 `$m-color-picker-*` 主题变量

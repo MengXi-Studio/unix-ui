@@ -1179,9 +1179,22 @@
 		// 首帧底部条定位：options 形态没有 m-tab 子组件，ctx.items 恒为空，
 		// watch(ctx.items) 不会触发 animateLine；初始 activeIndex 与解析结果相同也不会
 		// 触发 watch(activeIndex)，需在挂载渲染完成后主动定位一次（firstSet 首次直接落位，无动画）
+		// #ifdef MP
+		// 小程序端渲染层首次提交晚于逻辑层 nextTick，createSelectorQuery 可能查不到刚挂载的节点，
+		// 且 queryRectById 查不到时静默返回（无法感知是否成功）：按 0 / 16 / 50 / 120ms 递增重试，
+		// 成功后的重复调用 from == to，仅重设同一位置，无副作用
+		const initLineDelays: number[] = [0, 16, 50, 120]
+		for (let i = 0; i < initLineDelays.length; i++) {
+			setTimeout(() => {
+				animateLine(activeIndex.value, activeIndex.value)
+			}, initLineDelays[i])
+		}
+		// #endif
+		// #ifndef MP
 		nextTick(() => {
 			animateLine(activeIndex.value, activeIndex.value)
 		})
+		// #endif
 	})
 
 	defineExpose({

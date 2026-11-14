@@ -1,5 +1,13 @@
 # 更新日志
 
+## [0.5.1] - 2026-11-14
+
+修复 m-tabs options 平分模式微信小程序端首帧底部条仍贴左（[#13](https://github.com/MengXi-Studio/unix-ui/issues/13)）。
+
+### 修复
+
+- **m-tabs options 平分模式小程序端首帧底部条仍贴左**（[#13](https://github.com/MengXi-Studio/unix-ui/issues/13)）：0.5.0 在 `onMounted` 中补的 `nextTick` 只等到逻辑层更新，小程序端渲染层首次 `setData` 尚未提交，`queryRectById` 查不到 `#m-tabs-nav` / `#m-tabs-tab-<i>` 时静默返回、不重试，`lineLeft` 保持 0，首屏底部条仍贴左（点击后才归位）。小程序端改为按 0 / 16 / 50 / 120ms 递增重试 `animateLine`（成功后的重复调用 `from == to`，仅重设同一位置、无副作用），Web / App 保持原 `nextTick` 分支
+
 ## [0.5.0] - 2026-11-14
 
 新增 m-color-picker 颜色选择器三件套、m-fab / m-fab-item 悬浮按钮组件、m-checkbox 复选框四组件、m-date-strip 日期横条与日期工具函数集。

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.1] - 2026-11-14
+
+Fixes the m-tabs options-mode bottom line still sticking to the far left on WeChat Mini Program first paint ([#13](https://github.com/MengXi-Studio/unix-ui/issues/13)).
+
+### Fixed
+
+- **m-tabs options mode: the bottom line is still stuck to the left on Mini Program first paint** ([#13](https://github.com/MengXi-Studio/unix-ui/issues/13)): the `nextTick` pass added in 0.5.0 only waits for the logic layer, while the Mini Program render layer has not committed its first `setData` yet; `queryRectById` cannot find `#m-tabs-nav` / `#m-tabs-tab-<i>`, returns silently without retrying, and leaves `lineLeft` at 0 until the user taps a tab. On Mini Program the initial positioning now retries `animateLine` at 0 / 16 / 50 / 120ms (repeats after success are `from == to` and only re-apply the same position), while Web / App keep the original `nextTick` branch
+
 ## [0.5.0] - 2026-11-14
 
 Added the m-color-picker trio, the m-fab / m-fab-item floating action button components, the four m-checkbox components, m-date-strip and the date utility toolkit.

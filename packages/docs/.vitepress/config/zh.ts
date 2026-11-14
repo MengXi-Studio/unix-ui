@@ -49,7 +49,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			{ text: '指南', link: '/guide/introduction' },
 			{ text: '组件', link: '/components/button' },
 			{ text: '工具', link: '/tools/date' },
-			{ text: '更新日志 v0.5.0', link: '/changelog' },
+			{ text: '更新日志 v0.5.1', link: '/changelog' },
 			{
 				text: '相关链接',
 				items: [

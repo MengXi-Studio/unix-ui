@@ -36,7 +36,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			{ text: 'Guide', link: '/en/guide/introduction' },
 			{ text: 'Components', link: '/en/components/button' },
 			{ text: 'Tools', link: '/en/tools/date' },
-			{ text: 'Changelog v0.5.0', link: '/en/changelog' },
+			{ text: 'Changelog v0.5.1', link: '/en/changelog' },
 			{
 				text: 'Links',
 				items: [

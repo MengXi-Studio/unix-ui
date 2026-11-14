@@ -1,6 +1,6 @@
 # 更新日志
 
-## [0.5.2] - 2026-11-14
+## [0.5.2] - 2026-11-15
 
 修复 m-calendar 在 `switch-mode` 非 `none` 时首帧渲染全量月份，宽日期范围下触发微信小程序 DOM 节点上限（[#15](https://github.com/MengXi-Studio/unix-ui/issues/15)）。
 

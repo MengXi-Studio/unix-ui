@@ -1,4 +1,4 @@
-## 0.5.2 (2026-11-14)
+## 0.5.2 (2026-11-15)
 
 - 修复 `m-calendar` `switch-mode` 非 `none` 时首帧渲染全量月份（[#15](https://github.com/MengXi-Studio/unix-ui/issues/15)）：`currentPanelMonth` 挂载前为 `null` 时 `visibleMonths` 回退全量，`min-date` ~ `max-date` 覆盖 1900~2100 时首帧渲染 2412 个月，微信小程序触发 `Dom limit exceeded`（`setData` 约 36 MB）；兜底分支改为仅渲染聚焦月，首帧节点数与范围宽度无关
 

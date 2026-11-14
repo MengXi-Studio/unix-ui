@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.5.2] - 2026-11-14
+## [0.5.2] - 2026-11-15
 
 Fixes m-calendar rendering every month on first paint when `switch-mode` is not `none`, which hit the WeChat Mini Program DOM node limit with a wide date range ([#15](https://github.com/MengXi-Studio/unix-ui/issues/15)).
 

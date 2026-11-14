@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.2] - 2026-11-15
+
+Fixes m-calendar rendering every month on first paint when `switch-mode` is not `none`, which hit the WeChat Mini Program DOM node limit with a wide date range ([#15](https://github.com/MengXi-Studio/unix-ui/issues/15)).
+
+### Fixed
+
+- **m-calendar renders every month on first paint when `switch-mode` is not `none`** ([#15](https://github.com/MengXi-Studio/unix-ui/issues/15)): `currentPanelMonth` starts as `null` (pre-mount transient), and `visibleMonths` fell back to the full `months` list in that state, while the value is only assigned in `onMounted`, after the first paint. With `min-date` ~ `max-date` spanning 1900–2100, the first paint rendered 2,412 months (~100k nodes), triggering `Dom limit exceeded` on WeChat Mini Program with a `setData` payload of about 36 MB and a blank panel; Web reported no error but was noticeably slow on first open. The fallback now renders only the focused month (`startOfMonth(focusMonth())`), so first-paint node count is independent of the range width
+
 ## [0.5.1] - 2026-11-14
 
 Fixes the m-tabs options-mode bottom line still sticking to the far left on WeChat Mini Program first paint ([#13](https://github.com/MengXi-Studio/unix-ui/issues/13)).

@@ -2,8 +2,8 @@
 	"name": "unix-ui-playground",
 	"appid": "__UNI__F1AA560",
 	"description": "@meng-xi/unix-ui 示例项目",
-	"versionName": "0.5.0",
-	"versionCode": "050",
+	"versionName": "0.5.2",
+	"versionCode": "052",
 	"uni-app-x": {
 		"styleIsolationVersion": "2",
 		"vapor-default-script-lang": "uts",

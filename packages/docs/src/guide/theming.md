@@ -1,8 +1,8 @@
 # 主题定制
 
-unix-ui 的主题由 SCSS 变量驱动，**默认主题开箱即用**（组件内部已引入变量文件），零配置可用。
+unix-ui 的主题由 SCSS 变量驱动，**默认主题开箱即用**：组件内部已引入变量文件，零配置即可获得完整视觉，不需要任何初始化代码。
 
-## 覆盖主题变量
+## 覆盖变量
 
 在项目根 `uni.scss` 中**直接定义**同名变量即可全局覆盖：
 
@@ -21,8 +21,10 @@ $m-radius-md: 12px;
 ## 工作原理
 
 1. 组件 style 顶层引入 `theme/vars.scss`（全部 `!default`），编译时展开为默认值
-2. uni-app x 编译器将项目根 `uni.scss` 注入每个组件的样式参与同一次编译
+2. uni-app x 编译器将项目根 `uni.scss` 注入每个组件的样式，参与同一次编译
 3. 用户在 `uni.scss` 中定义的变量使 `!default` 声明跳过，从而覆盖默认值
+
+整个过程只发生在编译期，运行时没有任何主题计算开销。
 
 ::: warning 禁止在 uni.scss 中引入 vars.scss
 不要在 `uni.scss` 中 `@import` 组件库的 `vars.scss`——编译器会把 `uni.scss` 注入每个组件样式，与组件内部的引入形成循环导入，导致编译报错：
@@ -65,6 +67,18 @@ $m-radius-md: 12px;
 ### 组件级变量
 
 除上方全局通用变量外，各组件还有专属的 `$m-<component>-*` 变量（如 Sticky 的 `$m-sticky-z-index`、Tabs 的 `$m-tabs-*` 系列、Calendar 的 `$m-calendar-*` 系列），全部 `!default`。完整清单与说明见各组件文档的「主题定制」小节。
+
+## 命名规则与查找方式
+
+- 全局通用变量命名为 `$m-<属性>`，组件专属变量命名为 `$m-<组件>-<属性>`；
+- 全部变量集中定义在 [theme/vars.scss](https://github.com/MengXi-Studio/unix-ui/blob/master/packages/core/theme/vars.scss)，按组件分段并附注释；
+- 只想确认某个组件有哪些变量时，直接查看该组件文档的「主题定制」小节。
+
+## 注意事项
+
+- `uni.scss` 是编译期注入，**不参与热更新**；修改变量后需重启 dev server 才会生效，详见[常见问题](/guide/faq)。
+- 只定义需要调整的变量，其余保持默认，后续升级时对比成本最低。
+- 主题变量用于全局统一视觉；单个实例的微调优先使用组件提供的 `custom-class` / `custom-style`，避免为局部样式改动全局变量。
 
 ## 下一步
 

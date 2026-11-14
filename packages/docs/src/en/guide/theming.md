@@ -1,6 +1,6 @@
 # Theming
 
-unix-ui theming is driven by SCSS variables. **A default theme ships with the components** (imported inside each component) and works with zero configuration.
+unix-ui theming is driven by SCSS variables. **A default theme ships out of the box**: every component imports the variable file, so the full visual design works with zero configuration and no initialization code.
 
 ## Overriding Theme Variables
 
@@ -23,6 +23,8 @@ All variables in the variable file are declared with `!default`, so user-defined
 1. Each component imports `theme/vars.scss` at the top level of its style (all `!default`), which expands to the default values at compile time
 2. The uni-app x compiler injects the project root `uni.scss` into every component's style for the same compilation
 3. Variables defined by the user in `uni.scss` make the `!default` declarations skip, thus overriding the defaults
+
+Everything happens at compile time — theming has zero runtime cost.
 
 ::: warning Never import vars.scss in uni.scss
 Do not `@import` the library's `vars.scss` in `uni.scss` — the compiler injects `uni.scss` into every component's style, and importing the same file again forms a circular import that fails the build:
@@ -65,6 +67,18 @@ See [Button Theming](/en/components/button#theming) for the full set of Button v
 ### Component-level Variables
 
 Besides the global variables above, each component ships its own `$m-<component>-*` variables (e.g. `$m-sticky-z-index` for Sticky, the `$m-tabs-*` series for Tabs, the `$m-calendar-*` series for Calendar), all declared with `!default`. See the "Theming" section of each component's documentation for the complete list.
+
+## Naming and Discovery
+
+- Global variables are named `$m-<property>`, component-specific ones `$m-<component>-<property>`;
+- All variables are defined in [theme/vars.scss](https://github.com/MengXi-Studio/unix-ui/blob/master/packages/core/theme/vars.scss), grouped by component with comments;
+- To check what a single component exposes, read the "Theming" section of its documentation.
+
+## Notes
+
+- `uni.scss` is injected at compile time and **does not participate in hot updates**; restart the dev server after changing variables — see the [FAQ](/en/guide/faq).
+- Override only the variables you need and keep the rest at their defaults — this keeps upgrade diffs minimal.
+- Use theme variables for global visual consistency; for one-off tweaks prefer the `custom-class` / `custom-style` props instead of changing global variables.
 
 ## Next Steps
 

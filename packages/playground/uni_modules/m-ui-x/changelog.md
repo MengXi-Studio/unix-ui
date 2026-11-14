@@ -1,4 +1,4 @@
-## 0.5.0 (2026-11-13)
+## 0.5.0 (2026-11-14)
 
 - 新增 `m-color-picker` / `m-color-picker-popup` / `m-color-picker-input` 颜色选择器三件套：饱和度-明度面板 + 色相 / 透明度滑块，`v-model:value` 字符串受控，`format` 支持 `hex` / `rgb` / `hsl`（hex 带透明度输出 8 位），`show-format` 格式切换、`presets` / `show-presets` 预设色、`show-inputs` R/G/B/A 数值输入、`show-recent` 最近使用颜色（最多 8 个）、`show-eyedropper` 吸管取色（仅 Web，`#ifdef WEB`）；面板按 App 端单层 `linear-gradient` 约束用 3 层绝对定位叠加；弹层为「取消 / 标题 / 确定」+ 草稿值（确定回写、取消丢弃），输入框为只读触发器 + 色块预览 + 字段标签 + 自绘清空；新增 `$m-color-picker-*` 主题变量
 - 新增 `m-checkbox-group` / `m-checkbox` / `m-checkbox-popup` / `m-checkbox-input` 复选框四组件：多选集合 `v-model:value`（`Array<string | number>` 联合类型数组，`'1'` 与 `1` 字符串化比较视为同一项）；单项双形态（组内按 name 勾选 / 独立 `v-model` 布尔自持）、square / round 形状、label-position 左右互换、label-disabled、indeterminate 不确定横杠、icon / default 插槽（作用域 `{ checked, disabled }`）、expose `toggle()`；弹层 options 数组驱动 + field-names 映射 + footer 插槽；输入框「、」连接回显（超 2 项截断「等 N 项」）+ 自绘清空按钮；新增 `$m-checkbox-*` 主题变量

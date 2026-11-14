@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.5.0] - 2026-11-13
+## [0.5.0] - 2026-11-14
 
 Added the m-color-picker trio, the m-fab / m-fab-item floating action button components, the four m-checkbox components, m-date-strip and the date utility toolkit.
 

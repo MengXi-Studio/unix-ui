@@ -503,14 +503,16 @@
 		return list
 	})
 
-	/** 待渲染月份：switch-mode 非 none 时仅当前月（挂载前瞬态回退全量） */
+	/** 待渲染月份：switch-mode 非 none 时仅当前月（挂载前瞬态仅聚焦月，避免宽范围首帧渲染全部月份） */
 	const visibleMonths = computed<CalendarMonth[]>(() => {
 		if (props.switchMode == 'none') {
 			return months.value
 		}
 		const current = currentPanelMonth.value
 		if (current == null) {
-			return months.value
+			// 挂载前瞬态：仅渲染聚焦月。宽范围（如 1900~2100）全量渲染会在小程序端触发 DOM 节点上限
+			const focus = startOfMonth(focusMonth())
+			return months.value.filter((m: CalendarMonth): boolean => isSameMonth(m.date, focus))
 		}
 		return months.value.filter((m: CalendarMonth): boolean => isSameMonth(m.date, current))
 	})

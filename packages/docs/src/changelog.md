@@ -1,5 +1,13 @@
 # 更新日志
 
+## [0.5.2] - 2026-11-14
+
+修复 m-calendar 在 `switch-mode` 非 `none` 时首帧渲染全量月份，宽日期范围下触发微信小程序 DOM 节点上限（[#15](https://github.com/MengXi-Studio/unix-ui/issues/15)）。
+
+### 修复
+
+- **m-calendar `switch-mode` 非 `none` 时首帧渲染全量月份**（[#15](https://github.com/MengXi-Studio/unix-ui/issues/15)）：`currentPanelMonth` 初始为 `null`（挂载前瞬态），`visibleMonths` 在该状态下回退 `months` 全量，而其赋值发生在 `onMounted`、晚于首帧。`min-date` ~ `max-date` 覆盖 1900~2100 时首帧渲染 2412 个月、约 10 万节点，微信小程序报 `Dom limit exceeded` 且 `setData` 传输长度约 36 MB，面板空白；Web 端不报错但首次打开明显卡顿。兜底分支改为仅渲染聚焦月（`startOfMonth(focusMonth())`），首帧渲染节点数与日期范围宽度无关
+
 ## [0.5.1] - 2026-11-14
 
 修复 m-tabs options 平分模式微信小程序端首帧底部条仍贴左（[#13](https://github.com/MengXi-Studio/unix-ui/issues/13)）。

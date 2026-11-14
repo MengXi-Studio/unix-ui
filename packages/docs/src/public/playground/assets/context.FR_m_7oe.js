@@ -1,1 +1,0 @@
-import{H as i}from"./index-q7k67GHy.js";const s="__mxi_compact__";class t{constructor(){this.ids=i([]),this.direction="horizontal",this.block=!1}register(i){this.ids.push(i)}unregister(i){const s=this.ids.indexOf(i);-1!=s&&this.ids.splice(s,1)}indexOf(i){return this.ids.indexOf(i)}}let r=0;function e(){return r++,"mxi_compact_"+r}export{s as C,t as a,e as g};

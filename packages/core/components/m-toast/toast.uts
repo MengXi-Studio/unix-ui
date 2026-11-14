@@ -12,20 +12,20 @@
 import { IconName } from '../m-icon/icons.uts'
 import { LoadingType } from '../m-loading/loading.uts'
 
-/** 提示类型：文本 / 加载 / 成功 / 失败（Vant 的 html 型 uvue 无 v-html 能力，不支持） */
+/** 提示类型：文本 / 加载 / 成功 / 失败（html 型依赖 v-html，uvue 无此能力，不支持） */
 export type ToastType = 'text' | 'loading' | 'success' | 'fail'
 
 /** 展示位置 */
 export type ToastPosition = 'top' | 'middle' | 'bottom'
 
-/** message 换行控制（对齐 Vant ToastWordBreak 三类）：break-all 任意字符截断换行 / break-word 单词优先、放不下才截断 / normal 默认按单词换行 */
+/** message 换行控制三类：break-all 任意字符截断换行 / break-word 单词优先、放不下才截断 / normal 默认按单词换行 */
 export type ToastWordBreak = 'normal' | 'break-all' | 'break-word'
 
 /** 桥指令动作：show 展示 / close 关闭当前提示 */
 export type ToastAction = 'show' | 'close'
 
 /**
- * 函数式调用选项（Vant ToastOptions 裁剪版）
+ * 函数式调用选项（裁剪版）
  * 裁剪项（uvue 限制，Q5 定案）：html 类型 / wordBreak / transition 动画类名 / teleport / 图片链接图标
  */
 export type ToastOptions = {
@@ -136,7 +136,7 @@ function buildCmd(action: ToastAction, options: ToastOptions): ToastCmd {
 }
 
 /**
- * 展示轻提示（单例语义：连续调用覆盖当前提示，对齐 Vant 默认）
+ * 展示轻提示（单例语义：连续调用覆盖当前提示）
  */
 export function showToast(options: string | ToastOptions): void {
 	const host = toastHost

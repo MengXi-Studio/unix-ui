@@ -1,0 +1,337 @@
+<template>
+	<!-- 颜色选择器弹出框：m-popup + m-color-picker 组合（三组件拆分后的弹层形态）。
+	     头部「取消 / 标题 / 确定」三栏，选择过程只改内部 draft，
+	     点确定才回写 v-model:value 并关闭；取消 / 遮罩关闭丢弃本次改动。 -->
+	<m-popup
+		:show="show"
+		:position="position"
+		:round="round"
+		:close-on-click-overlay="closeOnClickOverlay"
+		:safe-area-inset-bottom="safeAreaInsetBottom"
+		:z-index="zIndex"
+		:duration="duration"
+		@update:show="onPopupUpdateShow"
+		@open="onPopupOpen"
+		@opened="onPopupOpened"
+		@close="onPopupClose"
+		@closed="onPopupClosed"
+		@click-overlay="onPopupClickOverlay"
+	>
+		<view :class="rootClass" :style="customStyle">
+			<view v-if="showHeader" class="m-color-picker-popup__header">
+				<text class="m-color-picker-popup__cancel" @click="onCancelClick">{{ cancelText }}</text>
+				<text class="m-color-picker-popup__title">{{ title }}</text>
+				<text class="m-color-picker-popup__confirm" @click="onConfirmClick">{{ confirmText }}</text>
+			</view>
+			<view class="m-color-picker-popup__body">
+				<m-color-picker
+					ref="picker"
+					:value="draft"
+					:show-alpha="showAlpha"
+					:format="format"
+					:show-format="showFormat"
+					:presets="presets"
+					:show-presets="showPresets"
+					:show-inputs="showInputs"
+					:show-recent="showRecent"
+					:show-eyedropper="showEyedropper"
+					:panel-height="panelHeight"
+					:disabled="disabled"
+					:readonly="readonly"
+					@update:value="onPickerValueChange"
+					@update:format="onPickerFormatChange"
+					@format-change="onPickerFormatChangeEvent"
+				/>
+			</view>
+		</view>
+	</m-popup>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-color-picker-popup 颜色选择器弹出框：m-popup + m-color-picker 组合组件。
+	 * 自身只做「草稿值」管理与确认 / 取消：打开时 draft 同步 props.value，
+	 * 面板交互只改 draft，点确定才派发 update:value / change / confirm 并关闭。
+	 * 弹层行为（显隐 / 方位 / 圆角 / 安全区 / 遮罩）归 m-popup，颜色逻辑归 m-color-picker。
+	 */
+	import { ColorFormat } from '../m-color-picker/color-picker.uts'
+	import MPopup from '../m-popup/m-popup.uvue'
+	import MColorPicker from '../m-color-picker/m-color-picker.uvue'
+
+	/** 弹出方位（与 m-popup 的 position 取值一致） */
+	type ColorPickerPopupPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'
+
+	type Props = {
+		/** 是否显示弹出层（v-model:show） */
+		show?: boolean
+		/** 当前颜色值（v-model:value，确认后回写） */
+		value?: string
+		/** 弹层常规标题 */
+		title?: string
+		/** 是否显示头部（取消 / 标题 / 确定） */
+		showHeader?: boolean
+		/** 是否显示确定按钮（false 时选择即生效并通过 change 回写） */
+		showConfirm?: boolean
+		/** 确定按钮文案 */
+		confirmText?: string
+		/** 取消按钮文案 */
+		cancelText?: string
+		/** 是否启用透明度选择 */
+		showAlpha?: boolean
+		/** 输出颜色格式 */
+		format?: ColorFormat
+		/** 是否显示格式切换 */
+		showFormat?: boolean
+		/** 预定义颜色列表 */
+		presets?: string[]
+		/** 是否显示预定义颜色 */
+		showPresets?: boolean
+		/** 是否显示 R / G / B / A 数值输入 */
+		showInputs?: boolean
+		/** 是否显示最近使用颜色 */
+		showRecent?: boolean
+		/** 是否显示吸管取色入口（仅 Web 端生效） */
+		showEyedropper?: boolean
+		/** 面板高度 px（0 用主题变量） */
+		panelHeight?: number
+		/** 是否禁用（不响应交互） */
+		disabled?: boolean
+		/** 是否只读（不响应交互） */
+		readonly?: boolean
+		/** 弹出方位（透传 m-popup，默认底部） */
+		position?: ColorPickerPopupPosition
+		/** 弹层圆角（透传 m-popup） */
+		round?: boolean
+		/** 点击遮罩后是否关闭（透传 m-popup） */
+		closeOnClickOverlay?: boolean
+		/** 底部安全区（透传 m-popup） */
+		safeAreaInsetBottom?: boolean
+		/** z-index 层级（透传 m-popup） */
+		zIndex?: number
+		/** 动画时长秒（透传 m-popup） */
+		duration?: number
+		/** 自定义内容根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义内容根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		value: '',
+		title: '选择颜色',
+		showHeader: true,
+		showConfirm: true,
+		confirmText: '确定',
+		cancelText: '取消',
+		showAlpha: false,
+		format: 'rgb',
+		showFormat: false,
+		presets: null,
+		showPresets: false,
+		showInputs: false,
+		showRecent: false,
+		showEyedropper: false,
+		panelHeight: 0,
+		disabled: false,
+		readonly: false,
+		position: 'bottom',
+		round: true,
+		closeOnClickOverlay: true,
+		safeAreaInsetBottom: true,
+		zIndex: 100,
+		duration: 0.3,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 弹层显隐变化（v-model:show） */
+		'update:show': [value: boolean]
+		/** 确认后回写颜色值（v-model:value） */
+		'update:value': [value: string]
+		/** 颜色值变化 */
+		change: [value: string]
+		/** 点击确定 */
+		confirm: [value: string]
+		/** 点击取消 */
+		cancel: []
+		/** 格式切换（v-model:format） */
+		'update:format': [format: ColorFormat]
+		/** 格式切换 */
+		'format-change': [format: ColorFormat]
+		/** 弹层打开 */
+		open: []
+		/** 弹层打开动画结束 */
+		opened: []
+		/** 弹层关闭 */
+		close: []
+		/** 弹层关闭动画结束 */
+		closed: []
+		/** 点击遮罩 */
+		'click-overlay': [event: MouseEvent]
+	}>()
+
+	/** 面板组件实例（打开动画结束后重新测量交互节点） */
+	const picker = ref<ComponentPublicInstance | null>(null)
+
+	/** 草稿颜色（面板交互只改此值，确认时回写外部） */
+	const draft = ref<string>('')
+
+	/** 根节点类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-color-picker-popup'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 打开时重置草稿为外部当前值 */
+	watch((): boolean => props.show, (v: boolean) => {
+		if (v) draft.value = props.value
+	}, { immediate: true })
+
+	/**
+	 * 面板颜色变化：写入草稿；showConfirm=false 时直接回写外部（选择即生效）
+	 *
+	 * @param v 颜色文本
+	 */
+	const onPickerValueChange = (v: string) => {
+		draft.value = v
+		if (!props.showConfirm) {
+			emit('update:value', v)
+			emit('change', v)
+		}
+	}
+
+	/**
+	 * 格式切换：透传 update:format
+	 *
+	 * @param f 目标格式
+	 */
+	const onPickerFormatChange = (f: ColorFormat) => {
+		emit('update:format', f)
+	}
+
+	/**
+	 * 格式切换：透传 format-change
+	 *
+	 * @param f 目标格式
+	 */
+	const onPickerFormatChangeEvent = (f: ColorFormat) => {
+		emit('format-change', f)
+	}
+
+	/**
+	 * 弹层打开：派发 open 并重置草稿
+	 */
+	const onPopupOpen = () => {
+		draft.value = props.value
+		emit('open')
+	}
+
+	/**
+	 * 弹层打开动画结束：重新测量面板（动画期间 rect 带位移）
+	 */
+	const onPopupOpened = () => {
+		const inst = picker.value
+		if (inst != null) {
+			inst.$callMethod('refresh')
+		}
+		emit('opened')
+	}
+
+	/**
+	 * 弹层显隐变化透传
+	 *
+	 * @param v 目标显隐
+	 */
+	const onPopupUpdateShow = (v: boolean) => {
+		emit('update:show', v)
+	}
+
+	/** 弹层关闭透传 */
+	const onPopupClose = () => {
+		emit('close')
+	}
+
+	/** 弹层关闭动画结束透传 */
+	const onPopupClosed = () => {
+		emit('closed')
+	}
+
+	/**
+	 * 遮罩点击透传
+	 *
+	 * @param e 鼠标事件
+	 */
+	const onPopupClickOverlay = (e: MouseEvent) => {
+		emit('click-overlay', e)
+	}
+
+	/**
+	 * 取消：丢弃草稿、关闭弹层
+	 */
+	const onCancelClick = () => {
+		emit('cancel')
+		emit('update:show', false)
+	}
+
+	/**
+	 * 确定：回写草稿颜色并关闭弹层
+	 */
+	const onConfirmClick = () => {
+		if (props.disabled) return
+		const v = draft.value
+		emit('update:value', v)
+		emit('change', v)
+		emit('confirm', v)
+		emit('update:show', false)
+	}
+</script>
+
+<style lang="scss">
+	/* 主题变量说明见 m-color-picker（组件内顶层引入 vars.scss，全部 !default） */
+	@import '../../theme/vars.scss';
+
+	/* ========== 弹层内容容器 ========== */
+	.m-color-picker-popup {
+		width: 100%;
+		background-color: $m-color-picker-popup-background;
+		border-top-left-radius: $m-color-picker-popup-radius;
+		border-top-right-radius: $m-color-picker-popup-radius;
+	}
+
+	/* ========== 头部（取消 / 标题 / 确定） ========== */
+	.m-color-picker-popup__header {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		height: $m-color-picker-popup-header-height;
+		padding: $m-color-picker-popup-header-padding;
+	}
+
+	.m-color-picker-popup__cancel {
+		font-size: $m-color-picker-popup-button-font-size;
+		line-height: $m-color-picker-popup-button-line-height;
+		color: $m-color-picker-popup-cancel-color;
+	}
+
+	.m-color-picker-popup__title {
+		flex: 1;
+		text-align: center;
+		font-size: $m-color-picker-popup-title-font-size;
+		line-height: $m-color-picker-popup-button-line-height;
+		color: $m-color-picker-popup-title-color;
+	}
+
+	.m-color-picker-popup__confirm {
+		font-size: $m-color-picker-popup-button-font-size;
+		line-height: $m-color-picker-popup-button-line-height;
+		color: $m-color-picker-popup-confirm-color;
+	}
+
+	/* ========== 面板容器 ========== */
+	.m-color-picker-popup__body {
+		padding: $m-color-picker-popup-body-padding;
+	}
+</style>

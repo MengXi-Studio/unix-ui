@@ -81,7 +81,7 @@
 		font-size: $m-divider-font-size;
 		line-height: $m-divider-line-height;
 	}
-	/* 垂直形态：flex 子项（外层容器需 flex-direction: row + align-items: center），高 32px 对齐 Vant */
+	/* 垂直形态：flex 子项（外层容器需 flex-direction: row + align-items: center），高 32px */
 	.m-divider--vertical {
 		margin: $m-divider-vertical-margin;
 		height: 32px;

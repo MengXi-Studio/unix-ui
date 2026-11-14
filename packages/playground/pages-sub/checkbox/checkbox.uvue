@@ -1,0 +1,272 @@
+<template>
+	<view class="page">
+		<demo-navbar title="复选框" subtitle="Checkbox" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-checkbox-group v-model:value="basicValue" @change="logChange('基础', $event)">
+						<m-checkbox name="a">复选框 a</m-checkbox>
+						<m-checkbox name="b">复选框 b</m-checkbox>
+					</m-checkbox-group>
+					<text class="caption">v-model:value 集合绑定（当前：{{ joinValues(basicValue) }}）</text>
+				</view>
+
+				<text class="section" id="independent">独立复选框</text>
+				<view class="card">
+					<m-checkbox v-model:modelValue="singleChecked">独立复选框（v-model 布尔绑定）</m-checkbox>
+					<text class="caption">不在组内时自持 boolean 状态（当前：{{ singleChecked ? '选中' : '未选' }}）</text>
+				</view>
+
+				<text class="section" id="disabled">禁用状态</text>
+				<view class="card">
+					<m-checkbox-group v-model:value="disabledValue">
+						<m-checkbox name="a">可选</m-checkbox>
+						<m-checkbox name="b" disabled>禁用（未选）</m-checkbox>
+						<m-checkbox name="c" disabled>禁用（选中）</m-checkbox>
+					</m-checkbox-group>
+					<text class="caption">disabled 单项禁用；禁用态 click 事件照常派发</text>
+					<m-checkbox-group v-model:value="groupDisabledValue" disabled style="margin-top: 8px;">
+						<m-checkbox name="x">组容器禁用 x</m-checkbox>
+						<m-checkbox name="y">组容器禁用 y</m-checkbox>
+					</m-checkbox-group>
+					<text class="caption">组容器 disabled 全禁用（子项 disabled 与之合并）</text>
+				</view>
+
+				<text class="section" id="shape">自定义形状</text>
+				<view class="card">
+					<m-checkbox-group v-model:value="shapeValue" shape="square">
+						<m-checkbox name="a">方形 a</m-checkbox>
+						<m-checkbox name="b" shape="round">单项覆盖为圆形 b</m-checkbox>
+					</m-checkbox-group>
+					<text class="caption">组容器 shape="square"，子项可单独覆盖</text>
+				</view>
+
+				<text class="section" id="color-size">自定义颜色与大小</text>
+				<view class="card">
+					<m-checkbox-group v-model:value="colorValue" checked-color="#ee0a24" icon-size="24px">
+						<m-checkbox name="a">红色 24px</m-checkbox>
+						<m-checkbox name="b" checked-color="#07c160">单项覆盖绿色</m-checkbox>
+					</m-checkbox-group>
+					<text class="caption">组容器 checked-color / icon-size 统一下发，子项可覆盖</text>
+				</view>
+
+				<text class="section" id="label">文本位置与禁点</text>
+				<view class="card">
+					<m-checkbox-group v-model:value="labelValue">
+						<m-checkbox name="a" label-position="left">文本在左</m-checkbox>
+						<m-checkbox name="b" label-disabled>文本不可点（图标可点）</m-checkbox>
+					</m-checkbox-group>
+					<text class="caption">label-position="left" 反转排布；label-disabled 仅禁文本点击</text>
+				</view>
+
+				<text class="section" id="max">最大可选数</text>
+				<view class="card">
+					<m-checkbox-group v-model:value="maxValue" :max="2">
+						<m-checkbox name="a">选项 a</m-checkbox>
+						<m-checkbox name="b">选项 b</m-checkbox>
+						<m-checkbox name="c">选项 c</m-checkbox>
+					</m-checkbox-group>
+					<text class="caption">max=2：选满两项后其余项点击仅派发 click 不勾选（当前：{{ joinValues(maxValue) }}）</text>
+				</view>
+
+				<text class="section" id="direction">排列方向</text>
+				<view class="card">
+					<m-checkbox-group v-model:value="dirValue" direction="horizontal">
+						<m-checkbox name="a">横向 a</m-checkbox>
+						<m-checkbox name="b">横向 b</m-checkbox>
+						<m-checkbox name="c">横向 c</m-checkbox>
+					</m-checkbox-group>
+					<text class="caption">direction="horizontal" 横排换行</text>
+				</view>
+
+				<text class="section" id="slots">自定义图标与内容</text>
+				<view class="card">
+					<m-checkbox-group v-model:value="slotValue">
+						<m-checkbox name="a">
+							<template #icon="{ checked }">
+								<view class="custom-icon" :class="checked ? 'custom-icon--on' : ''">
+									<text class="custom-icon__text">{{ checked ? '√' : '×' }}</text>
+								</view>
+							</template>
+							自定义图标
+						</m-checkbox>
+						<m-checkbox name="b">
+							<text class="rich-label">插槽文本（作用域 checked={{ slotValue.indexOf('b') >= 0 }}）</text>
+						</m-checkbox>
+					</m-checkbox-group>
+					<text class="caption">icon 插槽（作用域 { checked, disabled }）与 default 插槽自定义文本</text>
+				</view>
+
+				<text class="section" id="indeterminate">全选与不确定状态</text>
+				<view class="card">
+					<m-checkbox
+						:model-value="allChecked"
+						:indeterminate="indeterminate"
+						@click="onToggleAll"
+					>全选</m-checkbox>
+					<m-checkbox-group v-model:value="allValue" style="margin-top: 4px;">
+						<m-checkbox name="a">选项 a</m-checkbox>
+						<m-checkbox name="b">选项 b</m-checkbox>
+						<m-checkbox name="c">选项 c</m-checkbox>
+					</m-checkbox-group>
+					<text class="caption">全选项：indeterminate 部分选中横杠；点击按当前状态全选 / 全不选（当前：{{ joinValues(allValue) }}）</text>
+				</view>
+
+				<text class="section" id="cell">搭配单元格</text>
+				<view class="card">
+					<m-cell-group inset>
+						<m-cell
+							v-for="(item, i) in cellItems"
+							:key="i"
+							:title="item"
+							clickable
+							@click="toggleCell(i)"
+						>
+							<template #value>
+								<m-checkbox :name="item" @click.stop></m-checkbox>
+							</template>
+						</m-cell>
+					</m-cell-group>
+					<text class="caption">m-cell 的 value 插槽放置 m-checkbox，整行点击经集合操作切换</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '复选框 Checkbox', name: 'checkbox' })
+
+	import { CheckboxValueArray, emptyCheckboxValues, checkboxValueText } from '@/uni_modules/m-ui-x/components/m-checkbox-group/checkbox.uts'
+
+	/** 基础用法选中集合 */
+	const basicValue = ref<CheckboxValueArray>(['a'] as CheckboxValueArray)
+	/** 独立复选框状态 */
+	const singleChecked = ref(false)
+	/** 禁用演示选中集合（c 项预选中验证禁用选中态） */
+	const disabledValue = ref<CheckboxValueArray>(['c'] as CheckboxValueArray)
+	/** 组容器禁用演示选中集合 */
+	const groupDisabledValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	/** 形状演示选中集合 */
+	const shapeValue = ref<CheckboxValueArray>(['a'] as CheckboxValueArray)
+	/** 颜色演示选中集合 */
+	const colorValue = ref<CheckboxValueArray>(['a'] as CheckboxValueArray)
+	/** 文本位置演示选中集合 */
+	const labelValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	/** max 演示选中集合 */
+	const maxValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	/** 方向演示选中集合 */
+	const dirValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	/** 插槽演示选中集合 */
+	const slotValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	/** 全选组选中集合 */
+	const allValue = ref<CheckboxValueArray>(['a', 'b'] as CheckboxValueArray)
+	/** 单元格演示选中集合 */
+	const cellValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+
+	/** 单元格演示条目 */
+	const cellItems = ref<string[]>(['单元格 a', '单元格 b'])
+
+	/** 全选组的注册项（与演示数据一致） */
+	const allNames: CheckboxValueArray = ['a', 'b', 'c'] as CheckboxValueArray
+
+	/** 全选是否全中 */
+	const allChecked = computed<boolean>(() => {
+		return allValue.value.length == allNames.length
+	})
+
+	/** 部分选中（不确定态） */
+	const indeterminate = computed<boolean>(() => {
+		return allValue.value.length > 0 && allValue.value.length < allNames.length
+	})
+
+	/**
+	 * 全选项点击：按当前状态全选 / 全不选（indeterminate 时也走全选）
+	 */
+	function onToggleAll() {
+		if (allValue.value.length == allNames.length) {
+			allValue.value = emptyCheckboxValues()
+		} else {
+			const next: CheckboxValueArray = []
+			for (let i = 0; i < allNames.length; i++) {
+				next.push(allNames[i])
+			}
+			allValue.value = next
+		}
+	}
+
+	/**
+	 * 单元格整行点击切换（含移除）
+	 */
+	function toggleCell(i: number) {
+		const name = cellItems.value[i]
+		const next: CheckboxValueArray = []
+		let existed = false
+		for (let k = 0; k < cellValue.value.length; k++) {
+			if (checkboxValueText(cellValue.value[k]) == name) {
+				existed = true
+				continue
+			}
+			next.push(cellValue.value[k])
+		}
+		if (!existed) {
+			next.push(name)
+		}
+		cellValue.value = next
+	}
+
+	/**
+	 * 值集合的展示文本（「、」连接）
+	 */
+	function joinValues(v: CheckboxValueArray): string {
+		const parts: string[] = []
+		for (let i = 0; i < v.length; i++) {
+			parts.push(checkboxValueText(v[i]))
+		}
+		return '[' + parts.join('、') + ']'
+	}
+
+	/**
+	 * change 事件日志
+	 */
+	function logChange(tag: string, v: any | null) {
+		const list: CheckboxValueArray = v == null ? emptyCheckboxValues() : (v as CheckboxValueArray)
+		console.log('checkbox ' + tag + ' change: ' + joinValues(list))
+	}
+</script>
+
+<style lang="scss">
+	/* 自定义图标（icon 插槽演示） */
+	.custom-icon {
+		width: 20px;
+		height: 20px;
+		border-radius: 4px;
+		border-width: 1px;
+		border-color: #c8c9cc;
+		justify-content: center;
+		align-items: center;
+	}
+	.custom-icon--on {
+		background-color: #07c160;
+		border-color: #07c160;
+	}
+	.custom-icon__text {
+		font-size: 12px;
+		color: #ffffff;
+	}
+
+	/* 富文本插槽演示 */
+	.rich-label {
+		font-size: 14px;
+		color: #1989fa;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

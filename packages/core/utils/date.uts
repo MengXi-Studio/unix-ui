@@ -1,0 +1,18 @@
+/**
+ * 日期工具集 · 公共入口
+ *
+ * 使用方式（uni_modules）：
+ *   import { formatDate, parseDate, addDays } from '@/uni_modules/m-ui-x/utils/date.uts'
+ *
+ * 本文件仅做 re-export，不写实现；内部分层见 utils/date/ 下七个模块。
+ * 统一语义：纯函数不可变；自然日语义按本地零点；月份公历 0 起、农历 1 起（闰月为负）；
+ * 失败返回 null（不抛异常、不返回 Invalid Date）；不做时区换算。
+ */
+
+export * from './date/core.uts'
+export * from './date/compare.uts'
+export * from './date/arith.uts'
+export * from './date/boundary.uts'
+export * from './date/grid.uts'
+export * from './date/format.uts'
+export * from './date/lunar.uts'

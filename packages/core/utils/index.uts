@@ -1,0 +1,11 @@
+/**
+ * 工具函数集 · 汇总入口
+ *
+ * 两种用法等价，按需选择：
+ *   import { formatDate, addDays } from '@/uni_modules/m-ui-x/utils/index.uts'   // 汇总入口（一次拿到全部能力）
+ *   import { formatDate } from '@/uni_modules/m-ui-x/utils/date.uts'            // 按需入口（只依赖单一模块）
+ *
+ * 本文件仅做 re-export，不写实现；新增工具模块时在此追加一行导出。
+ */
+
+export * from './date.uts'

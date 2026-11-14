@@ -1,0 +1,305 @@
+<template>
+	<!-- 复选输入框：m-input（只读展示）+ m-checkbox-popup 组合（表单触发组件）。
+	     触发器点击整区打开弹层，选中集合经 v-model:value 回写并展示「、」连接文本；
+	     清空为自绘按钮（m-input 内置 clearable 的图标位于触发层之下会被挡住）。 -->
+	<!-- 开启逻辑挂在触发层而非根节点：弹层遮罩点击会沿 DOM 冒泡经过本组件根，
+	     若根监听 @click 会在遮罩关闭的同一事件派发内把 show 置回 true（关闭即重开） -->
+	<view :class="rootClass" :style="customStyle">
+		<m-input
+			:model-value="displayText"
+			:placeholder="placeholder"
+			:disabled="disabled"
+			:border="border"
+			:inlaid="inlaid"
+			:custom-style="inputStyle"
+		/>
+		<!-- 透明触发层：m-input 的 readonly 以原生 disabled 模拟，原生 disabled 控件吞点击事件，
+		     覆盖层接住整区点击打开弹层（disabled 态不渲染） -->
+		<view v-if="!disabled" class="m-checkbox-input__trigger" @click="onTriggerClick"></view>
+		<view v-if="showClear" class="m-checkbox-input__clear" @click.stop="onClearClick">
+			<m-icon name="clear" custom-class="m-checkbox-input__clear-icon" />
+		</view>
+		<!-- z-index 3 高于触发层(1)/清空钮(2)：弹层遮罩须盖住本组件浮层，见 vars.scss 层叠注释 -->
+		<m-checkbox-popup
+			v-model:show="popupShow"
+			:value="value"
+			:options="options"
+			:title="title"
+			:show-header="true"
+			:closeable="true"
+			:disabled="disabled"
+			:max="max"
+			:direction="direction"
+			:shape="shape"
+			:icon-size="iconSize"
+			:checked-color="checkedColor"
+			:label-position="labelPosition"
+			:field-names="fieldNames"
+			:options-height="optionsHeight"
+			:position="position"
+			:round="round"
+			:z-index="3"
+			@update:value="onPopupValueChange"
+			@change="onPopupChange"
+			@click-item="onPopupClickItem"
+		/>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-checkbox-input 复选输入框：m-input + m-checkbox-popup 组合组件。
+	 * 值单向受控：外部 value（v-model:value）同步弹层勾选集合，
+	 * 弹层勾选变化经 update:value 回写；展示文本由选中项 label「、」连接派生
+	 * （超过 2 项截断为前两项 +「等 N 项」）。
+	 */
+	import {
+		CheckboxValueArray,
+		CheckboxValue,
+		CheckboxShape,
+		CheckboxDirection,
+		CheckboxLabelPosition,
+		CheckboxFieldNames,
+		DEFAULT_CHECKBOX_FIELD_NAMES,
+		checkboxOptionLabel,
+		checkboxOptionValue,
+		checkboxValueText,
+		valuesEqual,
+		emptyCheckboxValues
+	} from '../m-checkbox-group/checkbox.uts'
+	import MInput from '../m-input/m-input.uvue'
+	import MCheckboxPopup from '../m-checkbox-popup/m-checkbox-popup.uvue'
+
+	/** 弹出方位（与 m-popup 的 position 取值一致） */
+	type CheckboxInputPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'
+
+	type Props = {
+		/** 选中项标识集合（v-model:value；空数组为未选） */
+		value?: CheckboxValueArray
+		/** 选项数组（label / value / disabled 字段） */
+		options?: UTSJSONObject[]
+		/** 占位符 */
+		placeholder?: string
+		/** 是否禁用 */
+		disabled?: boolean
+		/** 是否显示清空按钮（有值且非 disabled 时可见） */
+		clearable?: boolean
+		/** 触发器是否显示边框容器（透传 m-input） */
+		border?: boolean
+		/** 触发器嵌入式形态（透传 m-input） */
+		inlaid?: boolean
+		/** 弹层标题 */
+		title?: string
+		/** 最大可选数（0 不限制） */
+		max?: number
+		/** 排列方向 */
+		direction?: CheckboxDirection
+		/** 形状 */
+		shape?: CheckboxShape
+		/** 图标尺寸（number 补 px / string 原样） */
+		iconSize?: string | number
+		/** 选中态颜色 */
+		checkedColor?: string
+		/** 文本位置 */
+		labelPosition?: CheckboxLabelPosition
+		/** 自定义选项字段名（null 用默认 label / value / disabled） */
+		fieldNames?: CheckboxFieldNames
+		/** 选项区高度 px（0 用主题变量） */
+		optionsHeight?: number
+		/** 弹出方位（透传 m-popup，默认底部） */
+		position?: CheckboxInputPosition
+		/** 弹层圆角（透传 m-popup） */
+		round?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: (): CheckboxValueArray => emptyCheckboxValues(),
+		options: null,
+		placeholder: '请选择',
+		disabled: false,
+		clearable: true,
+		border: true,
+		inlaid: false,
+		title: '',
+		max: 0,
+		direction: 'vertical',
+		shape: 'round',
+		iconSize: '',
+		checkedColor: '',
+		labelPosition: 'right',
+		fieldNames: null,
+		optionsHeight: 0,
+		position: 'bottom',
+		round: true,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 选中集合变化（v-model:value） */
+		'update:value': [value: CheckboxValueArray]
+		/** 选中集合变化 */
+		change: [value: CheckboxValueArray]
+		/** 点击选项后触发（透传弹层选项） */
+		'click-item': [index: number]
+		/** 点击清空按钮后触发 */
+		clear: []
+	}>()
+
+	/** 弹层显隐（内部状态） */
+	const popupShow = ref<boolean>(false)
+
+	/** 根类名：基础类 + customClass 透传（对齐 m-input 拼接惯例） */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-checkbox-input'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 字段名映射（null 兜底默认） */
+	const fields = computed<CheckboxFieldNames>(() => {
+		const f = props.fieldNames
+		if (f != null) return f
+		return DEFAULT_CHECKBOX_FIELD_NAMES
+	})
+
+	/** 是否有值 */
+	const hasValue = computed<boolean>(() => {
+		return props.value.length > 0
+	})
+
+	/** 清空按钮可见性 */
+	const showClear = computed<boolean>(() => {
+		return props.clearable && !props.disabled && hasValue.value
+	})
+
+	/**
+	 * 按值查找选项（含 value 归一分类型比对）
+	 *
+	 * @param v 目标值
+	 * @returns 匹配选项对象（未找到 null）
+	 */
+	function findOption(v: CheckboxValue): UTSJSONObject | null {
+		const opts = props.options
+		if (opts == null) return null
+		for (let i = 0; i < opts.length; i++) {
+			const opt = opts[i]
+			const ov = checkboxOptionValue(opt, fields.value)
+			if (ov != null && valuesEqual(ov, v)) {
+				return opt
+			}
+		}
+		return null
+	}
+
+	/** 展示文本：选中项 label「、」连接；超过 2 项截断为前两项 +「等 N 项」；无匹配回退值文本 */
+	const displayText = computed<string>(() => {
+		const v = props.value
+		if (v.length == 0) return ''
+		const parts: string[] = []
+		for (let i = 0; i < v.length; i++) {
+			const opt = findOption(v[i])
+			if (opt != null) {
+				parts.push(checkboxOptionLabel(opt, fields.value))
+			} else {
+				parts.push(checkboxValueText(v[i]))
+			}
+		}
+		if (parts.length > 2) {
+			return parts[0] + '、' + parts[1] + ' 等 ' + parts.length.toString() + ' 项'
+		}
+		return parts.join('、')
+	})
+
+	/** 触发器内联样式：清空按钮显示时为输入区右侧预留按钮宽度（与 $m-checkbox-input-clear-width 同步） */
+	const inputStyle = computed<string>(() => {
+		if (showClear.value) {
+			return 'padding-right: 40px;'
+		}
+		return ''
+	})
+
+	/**
+	 * 触发器点击：disabled 不响应，其余打开弹层
+	 */
+	function onTriggerClick() {
+		if (props.disabled) {
+			return
+		}
+		popupShow.value = true
+	}
+
+	/**
+	 * 弹层选中集合变化回写外部
+	 */
+	const onPopupValueChange = (v: CheckboxValueArray) => {
+		emit('update:value', v)
+	}
+
+	/**
+	 * 弹层选中集合变化透传
+	 */
+	const onPopupChange = (v: CheckboxValueArray) => {
+		emit('change', v)
+	}
+
+	/**
+	 * 弹层选项点击透传
+	 */
+	const onPopupClickItem = (index: number) => {
+		emit('click-item', index)
+	}
+
+	/**
+	 * 清空：回写空集合并派发 clear（.stop 阻止冒泡到根触发器）
+	 */
+	function onClearClick(e: MouseEvent) {
+		emit('update:value', emptyCheckboxValues())
+		emit('clear')
+	}
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根（触发区，承载触发层与清空按钮的定位包含块） ========== */
+	.m-checkbox-input {
+		position: relative;
+	}
+
+	/* ========== 透明触发层（覆盖整区接住点击，disabled 态不渲染） ========== */
+	.m-checkbox-input__trigger {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: $m-checkbox-input-trigger-z-index;
+	}
+
+	/* ========== 清空按钮（触发层之上，右侧定宽纵向居中） ========== */
+	.m-checkbox-input__clear {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: $m-checkbox-input-clear-width;
+		z-index: $m-checkbox-input-clear-z-index;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-checkbox-input__clear-icon {
+		font-size: $m-checkbox-input-clear-icon-size;
+		color: $m-checkbox-input-clear-color;
+	}
+</style>

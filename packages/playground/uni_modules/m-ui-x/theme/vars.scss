@@ -118,7 +118,7 @@ $m-flex-gap: 8px !default;                   /* 默认档间距（medium） */
 $m-flex-gap-lg: 12px !default;               /* large 档间距 */
 
 /* ========== Sticky 粘性布局 ========== */
-$m-sticky-z-index: 99 !default;              /* 吸附层级（对齐 Vant） */
+$m-sticky-z-index: 99 !default;              /* 吸附层级 */
 
 /* ========== Overlay 遮罩层 ========== */
 $m-overlay-z-index: 1 !default;
@@ -211,11 +211,11 @@ $m-calendar-month-mark-color: rgba(242, 243, 245, 0.8) !default;
 $m-calendar-month-mark-font-size: 160px !default;
 $m-calendar-day-height: 64px !default;              /* 与 calendar.uts 常量 CALENDAR_DEFAULT_DAY_HEIGHT 同步（滚动驱动副标题的月高估算） */
 $m-calendar-day-font-size: 16px !default;
-$m-calendar-day-margin-bottom: 0px !default;         /* Vant 行距即行高无额外间距；与 calendar.uts 常量 CALENDAR_DAY_MARGIN_BOTTOM 同步（月高估算） */
+$m-calendar-day-margin-bottom: 0px !default;         /* 行距即行高无额外间距；与 calendar.uts 常量 CALENDAR_DAY_MARGIN_BOTTOM 同步（月高估算） */
 $m-calendar-day-disabled-color: $m-text-color-fourth !default;
 $m-calendar-info-font-size: 10px !default;
 $m-calendar-info-color: $m-text-color-tertiary !default;
-$m-calendar-day-radius: 4px !default;               /* 选中方块圆角（对齐 Vant；端点全圆角，盖于范围 bar 之上） */
+$m-calendar-day-radius: 4px !default;               /* 选中方块圆角（端点全圆角，盖于范围 bar 之上） */
 $m-calendar-selected-day-size: 54px !default;
 $m-calendar-selected-day-color: $m-white !default;
 $m-calendar-selected-day-background: $m-color-primary !default;
@@ -300,3 +300,235 @@ $m-tabs-pill-height: 30px !default;
 $m-tabs-pill-radius: $m-radius-max !default;
 /** line 外边框颜色 */
 $m-tabs-border-color: $m-color-default-border !default;
+
+/* ========== Fab 悬浮按钮 ========== */
+/** 入口按钮直径 */
+$m-fab-size: 48px !default;
+/** 默认角标间距（未传 top / right / bottom / left 时） */
+$m-fab-offset: 24px !default;
+/** 入口按钮背景色 */
+$m-fab-background: $m-color-primary !default;
+/** 入口图标颜色 */
+$m-fab-icon-color: $m-white !default;
+/** 入口图标字号 */
+$m-fab-icon-size: 24px !default;
+/** 入口按钮阴影 */
+$m-fab-shadow: 0 4px 12px rgba(0, 0, 0, 0.16) !default;
+/** 按压态透明度 */
+$m-fab-active-opacity: 0.8 !default;
+/** 层级（与 m-sticky 同层，低于遮罩体系） */
+$m-fab-z-index: 99 !default;
+/** 入口按钮与展开列表的间距 */
+$m-fab-gap: 12px !default;
+/** 子项圆形按钮直径 */
+$m-fab-item-size: 40px !default;
+/** 子项背景色（FabItem 未设置 background 时） */
+$m-fab-item-background: $m-white !default;
+/** 子项图标色（FabItem 未设置 color 时） */
+$m-fab-item-color: $m-color-primary !default;
+/** 子项阴影 */
+$m-fab-item-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !default;
+/** 子项之间的纵向间距 */
+$m-fab-item-gap: 12px !default;
+/** 子项名称气泡背景色 */
+$m-fab-item-name-background: rgba(255, 255, 255, 0.9) !default;
+/** 子项名称文本色 */
+$m-fab-item-name-color: $m-text-color !default;
+/** 子项名称字号 */
+$m-fab-item-name-font-size: 12px !default;
+/** 子项名称行高 */
+$m-fab-item-name-line-height: 16px !default;
+/** 子项名称内边距 */
+$m-fab-item-name-padding: 4px 8px !default;
+/** 子项名称圆角 */
+$m-fab-item-name-radius: $m-radius-md !default;
+
+/* ========== Checkbox 复选框 ========== */
+/** 单项内边距 */
+$m-checkbox-padding: 10px 16px !default;
+/** 勾选图标尺寸 */
+$m-checkbox-icon-size: 20px !default;
+/** 未选中图标颜色（描边） */
+$m-checkbox-icon-color: $m-color-primary !default;
+/** 图标与文本间距 */
+$m-checkbox-label-gap: 8px !default;
+/** 文本字号 */
+$m-checkbox-label-font-size: 14px !default;
+/** 文本行高 */
+$m-checkbox-label-line-height: 20px !default;
+/** 文本颜色 */
+$m-checkbox-label-color: $m-text-color !default;
+/** 文本选中颜色 */
+$m-checkbox-label-checked-color: $m-text-color !default;
+/** 文本禁用颜色 */
+$m-checkbox-label-disabled-color: $m-text-color-fourth !default;
+/** 禁用态图标透明度 */
+$m-checkbox-disabled-opacity: $m-disabled-opacity !default;
+/** 弹层背景色 */
+$m-checkbox-popup-background: $m-white !default;
+/** 弹层头部内边距 */
+$m-checkbox-popup-header-padding: 14px 16px !default;
+/** 弹层标题字号 */
+$m-checkbox-popup-title-font-size: 16px !default;
+/** 弹层标题颜色 */
+$m-checkbox-popup-title-color: $m-text-color !default;
+/** 弹层关闭图标字号 */
+$m-checkbox-popup-close-icon-size: 18px !default;
+/** 弹层关闭图标颜色 */
+$m-checkbox-popup-close-icon-color: $m-text-color-fourth !default;
+/** 弹层选项区高度 */
+$m-checkbox-popup-options-height: 278px !default;
+/** 输入框触发层层级 */
+$m-checkbox-input-trigger-z-index: 1 !default;
+/** 输入框清空按钮层级 */
+$m-checkbox-input-clear-z-index: 2 !default;
+/** 输入框清空按钮宽度 */
+$m-checkbox-input-clear-width: 40px !default;
+/** 输入框清空图标字号 */
+$m-checkbox-input-clear-icon-size: 16px !default;
+/** 输入框清空图标颜色 */
+$m-checkbox-input-clear-color: $m-text-color-fourth !default;
+
+/* ========== ColorPicker 颜色选择器 ========== */
+/** 饱和度-明度面板高度 */
+$m-color-picker-panel-height: 180px !default;
+/** 面板圆角 */
+$m-color-picker-panel-radius: $m-radius-md !default;
+/** 面板滑块圆点尺寸 */
+$m-color-picker-thumb-size: 16px !default;
+/** 滑块圆点描边宽度 */
+$m-color-picker-thumb-border-width: 2px !default;
+/** 滑块圆点描边颜色 */
+$m-color-picker-thumb-border-color: $m-white !default;
+/** 色相 / 透明度条高度 */
+$m-color-picker-track-height: 12px !default;
+/** 滑块条与面板间距 */
+$m-color-picker-track-margin-top: 12px !default;
+/** 透明度条棋盘格单元宽度 */
+$m-color-picker-checker-cell-width: 8px !default;
+/** 透明度条棋盘格深色格颜色 */
+$m-color-picker-checker-color: #d9d9d9 !default;
+/** 数值输入区上间距 */
+$m-color-picker-inputs-margin-top: 12px !default;
+/** 数值输入项间距 */
+$m-color-picker-input-gap: 8px !default;
+/** 数值输入标签字号 */
+$m-color-picker-input-label-font-size: 12px !default;
+/** 数值输入标签行高 */
+$m-color-picker-input-label-line-height: 16px !default;
+/** 数值输入框高度 */
+$m-color-picker-input-height: 32px !default;
+/** 数值输入框字号 */
+$m-color-picker-input-font-size: 12px !default;
+/** 格式切换区上间距 */
+$m-color-picker-format-margin-top: 12px !default;
+/** 格式按钮内边距 */
+$m-color-picker-format-padding: 4px 10px !default;
+/** 格式按钮间距 */
+$m-color-picker-format-gap: 8px !default;
+/** 格式按钮背景色 */
+$m-color-picker-format-background: #f2f3f5 !default;
+/** 格式按钮选中背景色 */
+$m-color-picker-format-active-background: rgba(25, 137, 250, 0.1) !default;
+/** 格式按钮字号 */
+$m-color-picker-format-font-size: 12px !default;
+/** 格式按钮行高 */
+$m-color-picker-format-line-height: 16px !default;
+/** 格式按钮文本色 */
+$m-color-picker-format-color: $m-text-color-secondary !default;
+/** 格式按钮选中文本色 */
+$m-color-picker-format-active-color: $m-color-primary !default;
+/** 预设色 / 最近色区上间距 */
+$m-color-picker-swatches-margin-top: 12px !default;
+/** 色块尺寸 */
+$m-color-picker-swatch-size: 28px !default;
+/** 色块间距 */
+$m-color-picker-swatch-gap: 8px !default;
+/** 色块内边距 */
+$m-color-picker-swatch-padding: 2px !default;
+/** 色块描边颜色 */
+$m-color-picker-swatch-border-color: $m-color-default-border !default;
+/** 色块选中描边颜色 */
+$m-color-picker-swatch-active-border-color: $m-color-primary !default;
+/** 吸管入口内边距 */
+$m-color-picker-eyedropper-padding: 6px 10px !default;
+/** 吸管入口背景色 */
+$m-color-picker-eyedropper-background: #f2f3f5 !default;
+/** 吸管入口图标字号 */
+$m-color-picker-eyedropper-icon-size: 14px !default;
+/** 吸管入口文本色 */
+$m-color-picker-eyedropper-color: $m-text-color-secondary !default;
+/** 吸管入口字号 */
+$m-color-picker-eyedropper-font-size: 12px !default;
+/** 吸管入口行高 */
+$m-color-picker-eyedropper-line-height: 16px !default;
+/** 弹层内容背景色 */
+$m-color-picker-popup-background: $m-white !default;
+/** 弹层内容圆角 */
+$m-color-picker-popup-radius: $m-radius-md !default;
+/** 弹层头部高度 */
+$m-color-picker-popup-header-height: 48px !default;
+/** 弹层头部内边距 */
+$m-color-picker-popup-header-padding: 0 16px !default;
+/** 弹层按钮字号 */
+$m-color-picker-popup-button-font-size: 14px !default;
+/** 弹层按钮行高 */
+$m-color-picker-popup-button-line-height: 20px !default;
+/** 取消按钮文本色 */
+$m-color-picker-popup-cancel-color: $m-text-color-secondary !default;
+/** 弹层标题字号 */
+$m-color-picker-popup-title-font-size: 16px !default;
+/** 弹层标题文本色 */
+$m-color-picker-popup-title-color: $m-text-color !default;
+/** 确定按钮文本色 */
+$m-color-picker-popup-confirm-color: $m-color-primary !default;
+/** 弹层面板内边距 */
+$m-color-picker-popup-body-padding: 0 16px 16px !default;
+/** 输入框字段标签上间距 */
+$m-color-picker-input-title-gap: 6px !default;
+/** 输入框色块预览尺寸 */
+$m-color-picker-input-preview-size: 20px !default;
+/** 输入框色块预览与文本间距 */
+$m-color-picker-input-preview-gap: 8px !default;
+/** 输入框触发层层级 */
+$m-color-picker-input-trigger-z-index: 1 !default;
+/** 输入框清空按钮层级 */
+$m-color-picker-input-clear-z-index: 2 !default;
+/** 输入框清空按钮宽度 */
+$m-color-picker-input-clear-width: 40px !default;
+/** 输入框清空图标字号 */
+$m-color-picker-input-clear-icon-size: 16px !default;
+/** 输入框清空图标颜色 */
+$m-color-picker-input-clear-color: $m-text-color-fourth !default;
+
+/* ========== m-date-strip（日期横条） ========== */
+/** 条带背景 */
+$m-date-strip-background: $m-white !default;
+/** 轨道上下内边距 */
+$m-date-strip-track-padding: 4px !default;
+/** 单项宽度（固定宽度触发横向滚动） */
+$m-date-strip-item-width: 64px !default;
+/** 单项上下内边距 */
+$m-date-strip-item-padding-y: 8px !default;
+/** 单项圆角（范围端点按方向取角） */
+$m-date-strip-item-border-radius: 4px !default;
+/** 选中 / 范围端点底色 */
+$m-date-strip-item-bg-selected: $m-color-primary !default;
+/** 范围中段底色 */
+$m-date-strip-item-bg-middle: rgba($m-color-primary, 0.1) !default;
+/** 周几文案字号 */
+$m-date-strip-item-week-font-size: 12px !default;
+/** 周几文案颜色 */
+$m-date-strip-item-week-color: $m-text-color-tertiary !default;
+/** 日号字号 */
+$m-date-strip-item-day-font-size: 16px !default;
+/** 日号颜色 */
+$m-date-strip-item-color: $m-text-color !default;
+/** 选中态文本色 */
+$m-date-strip-item-color-selected: $m-white !default;
+/** 禁用日文本色 */
+$m-date-strip-item-color-disabled: $m-text-color-fourth !default;
+/** 农历 / 附加文案字号 */
+$m-date-strip-item-info-font-size: 10px !default;
+/** 农历 / 附加文案颜色 */
+$m-date-strip-item-info-color: $m-text-color-tertiary !default;

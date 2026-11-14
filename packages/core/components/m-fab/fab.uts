@@ -1,0 +1,95 @@
+/**
+ * m-fab 与 m-fab-item 的容器上下文与共享类型（跨组件共享，独立 .uts）
+ *
+ * uvue 无 $children，父组件无法直接读取插槽子项；由 m-fab provide 本上下文，
+ * m-fab-item 在 setup 中同步注册自身（注册序即渲染序），onUnmounted 注销。
+ * 展开 / 收起状态、名称显隐、配色与左右对齐都由上下文下发，子项无需额外 props。
+ * class 实现：非蒸汽（Kotlin/Swift）端不支持「含方法的对象字面量 type」。
+ */
+import { ref, reactive, type Ref } from 'vue'
+
+/** provide / inject 配对 key（字符串 key，App 原生端无需 Symbol 支持） */
+export const FAB_KEY: string = '__mxi_fab__'
+
+/** 允许拖拽的方向轴：x 仅横向 / y 仅纵向 / both 双向 / none 禁止 */
+export type FabAxis = 'x' | 'y' | 'both' | 'none'
+
+/** 松手吸附的轴：x 吸附左右最近边 / y 吸附上下最近边 / 空串不吸附 */
+export type FabMagnet = 'x' | 'y' | ''
+
+/** 悬浮按钮位置（入口按钮中心点相对视口左上角的坐标，单位 px） */
+export type FabOffset = {
+	/** 中心点 x 坐标（px） */
+	x: number
+	/** 中心点 y 坐标（px） */
+	y: number
+}
+
+/** fab 注入上下文：维护展开状态、按钮项注册序与统一下发的视觉状态 */
+export class FabContext {
+	/** 扩展按钮是否展开（m-fab 写入，m-fab-item 据此驱动逐项入场 / 收场过渡） */
+	visible: Ref<boolean> = ref<boolean>(false)
+	/** 是否隐藏按钮项名称 */
+	hideName: Ref<boolean> = ref<boolean>(false)
+	/** 按钮项默认图标色（FabItem 未设置 color 时继承，空串表示不写 inline） */
+	color: Ref<string> = ref<string>('')
+	/** 按钮项默认背景色（FabItem 未设置 background 时继承，空串表示不写 inline） */
+	background: Ref<string> = ref<string>('')
+	/** 按钮项是否靠左排列（名称在右，入口按钮贴左边缘时使用） */
+	alignLeft: Ref<boolean> = ref<boolean>(false)
+	/** 收起请求计数（m-fab-item 点击后自增，m-fab watch 后收起；自增避免同值不触发） */
+	collapseTick: Ref<number> = ref<number>(0)
+	/** 按钮项 id 有序集合（reactive 数组，注册 / 注销自动触发索引重算） */
+	ids: string[] = reactive<string[]>([])
+
+	/**
+	 * 注册按钮项（m-fab-item setup 中同步调用，注册顺序即渲染顺序）
+	 *
+	 * @param id 按钮项唯一标识（模块级自增生成）
+	 */
+	register(id: string): void {
+		this.ids.push(id)
+	}
+
+	/**
+	 * 注销按钮项（onUnmounted 调用，v-if 动态增删后索引自动重算）
+	 *
+	 * @param id 按钮项唯一标识
+	 */
+	unregister(id: string): void {
+		const index = this.ids.indexOf(id)
+		if (index != -1) {
+			this.ids.splice(index, 1)
+		}
+	}
+
+	/**
+	 * 查询按钮项的注册序位（-1 表示未注册）
+	 *
+	 * @param id 按钮项唯一标识
+	 * @returns 注册序位（0 为最靠近入口按钮的一项）
+	 */
+	indexOf(id: string): number {
+		return this.ids.indexOf(id)
+	}
+
+	/**
+	 * 请求收起扩展按钮（按钮项点击后调用，具体收起逻辑由 m-fab 承担）
+	 */
+	requestCollapse(): void {
+		this.collapseTick.value = this.collapseTick.value + 1
+	}
+}
+
+/** 按钮项 id 自增计数器（模块级） */
+let fabItemIdCounter = 0
+
+/**
+ * 生成全局唯一按钮项 id（m-fab-item setup 中调用一次）
+ *
+ * @returns 形如 mxi_fab_item_1 的唯一标识
+ */
+export function generateFabItemId(): string {
+	fabItemIdCounter++
+	return 'mxi_fab_item_' + fabItemIdCounter
+}

@@ -224,7 +224,7 @@ See [Theming](/en/guide/theming) for full variables and override instructions.
 
 ## Differences from Vant Field and Sard Input
 
-- **Component shape**: modeled after Sard Input (bare input with bordered container + prepend / append slots); Vant Field's label / required mark / validation belong to the form system and will be provided by a future `m-form-item`; currently compose with `m-cell` + `inlaid` for a form-item look
+- **Component shape**: bare input with bordered container + prepend / append slots; Vant Field's label / required mark / validation belong to the form system and will be provided by a future `m-form-item`; currently compose with `m-cell` + `inlaid` for a form-item look
 - **Value type**: always `string` (narrowed from Sard's `string | number`; `.number` modifier is left to users)
 - **Kept capabilities**: Vant's `formatter` / `format-trigger` / `min` / `max` / `show-word-limit` and Sard's `precision` / `show-eye` are all provided
 - **HTML-only capabilities not provided**: `spellcheck` / `autocorrect` / `autocapitalize` / `autocomplete` / `inputmode` / `rows` etc. (no native counterpart in uni-app x); fixed textarea height is controlled by `$m-input-textarea-min-height`

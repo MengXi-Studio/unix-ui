@@ -1,0 +1,163 @@
+/**
+ * 日期工具集 · 边界与区间
+ *
+ * 职责：周 / 月 / 年首尾边界、极值取值、区间钳制、区间枚举。
+ * 约定：周起点由 weekStartsOn 指定（0 = 周日，1 = 周一）；起始边界为当日零点，结束边界为当日 23:59:59.999。
+ */
+
+import { getDayEnd, getDayStart } from './core.uts'
+import { addDays, addMonths } from './arith.uts'
+
+/**
+ * 归一星期起点参数到 0-6
+ *
+ * @param weekStartsOn 原始星期起点（可为任意整数）
+ * @returns 归一后的 0-6（0 = 周日）
+ */
+function normalizeWeekStart(weekStartsOn: number): number {
+	let value = Math.floor(weekStartsOn) % 7
+	if (value < 0) {
+		value += 7
+	}
+	return value
+}
+
+/**
+ * 取所在周的第一天（当日零点）
+ *
+ * @param date 基准日期
+ * @param weekStartsOn 周起点（0 = 周日，1 = 周一，默认 0）
+ * @returns 周起始日零点
+ */
+export function startOfWeek(date: Date, weekStartsOn: number = 0): Date {
+	const dayStart = getDayStart(date)
+	const diff = (dayStart.getDay() - normalizeWeekStart(weekStartsOn) + 7) % 7
+	return addDays(dayStart, -diff)
+}
+
+/**
+ * 取所在周的最后一天（当日 23:59:59.999）
+ *
+ * @param date 基准日期
+ * @param weekStartsOn 周起点（0 = 周日，默认 0）
+ * @returns 周结束日终点
+ */
+export function endOfWeek(date: Date, weekStartsOn: number = 0): Date {
+	return getDayEnd(addDays(startOfWeek(date, weekStartsOn), 6))
+}
+
+/**
+ * 取所在月第一天（零点）
+ *
+ * @param date 基准日期
+ * @returns 当月 1 日零点
+ */
+export function startOfMonth(date: Date): Date {
+	return new Date(date.getFullYear(), date.getMonth(), 1)
+}
+
+/**
+ * 取所在月最后一天（23:59:59.999）
+ *
+ * @param date 基准日期
+ * @returns 当月最后一天终点
+ */
+export function endOfMonth(date: Date): Date {
+	return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)
+}
+
+/**
+ * 取所在年第一天（零点）
+ *
+ * @param date 基准日期
+ * @returns 当年 1 月 1 日零点
+ */
+export function startOfYear(date: Date): Date {
+	return new Date(date.getFullYear(), 0, 1)
+}
+
+/**
+ * 取所在年最后一天（23:59:59.999）
+ *
+ * @param date 基准日期
+ * @returns 当年 12 月 31 日终点
+ */
+export function endOfYear(date: Date): Date {
+	return new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999)
+}
+
+/**
+ * 取两个日期中较早者
+ *
+ * @param a 日期 A
+ * @param b 日期 B
+ * @returns 较早日期的新实例（相等时取 a）
+ */
+export function minDate(a: Date, b: Date): Date {
+	return a.getTime() <= b.getTime() ? new Date(a.getTime()) : new Date(b.getTime())
+}
+
+/**
+ * 取两个日期中较晚者
+ *
+ * @param a 日期 A
+ * @param b 日期 B
+ * @returns 较晚日期的新实例（相等时取 a）
+ */
+export function maxDate(a: Date, b: Date): Date {
+	return a.getTime() >= b.getTime() ? new Date(a.getTime()) : new Date(b.getTime())
+}
+
+/**
+ * 将日期钳制到 [min, max] 区间
+ *
+ * @param date 待钳制日期
+ * @param min 区间下界
+ * @param max 区间上界
+ * @returns 钳制后的新实例（区间内原样返回副本）
+ */
+export function clampDate(date: Date, min: Date, max: Date): Date {
+	if (date.getTime() < min.getTime()) {
+		return new Date(min.getTime())
+	}
+	if (date.getTime() > max.getTime()) {
+		return new Date(max.getTime())
+	}
+	return new Date(date.getTime())
+}
+
+/**
+ * 枚举两个日期之间的全部自然日（含首尾）
+ *
+ * @param start 区间起点
+ * @param end 区间终点
+ * @returns 各自然日零点组成的数组；start 晚于 end 时返回空数组
+ */
+export function eachDayOfInterval(start: Date, end: Date): Date[] {
+	const list: Date[] = []
+	const last = getDayStart(end).getTime()
+	let cursor = getDayStart(start)
+	while (cursor.getTime() <= last) {
+		list.push(cursor)
+		cursor = addDays(cursor, 1)
+	}
+	return list
+}
+
+/**
+ * 枚举两个日期之间的全部自然月（含首尾，取各月 1 日零点）
+ *
+ * @param start 区间起点
+ * @param end 区间终点
+ * @returns 各月首日零点组成的数组；start 晚于 end 时返回空数组
+ */
+export function eachMonthOfInterval(start: Date, end: Date): Date[] {
+	const list: Date[] = []
+	const last = startOfMonth(end).getTime()
+	let cursor = startOfMonth(start)
+	while (cursor.getTime() <= last) {
+		list.push(cursor)
+		cursor = addMonths(cursor, 1)
+	}
+	return list
+}

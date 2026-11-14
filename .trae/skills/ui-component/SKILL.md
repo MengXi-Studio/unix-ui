@@ -5,7 +5,7 @@ description: 按 unix-ui 既定标准流程开发新 UI 组件或扩展既有组
 
 # UI 组件开发（ui-component）
 
-在本仓库开发任何组件，一律按下方六步落码，全程强制遵循 `.trae/rules/architecture.md`（分层、主题契约、命名清单）、`.trae/rules/workflow.md`（文档驱动四步工作流：建立任务文档 → 等待并读取回答 → 实现与验证 → 实施记录回填）与 `.trae/rules/project_rules.md`（UTS / uvue 红线）。禁止跳步，禁止「为了简洁」绕过契约。
+在本仓库开发任何组件，一律按下方六步落码，全程强制遵循 `.trae/rules/engineering-conventions.md`（分层、主题契约、命名清单）、`.trae/rules/workflow.md`（文档驱动四步工作流：建立任务文档 → 等待并读取回答 → 实现与验证 → 实施记录回填）与 `.trae/rules/project_rules.md`（UTS / uvue 红线）。禁止跳步，禁止「为了简洁」绕过契约。
 
 ## 0. 需求确认（动手前）
 

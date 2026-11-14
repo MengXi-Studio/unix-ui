@@ -1,5 +1,7 @@
 # Platform Compatibility
 
+unix-ui is written in UTS + uvue, and platform differences are isolated inside components via conditional compilation — your business code never has to branch on the platform.
+
 ## Platform Matrix
 
 | Platform | Status | Notes |
@@ -37,11 +39,25 @@ Components do not rely on any vdom-only capabilities, so behavior is identical i
 
 ## Platform Differences
 
-Platform differences are isolated inside components via conditional compilation, so your business code stays unaware of them:
+Platform differences are handled inside components, so your business code stays unaware of them:
 
 - The Web build adds `cursor: pointer` and other mouse-friendly styles
 - Text rendering is always placed in `<text>` nodes (ucss requires it — text styles are not inherited)
+- 0.5px hairline borders always use an absolutely positioned node with `transform: scale(0.5)`, avoiding per-platform border rendering differences
 - Style isolation uses strategy 2.0, so component styles never leak into the global scope
+
+## Known Limitations
+
+| Scenario | Notes |
+| --- | --- |
+| App-iOS / App-HarmonyOS | Conditional compilation is in place, but on-device testing is pending; please report issues with a reproduction project |
+| WeChat Mini Program · DOM capabilities | `UniElement` on mini-programs provides no `children` / `parentElement`; scroll-related features that depend on subtree traversal or synchronous measurement degrade (e.g. some switch animations snap into place instead of animating) |
+| WeChat Mini Program · Font icons | `@font-face` cannot reference local font files, so icons load at runtime via `loadFontFace`; the first frame may briefly show the default glyph |
+| Web · Routing | With `web.router.mode` set to `history`, the `#` part of the URL is ignored by routing — see the [FAQ](/en/guide/faq) |
+
+## Reporting Issues
+
+For platform-related issues, include the HBuilderX version, platform and device / browser version, and a minimal reproduction or code snippet in a [GitHub Issue](https://github.com/MengXi-Studio/unix-ui/issues).
 
 ## Next Steps
 

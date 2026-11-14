@@ -1,0 +1,334 @@
+<template>
+	<!-- 复选框：图标 + 文本。组内（有 name 且 bind-group）经上下文参与勾选；
+	     独立使用自持 boolean 状态。图标勾选态用 m-icon 'success'，
+	     不确定态画横杠（indeterminate），禁用态降透明度。 -->
+	<view :class="rootClass" :style="customStyle" @click="onClick">
+		<view :class="iconWrapClass" :style="iconWrapStyle" @click="onIconClick">
+			<slot name="icon" :checked="isChecked" :disabled="isDisabled">
+				<view v-if="indeterminate" class="m-checkbox__indeterminate" :style="indeterminateStyle"></view>
+				<m-icon v-else name="success" :style="iconStyle" custom-class="m-checkbox__icon" />
+			</slot>
+		</view>
+		<view v-if="showLabel" class="m-checkbox__label" :class="labelClass" :style="labelStyle" @click="onLabelClick">
+			<slot name="default" :checked="isChecked" :disabled="isDisabled">
+				<text :class="labelClass">{{ labelText }}</text>
+			</slot>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-checkbox 复选框。
+	 * 双形态：组内（name + bind-group，经 m-checkbox-group 上下文参与多选）与
+	 * 独立（v-model:boolean 自持状态）。支持 square 形状、禁用（整体 / 仅文本）、
+	 * label-position 左右互换、icon-size / checked-color、indeterminate 不确定态、
+	 * icon / default 插槽自定义。
+	 */
+	import {
+		CHECKBOX_KEY,
+		CheckboxGroupContext,
+		CheckboxValue,
+		CheckboxShape,
+		CheckboxLabelPosition,
+		checkboxValueText
+	} from '../m-checkbox-group/checkbox.uts'
+	import MIcon from '../m-icon/m-icon.uvue'
+
+	type Props = {
+		/** 标识符（组内必填，独立使用可空） */
+		name?: CheckboxValue
+		/** 是否为选中状态（独立使用 v-model；组内由组集合驱动） */
+		modelValue?: boolean
+		/** 形状（组内未设置时继承组容器） */
+		shape?: CheckboxShape
+		/** 是否禁用复选框 */
+		disabled?: boolean
+		/** 是否禁用文本点击（图标仍可点击切换） */
+		labelDisabled?: boolean
+		/** 文本位置 */
+		labelPosition?: CheckboxLabelPosition
+		/** 图标尺寸（number 补 px / string 原样） */
+		iconSize?: string | number
+		/** 选中态颜色（组内未设置时继承组容器） */
+		checkedColor?: string
+		/** 是否与复选框组绑定（false 时即使有 name 也自持状态） */
+		bindGroup?: boolean
+		/** 是否为不确定状态（配合全选场景，视觉为横杠） */
+		indeterminate?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		name: null,
+		modelValue: false,
+		shape: null,
+		disabled: false,
+		labelDisabled: false,
+		labelPosition: 'right',
+		iconSize: '',
+		checkedColor: '',
+		bindGroup: true,
+		indeterminate: false,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 独立使用时勾选状态变化（v-model） */
+		'update:modelValue': [value: boolean]
+		/** 勾选状态变化（组内与独立均派发，checked 为本项最新状态） */
+		change: [checked: boolean]
+		/** 点击复选框（含禁用态与达 max 拒绝时） */
+		click: [event: MouseEvent]
+	}>()
+
+	/** 槽位检测（uvue 需索引访问读取具名插槽） */
+	const slots = useSlots()
+
+	/** 组上下文（不在组内时为 null） */
+	const ctx = inject<CheckboxGroupContext | null>(CHECKBOX_KEY, null)
+
+	/** 是否处于组内（有上下文、有 name 且未关闭 bind-group） */
+	const inGroup = computed<boolean>(() => {
+		return ctx != null && props.name != null && props.bindGroup
+	})
+
+	/** 独立使用时的自持勾选态 */
+	const selfChecked = ref(props.modelValue)
+
+	/** 是否勾选（组内读上下文集合，独立读自持状态） */
+	const isChecked = computed<boolean>(() => {
+		if (inGroup.value && ctx != null && props.name != null) {
+			return ctx.contains(props.name)
+		}
+		return selfChecked.value
+	})
+
+	/** 是否禁用（组内合并组容器禁用） */
+	const isDisabled = computed<boolean>(() => {
+		if (inGroup.value && ctx != null) {
+			return props.disabled || ctx.disabled.value
+		}
+		return props.disabled
+	})
+
+	/** 有效形状（组内继承容器） */
+	const effectiveShape = computed<CheckboxShape>(() => {
+		if (props.shape != null) return props.shape
+		if (inGroup.value && ctx != null) return ctx.shape.value
+		return 'round'
+	})
+
+	/** 有效图标尺寸（number 补 px，组内继承容器） */
+	const effectiveIconSize = computed<string>(() => {
+		if (props.iconSize == '' && inGroup.value && ctx != null) {
+			return ctx.iconSize.value
+		}
+		if (props.iconSize == '') return ''
+		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
+		const raw = '' + props.iconSize
+		return pattern.test(raw) ? raw + 'px' : raw
+	})
+
+	/** 有效选中色（组内继承容器） */
+	const effectiveCheckedColor = computed<string>(() => {
+		if (props.checkedColor != '') return props.checkedColor
+		if (inGroup.value && ctx != null) return ctx.checkedColor.value
+		return ''
+	})
+
+	/** 根节点类名：形状 / 禁用 / 文本位置变体 + customClass */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-checkbox'
+		if (effectiveShape.value == 'square') cls += ' m-checkbox--square'
+		if (props.labelPosition == 'left') cls += ' m-checkbox--label-left'
+		if (isDisabled.value) cls += ' m-checkbox--disabled'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 图标容器类名（整体禁用时降透明度；ucss 不支持后代选择器，禁用态直接挂在本节点） */
+	const iconWrapClass = computed<string>(() => {
+		return isDisabled.value ? 'm-checkbox__icon-wrap m-checkbox__icon-wrap--disabled' : 'm-checkbox__icon-wrap'
+	})
+
+	/** 图标容器内联样式：icon-size 直达容器宽高（默认走主题类） */
+	const iconWrapStyle = computed<string>(() => {
+		const size = effectiveIconSize.value
+		if (size != '') {
+			return 'width: ' + size + '; height: ' + size + ';'
+		}
+		return ''
+	})
+
+	/** 勾选图标内联样式：选中时用 checkedColor 覆盖主题色 */
+	const iconStyle = computed<string>(() => {
+		let style = ''
+		const size = effectiveIconSize.value
+		if (size != '') style += ' font-size: ' + size + ';'
+		if (isChecked.value && effectiveCheckedColor.value != '') {
+			style += ' color: ' + effectiveCheckedColor.value + ';'
+		}
+		return style
+	})
+
+	/** 不确定态横杠内联样式（宽高随图标尺寸同步；选中色未设置时回退主题变量色） */
+	const indeterminateStyle = computed<string>(() => {
+		const size = effectiveIconSize.value != '' ? effectiveIconSize.value : '20px'
+		const color = effectiveCheckedColor.value != '' ? effectiveCheckedColor.value : '$m-checkbox-icon-color'
+		let style = 'width: calc(' + size + ' * 0.6); height: 2px;'
+		if (effectiveCheckedColor.value != '') style += ' background-color: ' + effectiveCheckedColor.value + ';'
+		return style
+	})
+
+	/** 是否显示文本区（default 插槽优先；无插槽且组内有 name 时显示 name 文本） */
+	const showLabel = computed<boolean>(() => {
+		if (slots['default'] != null) return true
+		return inGroup.value && props.name != null
+	})
+
+	/** fallback 文本（组内显示 name；无 name 为空串） */
+	const labelText = computed<string>(() => {
+		if (props.name == null) return ''
+		return checkboxValueText(props.name)
+	})
+
+	/** 文本区类名：禁用 / 选中变体 */
+	const labelClass = computed<string>(() => {
+		let cls = ''
+		if (isDisabled.value) cls += 'm-checkbox__label--disabled '
+		if (isChecked.value) cls += 'm-checkbox__label--checked'
+		return cls.trim()
+	})
+
+	/** 文本区内联样式（label-position 为 left 时右对齐补间距） */
+	const labelStyle = computed<string>(() => {
+		if (props.labelPosition == 'left') {
+			return 'margin-left: 8px; margin-right: 0;'
+		}
+		return ''
+	})
+
+	/**
+	 * 切换勾选态：组内经上下文 toggle（含 max 拒绝），独立回写 v-model；均派发 change
+	 */
+	function doToggle() {
+		if (inGroup.value && ctx != null && props.name != null) {
+			ctx.toggle(props.name)
+			emit('change', ctx.contains(props.name))
+			return
+		}
+		selfChecked.value = !selfChecked.value
+		emit('update:modelValue', selfChecked.value)
+		emit('change', selfChecked.value)
+	}
+
+	/**
+	 * 图标点击：禁用不响应，其余切换；事件继续冒泡到根统一派发 click
+	 */
+	const onIconClick = (_: MouseEvent) => {
+		if (isDisabled.value) return
+		doToggle()
+	}
+
+	/**
+	 * 文本点击：label-disabled 或整体禁用不响应，其余切换
+	 */
+	const onLabelClick = (_: MouseEvent) => {
+		if (isDisabled.value || props.labelDisabled) return
+		doToggle()
+	}
+
+	/**
+	 * 根节点点击：透传 click 事件（切换由图标 / 文本分层处理）
+	 */
+	const onClick = (e: MouseEvent) => {
+		emit('click', e)
+	}
+
+	// 图标区的切换经容器透传：根 click 只派发事件，切换逻辑在 icon-wrap / label 层
+	defineExpose({
+		/** 切换勾选态（搭配单元格组件场景外部调用） */
+		toggle: doToggle
+	})
+
+	// 独立 v-model 外部回灌：props.modelValue 变更同步自持状态
+	watch((): boolean => props.modelValue, (v: boolean) => {
+		selfChecked.value = v
+	})
+
+	onUnmounted(() => {
+		if (inGroup.value && ctx != null && props.name != null) {
+			ctx.unregister(props.name)
+		}
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 单项：横向排布（图标 + 文本），纵向内边距与组间距一致 */
+	.m-checkbox {
+		flex-direction: row;
+		align-items: center;
+		padding: $m-checkbox-padding;
+	}
+
+	/* 文本在左侧时反向排布 */
+	.m-checkbox--label-left {
+		flex-direction: row-reverse;
+	}
+
+	/* 图标容器：勾选图标 / 不确定横杠 / 自定义图标的定位包含块 */
+	.m-checkbox__icon-wrap {
+		width: $m-checkbox-icon-size;
+		height: $m-checkbox-icon-size;
+		justify-content: center;
+		align-items: center;
+	}
+
+	/* 勾选图标：未选中描边圆 / 方，选中实心主题色 */
+	.m-checkbox__icon {
+		font-size: $m-checkbox-icon-size;
+		color: $m-checkbox-icon-color;
+	}
+
+	/* 不确定态横杠（颜色由 inline 指定，未设置时回退主题变量） */
+	.m-checkbox__indeterminate {
+		background-color: $m-checkbox-icon-color;
+		border-radius: 1px;
+	}
+
+	/* 文本区 */
+	.m-checkbox__label {
+		margin-left: $m-checkbox-label-gap;
+		font-size: $m-checkbox-label-font-size;
+		line-height: $m-checkbox-label-line-height;
+		color: $m-checkbox-label-color;
+	}
+
+	/* 文本选中态颜色 */
+	.m-checkbox__label--checked {
+		color: $m-checkbox-label-checked-color;
+	}
+
+	/* 文本禁用态颜色 */
+	.m-checkbox__label--disabled {
+		color: $m-checkbox-label-disabled-color;
+	}
+
+	/* 整体禁用：图标降透明度（文本颜色由 label--disabled 控制） */
+	.m-checkbox__icon-wrap--disabled {
+		opacity: $m-checkbox-disabled-opacity;
+	}
+</style>

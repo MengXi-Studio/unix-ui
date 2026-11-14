@@ -31,7 +31,7 @@ export type TabItem = {
 	showZeroBadge: boolean
 }
 
-/** click-tab 事件载荷（对齐 Vant：索引 / name / title / disabled） */
+/** click-tab 事件载荷（索引 / name / title / disabled） */
 export type TabsClickEvent = {
 	/** 注册序 */
 	index: number
@@ -39,7 +39,7 @@ export type TabsClickEvent = {
 	name: string | number | null
 	/** 标签标题文本 */
 	title: string
-	/** 是否禁用（禁用标签点击不切换但事件照常派发，对齐 Vant） */
+	/** 是否禁用（禁用标签点击不切换但事件照常派发） */
 	disabled: boolean
 }
 

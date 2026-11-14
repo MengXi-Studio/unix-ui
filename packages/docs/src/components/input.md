@@ -224,7 +224,7 @@ label / 必填星号 / 校验与错误提示属表单体系，留待未来 `m-fo
 
 ## 与 Vant Field、Sard Input 的差异
 
-- **组件形态**：对标 Sard Input 的裸输入框（自带边框容器 + 前后插槽）；Vant Field 的 label / 必填星号 / 校验与错误提示属表单体系，留待未来 `m-form-item`，当前用 `m-cell` + `inlaid` 组合出表单项观感
+- **组件形态**：裸输入框形态（自带边框容器 + 前后插槽）；Vant Field 的 label / 必填星号 / 校验与错误提示属表单体系，留待未来 `m-form-item`，当前用 `m-cell` + `inlaid` 组合出表单项观感
 - **值类型**：统一 `string`（Sard 的 `string | number` 收窄，`.number` 修饰由用户侧处理）
 - **保留能力**：Vant 的 `formatter` / `format-trigger` / `min` / `max` / `show-word-limit` 与 Sard 的 `precision` / `show-eye` 均已提供
 - **不提供的 HTML-only 能力**：`spellcheck` / `autocorrect` / `autocapitalize` / `autocomplete` / `inputmode` / `rows` 等（uni-app x 原生无对应属性）；多行固定高度经 `$m-input-textarea-min-height` 控制

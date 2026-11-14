@@ -1,0 +1,255 @@
+<template>
+	<view class="page">
+		<demo-navbar title="悬浮按钮" subtitle="Fab" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="intro">说明</text>
+				<view class="card">
+					<text class="caption">本页 10 个悬浮按钮固定在视口指定位置（不随页面滚动），便于同时验证多实例与各变体。点击圆钮展开 / 收起扩展按钮，点击扩展按钮后自动收起。</text>
+				</view>
+
+				<text class="section" id="basic">基础使用</text>
+				<view class="card">
+					<text class="caption">左上角（top 56px / left 24px）：默认配色 + 名称文本，点击扩展按钮触发 toast</text>
+				</view>
+
+				<text class="section" id="color">自定义颜色</text>
+				<view class="card">
+					<text class="caption">top 56px / left 110px：入口渐变背景 + 子项各自背景色</text>
+				</view>
+
+				<text class="section" id="hide-name">隐藏按钮名称</text>
+				<view class="card">
+					<text class="caption">top 56px / left 196px：hide-name 只显示圆形图标</text>
+				</view>
+
+				<text class="section" id="entry">自定义图标 / 右上角</text>
+				<view class="card">
+					<text class="caption">top 56px / right 24px：entry 插槽自定义入口内容（展开态显示「收起」）</text>
+				</view>
+
+				<text class="section" id="name-slot">自定义名称插槽</text>
+				<view class="card">
+					<text class="caption">top 320px / left 24px：name 插槽自定义名称样式</text>
+				</view>
+
+				<text class="section" id="draggable">可拖拽</text>
+				<view class="card">
+					<text class="caption">top 320px / left 110px：draggable 默认只允许纵向拖拽</text>
+				</view>
+
+				<text class="section" id="magnet">自由拖拽与磁吸</text>
+				<view class="card">
+					<text class="caption">top 320px / left 196px：axis="both" + magnet="x"，松手吸附左右最近边</text>
+				</view>
+
+				<text class="section" id="offset">双向绑定</text>
+				<view class="card">
+					<text class="caption">top 320px / right 24px：v-model:offset 受控位置；拖动后回显 x / y</text>
+					<text class="caption">当前 offset：x {{ offset.x.toFixed(0) }} · y {{ offset.y.toFixed(0) }}</text>
+				</view>
+
+				<text class="section" id="overlay">遮罩可点击关闭</text>
+				<view class="card">
+					<text class="caption">左下角（left 24px / 默认 bottom 24px）：overlay-closable 展开时带遮罩，点击遮罩收起</text>
+				</view>
+
+				<text class="section" id="events">事件</text>
+				<view class="card">
+					<text class="caption">右下角（默认位置）：监听 click / update:visible 触发 toast</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 基础使用：左上角 -->
+		<m-fab top="56px" left="24px">
+			<m-fab-item name="扫码报修" @click="onItemClick('扫码报修')">
+				<m-icon name="scan" size="20" />
+			</m-fab-item>
+			<m-fab-item name="转派维修" @click="onItemClick('转派维修')">
+				<m-icon name="share" size="20" />
+			</m-fab-item>
+			<m-fab-item name="急停呼叫" @click="onItemClick('急停呼叫')">
+				<m-icon name="bell" size="20" />
+			</m-fab-item>
+		</m-fab>
+
+		<!-- 自定义颜色 -->
+		<m-fab
+			top="56px"
+			left="110px"
+			background="linear-gradient(300deg, rgb(245, 52, 35) 0%, rgb(246, 127, 72) 100%)"
+		>
+			<m-fab-item name="扫码" background="rgb(59, 190, 136)" color="#ffffff" @click="onItemClick('扫码')">
+				<m-icon name="scan" size="20" />
+			</m-fab-item>
+			<m-fab-item name="转派" background="rgb(247, 149, 59)" color="#ffffff" @click="onItemClick('转派')">
+				<m-icon name="share" size="20" />
+			</m-fab-item>
+			<m-fab-item name="呼叫" background="rgb(52, 147, 240)" color="#ffffff" @click="onItemClick('呼叫')">
+				<m-icon name="bell" size="20" />
+			</m-fab-item>
+		</m-fab>
+
+		<!-- 隐藏按钮名称 -->
+		<m-fab top="56px" left="196px" hide-name>
+			<m-fab-item name="扫码报修" @click="onItemClick('扫码报修')">
+				<m-icon name="scan" size="20" />
+			</m-fab-item>
+			<m-fab-item name="转派维修" @click="onItemClick('转派维修')">
+				<m-icon name="share" size="20" />
+			</m-fab-item>
+			<m-fab-item name="急停呼叫" @click="onItemClick('急停呼叫')">
+				<m-icon name="bell" size="20" />
+			</m-fab-item>
+		</m-fab>
+
+		<!-- 自定义入口图标（右上角） -->
+		<m-fab top="56px" right="24px">
+			<template #entry="{ visible }">
+				<text class="entry-text">{{ visible ? '收起' : '更多' }}</text>
+			</template>
+			<m-fab-item name="扫码报修" @click="onItemClick('扫码报修')">
+				<m-icon name="scan" size="20" />
+			</m-fab-item>
+			<m-fab-item name="转派维修" @click="onItemClick('转派维修')">
+				<m-icon name="share" size="20" />
+			</m-fab-item>
+		</m-fab>
+
+		<!-- 自定义名称插槽 -->
+		<m-fab top="320px" left="24px">
+			<m-fab-item name="扫码报修" @click="onItemClick('扫码报修')">
+				<template #name>
+					<text class="slot-name-primary">扫码报修</text>
+				</template>
+				<m-icon name="scan" size="20" />
+			</m-fab-item>
+			<m-fab-item name="急停呼叫" @click="onItemClick('急停呼叫')">
+				<template #name>
+					<text class="slot-name-danger">急停呼叫（需授权）</text>
+				</template>
+				<m-icon name="bell" size="20" />
+			</m-fab-item>
+		</m-fab>
+
+		<!-- 可拖拽（默认仅纵向） -->
+		<m-fab top="320px" left="110px" draggable>
+			<m-fab-item name="扫码报修" @click="onItemClick('扫码报修')">
+				<m-icon name="scan" size="20" />
+			</m-fab-item>
+			<m-fab-item name="转派维修" @click="onItemClick('转派维修')">
+				<m-icon name="share" size="20" />
+			</m-fab-item>
+		</m-fab>
+
+		<!-- 自由拖拽与磁吸 -->
+		<m-fab top="320px" left="196px" draggable axis="both" magnet="x">
+			<m-fab-item name="扫码报修" @click="onItemClick('扫码报修')">
+				<m-icon name="scan" size="20" />
+			</m-fab-item>
+			<m-fab-item name="转派维修" @click="onItemClick('转派维修')">
+				<m-icon name="share" size="20" />
+			</m-fab-item>
+		</m-fab>
+
+		<!-- 双向绑定位置 -->
+		<m-fab top="320px" right="24px" draggable axis="both" :offset="offset" @update:offset="onOffsetChange">
+			<m-fab-item name="扫码报修" @click="onItemClick('扫码报修')">
+				<m-icon name="scan" size="20" />
+			</m-fab-item>
+			<m-fab-item name="转派维修" @click="onItemClick('转派维修')">
+				<m-icon name="share" size="20" />
+			</m-fab-item>
+		</m-fab>
+
+		<!-- 遮罩可点击关闭（左下角） -->
+		<m-fab left="24px" overlay-closable>
+			<m-fab-item name="扫码报修" @click="onItemClick('扫码报修')">
+				<m-icon name="scan" size="20" />
+			</m-fab-item>
+			<m-fab-item name="急停呼叫" @click="onItemClick('急停呼叫')">
+				<m-icon name="bell" size="20" />
+			</m-fab-item>
+		</m-fab>
+
+		<!-- 事件（右下角默认位置） -->
+		<m-fab @click="onFabClick" @update:visible="onVisibleChange">
+			<m-fab-item name="事件按钮" @click="onItemClick('事件按钮')">
+				<m-icon name="plus" size="20" />
+			</m-fab-item>
+		</m-fab>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '悬浮按钮 Fab', name: 'fab' })
+
+	import { FabOffset } from '@/uni_modules/m-ui-x/components/m-fab/fab.uts'
+
+	/** 双向绑定演示位置（入口按钮中心点相对视口左上角，单位 px） */
+	const offset = ref<FabOffset>({ x: 320, y: 420 } as FabOffset)
+
+	/**
+	 * 扩展按钮点击日志（演示 toast 提示）
+	 *
+	 * @param name 被点击的按钮名称
+	 */
+	function onItemClick(name: string) {
+		uni.showToast({ title: '点击了：' + name, icon: 'none' })
+	}
+
+	/**
+	 * 入口按钮点击日志
+	 */
+	function onFabClick() {
+		uni.showToast({ title: '点击入口按钮', icon: 'none' })
+	}
+
+	/**
+	 * 展开 / 收起状态变化日志
+	 *
+	 * @param value 当前显隐状态（true 展开 / false 收起）
+	 */
+	function onVisibleChange(value: boolean) {
+		console.log('fab visible: ' + value.toString())
+	}
+
+	/**
+	 * 拖拽位置回写（v-model:offset 手动同步版，演示受控用法）
+	 *
+	 * @param value 拖拽结束后的中心点坐标
+	 */
+	function onOffsetChange(value: FabOffset) {
+		offset.value = value
+	}
+</script>
+
+<style lang="scss">
+	/* 入口自定义文本（entry 插槽） */
+	.entry-text {
+		font-size: 12px;
+		font-weight: 500;
+		color: #ffffff;
+	}
+
+	/* 名称插槽：主色文本 */
+	.slot-name-primary {
+		font-size: 12px;
+		color: #1989fa;
+	}
+
+	/* 名称插槽：危险色文本 */
+	.slot-name-danger {
+		font-size: 12px;
+		color: #ee0a24;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

@@ -57,14 +57,54 @@ export const routes: RouteConfig[] = [
 		meta: { title: '单元格 Cell' },
 	},
 	{
+		path: 'pages-sub/checkbox-input/checkbox-input',
+		name: 'checkbox-input',
+		meta: { title: '复选输入框 CheckboxInput' },
+	},
+	{
+		path: 'pages-sub/checkbox-popup/checkbox-popup',
+		name: 'checkbox-popup',
+		meta: { title: '复选弹出框 CheckboxPopup' },
+	},
+	{
+		path: 'pages-sub/checkbox/checkbox',
+		name: 'checkbox',
+		meta: { title: '复选框 Checkbox' },
+	},
+	{
+		path: 'pages-sub/color-picker-input/color-picker-input',
+		name: 'color-picker-input',
+		meta: { title: '颜色选择器输入框 ColorPickerInput' },
+	},
+	{
+		path: 'pages-sub/color-picker-popup/color-picker-popup',
+		name: 'color-picker-popup',
+		meta: { title: '颜色选择器弹出框 ColorPickerPopup' },
+	},
+	{
+		path: 'pages-sub/color-picker/color-picker',
+		name: 'color-picker',
+		meta: { title: '颜色选择器 ColorPicker' },
+	},
+	{
 		path: 'pages-sub/compact/compact',
 		name: 'compact',
 		meta: { title: '紧凑布局 Compact' },
 	},
 	{
+		path: 'pages-sub/date-strip/date-strip',
+		name: 'date-strip',
+		meta: { title: '日期横条 Date Strip' },
+	},
+	{
 		path: 'pages-sub/divider/divider',
 		name: 'divider',
 		meta: { title: '分割线 Divider' },
+	},
+	{
+		path: 'pages-sub/fab/fab',
+		name: 'fab',
+		meta: { title: '悬浮按钮 Fab' },
 	},
 	{
 		path: 'pages-sub/flex/flex',

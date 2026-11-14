@@ -69,7 +69,7 @@
 				<view class="event-log">
 					<text class="event-text">最近 finish：{{ customLog }}</text>
 				</view>
-				<text class="caption">field-names 映射 { name, id, sub } 选项结构；disabled / color 字段仍为固定键名（对齐 Vant）</text>
+				<text class="caption">field-names 映射 { name, id, sub } 选项结构；disabled / color 字段仍为固定键名</text>
 			</view>
 
 			<text class="section" id="slots">插槽</text>

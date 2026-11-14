@@ -1,0 +1,316 @@
+<template>
+	<!-- 颜色选择器输入框：m-input（只读展示）+ m-color-picker-popup 组合（表单触发组件）。
+	     触发器点击整区打开弹层，确定后经 v-model:value 回写颜色文本；
+	     左侧色块预览当前颜色，清空为自绘按钮（m-input 内置 clearable 图标会被触发层挡住）。 -->
+	<!-- 开启逻辑挂在触发层而非根节点：弹层遮罩点击会沿 DOM 冒泡经过本组件根，
+	     若根监听 @click 会在遮罩关闭的同一事件派发内把 show 置回 true（关闭即重开） -->
+	<view :class="rootClass" :style="customStyle">
+		<text v-if="title != ''" class="m-color-picker-input__title">{{ title }}</text>
+		<view class="m-color-picker-input__field">
+			<m-input
+				:model-value="value"
+				:placeholder="placeholder"
+				:disabled="disabled"
+				:border="border"
+				:inlaid="inlaid"
+				:custom-style="inputStyle"
+			>
+				<template #prepend>
+					<view class="m-color-picker-input__preview" :style="previewStyle"></view>
+				</template>
+			</m-input>
+			<!-- 透明触发层：m-input 的 readonly 以原生 disabled 模拟，原生控件吞点击事件，
+			     覆盖层接住整区点击打开弹层（disabled 态不渲染） -->
+			<view v-if="!disabled" class="m-color-picker-input__trigger" @click="onTriggerClick"></view>
+			<view v-if="showClear" class="m-color-picker-input__clear" @click.stop="onClearClick">
+				<m-icon name="clear" custom-class="m-color-picker-input__clear-icon" />
+			</view>
+		</view>
+		<!-- z-index 3 高于触发层(1)/清空钮(2)：弹层遮罩须盖住本组件浮层 -->
+		<m-color-picker-popup
+			v-model:show="popupShow"
+			:value="value"
+			:title="popupTitle"
+			:show-alpha="showAlpha"
+			:format="format"
+			:show-format="showFormat"
+			:presets="presets"
+			:show-presets="showPresets"
+			:show-inputs="showInputs"
+			:show-recent="showRecent"
+			:show-eyedropper="showEyedropper"
+			:confirm-text="confirmText"
+			:cancel-text="cancelText"
+			:position="position"
+			:round="round"
+			:z-index="3"
+			@update:value="onPopupValueChange"
+			@change="onPopupChange"
+			@confirm="onPopupConfirm"
+			@update:format="onPopupFormatChange"
+			@format-change="onPopupFormatChangeEvent"
+		/>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-color-picker-input 颜色选择器输入框：m-input + m-color-picker-popup 组合组件。
+	 * 值单向受控：外部 value（v-model:value）直接作为展示文本，弹层确定后经
+	 * update:value 回写；左侧色块预览由 value 解析出的颜色渲染，空值显示占位符。
+	 */
+	import { ColorFormat, parseColor, rgbaCss } from '../m-color-picker/color-picker.uts'
+	import MInput from '../m-input/m-input.uvue'
+	import MIcon from '../m-icon/m-icon.uvue'
+	import MColorPickerPopup from '../m-color-picker-popup/m-color-picker-popup.uvue'
+
+	type Props = {
+		/** 当前颜色值（v-model:value） */
+		value?: string
+		/** 字段标签（非空时展示在输入框上方） */
+		title?: string
+		/** 弹层标题 */
+		popupTitle?: string
+		/** 占位符 */
+		placeholder?: string
+		/** 是否禁用 */
+		disabled?: boolean
+		/** 是否显示清空按钮（有值且非 disabled 时可见） */
+		clearable?: boolean
+		/** 是否启用透明度选择 */
+		showAlpha?: boolean
+		/** 输出颜色格式 */
+		format?: ColorFormat
+		/** 是否显示格式切换 */
+		showFormat?: boolean
+		/** 预定义颜色列表 */
+		presets?: string[]
+		/** 是否显示预定义颜色 */
+		showPresets?: boolean
+		/** 是否显示 R / G / B / A 数值输入 */
+		showInputs?: boolean
+		/** 是否显示最近使用颜色 */
+		showRecent?: boolean
+		/** 是否显示吸管取色入口（仅 Web 端生效） */
+		showEyedropper?: boolean
+		/** 确定按钮文案 */
+		confirmText?: string
+		/** 取消按钮文案 */
+		cancelText?: string
+		/** 触发器是否显示边框容器（透传 m-input） */
+		border?: boolean
+		/** 触发器嵌入式形态（透传 m-input） */
+		inlaid?: boolean
+		/** 弹出方位（透传 m-popup，默认底部） */
+		position?: 'top' | 'bottom' | 'left' | 'right' | 'center'
+		/** 弹层圆角（透传 m-popup） */
+		round?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: '',
+		title: '',
+		popupTitle: '选择颜色',
+		placeholder: '请选择颜色',
+		disabled: false,
+		clearable: false,
+		showAlpha: false,
+		format: 'rgb',
+		showFormat: false,
+		presets: null,
+		showPresets: false,
+		showInputs: false,
+		showRecent: false,
+		showEyedropper: false,
+		confirmText: '确定',
+		cancelText: '取消',
+		border: true,
+		inlaid: false,
+		position: 'bottom',
+		round: true,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 颜色值变化（v-model:value） */
+		'update:value': [value: string]
+		/** 颜色值变化 */
+		change: [value: string]
+		/** 点击确定 */
+		confirm: [value: string]
+		/** 点击清空 */
+		clear: []
+		/** 弹层显隐变化（v-model:show） */
+		'update:show': [value: boolean]
+		/** 格式切换 */
+		'update:format': [format: ColorFormat]
+		/** 格式切换 */
+		'format-change': [format: ColorFormat]
+	}>()
+
+	/** 弹层显隐（内部状态） */
+	const popupShow = ref<boolean>(false)
+
+	/** 弹层显隐变化对外派发（v-model:show 语义） */
+	watch((): boolean => popupShow.value, (v: boolean) => {
+		emit('update:show', v)
+	})
+
+	/** 根类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-color-picker-input'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 是否有值 */
+	const hasValue = computed<boolean>(() => {
+		return props.value != ''
+	})
+
+	/** 清空按钮可见性 */
+	const showClear = computed<boolean>(() => {
+		return props.clearable && !props.disabled && hasValue.value
+	})
+
+	/** 左侧色块预览样式（空值显示透明棋盘感的白底） */
+	const previewStyle = computed<string>(() => {
+		if (!hasValue.value) return 'background-color: #ffffff;'
+		const c = parseColor(props.value)
+		return 'background-color: ' + rgbaCss(c, c.a) + ';'
+	})
+
+	/** 触发器内联样式：清空按钮显示时为输入区右侧预留按钮宽度 */
+	const inputStyle = computed<string>(() => {
+		if (showClear.value) return 'padding-right: 40px;'
+		return ''
+	})
+
+	/**
+	 * 触发器点击：disabled 不响应，其余打开弹层
+	 */
+	const onTriggerClick = () => {
+		if (props.disabled) return
+		popupShow.value = true
+	}
+
+	/**
+	 * 弹层颜色回写（确定或 showConfirm=false 的实时回写）
+	 *
+	 * @param v 颜色文本
+	 */
+	const onPopupValueChange = (v: string) => {
+		emit('update:value', v)
+	}
+
+	/**
+	 * 弹层颜色变化透传
+	 *
+	 * @param v 颜色文本
+	 */
+	const onPopupChange = (v: string) => {
+		emit('change', v)
+	}
+
+	/**
+	 * 弹层确定透传
+	 *
+	 * @param v 颜色文本
+	 */
+	const onPopupConfirm = (v: string) => {
+		emit('confirm', v)
+	}
+
+	/**
+	 * 格式切换透传
+	 *
+	 * @param f 目标格式
+	 */
+	const onPopupFormatChange = (f: ColorFormat) => {
+		emit('update:format', f)
+	}
+
+	/**
+	 * 格式切换事件透传
+	 *
+	 * @param f 目标格式
+	 */
+	const onPopupFormatChangeEvent = (f: ColorFormat) => {
+		emit('format-change', f)
+	}
+
+	/**
+	 * 清空：回写空串并派发 clear（.stop 阻止冒泡到触发器）
+	 */
+	const onClearClick = (_: MouseEvent) => {
+		emit('update:value', '')
+		emit('change', '')
+		emit('clear')
+	}
+</script>
+
+<style lang="scss">
+	/* 主题变量说明见 m-color-picker（组件内顶层引入 vars.scss，全部 !default） */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根容器 ========== */
+	.m-color-picker-input {
+		width: 100%;
+	}
+
+	/* ========== 字段标签 ========== */
+	.m-color-picker-input__title {
+		font-size: $m-color-picker-input-label-font-size;
+		line-height: $m-color-picker-input-label-line-height;
+		color: $m-text-color-secondary;
+		margin-bottom: $m-color-picker-input-title-gap;
+	}
+
+	/* ========== 输入区（定位包含块） ========== */
+	.m-color-picker-input__field {
+		position: relative;
+	}
+
+	/* ========== 左侧色块预览（m-input prepend 插槽内） ========== */
+	.m-color-picker-input__preview {
+		width: $m-color-picker-input-preview-size;
+		height: $m-color-picker-input-preview-size;
+		border-radius: 4px;
+		border-width: $m-border-width;
+		border-style: solid;
+		border-color: $m-color-default-border;
+		margin-right: $m-color-picker-input-preview-gap;
+	}
+
+	/* ========== 透明触发层（覆盖整区接住点击，disabled 态不渲染） ========== */
+	.m-color-picker-input__trigger {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: $m-color-picker-input-trigger-z-index;
+	}
+
+	/* ========== 清空按钮（触发层之上，右侧定宽纵向居中） ========== */
+	.m-color-picker-input__clear {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: $m-color-picker-input-clear-width;
+		z-index: $m-color-picker-input-clear-z-index;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.m-color-picker-input__clear-icon {
+		font-size: $m-color-picker-input-clear-icon-size;
+		color: $m-color-picker-input-clear-color;
+	}
+</style>

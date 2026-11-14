@@ -77,7 +77,7 @@ Set `switch-mode` to `month` for a single-month view with prev/next month naviga
 
 By default the panel grows with its content (6 months from today). Pass a length value like px to `height` to fix the panel height with inner scrolling (best paired with `max-date`).
 
-With a fixed height the subtitle follows scrolling in real time and switches to the month in the viewport (aligned with Vant); when the panel grows with content (page scrolling) the subtitle stays on the initial focus month.
+With a fixed height the subtitle follows scrolling in real time and switches to the month in the viewport; when the panel grows with content (page scrolling) the subtitle stays on the initial focus month.
 
 Note: in uvue an outer `:style` binding is not forwarded to the component root (Vant is a standard Vue component and accepts outer height limits directly); use the `height` prop or `custom-style` instead.
 
@@ -115,7 +115,7 @@ const dayFormatter = (day: CalendarDayItem): CalendarDayItem => {
 
 ### Slots {#demo-slots}
 
-Supports `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` plus confirm text and nav icon slots; `text` is a scoped slot where `day` is the cell data. The in-month title row is rendered by default (aligned with Vant: the first month omits it since the subtitle already shows the month, the rest render it); pass the `month-title` slot to customize it.
+Supports `title` / `subtitle` / `month-title` / `text` / `top-info` / `bottom-info` / `footer` plus confirm text and nav icon slots; `text` is a scoped slot where `day` is the cell data. The in-month title row is rendered by default (the first month omits it since the subtitle already shows the month, the rest render it); pass the `month-title` slot to customize it.
 
 ```vue
 <m-calendar :show-mark="false" :max-date="maxDate">
@@ -225,7 +225,7 @@ Calendar styles can be customized with the following SCSS variables (define them
 | $m-calendar-header-title-height | Title area height | 44px |
 | $m-calendar-header-title-font-size | Title font size | 16px |
 | $m-calendar-header-title-color | Title color | #323233 |
-| $m-calendar-header-box-shadow | Header shadow (aligned with Vant) | 0 2px 10px rgba(125, 126, 128, 0.16) |
+| $m-calendar-header-box-shadow | Header shadow | 0 2px 10px rgba(125, 126, 128, 0.16) |
 | $m-calendar-header-subtitle-height | Subtitle area height | 44px |
 | $m-calendar-header-subtitle-font-size | Subtitle font size | 14px |
 | $m-calendar-header-subtitle-color | Subtitle color | #323233 |
@@ -264,5 +264,5 @@ See [Theming](/en/guide/theming) for the full variable list and override instruc
 - Date props only accept `Date` instances: `min-date` / `max-date` / `default-date` must be constructed numerically (`new Date(2026, 9, 29)`, months 0-based); Vant's string dates are not supported
 - `formatter` only supports synchronous functions (UTS has no promise-based formatter)
 - `min-date` / `max-date` default to "today ~ today + 6 months" (same as Vant)
-- Weekday headers and month titles are built-in Chinese (`2026年10月` format) with no locale mechanism; the in-month title row is rendered by default and the first month omits it since the subtitle already shows the month (aligned with Vant), customizable via the `month-title` slot, weekdays have no slot yet
+- Weekday headers and month titles are built-in Chinese (`2026年10月` format) with no locale mechanism; the in-month title row is rendered by default and the first month omits it since the subtitle already shows the month, customizable via the `month-title` slot, weekdays have no slot yet
 - With gradient or non-`#hex` `color` values, the selected block follows the gradient while the range bar falls back to the default theme color (derived alpha only supports `#hex`)

@@ -48,7 +48,8 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 		nav: [
 			{ text: '指南', link: '/guide/introduction' },
 			{ text: '组件', link: '/components/button' },
-			{ text: '更新日志', link: '/changelog' },
+			{ text: '工具', link: '/tools/date' },
+			{ text: '更新日志 v0.5.0', link: '/changelog' },
 			{
 				text: '相关链接',
 				items: [
@@ -113,12 +114,20 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Cascader 级联选择', link: '/components/cascader' },
 						{ text: 'CascaderInput 级联输入框', link: '/components/cascader-input' },
 						{ text: 'CascaderPopup 级联弹出框', link: '/components/cascader-popup' },
+						{ text: 'Checkbox 复选框', link: '/components/checkbox' },
+						{ text: 'CheckboxInput 复选输入框', link: '/components/checkbox-input' },
+						{ text: 'CheckboxPopup 复选弹出框', link: '/components/checkbox-popup' },
+						{ text: 'ColorPicker 颜色选择器', link: '/components/color-picker' },
+						{ text: 'ColorPickerInput 颜色选择器输入框', link: '/components/color-picker-input' },
+						{ text: 'ColorPickerPopup 颜色选择器弹出框', link: '/components/color-picker-popup' },
+						{ text: 'DateStrip 日期横条', link: '/components/date-strip' },
 						{ text: 'Input 输入框', link: '/components/input' }
 					]
 				},
 				{
 					text: '反馈组件',
 					items: [
+						{ text: 'Fab 悬浮按钮', link: '/components/fab' },
 						{ text: 'Loading 加载', link: '/components/loading' },
 						{ text: 'Overlay 遮罩层', link: '/components/overlay' },
 						{ text: 'Popup 弹出层', link: '/components/popup' },
@@ -135,6 +144,12 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				{
 					text: '导航组件',
 					items: [{ text: 'Tabs 标签页', link: '/components/tabs' }]
+				}
+			],
+			'/tools/': [
+				{
+					text: '工具',
+					items: [{ text: 'Date 日期工具', link: '/tools/date' }]
 				}
 			]
 		}

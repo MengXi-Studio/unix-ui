@@ -8,7 +8,7 @@
 	 * m-status-bar 状态栏占位组件：为 Navbar / Notify 等贴顶元素预留系统状态栏高度。
 	 * 高度取值优先级：height prop（> 0 时直用）→ App 端 uni.getWindowInfo().statusBarHeight；
 	 * Web / 小程序取不到系统值，保持 0（不占位），需要占位时显式传 height。
-	 * uni-app x 无「JS 写 CSS 变量」链路，故高度走内联 style 而非 Sard 的 --s-status-bar-height。
+	 * uni-app x 无「JS 写 CSS 变量」链路，故高度走内联 style 而非 CSS 变量。
 	 */
 
 	type Props = {

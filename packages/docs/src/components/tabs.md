@@ -7,7 +7,7 @@ added: 0.4.0
 
 ## 介绍
 
-标签页组件，用于内容区域切换（对标 Vant Tab 交互与 API，参考 Sard Tabs 的 pill 形态与 options 数组形态）。支持 `line` / `card` / `pill` 三种风格、索引与 name 混用匹配、标签栏横向滚动、底部条与内容转场动画、手势滑动切换、吸顶（复用 [Sticky](/components/sticky)）、滚动导航（scrollspy）与切换前拦截。
+标签页组件，用于内容区域切换。支持 `line` / `card` / `pill` 三种风格、索引与 name 混用匹配、标签栏横向滚动、底部条与内容转场动画、手势滑动切换、吸顶（复用 [Sticky](/components/sticky)）、滚动导航（scrollspy）与切换前拦截。
 
 组件为双形态：
 
@@ -52,7 +52,7 @@ added: 0.4.0
 
 ### 禁用标签 {#demo-disabled}
 
-`disabled` 标签点击不切换，`click-tab` 事件照常派发（对齐 Vant）：
+`disabled` 标签点击不切换，`click-tab` 事件照常派发：
 
 ```vue
 <m-tabs :active="0">
@@ -90,7 +90,7 @@ added: 0.4.0
 
 ### 内容动画与手势切换 {#demo-animated}
 
-`animated` 开启轨道平移转场；`swipeable` 追加手势左右滑动切换（手势切换不触发 `before-change`，对齐 Vant）：
+`animated` 开启轨道平移转场；`swipeable` 追加手势左右滑动切换（手势切换不触发 `before-change`）：
 
 ```vue
 <m-tabs animated :active="0">
@@ -241,7 +241,7 @@ const tabOptions: UTSJSONObject[] = [
 | --- | --- | --- |
 | update:active | 激活标签变化（`v-model:active`；值为标签 name，未指定 name 时为索引） | name: string \| number |
 | change | 激活标签变化（交互路径派发；scrollspy 滚动联动与外部回灌不派发） | name: string \| number \| null, index: number |
-| click-tab | 点击标签（含禁用标签，对齐 Vant） | event: TabsClickEvent |
+| click-tab | 点击标签（含禁用标签） | event: TabsClickEvent |
 | sticky-change | 吸顶状态变化（sticky 模式透传 m-sticky） | isFixed: boolean |
 
 ### TabsClickEvent
@@ -294,9 +294,9 @@ const tabOptions: UTSJSONObject[] = [
 ## 与 Vant 的差异
 
 - 组件拆分：Vant 为单组件（Tab 由 Tabs 容器解析插槽），本项目拆为 `m-tabs` 容器 + `m-tab` 子项；uni-app x 无 VNode 移动能力，标题栏由容器按子组件注册快照渲染，因此**不支持 `title` 插槽与标题样式自定义**（内容在 `m-tab` 默认插槽自渲染）
-- `options` 数组形态为本项目扩展（参考 Sard Tabs）：纯标签栏无内容区，`label / value / disabled / dot / badge` 字段经 `field-names` 映射
+- `options` 数组形态为本项目扩展：纯标签栏无内容区，`label / value / disabled / dot / badge` 字段经 `field-names` 映射
 - `swipe-threshold` 为本项目扩展 prop：Vant 由 CSS 变量控制滚动布局，本项目以标签数阈值切换平分 / 滚动布局
 - `before-change` 为 boolean 同步版（对齐 `m-popup` 的 `before-close`），Vant 支持 Promise 异步拦截
 - 吸顶与滚动导航依赖页面回传 `scroll-top`（受控协议，对齐 m-sticky），Vant 自行监听页面滚动
-- swipeable 手势切换为自行编排的轨道平移 + touch 手势（uni-app x 无法将子组件放入 swiper-item），手势切换不触发 `before-change`（对齐 Vant）；真机手势体验以 App 端为准
+- swipeable 手势切换为自行编排的轨道平移 + touch 手势（uni-app x 无法将子组件放入 swiper-item），手势切换不触发 `before-change`；真机手势体验以 App 端为准
 - 标签 `render` 自定义渲染函数不支持（UTS 无 VNode），`badge` 以文本形式呈现

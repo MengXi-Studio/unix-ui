@@ -1,6 +1,6 @@
 <template>
 	<!-- 已知宽高占位：按 width / height 的比例用 padding-top 撑出高度，
-	     内容绝对定位铺满；可在图片加载完成前就参与瀑布流排版（对齐 Sard WaterfallLoad） -->
+	     内容绝对定位铺满；可在图片加载完成前就参与瀑布流排版 -->
 	<view :class="rootClass" :style="rootStyle">
 		<view class="m-waterfall-load__content">
 			<slot :onLoad="handleContentLoad" :overtime="overtime"></slot>

@@ -1,0 +1,239 @@
+/**
+ * m-checkbox 系列的容器上下文与共享类型（跨组件共享，独立 .uts）
+ *
+ * m-checkbox-group provide 本上下文，m-checkbox inject 后按 name 参与勾选；
+ * 独立使用（不在组内）的 m-checkbox 自持 boolean 状态，不经上下文。
+ * class 实现：非蒸汽（Kotlin/Swift）端不支持「含方法的对象字面量 type」。
+ */
+import { ref, reactive, type Ref } from 'vue'
+
+/** provide / inject 配对 key */
+export const CHECKBOX_KEY: string = '__mxi_checkbox_group__'
+
+/** 单个勾选项标识（UTS 无 any，收窄为字符串 / 数字） */
+export type CheckboxValue = string | number
+
+/** 复选组值（多选集合） */
+export type CheckboxValueArray = Array<string | number>
+
+/**
+ * 创建空复选值集合
+ *
+ * 空数组字面量直接断言为联合类型别名时，Kotlin 侧生成无类型参数的 `_uA()`，
+ * 触发 `Cannot infer type argument for 'E'`；改用具体元素类型的 ref 泛型构造，
+ * 生成带类型参数的数组后再断言为联合数组（泛型擦除，运行时安全）。
+ *
+ * @returns 空集合
+ */
+export function emptyCheckboxValues(): CheckboxValueArray {
+	const box = ref<string[]>([])
+	return box.value as CheckboxValueArray
+}
+
+/** 复选框形状：圆形 / 方形 */
+export type CheckboxShape = 'round' | 'square'
+
+/** 复选组排列方向：纵向 / 横向 */
+export type CheckboxDirection = 'vertical' | 'horizontal'
+
+/** 文本相对图标的位置：右侧 / 左侧 */
+export type CheckboxLabelPosition = 'right' | 'left'
+
+/** options 数组的字段名映射（m-checkbox-popup / m-checkbox-input 用） */
+export type CheckboxFieldNames = {
+	/** 选项文字字段名 */
+	label: string
+	/** 选项值字段名 */
+	value: string
+	/** 选项禁用字段名（固定 disabled，此映射仅作扩展） */
+	disabled: string
+}
+
+/** 字段名默认值 */
+export const DEFAULT_CHECKBOX_FIELD_NAMES: CheckboxFieldNames = {
+	label: 'label',
+	value: 'value',
+	disabled: 'disabled'
+}
+
+/** 复选组注入上下文：维护选中集合与统一视觉规格 */
+export class CheckboxGroupContext {
+	/** 选中项标识集合（组容器写入，子项据此判定勾选态） */
+	value: Ref<CheckboxValueArray> = ref<CheckboxValueArray>(emptyCheckboxValues())
+	/** 是否禁用全部复选框 */
+	disabled: Ref<boolean> = ref<boolean>(false)
+	/** 形状 */
+	shape: Ref<CheckboxShape> = ref<CheckboxShape>('round')
+	/** 图标尺寸（number 补 px / string 原样） */
+	iconSize: Ref<string> = ref<string>('')
+	/** 选中态颜色 */
+	checkedColor: Ref<string> = ref<string>('')
+	/** 最大可选数（0 不限制） */
+	max: Ref<number> = ref<number>(0)
+	/** 排列方向 */
+	direction: Ref<CheckboxDirection> = ref<CheckboxDirection>('vertical')
+	/** 注册的 name 集合（reactive 数组，toggleAll / max 判定用） */
+	names: CheckboxValueArray = reactive<CheckboxValueArray>(emptyCheckboxValues())
+
+	/**
+	 * 注册子项 name（m-checkbox setup 中同步调用）
+	 *
+	 * @param name 子项标识
+	 */
+	register(name: CheckboxValue): void {
+		if (!this.contains(name)) {
+			this.names.push(name)
+		}
+	}
+
+	/**
+	 * 注销子项 name（onUnmounted 调用）
+	 *
+	 * @param name 子项标识
+	 */
+	unregister(name: CheckboxValue): void {
+		const index = this.indexOf(name)
+		if (index != -1) {
+			this.names.splice(index, 1)
+		}
+	}
+
+	/**
+	 * 查询 name 注册序位（-1 未注册）
+	 *
+	 * @param name 子项标识
+	 * @returns 注册序位
+	 */
+	indexOf(name: CheckboxValue): number {
+		for (let i = 0; i < this.names.length; i++) {
+			if (valuesEqual(this.names[i], name)) {
+				return i
+			}
+		}
+		return -1
+	}
+
+	/**
+	 * 判定 name 是否已选中（分类型全等，避免 string / number 隐式互转）
+	 *
+	 * @param name 子项标识
+	 * @returns 是否选中
+	 */
+	contains(name: CheckboxValue): boolean {
+		return containsValue(this.value.value, name)
+	}
+
+	/**
+	 * 切换 name 的勾选态（max 达上限时拒绝新增；切换后写回 value）
+	 *
+	 * @param name 子项标识
+	 */
+	toggle(name: CheckboxValue): void {
+		const list = this.value.value
+		if (this.contains(name)) {
+			const next: CheckboxValueArray = []
+			for (let i = 0; i < list.length; i++) {
+				if (!valuesEqual(list[i], name)) {
+					next.push(list[i])
+				}
+			}
+			this.value.value = next
+			return
+		}
+		const max = this.max.value
+		if (max > 0 && list.length >= max) {
+			return
+		}
+		const next: CheckboxValueArray = []
+		for (let i = 0; i < list.length; i++) {
+			next.push(list[i])
+		}
+		next.push(name)
+		this.value.value = next
+	}
+}
+
+/**
+ * 值相等判定（字符串化比较：string 与 number 的同字面量视为同一项，'1' 与 1 等价——
+ * 宽松标识语义；不用 instanceof 判型，UTS 原始 string/number
+ * 在 Web 端运行时不是包装对象，instanceof 恒 false）
+ *
+ * @param a 值 A
+ * @param b 值 B
+ * @returns 是否相等
+ */
+export function valuesEqual(a: CheckboxValue, b: CheckboxValue): boolean {
+	return a.toString() == b.toString()
+}
+
+/**
+ * 判定集合中是否包含某值
+ *
+ * @param list 值集合
+ * @param v 目标值
+ * @returns 是否包含
+ */
+export function containsValue(list: CheckboxValueArray, v: CheckboxValue): boolean {
+	for (let i = 0; i < list.length; i++) {
+		if (valuesEqual(list[i], v)) {
+			return true
+		}
+	}
+	return false
+}
+
+/**
+ * 读取选项文字（label 字段经 field-names 映射，缺失回退空串）
+ *
+ * @param opt 选项对象
+ * @param fields 字段名映射
+ * @returns 选项文字
+ */
+export function checkboxOptionLabel(opt: UTSJSONObject, fields: CheckboxFieldNames): string {
+	const s = opt.getString(fields.label)
+	if (s != null) {
+		return s
+	}
+	return ''
+}
+
+/**
+ * 读取选项值（value 字段经 field-names 映射，字符串优先、数字次之，均缺失回退 null）
+ *
+ * @param opt 选项对象
+ * @param fields 字段名映射
+ * @returns 选项值（null 表示未配置）
+ */
+export function checkboxOptionValue(opt: UTSJSONObject, fields: CheckboxFieldNames): CheckboxValue | null {
+	const n = opt.getNumber(fields.value)
+	if (n != null) {
+		return n
+	}
+	const s = opt.getString(fields.value)
+	if (s != null) {
+		return s
+	}
+	return null
+}
+
+/**
+ * 读取选项禁用态（disabled 字段经 field-names 映射）
+ *
+ * @param opt 选项对象
+ * @param fields 字段名映射
+ * @returns 是否禁用
+ */
+export function checkboxOptionDisabled(opt: UTSJSONObject, fields: CheckboxFieldNames): boolean {
+	const b = opt.getBoolean(fields.disabled)
+	return b == true
+}
+
+/**
+ * 值的展示文本（string / number 统一 toString）
+ *
+ * @param v 值
+ * @returns 展示文本
+ */
+export function checkboxValueText(v: CheckboxValue): string {
+	return v.toString()
+}

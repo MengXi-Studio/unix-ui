@@ -1,0 +1,118 @@
+<template>
+	<view class="page">
+		<demo-navbar title="颜色选择器输入框" subtitle="ColorPickerInput" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-color-picker-input v-model:value="basicColor" placeholder="选择产线颜色" />
+					<text class="caption">只读触发器 + 弹层，确定后回显颜色文本（当前：{{ basicColor }}）</text>
+				</view>
+
+				<text class="section" id="title">字段标签</text>
+				<view class="card">
+					<m-color-picker-input v-model:value="titleColor" title="产线颜色" placeholder="请选择" />
+					<text class="caption">title 在输入框上方渲染字段标签（当前：{{ titleColor }}）</text>
+				</view>
+
+				<text class="section" id="clear">可清空</text>
+				<view class="card">
+					<m-color-picker-input v-model:value="clearColor" clearable />
+					<text class="caption">clearable 显示自绘清空按钮，点击回写空值（当前：{{ clearColor == '' ? '空' : clearColor }}）</text>
+				</view>
+
+				<text class="section" id="disabled">禁用与嵌入式</text>
+				<view class="card">
+					<m-color-picker-input v-model:value="disabledColor" disabled />
+					<text class="caption">disabled 不响应点击（当前：{{ disabledColor }}）</text>
+					<m-color-picker-input v-model:value="inlaidColor" inlaid custom-style="margin-top: 12px;" />
+					<text class="caption">inlaid 嵌入式形态（当前：{{ inlaidColor }}）</text>
+				</view>
+
+				<text class="section" id="full">完整能力</text>
+				<view class="card">
+					<m-color-picker-input
+						v-model:value="fullColor"
+						title="主题色"
+						show-alpha
+						show-format
+						show-presets
+						show-inputs
+						show-recent
+						show-eyedropper
+						clearable
+					/>
+					<text class="caption">透明度 + 格式切换 + 预设色 + 数值输入 + 最近色（当前：{{ fullColor }}）</text>
+				</view>
+
+				<text class="section" id="events">事件</text>
+				<view class="card">
+					<m-color-picker-input
+						v-model:value="eventColor"
+						clearable
+						@confirm="onConfirmLog"
+						@clear="onClearLog"
+						@change="onChangeLog"
+					/>
+					<text class="caption">最近事件：{{ lastEvent }}</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '颜色选择器输入框 ColorPickerInput', name: 'color-picker-input' })
+
+	/** 基础用法颜色 */
+	const basicColor = ref<string>('#1989FA')
+	/** 字段标签演示颜色 */
+	const titleColor = ref<string>('rgb(46, 204, 113)')
+	/** 可清空演示颜色 */
+	const clearColor = ref<string>('rgba(239, 68, 68, 0.8)')
+	/** 禁用态颜色 */
+	const disabledColor = ref<string>('#9CA3AF')
+	/** 嵌入式演示颜色 */
+	const inlaidColor = ref<string>('#06B6D4')
+	/** 完整能力演示颜色 */
+	const fullColor = ref<string>('hsl(210, 96%, 54%)')
+	/** 事件演示颜色 */
+	const eventColor = ref<string>('#8B5CF6')
+	/** 最近事件日志 */
+	const lastEvent = ref<string>('无')
+
+	/**
+	 * 确认事件日志
+	 *
+	 * @param v 确认的颜色值
+	 */
+	function onConfirmLog(v: string) {
+		lastEvent.value = 'confirm: ' + v
+	}
+
+	/**
+	 * 清空事件日志
+	 */
+	function onClearLog() {
+		lastEvent.value = 'clear'
+	}
+
+	/**
+	 * 值变化日志
+	 *
+	 * @param v 变化后的颜色值
+	 */
+	function onChangeLog(v: string) {
+		lastEvent.value = 'change: ' + v
+	}
+</script>
+
+<style lang="scss">
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

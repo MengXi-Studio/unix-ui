@@ -1,0 +1,200 @@
+<template>
+	<!-- 悬浮按钮的子项：圆形图标按钮 + 可选名称文本。
+	     展开状态由 m-fab 上下文下发，本组件只负责逐项过渡（stagger 延迟由注册序决定）。 -->
+	<view :class="rootClass" :style="rootStyle" @click="onClick">
+		<view v-if="showName" class="m-fab-item__name" :style="nameStyle">
+			<slot name="name">
+				<text class="m-fab-item__name-text">{{ props.name }}</text>
+			</slot>
+		</view>
+		<view class="m-fab-item__circle" :style="circleStyle">
+			<slot></slot>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-fab-item 悬浮按钮子项：需置于 m-fab 的默认插槽内。
+	 * 点击后派发 click 并自动收起扩展列表；名称默认取 name 属性，
+	 * 可用 name 插槽自定义（此时仍需设置 name 非空，或由 m-fab 的 hide-name 统一隐藏）。
+	 * 入场 / 收场过渡为 inline transition（opacity + translateY + scale），延迟按注册序 stagger。
+	 */
+	import { FAB_KEY, FabContext, generateFabItemId } from '../m-fab/fab.uts'
+
+	type Props = {
+		/** 按钮名称（显示在图标旁，hide-name 时隐藏；同时作为 click 的业务标识） */
+		name?: string
+		/** 图标颜色（空串继承 m-fab 的 color，再回退主题变量） */
+		color?: string
+		/** 背景色（空串继承 m-fab 的 background，再回退主题变量） */
+		background?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		name: '',
+		color: '',
+		background: ''
+	})
+
+	const emit = defineEmits<{
+		/** 点击按钮项（派发后自动收起扩展列表） */
+		click: [event: MouseEvent]
+	}>()
+
+	/** 入场过渡时长（ms，与 m-fab 的 ANIM_DURATION 保持一致） */
+	const ANIM_DURATION = 200
+	/** 逐项过渡间隔（ms，与 m-fab 的 ANIM_STAGGER 保持一致） */
+	const ANIM_STAGGER = 40
+
+	/** 悬浮按钮上下文（不在 m-fab 内时为 null，退化为不可见且不参与过渡） */
+	const fab = inject<FabContext | null>(FAB_KEY, null)
+
+	/** 本按钮项唯一标识（注册序位由上下文分配） */
+	const itemId = generateFabItemId()
+	if (fab != null) {
+		fab.register(itemId)
+	}
+	onUnmounted(() => {
+		if (fab != null) {
+			fab.unregister(itemId)
+		}
+	})
+
+	/** 槽位检测（uvue 需索引访问读取具名插槽） */
+	const slots = useSlots()
+
+	/** 首帧后置位：让挂载瞬间的初始样式（隐藏 + 位移）先绘制，transition 才有起点 */
+	const entered = ref(false)
+
+	/** 是否处于展开可见态（首帧后置位与上下文可见态同时成立才可见） */
+	const shown = computed<boolean>(() => {
+		if (fab == null) return false
+		return fab.visible.value && entered.value
+	})
+
+	/** 注册序位（0 为最靠近入口按钮的一项，用于 stagger 延迟） */
+	const index = computed<number>(() => {
+		if (fab == null) return 0
+		const i = fab.indexOf(itemId)
+		return i < 0 ? 0 : i
+	})
+
+	/** 同组按钮项总数（收场时按逆序延迟） */
+	const total = computed<number>(() => {
+		if (fab == null) return 1
+		return fab.ids.length > 0 ? fab.ids.length : 1
+	})
+
+	/** 是否显示名称：具名插槽优先，否则 name 非空且未开启 hide-name */
+	const showName = computed<boolean>(() => {
+		if (slots['name'] != null) return true
+		if (props.name == '') return false
+		if (fab == null) return true
+		return !fab.hideName.value
+	})
+
+	/** 根节点类名：左右对齐变体（入口贴左时名称在图标右侧） */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-fab-item'
+		if (fab != null && fab.alignLeft.value) cls += ' m-fab-item--left'
+		return cls
+	})
+
+	/** 根节点内联样式：过渡两态（opacity / translateY / scale）+ 按注册序的 stagger 延迟 */
+	const rootStyle = computed<string>(() => {
+		const v = shown.value
+		const i = index.value
+		const n = total.value
+		// 入场按注册序依次延迟，收场逆序（最靠近入口的最后消失）
+		const delay = v ? i * ANIM_STAGGER : (n - 1 - i > 0 ? (n - 1 - i) * ANIM_STAGGER : 0)
+		let style = 'opacity: ' + (v ? '1' : '0') + ';'
+		style += ' transform: translateY(' + (v ? '0px' : '8px') + ') scale(' + (v ? '1' : '0.8') + ');'
+		style += ' transition-duration: ' + ANIM_DURATION.toString() + 'ms;'
+		style += ' transition-delay: ' + delay.toString() + 'ms;'
+		return style
+	})
+
+	/** 名称容器样式：图标与名称的左右间距按对齐方向切换（ucss 无后代选择器，走 inline） */
+	const nameStyle = computed<string>(() => {
+		const gap = '8px'
+		if (fab != null && fab.alignLeft.value) return 'margin-left: ' + gap + ';'
+		return 'margin-right: ' + gap + ';'
+	})
+
+	/** 圆形按钮样式：自身配色优先，其次继承 m-fab 的 color / background */
+	const circleStyle = computed<string>(() => {
+		let style = ''
+		const bg = props.background != '' ? props.background : (fab != null ? fab.background.value : '')
+		const c = props.color != '' ? props.color : (fab != null ? fab.color.value : '')
+		if (bg != '') style += 'background: ' + bg + ';'
+		if (c != '') style += ' color: ' + c + ';'
+		return style
+	})
+
+	/**
+	 * 点击按钮项：派发 click 并请求容器收起
+	 */
+	const onClick = (e: MouseEvent) => {
+		emit('click', e)
+		if (fab != null) fab.requestCollapse()
+	}
+
+	onMounted(() => {
+		// 首帧绘制后再切到终态，保证入场过渡有起点（16ms 约等于一帧）
+		setTimeout(() => {
+			entered.value = true
+		}, 16)
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），用户零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss——
+	 * uni.scss 会注入每个组件样式，与组件内引入同一文件将触发循环导入）。
+	 * !default 语义保证用户定义值优先于默认值，与注入先后顺序无关。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 单项：横向排布（图标 + 名称），过渡属性只声明一次，时长与延迟走 inline */
+	.m-fab-item {
+		flex-direction: row;
+		align-items: center;
+		margin-top: $m-fab-item-gap;
+		transition-property: opacity, transform;
+		transition-timing-function: ease;
+	}
+
+	/* 入口贴左：名称在图标右侧 */
+	.m-fab-item--left {
+		flex-direction: row-reverse;
+	}
+
+	/* 圆形按钮 */
+	.m-fab-item__circle {
+		width: $m-fab-item-size;
+		height: $m-fab-item-size;
+		border-radius: 50%;
+		background-color: $m-fab-item-background;
+		color: $m-fab-item-color;
+		justify-content: center;
+		align-items: center;
+		box-shadow: $m-fab-item-shadow;
+	}
+
+	/* 名称气泡 */
+	.m-fab-item__name {
+		background-color: $m-fab-item-name-background;
+		border-radius: $m-fab-item-name-radius;
+		padding: $m-fab-item-name-padding;
+	}
+
+	/* 名称文本 */
+	.m-fab-item__name-text {
+		font-size: $m-fab-item-name-font-size;
+		color: $m-fab-item-name-color;
+		line-height: $m-fab-item-name-line-height;
+	}
+</style>

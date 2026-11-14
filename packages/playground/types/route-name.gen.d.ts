@@ -26,10 +26,26 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		cascader: 'pages-sub/cascader/cascader'
 		/** 单元格 Cell */
 		cell: 'pages-sub/cell/cell'
+		/** 复选输入框 CheckboxInput */
+		'checkbox-input': 'pages-sub/checkbox-input/checkbox-input'
+		/** 复选弹出框 CheckboxPopup */
+		'checkbox-popup': 'pages-sub/checkbox-popup/checkbox-popup'
+		/** 复选框 Checkbox */
+		checkbox: 'pages-sub/checkbox/checkbox'
+		/** 颜色选择器输入框 ColorPickerInput */
+		'color-picker-input': 'pages-sub/color-picker-input/color-picker-input'
+		/** 颜色选择器弹出框 ColorPickerPopup */
+		'color-picker-popup': 'pages-sub/color-picker-popup/color-picker-popup'
+		/** 颜色选择器 ColorPicker */
+		'color-picker': 'pages-sub/color-picker/color-picker'
 		/** 紧凑布局 Compact */
 		compact: 'pages-sub/compact/compact'
+		/** 日期横条 Date Strip */
+		'date-strip': 'pages-sub/date-strip/date-strip'
 		/** 分割线 Divider */
 		divider: 'pages-sub/divider/divider'
+		/** 悬浮按钮 Fab */
+		fab: 'pages-sub/fab/fab'
 		/** 弹性布局 Flex */
 		flex: 'pages-sub/flex/flex'
 		/** 宫格 Grid */

@@ -162,6 +162,48 @@ export const demoGroups: DemoGroup[] = [
 				desc: 'm-popup 与 m-cascader 的弹层组合，v-model 控制显隐，选完最后一级自动关闭，支持方位、圆角与安全区配置。'
 			},
 			{
+				name: 'checkbox',
+				zhName: '复选框',
+				enName: 'Checkbox',
+				desc: '在一组备选项中进行多选：组容器 + 单项双形态，支持形状 / 颜色 / 大小定制、max 限制与 indeterminate 全选。'
+			},
+			{
+				name: 'checkbox-input',
+				zhName: '复选输入框',
+				enName: 'CheckboxInput',
+				desc: '复选框的表单输入形态：只读触发器 + 弹层多选，label「、」连接回显、超 2 项截断、自绘清空按钮。'
+			},
+			{
+				name: 'checkbox-popup',
+				zhName: '复选弹出框',
+				enName: 'CheckboxPopup',
+				desc: '复选框的弹层形态：底部弹层多选，options 数组驱动渲染 + field-names 映射 + footer 插槽。'
+			},
+			{
+				name: 'color-picker',
+				zhName: '颜色选择器',
+				enName: 'ColorPicker',
+				desc: '饱和度-明度面板 + 色相 / 透明度滑块，支持 hex / rgb / hsl 输出、格式切换、预设色、数值输入、最近色与 Web 端吸管取色。'
+			},
+			{
+				name: 'color-picker-input',
+				zhName: '颜色选择器输入框',
+				enName: 'ColorPickerInput',
+				desc: '颜色选择器的表单输入形态：只读触发器 + 色块预览 + 弹层选色，支持清空与字段标签。'
+			},
+			{
+				name: 'color-picker-popup',
+				zhName: '颜色选择器弹出框',
+				enName: 'ColorPickerPopup',
+				desc: '颜色选择器的弹层形态：取消 / 标题 / 确定头部，确定后回写，取消丢弃本次改动。'
+			},
+			{
+				name: 'date-strip',
+				zhName: '日期横条',
+				enName: 'DateStrip',
+				desc: '横向日期条，支持单选、多选、范围选择、value-format 字符串绑定、农历文案、过滤禁用与插槽定制。'
+			},
+			{
 				name: 'input',
 				zhName: '输入框',
 				enName: 'Input',
@@ -172,6 +214,12 @@ export const demoGroups: DemoGroup[] = [
 	{
 		title: '反馈组件',
 		components: [
+			{
+				name: 'fab',
+				zhName: '悬浮按钮',
+				enName: 'Fab',
+				desc: '悬浮于视口指定位置的圆形按钮，点击展开扩展按钮列表，支持四角定位、拖拽吸附与位置双向绑定。'
+			},
 			{
 				name: 'loading',
 				zhName: '加载',

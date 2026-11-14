@@ -1,0 +1,218 @@
+<template>
+	<view class="page">
+		<demo-navbar title="复选弹出框" subtitle="CheckboxPopup" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="basicShow = true">打开弹层多选</m-button>
+					<text class="caption" style="margin-top: 8px;">options 数组驱动 + 底部弹层 + footer 确定按钮（当前：{{ joinValues(basicValue) }}）</text>
+				</view>
+
+				<text class="section" id="field-names">自定义字段名</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="fieldsShow = true">field-names 映射（text / code / off）</m-button>
+					<text class="caption" style="margin-top: 8px;">field-names 自定义 label / value / disabled 字段（当前：{{ joinValues(fieldsValue) }}）</text>
+				</view>
+
+				<text class="section" id="max">最大可选数与禁用项</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="maxShow = true">max=2 + 禁用选项</m-button>
+					<text class="caption" style="margin-top: 8px;">选满两项后其余项点击仅派发 click-item 不勾选；禁用项不可勾选（当前：{{ joinValues(maxValue) }}）</text>
+				</view>
+
+				<text class="section" id="direction">横向排列</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="dirShow = true">direction="horizontal"</m-button>
+					<text class="caption" style="margin-top: 8px;">弹层内选项横排换行（当前：{{ joinValues(dirValue) }}）</text>
+				</view>
+
+				<text class="section" id="options-height">自定义选项区高度</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="heightShow = true">options-height=200</m-button>
+					<text class="caption" style="margin-top: 8px;">options-height 覆盖主题变量高度，超出滚动（当前：{{ joinValues(heightValue) }}）</text>
+				</view>
+
+				<text class="section" id="events">事件</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="eventShow = true">click-item / close / update:show</m-button>
+					<text class="caption" style="margin-top: 8px;">最近事件：{{ lastEvent }}</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 基础用法 -->
+		<m-checkbox-popup
+			v-model:show="basicShow"
+			v-model:value="basicValue"
+			:options="basicOptions"
+			title="选择标签"
+			@change="onBasicChange"
+		>
+			<template #footer>
+				<view class="popup-footer">
+					<m-button block type="primary" @click="basicShow = false">确定（{{ basicValue.length }} 项）</m-button>
+				</view>
+			</template>
+		</m-checkbox-popup>
+
+		<!-- 自定义字段名 -->
+		<m-checkbox-popup
+			v-model:show="fieldsShow"
+			v-model:value="fieldsValue"
+			:options="fieldOptions"
+			:field-names="customFields"
+			title="选择渠道"
+		/>
+
+		<!-- max 与禁用项 -->
+		<m-checkbox-popup
+			v-model:show="maxShow"
+			v-model:value="maxValue"
+			:options="maxOptions"
+			title="最多选 2 项"
+			:max="2"
+		/>
+
+		<!-- 横向排列 -->
+		<m-checkbox-popup
+			v-model:show="dirShow"
+			v-model:value="dirValue"
+			:options="basicOptions"
+			title="横向排列"
+			direction="horizontal"
+		/>
+
+		<!-- 自定义高度 -->
+		<m-checkbox-popup
+			v-model:show="heightShow"
+			v-model:value="heightValue"
+			:options="longOptions"
+			title="自定义高度"
+			:options-height="200"
+		/>
+
+		<!-- 事件 -->
+		<m-checkbox-popup
+			v-model:show="eventShow"
+			v-model:value="eventValue"
+			:options="basicOptions"
+			title="事件演示"
+			@click-item="onItemClick"
+			@close="onPopupClose"
+		/>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '复选弹出框 CheckboxPopup', name: 'checkbox-popup' })
+
+	import { CheckboxValueArray, CheckboxFieldNames, emptyCheckboxValues, checkboxValueText } from '@/uni_modules/m-ui-x/components/m-checkbox-group/checkbox.uts'
+
+	/** 各弹层显隐 */
+	const basicShow = ref(false)
+	const fieldsShow = ref(false)
+	const maxShow = ref(false)
+	const dirShow = ref(false)
+	const heightShow = ref(false)
+	const eventShow = ref(false)
+
+	/** 各弹层选中集合 */
+	const basicValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const fieldsValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const maxValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const dirValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const heightValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+	const eventValue = ref<CheckboxValueArray>(emptyCheckboxValues())
+
+	/** 最近触发的事件文案 */
+	const lastEvent = ref('（无）')
+
+	/** 基础选项数据 */
+	const basicOptions = ref<UTSJSONObject[]>([
+		{ label: '优惠', value: 'discount' },
+		{ label: '上新', value: 'new' },
+		{ label: '活动', value: 'activity' }
+	] as UTSJSONObject[])
+
+	/** 自定义字段名选项数据（text / code / off） */
+	const fieldOptions = ref<UTSJSONObject[]>([
+		{ text: '线上渠道', code: 'online' },
+		{ text: '线下渠道', code: 'offline' },
+		{ text: '合作渠道（禁用）', code: 'partner', off: true }
+	] as UTSJSONObject[])
+
+	/** 自定义字段名映射 */
+	const customFields = ref<CheckboxFieldNames>({ label: 'text', value: 'code', disabled: 'off' } as CheckboxFieldNames)
+
+	/** max 演示选项（含禁用项） */
+	const maxOptions = ref<UTSJSONObject[]>([
+		{ label: '选项 a', value: 'a' },
+		{ label: '选项 b', value: 'b' },
+		{ label: '选项 c', value: 'c' },
+		{ label: '选项 d（禁用）', value: 'd', disabled: true }
+	] as UTSJSONObject[])
+
+	/** 高度演示选项（长列表撑滚动） */
+	const longOptions = ref<UTSJSONObject[]>([]);
+	(() => {
+		const arr = longOptions.value
+		for (let i = 1; i <= 20; i++) {
+			arr.push({ label: '选项 ' + i, value: i } as UTSJSONObject)
+		}
+	})()
+
+	/**
+	 * 值集合的展示文本（「、」连接）
+	 */
+	function joinValues(v: CheckboxValueArray): string {
+		const parts: string[] = []
+		for (let i = 0; i < v.length; i++) {
+			parts.push(checkboxValueText(v[i]))
+		}
+		return '[' + parts.join('、') + ']'
+	}
+
+	/**
+	 * 选中集合变化日志
+	 */
+	function logChange(tag: string, v: CheckboxValueArray) {
+		console.log('checkbox-popup ' + tag + ' change: ' + joinValues(v))
+	}
+
+	/**
+	 * 基础弹层 change 记录（事件不带参数，取当前绑定值）
+	 */
+	function onBasicChange() {
+		logChange('基础弹层', basicValue.value)
+	}
+
+	/**
+	 * click-item 事件记录
+	 */
+	function onItemClick(index: number) {
+		lastEvent.value = 'click-item: ' + index.toString()
+	}
+
+	/**
+	 * close 事件记录
+	 */
+	function onPopupClose() {
+		lastEvent.value = 'close'
+	}
+</script>
+
+<style lang="scss">
+	/* 弹层底部按钮区 */
+	.popup-footer {
+		padding: 12px 16px 24px;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

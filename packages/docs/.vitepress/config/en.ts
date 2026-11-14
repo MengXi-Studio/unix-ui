@@ -35,7 +35,8 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 		nav: [
 			{ text: 'Guide', link: '/en/guide/introduction' },
 			{ text: 'Components', link: '/en/components/button' },
-			{ text: 'Changelog', link: '/en/changelog' },
+			{ text: 'Tools', link: '/en/tools/date' },
+			{ text: 'Changelog v0.5.0', link: '/en/changelog' },
 			{
 				text: 'Links',
 				items: [
@@ -100,12 +101,20 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Cascader', link: '/en/components/cascader' },
 						{ text: 'CascaderInput', link: '/en/components/cascader-input' },
 						{ text: 'CascaderPopup', link: '/en/components/cascader-popup' },
+						{ text: 'Checkbox', link: '/en/components/checkbox' },
+						{ text: 'CheckboxInput', link: '/en/components/checkbox-input' },
+						{ text: 'CheckboxPopup', link: '/en/components/checkbox-popup' },
+						{ text: 'ColorPicker', link: '/en/components/color-picker' },
+						{ text: 'ColorPickerInput', link: '/en/components/color-picker-input' },
+						{ text: 'ColorPickerPopup', link: '/en/components/color-picker-popup' },
+						{ text: 'DateStrip', link: '/en/components/date-strip' },
 						{ text: 'Input', link: '/en/components/input' }
 					]
 				},
 				{
 					text: 'Feedback Components',
 					items: [
+						{ text: 'Fab', link: '/en/components/fab' },
 						{ text: 'Loading', link: '/en/components/loading' },
 						{ text: 'Overlay', link: '/en/components/overlay' },
 						{ text: 'Popup', link: '/en/components/popup' },
@@ -122,6 +131,12 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				{
 					text: 'Navigation Components',
 					items: [{ text: 'Tabs', link: '/en/components/tabs' }]
+				}
+			],
+			'/en/tools/': [
+				{
+					text: 'Tools',
+					items: [{ text: 'Date', link: '/en/tools/date' }]
 				}
 			]
 		}

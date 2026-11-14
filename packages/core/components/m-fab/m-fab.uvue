@@ -1,0 +1,596 @@
+<template>
+	<!-- 悬浮按钮：入口圆钮固定于视口四角（默认右下），点击展开扩展按钮列表。
+	     根节点尺寸等于入口按钮，溢出内容（展开列表）靠 overflow: visible 放行；
+	     位置由 CSS 角标承担（top/right/bottom/left 未传时用主题默认间距），
+	     拖拽后切换为 inline left/top（中心点坐标 - 半宽高）接管。 -->
+	<view :class="rootClass" :style="rootStyle">
+		<m-overlay v-if="overlayClosable" :show="visible" @click="onOverlayClick" />
+		<view v-if="rendered" :class="listClass" :style="listStyle">
+			<slot></slot>
+		</view>
+		<view
+			id="m-fab-entry"
+			ref="entryRef"
+			class="m-fab__entry"
+			:hover-class="hoverClass"
+			:style="entryStyle"
+			@click="onEntryClick"
+			@touchstart="onTouchStart"
+			@touchmove="onTouchMove"
+			@touchend="onTouchEnd"
+			@touchcancel="onTouchEnd"
+		>
+			<slot name="entry" :visible="visible">
+				<m-icon :name="entryIcon" :color="props.color" custom-class="m-fab__entry-icon" />
+			</slot>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-fab 悬浮按钮。
+	 * 入口按钮默认右下角，点击展开扩展按钮（m-fab-item）；支持四角定位、
+	 * 自定义配色 / 名称显隐 / 遮罩点击收起 / 拖拽（axis 轴限制 + magnet 松手吸附 + v-model:offset）。
+	 * 展开动画走逐项 inline transition（stagger 延迟 + translateY + scale，ucss 无 @keyframes）；
+	 * 拖拽走 touch 事件 + 视口钳制（margin-x / margin-y），位置以入口按钮中心点坐标表达。
+	 */
+	import { FAB_KEY, FabContext, FabAxis, FabMagnet, FabOffset } from './fab.uts'
+	import { IconName } from '../m-icon/icons.uts'
+	import MOverlay from '../m-overlay/m-overlay.uvue'
+	import MIcon from '../m-icon/m-icon.uvue'
+
+	type Props = {
+		/** 距视口顶部距离（非空时优先于 bottom；数字补 px / 带单位字符串原样） */
+		top?: string | number
+		/** 距视口右边距离（非空时生效；left 非空时以 left 为准） */
+		right?: string | number
+		/** 距视口底部距离（top 为空时生效；未传时用主题默认间距） */
+		bottom?: string | number
+		/** 距视口左边距离（非空时优先于 right） */
+		left?: string | number
+		/** 入口按钮图标色（空串用主题变量；图标为 entry 插槽自定义时不生效） */
+		color?: string
+		/** 入口按钮背景色（空串用主题变量，支持 linear-gradient；m-fab-item 未设 background 时继承） */
+		background?: string
+		/** 是否隐藏扩展按钮名称（true 时只显示圆形图标） */
+		hideName?: boolean
+		/** 点击遮罩是否收起扩展按钮（true 时展开期间渲染遮罩） */
+		overlayClosable?: boolean
+		/** 是否可拖拽（拖拽为 touch 手势，桌面端鼠标拖拽不生效） */
+		draggable?: boolean
+		/** 允许拖拽的方向轴 */
+		axis?: FabAxis
+		/** 松手后吸附到指定轴的最近一边（空串不吸附） */
+		magnet?: FabMagnet
+		/** 拖拽时距视口左右边缘的最小间距（px） */
+		marginX?: number
+		/** 拖拽时距视口上下边缘的最小间距（px） */
+		marginY?: number
+		/** 受控位置（v-model:offset，入口按钮中心点相对视口左上角的坐标，单位 px） */
+		offset?: FabOffset
+		/** z-index 层级（非默认值时以 inline 覆盖主题类） */
+		zIndex?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		top: '',
+		right: '',
+		bottom: '',
+		left: '',
+		color: '',
+		background: '',
+		hideName: false,
+		overlayClosable: false,
+		draggable: false,
+		axis: 'y',
+		magnet: '',
+		marginX: 24,
+		marginY: 24,
+		offset: null,
+		zIndex: 99,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 点击入口按钮（收起态点击为展开、展开态点击为收起，均派发） */
+		click: [event: MouseEvent]
+		/** 扩展按钮显隐变化（展开 true / 收起 false） */
+		'update:visible': [value: boolean]
+		/** 拖拽导致位置变化（松手时派发最终位置） */
+		'update:offset': [value: FabOffset]
+	}>()
+
+	/** 入场 / 收场过渡时长（ms，与 m-fab-item 的 transition-duration 保持一致） */
+	const ANIM_DURATION = 200
+	/** 按钮项逐项出场 / 收场的间隔（ms，与 m-fab-item 的 transition-delay 保持一致） */
+	const ANIM_STAGGER = 40
+
+	/** 容器上下文：provide 给 m-fab-item 注册并读取展开态 / 配色 / 对齐 */
+	const ctx = new FabContext()
+	provide(FAB_KEY, ctx)
+
+	/** 入口按钮节点（尺寸测量与拖拽跟手载体） */
+	const entryRef = ref<UniElement | null>(null)
+
+	// #ifdef MP
+	/** 组件实例（createSelectorQuery 的 in 作用域参数；setup 期一次性获取） */
+	const mpInstance = getCurrentInstance()
+
+	/**
+	 * 小程序端测量：按 id 在组件实例作用域内查询节点矩形（多实例安全）
+	 *
+	 * 小程序端 UniElement 无 children / parentElement，且 getBoundingClientRectAsync
+	 * 仅支持有 id 的元素——统一走 createSelectorQuery 按 id 直查。
+	 *
+	 * @param id 目标元素 id（组件实例内唯一即可）
+	 * @param cb 测量回调（DOMRect 兼容结构，未查到传 null）
+	 */
+	const queryRectById = (id: string, cb: (rect: DOMRect | null) => void) => {
+		uni.createSelectorQuery().in(mpInstance!.proxy!)
+			.select('#' + id)
+			.boundingClientRect()
+			.exec((ret: Array<any>) => {
+				const first = ret.length > 0 ? ret[0] : null
+				cb(first as DOMRect | null)
+			})
+	}
+	// #endif
+
+	/** 扩展按钮是否展开 */
+	const visible = ref(false)
+	/** 扩展列表是否挂载（收起动画播完才卸载，避免收场过程被裁掉） */
+	const rendered = ref(false)
+	/** 是否已切换为自由定位（受控 offset 或拖拽后为 true，此后 left/top 接管角标定位） */
+	const positioned = ref(false)
+	/** 入口按钮中心点 x（视口坐标 px） */
+	const centerX = ref(0)
+	/** 入口按钮中心点 y（视口坐标 px） */
+	const centerY = ref(0)
+	/** 入口按钮实测宽（px，定位换算与边界钳制用） */
+	const entryW = ref(0)
+	/** 入口按钮实测高（px） */
+	const entryH = ref(0)
+	/** 视口宽（px，左右吸附与钳制用） */
+	const winW = ref(0)
+	/** 视口高（px，上下吸附与钳制用） */
+	const winH = ref(0)
+
+	/** 收起卸载定时器句柄（-1 表示无待执行定时器） */
+	let hideTimer = -1
+	/** 拖拽起点 x（视口坐标） */
+	let dragStartX = 0
+	/** 拖拽起点 y（视口坐标） */
+	let dragStartY = 0
+	/** 拖拽起始中心点 x（视口坐标） */
+	let dragBaseX = 0
+	/** 拖拽起始中心点 y（视口坐标） */
+	let dragBaseY = 0
+	/** 本次手势是否已判定为拖拽（位移超过阈值） */
+	let dragging = false
+	/** 拖拽结束后抑制紧随其后的 click（避免拖动误触发展开 / 收起） */
+	let suppressClick = false
+
+	/**
+	 * 数字或纯数字字符串补 px 单位（如 24 → 24px），带单位字符串原样返回
+	 *
+	 * @param value 原始尺寸值
+	 * @returns 可直接写入 inline style 的长度字符串（空串原样返回）
+	 */
+	function addUnit(value: string): string {
+		if (value == '') return ''
+		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
+		return pattern.test(value) ? value + 'px' : value
+	}
+
+	/** 根节点类名：基础类 + 自定义类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-fab'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 根节点内联样式：自由定位（left/top）或显式角标（top/bottom/left/right）+ z-index + customStyle */
+	const rootStyle = computed<string>(() => {
+		let style = ''
+		if (positioned.value) {
+			style += 'left: ' + (centerX.value - entryW.value / 2).toString() + 'px;'
+			style += ' top: ' + (centerY.value - entryH.value / 2).toString() + 'px;'
+			style += ' right: auto; bottom: auto;'
+		} else {
+			if (props.top != '') {
+				style += 'top: ' + addUnit('' + props.top) + '; bottom: auto;'
+			} else if (props.bottom != '') {
+				style += 'bottom: ' + addUnit('' + props.bottom) + ';'
+			}
+			if (props.left != '') {
+				style += ' left: ' + addUnit('' + props.left) + '; right: auto;'
+			} else if (props.right != '') {
+				style += ' right: ' + addUnit('' + props.right) + ';'
+			}
+		}
+		if (props.zIndex != 99) style += ' z-index: ' + props.zIndex.toString() + ';'
+		if (props.customStyle != '') {
+			if (props.customStyle.endsWith(';')) style += ' ' + props.customStyle
+			else style += ' ' + props.customStyle + ';'
+		}
+		return style
+	})
+
+	/** 入口按钮内联样式：background / color 非空时覆盖主题类 */
+	const entryStyle = computed<string>(() => {
+		let style = ''
+		if (props.background != '') style += 'background: ' + props.background + ';'
+		if (props.color != '') style += ' color: ' + props.color + ';'
+		return style
+	})
+
+	/** 入口按钮按压反馈类（仅展开 / 收起状态可点的默认图标需要，自定义插槽时同样生效） */
+	const hoverClass = 'm-fab__entry--active'
+
+	/** 入口默认图标：展开态 cross（收起） / 收起态 plus（展开） */
+	const entryIcon = computed<IconName>(() => {
+		return visible.value ? 'cross' : 'plus'
+	})
+
+	/**
+	 * 列表对齐：入口按钮在视口左半侧时名称在右（列表左对齐），否则名称在左
+	 */
+	const alignLeft = computed<boolean>(() => {
+		if (positioned.value) return centerX.value < winW.value / 2
+		return props.left != '' && props.right == ''
+	})
+
+	/**
+	 * 展开方向：入口按钮在视口上半侧时向下展开，否则向上（默认右下角向上展开）
+	 */
+	const expandDown = computed<boolean>(() => {
+		if (positioned.value) return centerY.value < winH.value / 2
+		return props.top != ''
+	})
+
+	/** 扩展列表类名：左右对齐与展开方向变体 */
+	const listClass = computed<string>(() => {
+		let cls = 'm-fab__list'
+		if (alignLeft.value) cls += ' m-fab__list--left'
+		if (expandDown.value) cls += ' m-fab__list--down'
+		return cls
+	})
+
+	/**
+	 * 扩展列表内联定位：整宽固定层 + 单侧 padding 顶住入口按钮边缘
+	 *
+	 * 绝对 / 固定定位元素的 auto 宽会被包含块宽度钳制（根节点仅入口按钮大小），
+	 * 名称气泡会被裁掉——因此列表取视口整宽，再用单侧 padding 把内容顶到入口边缘，
+	 * 使名称气泡向外侧自由伸展（不受根节点宽度约束）。
+	 */
+	const listStyle = computed<string>(() => {
+		if (entryW.value <= 0 || winW.value <= 0) return ''
+		let style = ''
+		// 垂直锚定：向下展开贴入口底边，向上展开贴入口顶边
+		if (expandDown.value) {
+			style += 'top: ' + (centerY.value + entryH.value / 2).toString() + 'px; bottom: auto;'
+		} else {
+			style += 'bottom: ' + (winH.value - (centerY.value - entryH.value / 2)).toString() + 'px; top: auto;'
+		}
+		// 水平对齐：左侧展开时留出入口左侧空间，右侧展开时留出入口右侧空间
+		if (alignLeft.value) {
+			style += ' padding-left: ' + (centerX.value - entryW.value / 2).toString() + 'px;'
+		} else {
+			style += ' padding-right: ' + (winW.value - centerX.value - entryW.value / 2).toString() + 'px;'
+		}
+		return style
+	})
+
+	/** 视口尺寸快照下发上下文（按钮项据此决定名称左右侧，避免子项重复读窗口信息） */
+	watch(alignLeft, (v: boolean) => {
+		ctx.alignLeft.value = v
+	}, { immediate: true })
+
+	/** 名称显隐 / 配色父级下发（props 变更时同步，子项只读上下文） */
+	watch((): boolean => props.hideName, (v: boolean) => {
+		ctx.hideName.value = v
+	}, { immediate: true })
+
+	watch((): string => props.background, (v: string) => {
+		ctx.background.value = v
+	}, { immediate: true })
+
+	watch((): string => props.color, (v: string) => {
+		ctx.color.value = v
+	}, { immediate: true })
+
+	/** 受控位置回灌：外部 v-model:offset 变更时同步中心点 */
+	watch((): FabOffset | null => {
+		const o = props.offset
+		if (o == null) return null
+		return o
+	}, (v: FabOffset | null) => {
+		if (v == null) return
+		centerX.value = v.x
+		centerY.value = v.y
+		positioned.value = true
+	})
+
+	/**
+	 * 测量并缓存入口按钮矩形（宽高用于定位换算与钳制；未受控定位时同时作为拖拽起点基准）
+	 *
+	 * @param rect 实测矩形（null 表示未取到，保持原值）
+	 */
+	function applyEntryRect(rect: DOMRect | null) {
+		if (rect == null) return
+		entryW.value = rect.width
+		entryH.value = rect.height
+		if (!positioned.value && props.offset == null) {
+			centerX.value = rect.left + rect.width / 2
+			centerY.value = rect.top + rect.height / 2
+		}
+	}
+
+	/**
+	 * 测量入口按钮（三分支：Web 同步 / 小程序 id 查询 / App 异步测量）
+	 */
+	function measureEntry() {
+		// #ifdef WEB
+		const webEl = entryRef.value
+		if (webEl != null) applyEntryRect(webEl.getBoundingClientRect())
+		// #endif
+		// #ifdef MP
+		queryRectById('m-fab-entry', (rect: DOMRect | null) => {
+			applyEntryRect(rect)
+		})
+		// #endif
+		// #ifdef APP
+		const appEl = entryRef.value
+		if (appEl != null) {
+			appEl.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+				applyEntryRect(rect)
+			})
+		}
+		// #endif
+	}
+
+	/**
+	 * 刷新视口尺寸（拖拽钳制与吸附边界依据）
+	 */
+	function measureWindow() {
+		const info = uni.getWindowInfo()
+		winW.value = info.windowWidth
+		winH.value = info.windowHeight
+	}
+
+	/**
+	 * 位置钳制：入口按钮中心点限制在「视口 - margin - 半径」范围内
+	 *
+	 * @param x 期望中心点 x
+	 * @param y 期望中心点 y
+	 * @returns 钳制后的中心点坐标
+	 */
+	function clampPosition(x: number, y: number): FabOffset {
+		const halfW = entryW.value / 2
+		const halfH = entryH.value / 2
+		let minX = props.marginX + halfW
+		let maxX = winW.value - props.marginX - halfW
+		let minY = props.marginY + halfH
+		let maxY = winH.value - props.marginY - halfH
+		if (maxX < minX) maxX = minX
+		if (maxY < minY) maxY = minY
+		let nx = x < minX ? minX : x
+		if (nx > maxX) nx = maxX
+		let ny = y < minY ? minY : y
+		if (ny > maxY) ny = maxY
+		const result: FabOffset = { x: nx, y: ny }
+		return result
+	}
+
+	/**
+	 * 应用位置（钳制后写入中心点并切换为自由定位）
+	 *
+	 * @param x 期望中心点 x
+	 * @param y 期望中心点 y
+	 */
+	function applyPosition(x: number, y: number) {
+		const p = clampPosition(x, y)
+		centerX.value = p.x
+		centerY.value = p.y
+		positioned.value = true
+	}
+
+	/**
+	 * 派发当前位置（松手时通知外部 v-model:offset）
+	 */
+	function emitOffset() {
+		const o: FabOffset = { x: centerX.value, y: centerY.value }
+		emit('update:offset', o)
+	}
+
+	/**
+	 * 设置展开 / 收起状态：切换上下文可见态、派发事件并编排挂载与卸载时机
+	 *
+	 * @param v 目标显隐状态
+	 */
+	function setVisible(v: boolean) {
+		if (visible.value == v) return
+		visible.value = v
+		ctx.visible.value = v
+		emit('update:visible', v)
+		if (hideTimer != -1) {
+			clearTimeout(hideTimer)
+			hideTimer = -1
+		}
+		if (v) {
+			rendered.value = true
+			return
+		}
+		// 收起：等逐项退场过渡（时长 + 最大延迟）播完再卸载列表
+		const count = ctx.ids.length > 0 ? ctx.ids.length : 1
+		const wait = ANIM_DURATION + ANIM_STAGGER * count
+		hideTimer = setTimeout(() => {
+			rendered.value = false
+			hideTimer = -1
+		}, wait)
+	}
+
+	/** 按钮项点击收起：自增计数驱动（同值不触发，故用累加；声明须在 setVisible 之后） */
+	watch(ctx.collapseTick, (_: number) => {
+		setVisible(false)
+	})
+
+	/**
+	 * 入口按钮点击：拖拽结束后的误触会被抑制；否则切换展开态并派发 click
+	 */
+	const onEntryClick = (e: MouseEvent) => {
+		if (suppressClick) {
+			suppressClick = false
+			return
+		}
+		setVisible(!visible.value)
+		emit('click', e)
+	}
+
+	/**
+	 * 遮罩点击：仅 overlay-closable 时为可点遮罩，点击即收起
+	 */
+	const onOverlayClick = (_: MouseEvent) => {
+		setVisible(false)
+	}
+
+	/**
+	 * 手势开始：记录起点与当前中心点（未自由定位时以实测中心为基准）
+	 */
+	const onTouchStart = (e: TouchEvent) => {
+		if (!props.draggable || props.axis == 'none') return
+		const t = e.touches[0]
+		dragStartX = t.clientX
+		dragStartY = t.clientY
+		dragBaseX = centerX.value
+		dragBaseY = centerY.value
+		dragging = false
+		suppressClick = false
+		measureWindow()
+	}
+
+	/**
+	 * 手势移动：位移超过 6px 判定为拖拽，按 axis 计算新中心点并实时钳制
+	 */
+	const onTouchMove = (e: TouchEvent) => {
+		if (!props.draggable || props.axis == 'none') return
+		const t = e.touches[0]
+		const dx = t.clientX - dragStartX
+		const dy = t.clientY - dragStartY
+		if (!dragging) {
+			if (dx * dx + dy * dy < 36) return
+			dragging = true
+		}
+		let nx = dragBaseX
+		let ny = dragBaseY
+		if (props.axis == 'x' || props.axis == 'both') nx = dragBaseX + dx
+		if (props.axis == 'y' || props.axis == 'both') ny = dragBaseY + dy
+		applyPosition(nx, ny)
+		emitOffset()
+	}
+
+	/**
+	 * 手势结束：按 magnet 吸附最近边并派发最终位置；拖拽过的本次手势抑制 click
+	 */
+	const onTouchEnd = (_: TouchEvent) => {
+		if (!props.draggable || props.axis == 'none') return
+		if (!dragging) return
+		suppressClick = true
+		if (props.magnet == 'x' || props.magnet == 'y') {
+			measureWindow()
+			const halfW = entryW.value / 2
+			const halfH = entryH.value / 2
+			if (props.magnet == 'x') {
+				const leftEdge = props.marginX + halfW
+				const rightEdge = winW.value - props.marginX - halfW
+				const mid = (leftEdge + rightEdge) / 2
+				applyPosition(centerX.value <= mid ? leftEdge : rightEdge, centerY.value)
+			} else {
+				const topEdge = props.marginY + halfH
+				const bottomEdge = winH.value - props.marginY - halfH
+				const mid = (topEdge + bottomEdge) / 2
+				applyPosition(centerX.value, centerY.value <= mid ? topEdge : bottomEdge)
+			}
+		}
+		emitOffset()
+	}
+
+	onMounted(() => {
+		measureWindow()
+		measureEntry()
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），用户零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss——
+	 * uni.scss 会注入每个组件样式，与组件内引入同一文件将触发循环导入）。
+	 * !default 语义保证用户定义值优先于默认值，与注入先后顺序无关。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 根节点：视口固定，尺寸即入口按钮尺寸，溢出放行给展开列表 */
+	.m-fab {
+		position: fixed;
+		right: $m-fab-offset;
+		bottom: $m-fab-offset;
+		width: $m-fab-size;
+		height: $m-fab-size;
+		overflow: visible;
+		z-index: $m-fab-z-index;
+	}
+
+	/* 入口按钮：圆形主色按钮 */
+	.m-fab__entry {
+		position: relative;
+		width: $m-fab-size;
+		height: $m-fab-size;
+		border-radius: 50%;
+		background-color: $m-fab-background;
+		justify-content: center;
+		align-items: center;
+		box-shadow: $m-fab-shadow;
+	}
+
+	/* 入口按钮按压反馈（hover-class） */
+	.m-fab__entry--active {
+		opacity: $m-fab-active-opacity;
+	}
+
+	/* 入口默认图标：字号与颜色由主题变量给（props.color / background 以 inline 覆盖） */
+	.m-fab__entry-icon {
+		font-size: $m-fab-icon-size;
+		color: $m-fab-icon-color;
+	}
+
+	/* 展开列表：整宽固定层（宽度不受根节点约束），内容由单侧 padding 顶到入口边缘；
+	   column-reverse 让注册序 0 最靠近入口按钮 */
+	.m-fab__list {
+		position: fixed;
+		left: 0;
+		right: 0;
+		padding-bottom: $m-fab-gap;
+		flex-direction: column-reverse;
+		align-items: flex-end;
+	}
+
+	/* 入口贴左时列表左对齐（名称在图标右侧） */
+	.m-fab__list--left {
+		align-items: flex-start;
+	}
+
+	/* 入口位于视口上半侧时向下展开（注册序 0 最靠近入口） */
+	.m-fab__list--down {
+		padding-top: $m-fab-gap;
+		padding-bottom: 0;
+		flex-direction: column;
+	}
+</style>

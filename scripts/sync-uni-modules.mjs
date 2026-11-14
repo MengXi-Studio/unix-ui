@@ -23,10 +23,10 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const src = join(root, 'packages/core')
 const dest = join(root, 'packages/playground/uni_modules/m-ui-x')
 
-/** 插件目录同步这些内容（组件源码 + 主题变量 + 字体等静态资源 + 标准协议文件）；
+/** 插件目录同步这些内容（组件源码 + 通用工具函数 + 主题变量 + 字体等静态资源 + 标准协议文件）；
  *  README 不同步：npm 包侧文件与 DCloud 插件市场要求的格式不一致，
  *  插件侧单独生成维护（见 KEEP） */
-const INCLUDE = ['components', 'theme', 'static', 'LICENSE']
+const INCLUDE = ['components', 'utils', 'theme', 'static', 'LICENSE']
 
 /** 同步时需在目标目录保留的手工维护文件（不复制、不删除、校验豁免）：
  *  - package.json：HBuilderX 插件发布要求 id 为 m-ui-x，与 core（npm 包）元数据不同

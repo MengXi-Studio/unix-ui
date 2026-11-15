@@ -104,6 +104,8 @@ The four cascader slots are conditionally forwarded (only override the panel def
 | options-top | Above options area (scope: `tabIndex`) |
 | options-bottom | Below options area (scope: `tabIndex`) |
 
+> **Note**: On WeChat Mini Program, `option` / `options-top` / `options-bottom` are not forwarded — the cascader declares them inside a `v-for`, where only the first slot of a name takes effect and the rest trigger duplicate-slot warnings. Customize option text via `field-names` `labelKey` instead; Web and App are unaffected.
+
 ## Differences from Vant
 
 - Vant switches popup/inline forms via the `poppable` prop; this project extracts an independent composite component — popup behavior belongs to [Popup](/en/components/popup), cascader behavior belongs to [Cascader](/en/components/cascader), this component only composes and forwards

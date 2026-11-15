@@ -8,6 +8,7 @@
 
 - **m-calendar 小程序端重复插槽告警**（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）：`m-calendar-panel` 在日格 `v-for` 内声明 `month-title` / `text` / `top-info` / `bottom-info` 四个具名插槽，单个月面板实例中存在 42 个同名插槽；微信要求同一实例内插槽名唯一、只接受第一个，一次打开刷约 2000 行 `More than one slot named "top-info"` 告警，且自定义内容只有首个日格生效。小程序端不再声明这四个插槽，改用 `formatter` 返回的 `text` / `topInfo` / `bottomInfo` 文本渲染；`m-calendar` 与 `m-calendar-popup` 同步取消小程序端的插槽转发。Web / App 端插槽行为不变
 - **m-date-strip 小程序端同类重复插槽**：`item` / `top-info` / `bottom-info` 同样在日期项 `v-for` 内声明；小程序端不渲染这三个插槽，改用 `formatter` 返回的 `text` / `topInfo` / `bottomInfo` 文案（`show-lunar` 不受影响），Web / App 端插槽行为不变
+- **m-cascader 小程序端同类重复插槽**：`option` / `options-top` / `options-bottom` 在层级与选项 `v-for` 内声明；小程序端不渲染这三个插槽，选项文案改用 `field-names` 的 `labelKey`，`m-cascader-popup` 同步取消转发，Web / App 端插槽行为不变
 
 ## [0.5.2] - 2026-11-15
 

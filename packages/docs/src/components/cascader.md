@@ -170,6 +170,8 @@ const nameFields: CascaderFieldNames = {
 | options-top | 选项区上方扩展（作用域：`tabIndex` 层级下标） |
 | options-bottom | 选项区下方扩展（作用域：`tabIndex` 层级下标） |
 
+> **注意**：微信小程序端同一组件实例内同名插槽只生效第一个，`option` / `options-top` / `options-bottom` 在层级或选项 `v-for` 内重复声明，因此小程序端不渲染这三个插槽（避免重复插槽告警）；选项文案请通过 `field-names` 的 `labelKey` 或选项数据本身定制。Web 与 App 端插槽行为不变。
+
 ## 主题定制
 
 级联选择样式可通过以下 SCSS 变量定制（在项目根 `uni.scss` 中直接定义即可覆盖默认值）：

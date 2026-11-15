@@ -44,7 +44,9 @@
 			@change="onSwiperChange"
 		>
 			<swiper-item v-for="(level, li) in levels" :key="li" class="m-cascader__pane">
+				<!-- #ifndef MP -->
 				<slot v-if="$slots['options-top'] != null" name="options-top" :tab-index="li"></slot>
+				<!-- #endif -->
 				<scroll-view class="m-cascader__options" :scroll-y="true">
 					<view
 						v-for="(opt, oi) in level"
@@ -53,14 +55,22 @@
 						@click="onOptionClick(opt, li)"
 					>
 						<view class="m-cascader__option-text-wrap">
+							<!-- #ifndef MP -->
 							<slot name="option" :option="opt" :selected="isOptionSelected(opt, li)">
 								<text :class="optionTextClass(opt, li)" :style="optionTextStyle(opt, li)">{{ optionText(opt) }}</text>
 							</slot>
+							<!-- #endif -->
+							<!-- #ifdef MP -->
+							<!-- 小程序端同一实例内同名插槽仅第一个生效，v-for 内不使用插槽（#17），回退为内置文本 -->
+							<text :class="optionTextClass(opt, li)" :style="optionTextStyle(opt, li)">{{ optionText(opt) }}</text>
+							<!-- #endif -->
 						</view>
 						<m-icon v-if="isOptionSelected(opt, li)" name="success" custom-class="m-cascader__option-check" :custom-style="checkStyle" />
 					</view>
 				</scroll-view>
+				<!-- #ifndef MP -->
 				<slot v-if="$slots['options-bottom'] != null" name="options-bottom" :tab-index="li"></slot>
+				<!-- #endif -->
 			</swiper-item>
 		</swiper>
 	</view>

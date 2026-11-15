@@ -170,6 +170,8 @@ Four slots: `title` / `option` / `options-top` / `options-bottom`; the `option` 
 | options-top | Above options area (scope: `tabIndex`) |
 | options-bottom | Below options area (scope: `tabIndex`) |
 
+> **Note**: WeChat Mini Program only honors the first slot of a given name per component instance, and `option` / `options-top` / `options-bottom` are declared repeatedly inside the level / option `v-for`, so these three slots are not rendered on Mini Program (avoiding duplicate-slot warnings); customize option text via `field-names` `labelKey` or the option data itself. Slot behavior on Web and App is unchanged.
+
 ## Theming
 
 | Variable | Description | Default |

@@ -1,0 +1,171 @@
+<template>
+	<view class="page">
+		<demo-navbar title="日期范围输入框" subtitle="DateRangePickerInput" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-date-range-picker-input
+					v-model:value="basicValue"
+					@confirm="onBasicConfirm"
+					@clear="onBasicClear"
+				/>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValues(basicValue) }}；最近事件：{{ basicLog }}</text>
+				</view>
+				<view class="demo-btn-row">
+					<m-button size="small" @click="fillLastMonth">填入近一月</m-button>
+				</view>
+				<text class="caption">点击输入区打开弹层，确认后按 YYYY-MM-DD 以「起 - 止」回填；清空按钮回写 null 并派发 clear</text>
+			</view>
+
+			<text class="section" id="format">展示格式</text>
+			<view class="card">
+				<m-date-range-picker-input
+					v-model:value="formatValue"
+					outlet-format="YYYY年MM月DD日"
+					placeholder="YYYY年MM月DD日"
+				/>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValues(formatValue) }}</text>
+				</view>
+				<m-date-range-picker-input
+					v-model:value="formatValue2"
+					outlet-format="YYYY/MM/DD"
+					placeholder="YYYY/MM/DD"
+					custom-style="margin-top: 16px;"
+				/>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValues(formatValue2) }}</text>
+				</view>
+				<text class="caption">outlet-format 自定义展示格式，缺省按 columns-type 派生（YYYY-MM-DD）</text>
+			</view>
+
+			<text class="section" id="columns">列组合与区间</text>
+			<view class="card">
+				<m-date-range-picker-input
+					v-model:value="monthValue"
+					:columns-type="yearMonthColumns"
+					:tabs="monthTabs"
+					placeholder="请选择年月范围"
+				/>
+				<view class="event-log">
+					<text class="event-text">年月：{{ formatValues(monthValue) }}</text>
+				</view>
+				<m-date-range-picker-input
+					v-model:value="rangeValue"
+					:min-date="rangeMin"
+					:max-date="rangeMax"
+					placeholder="限定 2026-03-10 ~ 2026-09-20"
+					custom-style="margin-top: 16px;"
+				/>
+				<view class="event-log">
+					<text class="event-text">区间：{{ formatValues(rangeValue) }}</text>
+				</view>
+				<text class="caption">columns-type=['year','month'] 展示 YYYY-MM；min-date / max-date 限定滚轮取值域</text>
+			</view>
+
+			<text class="section" id="disabled">禁用与不可清空</text>
+			<view class="card">
+				<m-date-range-picker-input :value="fixedValue" disabled placeholder="禁用态" />
+				<view class="event-log">
+					<text class="event-text">禁用态不可点击、不显示清空按钮</text>
+				</view>
+				<m-date-range-picker-input
+					v-model:value="noClearValue"
+					:clearable="false"
+					placeholder="不可清空"
+					custom-style="margin-top: 16px;"
+				/>
+				<text class="caption">disabled 关闭触发层；clearable=false 只隐藏清空按钮</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '日期范围输入框 DateRangePickerInput', name: 'date-range-picker-input' })
+	import { DatePickerColumnType } from '@/uni_modules/m-ui-x/components/m-date-picker/date-picker.uts'
+
+	/** 日期转 YYYY-M-D 文本（演示日志用） */
+	function fmtDate(d: Date): string {
+		return d.getFullYear().toString() + '-' + (d.getMonth() + 1).toString() + '-' + d.getDate().toString()
+	}
+
+	/** 两端值转文本 */
+	function formatValues(value: Date[] | null): string {
+		if (value == null || value.length == 0) {
+			return 'null（未选）'
+		}
+		const parts: string[] = []
+		for (let i = 0; i < value.length; i++) {
+			parts.push(fmtDate(value[i]))
+		}
+		return parts.join(' ~ ')
+	}
+
+	// ========== 1 基础用法 ==========
+	const basicValue = ref<Date[] | null>(null)
+	const basicLog = ref<string>('（点击输入框选择）')
+
+	/** 确认记录 */
+	const onBasicConfirm = (value: Date[]) => {
+		basicLog.value = 'confirm → ' + formatValues(value)
+	}
+
+	/** 清空记录 */
+	const onBasicClear = () => {
+		basicLog.value = 'clear'
+	}
+
+	/** 填入近一月（演示有值状态与清空） */
+	const fillLastMonth = () => {
+		const end = new Date()
+		const start = new Date()
+		start.setMonth(start.getMonth() - 1)
+		basicValue.value = [start, end]
+		basicLog.value = 'fill → ' + formatValues(basicValue.value)
+	}
+
+	// ========== 2 展示格式 ==========
+	const formatValue = ref<Date[] | null>(null)
+	const formatValue2 = ref<Date[] | null>(null)
+
+	// ========== 3 列组合与区间 ==========
+	const yearMonthColumns: DatePickerColumnType[] = ['year', 'month']
+	const monthTabs: string[] = ['开始月份', '结束月份']
+	const monthValue = ref<Date[] | null>(null)
+	const rangeMin = new Date(2026, 2, 10)
+	const rangeMax = new Date(2026, 8, 20)
+	const rangeValue = ref<Date[] | null>(null)
+
+	// ========== 4 禁用与不可清空 ==========
+	const fixedValue: Date[] = [new Date(2026, 10, 1), new Date(2026, 10, 15)]
+	const noClearValue = ref<Date[] | null>(null)
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	.demo-btn-row {
+		flex-direction: row;
+		align-items: center;
+		margin-top: 12px;
+	}
+</style>

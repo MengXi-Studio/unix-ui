@@ -11,6 +11,11 @@
 - **m-date-picker-input 日期输入框**：`m-input` 只读触发器 + 弹层，点击整区打开、确认后经 `v-model:value` 回写；展示格式随 `columns-type` 派生（`YYYY` / `YYYY-MM` / `YYYY-MM-DD` / `MM-DD`）；自绘清空按钮回写 `null` 并派发 `clear`，`disabled` / `clearable` / `border` / `inlaid` 可配（详见 [DatePickerInput](/components/date-picker-input)）
 - 新增 `$m-date-picker-*`（背景、顶部栏、选项、选中框、加载遮罩）与 `$m-date-picker-input-*`（触发层 / 清空按钮）主题变量段
 
+- 新增 `$m-date-range-picker-*`（背景、两段标题、激活下划线、底部按钮区）与 `$m-date-range-picker-input-*`（触发层 / 清空按钮）主题变量段
+- **m-date-range-picker 日期范围面板**：开始 / 结束两段标题（`tabs` 可自定义）复用同一套日期滚轮，两端值分别维护；确认时若起点晚于终点自动交换为升序，`change` 实时派发两端快照与当前编辑端下标；`columns-type` / `min-date` / `max-date` / `filter` / `formatter` 沿用日期选择契约；`header`（快捷选项）/ `title`（整体替换两段标题，作用域 `tabs` / `activeIndex`）/ `footer` / `confirm` / `cancel` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue`；首版仅年 / 月 / 日粒度（详见 [DateRangePicker](/components/date-range-picker)）
+- **m-date-range-picker-popup 日期范围弹出框**：`m-popup` + 范围面板组合，`v-model:show` / `v-model:value` 受控，确认 / 取消后自动关闭；透传方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长，`reset-on-open` 控制复开复位（详见 [DateRangePickerPopup](/components/date-range-picker-popup)）
+- **m-date-range-picker-input 日期范围输入框**：`m-input` 只读触发器 + 范围弹层，点击整区打开；`outlet-format` 自定义「起 - 止」展示格式（缺省按列组合派生 `YYYY-MM-DD`）；自绘清空按钮回写 `null` 并派发 `clear`，`disabled` / `clearable` / `border` / `inlaid` 可配（详见 [DateRangePickerInput](/components/date-range-picker-input)）
+
 ## [0.5.3] - 2026-11-15
 
 修复 `m-calendar` 微信小程序端因日格 `v-for` 内重复声明同名插槽导致控制台被告警刷屏（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）。

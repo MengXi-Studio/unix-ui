@@ -46,6 +46,12 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		'date-picker-popup': 'pages-sub/date-picker-popup/date-picker-popup'
 		/** 日期选择 DatePicker */
 		'date-picker': 'pages-sub/date-picker/date-picker'
+		/** 日期范围输入框 DateRangePickerInput */
+		'date-range-picker-input': 'pages-sub/date-range-picker-input/date-range-picker-input'
+		/** 日期范围弹出框 DateRangePickerPopup */
+		'date-range-picker-popup': 'pages-sub/date-range-picker-popup/date-range-picker-popup'
+		/** 日期范围选择 DateRangePicker */
+		'date-range-picker': 'pages-sub/date-range-picker/date-range-picker'
 		/** 日期横条 Date Strip */
 		'date-strip': 'pages-sub/date-strip/date-strip'
 		/** 分割线 Divider */

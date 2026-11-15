@@ -1,0 +1,229 @@
+<template>
+	<!-- 日期范围选择弹出框：m-popup + m-date-range-picker 组合（三组件拆分后的弹层形态组件）。
+	     弹层 props 经 m-popup，范围选择 props / 事件 / 插槽逐项透传给面板；
+	     confirm / cancel 后自动关闭弹层；reset-on-open 打开时复位为 value -->
+	<m-popup
+		:show="show"
+		:position="position"
+		:round="round"
+		:close-on-click-overlay="closeOnClickOverlay"
+		:safe-area-inset-top="safeAreaInsetTop"
+		:safe-area-inset-bottom="safeAreaInsetBottom"
+		:z-index="zIndex"
+		:duration="duration"
+		@update:show="onPopupUpdateShow"
+		@open="onPopupOpen"
+		@opened="onPopupOpened"
+		@close="onPopupClose"
+		@closed="onPopupClosed"
+		@click-overlay="onPopupClickOverlay"
+	>
+		<m-date-range-picker
+			ref="picker"
+			:value="value"
+			:tabs="tabs"
+			:columns-type="columnsType"
+			:min-date="minDate"
+			:max-date="maxDate"
+			:filter="filter"
+			:formatter="formatter"
+			:option-height="optionHeight"
+			:visible-option-num="visibleOptionNum"
+			:swipe-duration="swipeDuration"
+			:readonly="readonly"
+			:loading="loading"
+			:confirm-button-text="confirmButtonText"
+			:cancel-button-text="cancelButtonText"
+			:custom-class="customClass"
+			:custom-style="customStyle"
+			@change="onPickerChange"
+			@confirm="onPickerConfirm"
+			@cancel="onPickerCancel"
+			@update:value="onPickerValueChange"
+		>
+			<!-- 插槽条件转发：未传入时不覆盖面板默认渲染 -->
+			<template v-if="$slots['header'] != null" #header>
+				<slot name="header"></slot>
+			</template>
+			<template v-if="$slots['title'] != null" #title="{ tabs, activeIndex }">
+				<slot name="title" :tabs="tabs" :active-index="activeIndex"></slot>
+			</template>
+			<template v-if="$slots['footer'] != null" #footer>
+				<slot name="footer"></slot>
+			</template>
+			<template v-if="$slots['confirm'] != null" #confirm>
+				<slot name="confirm"></slot>
+			</template>
+			<template v-if="$slots['cancel'] != null" #cancel>
+				<slot name="cancel"></slot>
+			</template>
+		</m-date-range-picker>
+	</m-popup>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-date-range-picker-popup 日期范围选择弹出框：m-popup + m-date-range-picker 组合组件。
+	 * 自身无选择状态与样式：弹层行为归 m-popup，范围选择（双段标题 / 两端值 / 自动交换）归面板，
+	 * 本组件仅做组合、转发，并在 confirm / cancel 后关闭弹层。
+	 */
+	import {
+		DatePickerColumnType,
+		DatePickerFilter,
+		DatePickerFormatter,
+		DatePickerPosition
+	} from '../m-date-picker/date-picker.uts'
+	import MDateRangePicker from '../m-date-range-picker/m-date-range-picker.uvue'
+
+	type Props = {
+		/** 是否显示弹出层（v-model:show） */
+		show?: boolean
+		/** 两端选中值（v-model:value；长度 0-2，null 未选） */
+		value?: Date[]
+		/** 两段标题文案 */
+		tabs?: string[]
+		/** 选项类型组合 */
+		columnsType?: DatePickerColumnType[]
+		/** 可选最小日期（null 默认十年前） */
+		minDate?: Date
+		/** 可选最大日期（null 默认十年后） */
+		maxDate?: Date
+		/** 选项过滤函数（null 不过滤） */
+		filter?: DatePickerFilter
+		/** 选项格式化函数（null 不格式化） */
+		formatter?: DatePickerFormatter
+		/** 选项行高 px（0 用默认 44） */
+		optionHeight?: number
+		/** 可见选项个数（0 用默认 6） */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms */
+		swipeDuration?: number
+		/** 只读 */
+		readonly?: boolean
+		/** 是否显示加载状态 */
+		loading?: boolean
+		/** 确认按钮文字 */
+		confirmButtonText?: string
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 弹出方位（透传 m-popup） */
+		position?: DatePickerPosition
+		/** 弹层圆角（透传 m-popup） */
+		round?: boolean
+		/** 点击遮罩后是否关闭（透传 m-popup） */
+		closeOnClickOverlay?: boolean
+		/** 打开时是否复位为 value（默认 false，保留复开时上次选择） */
+		resetOnOpen?: boolean
+		/** 顶部安全区 */
+		safeAreaInsetTop?: boolean
+		/** 底部安全区 */
+		safeAreaInsetBottom?: boolean
+		/** z-index 层级 */
+		zIndex?: number
+		/** 动画时长秒 */
+		duration?: number
+		/** 自定义面板根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义面板根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		value: null,
+		tabs: null,
+		columnsType: null,
+		minDate: null,
+		maxDate: null,
+		filter: null,
+		formatter: null,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		readonly: false,
+		loading: false,
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		position: 'bottom',
+		round: true,
+		closeOnClickOverlay: true,
+		resetOnOpen: false,
+		safeAreaInsetTop: false,
+		safeAreaInsetBottom: true,
+		zIndex: 1,
+		duration: 0.3,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		'update:show': [value: boolean]
+		/** 确认后回写两端值 */
+		'update:value': [value: Date[] | null]
+		/** 当前端滚动切换 */
+		change: [value: Date[], activeIndex: number]
+		/** 点击确认按钮（确认后弹层自动关闭） */
+		confirm: [value: Date[]]
+		/** 点击取消按钮（取消后弹层自动关闭） */
+		cancel: []
+		open: []
+		opened: []
+		close: []
+		closed: []
+		'click-overlay': [event: MouseEvent]
+	}>()
+
+	/** 内部面板实例（复开时按需调用 resetSelection） */
+	const picker = ref<ComponentPublicInstance | null>(null)
+
+	// 模板绑定的组件事件处理函数一律 const 箭头函数（function 声明在 VDOM 生成 Kotlin 中裸名传递会报错）
+
+	const onPopupUpdateShow = (value: boolean) => {
+		emit('update:show', value)
+	}
+
+	/** 弹层打开：派发 open；resetOnOpen 时复位为 value */
+	const onPopupOpen = () => {
+		emit('open')
+		const inst = picker.value
+		if (inst != null && props.resetOnOpen) {
+			inst.$callMethod('resetSelection')
+		}
+	}
+
+	const onPopupOpened = () => {
+		emit('opened')
+	}
+
+	const onPopupClose = () => {
+		emit('close')
+	}
+
+	const onPopupClosed = () => {
+		emit('closed')
+	}
+
+	const onPopupClickOverlay = (e: MouseEvent) => {
+		emit('click-overlay', e)
+	}
+
+	const onPickerChange = (value: Date[], activeIndex: number) => {
+		emit('change', value, activeIndex)
+	}
+
+	const onPickerValueChange = (value: Date[] | null) => {
+		emit('update:value', value)
+	}
+
+	/** 确认：派发 confirm 后关闭弹层 */
+	const onPickerConfirm = (value: Date[]) => {
+		emit('confirm', value)
+		emit('update:show', false)
+	}
+
+	/** 取消：派发 cancel 后关闭弹层 */
+	const onPickerCancel = () => {
+		emit('cancel')
+		emit('update:show', false)
+	}
+</script>

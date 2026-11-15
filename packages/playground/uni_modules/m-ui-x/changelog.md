@@ -1,6 +1,7 @@
 ## 0.6.0 (2026-11-15)
 
 - 新增 `m-date-picker` / `m-date-picker-popup` / `m-date-picker-input` 日期选择三件套（对标 Vant DatePicker）：年 / 月 / 日滚轮列滚动停止后吸附到最近选项，`columns-type` 支持 `year` / `month` / `day` 任意顺序组合（缺失分量按 1 月 1 日归一），`min-date` / `max-date` 默认前后十年并据已选年月收敛月 / 日取值域；`filter` / `formatter` 二次加工列选项；`option-height` / `visible-option-num` / `swipe-duration` 调整滚轮，`readonly` 回弹、`loading` 阻断交互；顶部栏支持 `show-toolbar` 与 `toolbar` / `title` / `confirm` / `cancel` 插槽，另有 `option` / `columns-top` / `columns-bottom` 插槽（小程序端 `option` 按 #17 回退内置文本）；expose `confirm` / `resetSelection` / `getSelectedDate`；弹层确认或取消后自动关闭，输入框展示格式随列组合派生（`YYYY` / `YYYY-MM` / `YYYY-MM-DD` / `MM-DD`）并支持清空；`v-model:value` 绑定 `Date`；新增 `$m-date-picker-*` 与 `$m-date-picker-input-*` 主题变量
+- 新增 `m-date-range-picker` / `m-date-range-picker-popup` / `m-date-range-picker-input` 日期范围三件套（对标 Sard DatetimeRangePicker）：开始 / 结束两段标题（`tabs` 可自定义）复用同一套日期滚轮，两端值分别维护，确认时若起点晚于终点自动交换为升序；`columns-type` / `min-date` / `max-date` / `filter` / `formatter` 沿用 `m-date-picker` 契约，`change` 派发两端快照与当前编辑端下标；弹层确认 / 取消后自动关闭；输入框 `outlet-format` 自定义「起 - 止」展示格式（缺省按列组合派生）、清空回写 `null`；插槽 `header`（快捷选项）/ `title`（整体替换两段标题，作用域 `tabs` / `activeIndex`）/ `footer` / `confirm` / `cancel`；expose `confirm` / `resetSelection` / `getSelectedValue`；新增 `$m-date-range-picker-*` 与 `$m-date-range-picker-input-*` 主题变量；首版仅年 / 月 / 日粒度
 
 ## 0.5.3 (2026-11-15)
 

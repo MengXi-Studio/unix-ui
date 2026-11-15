@@ -107,6 +107,21 @@ export const routes: RouteConfig[] = [
 		meta: { title: '日期选择 DatePicker' },
 	},
 	{
+		path: 'pages-sub/date-range-picker-input/date-range-picker-input',
+		name: 'date-range-picker-input',
+		meta: { title: '日期范围输入框 DateRangePickerInput' },
+	},
+	{
+		path: 'pages-sub/date-range-picker-popup/date-range-picker-popup',
+		name: 'date-range-picker-popup',
+		meta: { title: '日期范围弹出框 DateRangePickerPopup' },
+	},
+	{
+		path: 'pages-sub/date-range-picker/date-range-picker',
+		name: 'date-range-picker',
+		meta: { title: '日期范围选择 DateRangePicker' },
+	},
+	{
 		path: 'pages-sub/date-strip/date-strip',
 		name: 'date-strip',
 		meta: { title: '日期横条 Date Strip' },

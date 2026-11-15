@@ -126,6 +126,24 @@
 					}
 				},
 				{
+					"path": "date-range-picker-input/date-range-picker-input",
+					"style": {
+						"navigationBarTitleText": "日期范围输入框 DateRangePickerInput"
+					}
+				},
+				{
+					"path": "date-range-picker-popup/date-range-picker-popup",
+					"style": {
+						"navigationBarTitleText": "日期范围弹出框 DateRangePickerPopup"
+					}
+				},
+				{
+					"path": "date-range-picker/date-range-picker",
+					"style": {
+						"navigationBarTitleText": "日期范围选择 DateRangePicker"
+					}
+				},
+				{
 					"path": "date-strip/date-strip",
 					"style": {
 						"navigationBarTitleText": "日期横条 Date Strip"

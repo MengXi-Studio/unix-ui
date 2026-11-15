@@ -110,6 +110,9 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'DatePicker', link: '/en/components/date-picker' },
 						{ text: 'DatePickerInput', link: '/en/components/date-picker-input' },
 						{ text: 'DatePickerPopup', link: '/en/components/date-picker-popup' },
+						{ text: 'DateRangePicker', link: '/en/components/date-range-picker' },
+						{ text: 'DateRangePickerInput', link: '/en/components/date-range-picker-input' },
+						{ text: 'DateRangePickerPopup', link: '/en/components/date-range-picker-popup' },
 						{ text: 'DateStrip', link: '/en/components/date-strip' },
 						{ text: 'Input', link: '/en/components/input' }
 					]

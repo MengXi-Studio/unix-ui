@@ -1,6 +1,6 @@
 ## 0.5.3 (2026-11-15)
 
-- 修复 `m-calendar` 小程序端日格 `v-for` 内重复声明同名插槽（`month-title` / `text` / `top-info` / `bottom-info`）导致的 `More than one slot named "top-info"` 刷屏告警（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）；小程序端改用 `formatter` 文本渲染，Web / App 插槽行为不变
+- 修复 `m-calendar` 小程序端日格 `v-for` 内重复声明同名插槽（`month-title` / `text` / `top-info` / `bottom-info`）导致的 `More than one slot named "top-info"` 刷屏告警（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）；小程序端改用 `formatter` 文本渲染，Web / App 插槽行为不变；`m-date-strip` 的 `item` / `top-info` / `bottom-info` 同理（`show-lunar` 不受影响）
 
 ## 0.5.2 (2026-11-15)
 

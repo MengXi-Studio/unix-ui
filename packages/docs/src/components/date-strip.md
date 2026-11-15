@@ -120,6 +120,8 @@ added: 0.5.0
 | top-info | 日号上方的附加内容 | day: CalendarDayItem |
 | bottom-info | 日号下方的附加内容 | day: CalendarDayItem |
 
+> **注意**：微信小程序端同一组件实例内同名插槽只生效第一个，而 `item` / `top-info` / `bottom-info` 在 `v-for` 内按项重复声明，因此小程序端不渲染这三个插槽（避免重复插槽告警）；请改用 `formatter` 返回的 `text` / `topInfo` / `bottomInfo` 文案，`show-lunar` 不受影响。Web 与 App 端插槽行为不变。
+
 ## 主题定制
 
 | 变量 | 默认值 | 说明 |

@@ -7,6 +7,7 @@ Fixes `m-calendar` flooding the WeChat Mini Program console with duplicate-slot 
 ### Fixed
 
 - **Duplicate slot warnings in m-calendar on Mini Program** ([#17](https://github.com/MengXi-Studio/unix-ui/issues/17)): `m-calendar-panel` declared `month-title` / `text` / `top-info` / `bottom-info` inside the day-cell `v-for`, producing 42 identically named slots in a single month-panel instance; WeChat only accepts the first slot of a given name per instance, so opening the popup emitted about 2,000 `More than one slot named "top-info"` warnings and custom content rendered only in the first cell. These four slots are no longer declared on Mini Program — the panel renders the `text` / `topInfo` / `bottomInfo` values returned by `formatter` instead, and `m-calendar` / `m-calendar-popup` stop forwarding them there. Slot behavior on Web and App is unchanged
+- **Same duplicate-slot issue in m-date-strip**: `item` / `top-info` / `bottom-info` were likewise declared inside the date-item `v-for`; these three slots are no longer rendered on Mini Program — use the `text` / `topInfo` / `bottomInfo` values returned by `formatter` instead (`show-lunar` is unaffected). Slot behavior on Web and App is unchanged
 
 ## [0.5.2] - 2026-11-15
 

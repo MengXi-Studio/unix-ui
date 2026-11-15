@@ -17,6 +17,7 @@
 					:class="itemClass(item)"
 					@click="onItemClick(item)"
 				>
+					<!-- #ifndef MP -->
 					<slot v-if="slots['item'] != null" name="item" :item="item.day"></slot>
 					<template v-else>
 						<slot v-if="slots['top-info'] != null" name="top-info" :day="item.day"></slot>
@@ -26,6 +27,14 @@
 						<slot v-if="slots['bottom-info'] != null" name="bottom-info" :day="item.day"></slot>
 						<text v-else-if="item.day.bottomInfo != ''" :class="infoClass(item)">{{ item.day.bottomInfo }}</text>
 					</template>
+					<!-- #endif -->
+					<!-- #ifdef MP -->
+					<!-- 小程序端同一实例内同名插槽仅第一个生效，v-for 内不使用插槽（#17），回退为内置文本 -->
+					<text v-if="item.day.topInfo != ''" :class="infoClass(item)">{{ item.day.topInfo }}</text>
+					<text :class="weekClass(item)">{{ item.weekText }}</text>
+					<text :class="dayClass(item)">{{ item.day.text }}</text>
+					<text v-if="item.day.bottomInfo != ''" :class="infoClass(item)">{{ item.day.bottomInfo }}</text>
+					<!-- #endif -->
 				</view>
 			</view>
 		</scroll-view>

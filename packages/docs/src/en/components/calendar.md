@@ -215,6 +215,8 @@ Call via a template ref (uvue components use `$callMethod`).
 | confirm-text | Confirm button text |
 | prev-year / prev-month / next-month / next-year | switch-mode nav icons |
 
+> **Note**: WeChat Mini Program only honors the first slot of a given name per component instance. `month-title` / `text` / `top-info` / `bottom-info` must be declared per day or per month, so these four slots are not rendered on Mini Program (avoiding duplicate-slot warnings); use the `text` / `topInfo` / `bottomInfo` values returned by `formatter` instead. Slot behavior on Web and App is unchanged.
+
 ## Theming
 
 Calendar styles can be customized with the following SCSS variables (define them in the project root `uni.scss` to override the defaults):

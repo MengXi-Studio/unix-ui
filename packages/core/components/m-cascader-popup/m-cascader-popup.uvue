@@ -43,6 +43,8 @@
 			<template v-if="$slots['title'] != null" #title>
 				<slot name="title"></slot>
 			</template>
+			<!-- #ifndef MP -->
+			<!-- 小程序端级联面板在 v-for 内不声明具名插槽（同名插槽仅第一个生效，#17），无需转发 -->
 			<template v-if="$slots['option'] != null" #option="{ option, selected }">
 				<slot name="option" :option="option" :selected="selected"></slot>
 			</template>
@@ -52,6 +54,7 @@
 			<template v-if="$slots['options-bottom'] != null" #options-bottom="{ tabIndex }">
 				<slot name="options-bottom" :tab-index="tabIndex"></slot>
 			</template>
+			<!-- #endif -->
 		</m-cascader>
 	</m-popup>
 </template>

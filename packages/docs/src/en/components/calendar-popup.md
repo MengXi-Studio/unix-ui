@@ -164,6 +164,8 @@ All calendar panel slots are supported and forwarded to the inner m-calendar:
 
 Slots are **conditionally forwarded**: only provided slots override the inner calendar's default rendering; the rest keep m-calendar's defaults.
 
+> **Note**: On WeChat Mini Program, `month-title` / `text` / `top-info` / `bottom-info` are not forwarded — the calendar grid declares them inside a `v-for`, where only the first slot of a name takes effect and the rest trigger duplicate-slot warnings. Use `formatter` to customize day text instead; Web and App are unaffected.
+
 ## Theming
 
 No dedicated theme variables; the popup container reuses the `$m-popup-*` family and the calendar panel reuses the `$m-calendar-*` family (see [Calendar Theming](/en/components/calendar#theming)).

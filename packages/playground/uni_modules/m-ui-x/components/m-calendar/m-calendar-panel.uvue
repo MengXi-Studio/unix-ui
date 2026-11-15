@@ -64,9 +64,15 @@
 				class="m-calendar__month"
 			>
 				<view v-if="month.showTitle" class="m-calendar__month-title">
+					<!-- #ifndef MP -->
 					<slot name="month-title" :month="month.date" :text="monthTitleText(month.date)">
 						<text class="m-calendar__month-title-text">{{ monthTitleText(month.date) }}</text>
 					</slot>
+					<!-- #endif -->
+					<!-- #ifdef MP -->
+					<!-- 小程序端同一实例内同名插槽仅第一个生效，v-for 内不使用插槽（#17），回退为内置文本 -->
+					<text class="m-calendar__month-title-text">{{ monthTitleText(month.date) }}</text>
+					<!-- #endif -->
 				</view>
 				<view class="m-calendar__days">
 					<text v-if="cfg.showMark" class="m-calendar__month-mark">{{ monthMarkText(month.date) }}</text>
@@ -78,6 +84,7 @@
 						@click="onDayClick(day)"
 					>
 						<view v-if="hasBar(day.type)" :class="barClass(day.type)" :style="barStyle"></view>
+						<!-- #ifndef MP -->
 						<view
 							v-if="isRealDay(day) && (day.topInfo != '' || cfg.hasTopInfoSlot)"
 							class="m-calendar__day-info m-calendar__day-info--top"
@@ -86,11 +93,29 @@
 								<text :class="dayInfoTextCls(day)">{{ day.topInfo }}</text>
 							</slot>
 						</view>
+						<!-- #endif -->
+						<!-- #ifdef MP -->
+						<!-- 小程序端日格内不使用具名插槽（#17），改由 formatter 的 topInfo 文本渲染 -->
+						<view
+							v-if="isRealDay(day) && day.topInfo != ''"
+							class="m-calendar__day-info m-calendar__day-info--top"
+						>
+							<text :class="dayInfoTextCls(day)">{{ day.topInfo }}</text>
+						</view>
+						<!-- #endif -->
+						<!-- #ifndef MP -->
 						<view v-if="isRealDay(day)" :class="dayCenterClass(day)" :style="dayCenterStyle(day)">
 							<slot name="text" :day="day">
 								<text :class="dayTextCls(day)">{{ day.text }}</text>
 							</slot>
 						</view>
+						<!-- #endif -->
+						<!-- #ifdef MP -->
+						<view v-if="isRealDay(day)" :class="dayCenterClass(day)" :style="dayCenterStyle(day)">
+							<text :class="dayTextCls(day)">{{ day.text }}</text>
+						</view>
+						<!-- #endif -->
+						<!-- #ifndef MP -->
 						<view
 							v-if="isRealDay(day) && (day.bottomInfo != '' || cfg.hasBottomInfoSlot)"
 							class="m-calendar__day-info m-calendar__day-info--bottom"
@@ -99,6 +124,16 @@
 								<text :class="dayInfoTextCls(day)">{{ day.bottomInfo }}</text>
 							</slot>
 						</view>
+						<!-- #endif -->
+						<!-- #ifdef MP -->
+						<!-- 小程序端日格内不使用具名插槽（#17），改由 formatter 的 bottomInfo 文本渲染 -->
+						<view
+							v-if="isRealDay(day) && day.bottomInfo != ''"
+							class="m-calendar__day-info m-calendar__day-info--bottom"
+						>
+							<text :class="dayInfoTextCls(day)">{{ day.bottomInfo }}</text>
+						</view>
+						<!-- #endif -->
 					</view>
 				</view>
 			</view>

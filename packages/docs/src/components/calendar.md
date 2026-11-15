@@ -215,6 +215,8 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 | confirm-text | 确认按钮文字 |
 | prev-year / prev-month / next-month / next-year | switch-mode 导航图标 |
 
+> **注意**：微信小程序端同一组件实例内同名插槽只能生效第一个。`month-title` / `text` / `top-info` / `bottom-info` 需要按日或按月重复声明，因此小程序端不渲染这四个插槽（避免重复插槽告警），请改用 `formatter` 返回的 `text` / `topInfo` / `bottomInfo` 文本；Web 与 App 端插槽行为不变。
+
 ## 主题定制
 
 日历样式可通过以下 SCSS 变量定制（在项目根 `uni.scss` 中直接定义即可覆盖默认值）：

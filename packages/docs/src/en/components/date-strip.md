@@ -120,6 +120,8 @@ The `item` slot replaces the entire item content; `top-info` / `bottom-info` rep
 | top-info | Content above the day number | day: CalendarDayItem |
 | bottom-info | Content below the day number | day: CalendarDayItem |
 
+> **Note**: WeChat Mini Program only honors the first slot of a given name per component instance, and `item` / `top-info` / `bottom-info` are declared repeatedly inside a `v-for`, so these three slots are not rendered on Mini Program (avoiding duplicate-slot warnings); use the `text` / `topInfo` / `bottomInfo` values returned by `formatter` instead — `show-lunar` is unaffected. Slot behavior on Web and App is unchanged.
+
 ## Theming
 
 | Variable | Default | Description |

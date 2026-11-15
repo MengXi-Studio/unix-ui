@@ -164,6 +164,8 @@ added: 0.2.0
 
 插槽为**条件转发**：仅传入的插槽覆盖内部日历默认渲染，未传入的插槽保持 m-calendar 默认内容。
 
+> **注意**：微信小程序端不转发 `month-title` / `text` / `top-info` / `bottom-info`——日历网格在 `v-for` 内重复声明同名插槽只会生效第一个，且会触发重复插槽告警。需要自定义日格文案请使用 `formatter`；Web 与 App 端不受影响。
+
 ## 主题定制
 
 本组件无专属主题变量，弹层容器复用 `$m-popup-*` 系列、日历面板复用 `$m-calendar-*` 系列（见 [Calendar 主题定制](/components/calendar#主题定制)）。

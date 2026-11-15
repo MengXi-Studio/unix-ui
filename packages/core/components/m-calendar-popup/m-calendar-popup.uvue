@@ -64,6 +64,8 @@
 			<template v-if="$slots['subtitle'] != null" #subtitle>
 				<slot name="subtitle"></slot>
 			</template>
+			<!-- #ifndef MP -->
+			<!-- 小程序端日历面板在 v-for 内不声明具名插槽（同名插槽仅第一个生效，#17），无需转发 -->
 			<template v-if="$slots['month-title'] != null" #month-title="{ month, text }">
 				<slot name="month-title" :month="month" :text="text"></slot>
 			</template>
@@ -76,6 +78,7 @@
 			<template v-if="$slots['text'] != null" #text="{ day }">
 				<slot name="text" :day="day"></slot>
 			</template>
+			<!-- #endif -->
 			<template v-if="$slots['footer'] != null" #footer>
 				<slot name="footer"></slot>
 			</template>

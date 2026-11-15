@@ -107,6 +107,9 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'ColorPicker', link: '/en/components/color-picker' },
 						{ text: 'ColorPickerInput', link: '/en/components/color-picker-input' },
 						{ text: 'ColorPickerPopup', link: '/en/components/color-picker-popup' },
+						{ text: 'DatePicker', link: '/en/components/date-picker' },
+						{ text: 'DatePickerInput', link: '/en/components/date-picker-input' },
+						{ text: 'DatePickerPopup', link: '/en/components/date-picker-popup' },
 						{ text: 'DateStrip', link: '/en/components/date-strip' },
 						{ text: 'Input', link: '/en/components/input' }
 					]

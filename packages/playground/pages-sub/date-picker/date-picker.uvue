@@ -1,0 +1,337 @@
+<template>
+	<view class="page">
+		<demo-navbar title="日期选择" subtitle="DatePicker" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-date-picker v-model:value="basicValue" title="选择日期" @change="onBasicChange" @confirm="onBasicConfirm" />
+				<view class="event-log">
+					<text class="event-text">最近事件：{{ basicLog }}</text>
+				</view>
+				<text class="caption">默认年-月-日三列，min/max 默认前后十年；滚轮停止后吸附到最近选项并派发 change；确认回写 v-model:value 并派发 confirm</text>
+			</view>
+
+			<text class="section" id="columns">选项类型组合</text>
+			<view class="card">
+				<m-date-picker :columns-type="yearMonthColumns" title="选择年月" @confirm="onYearMonthConfirm" />
+				<view class="event-log">
+					<text class="event-text">年月：{{ yearMonthLog }}</text>
+				</view>
+				<m-date-picker :columns-type="monthDayColumns" title="选择月日" custom-style="margin-top: 16px;" @confirm="onMonthDayConfirm" />
+				<view class="event-log">
+					<text class="event-text">月日：{{ monthDayLog }}</text>
+				</view>
+				<text class="caption">columns-type 支持 year / month / day 任意顺序组合：['year','month'] 只选年月（日为 1 号），['month','day'] 沿用当前年份</text>
+			</view>
+
+			<text class="section" id="range">可选区间</text>
+			<view class="card">
+				<m-date-picker :min-date="rangeMin" :max-date="rangeMax" title="限定 2026-03-10 ~ 2026-09-20" @confirm="onRangeConfirm" />
+				<view class="event-log">
+					<text class="event-text">最近确认：{{ rangeLog }}</text>
+				</view>
+				<text class="caption">min-date / max-date 限定年界与边界年月的月 / 日取值域，越界选择由组件自动收敛</text>
+			</view>
+
+			<text class="section" id="filter">过滤选项</text>
+			<view class="card">
+				<m-date-picker :columns-type="yearMonthColumns" :filter="halfYearFilter" title="仅保留 6 / 12 月" @confirm="onFilterConfirm" />
+				<view class="event-log">
+					<text class="event-text">最近确认：{{ filterLog }}</text>
+				</view>
+				<text class="caption">filter(type, options, values) 对列选项二次过滤，本例月份只保留 06 与 12</text>
+			</view>
+
+			<text class="section" id="formatter">格式化选项</text>
+			<view class="card">
+				<m-date-picker :formatter="suffixFormatter" title="带单位" @confirm="onFormatterConfirm" />
+				<view class="event-log">
+					<text class="event-text">最近确认：{{ formatterLog }}</text>
+				</view>
+				<text class="caption">formatter(type, option) 改写选项文案，本例为年 / 月 / 日追加单位</text>
+			</view>
+
+			<text class="section" id="toolbar">顶部栏与插槽</text>
+			<view class="card">
+				<m-date-picker :columns-type="yearMonthColumns" :show-toolbar="false" :visible-option-num="5" :option-height="48">
+					<template #columns-top>
+						<view class="demo-banner">
+							<text class="demo-banner-text">自定义 columns-top 区域</text>
+						</view>
+					</template>
+					<template #columns-bottom>
+						<view class="demo-banner">
+							<text class="demo-banner-text">自定义 columns-bottom 区域</text>
+						</view>
+					</template>
+				</m-date-picker>
+				<text class="caption">show-toolbar=false 隐藏顶部栏；visible-option-num=5 与 option-height=48 调整可视行数 / 行高；columns-top / columns-bottom 插槽位于滚轮区上下</text>
+			</view>
+
+			<text class="section" id="slots">自定义选项与按钮</text>
+			<view class="card">
+				<m-date-picker :columns-type="yearMonthColumns" @confirm="onSlotConfirm">
+					<template #title>
+						<text class="demo-slot-title">选择账期</text>
+					</template>
+					<template #confirm>
+						<text class="demo-slot-confirm">完成</text>
+					</template>
+					<template #cancel>
+						<text class="demo-slot-cancel">返回</text>
+					</template>
+					<template #option="{ option, index }">
+						<text :class="slotOptionClass(option, index)">{{ slotOptionText(option) }}</text>
+					</template>
+				</m-date-picker>
+				<view class="event-log">
+					<text class="event-text">最近确认：{{ slotLog }}</text>
+				</view>
+				<text class="caption">toolbar / title / confirm / cancel / option 插槽；option 作用域参数 option（DatePickerOption）与 index（小程序端回退内置文本渲染）</text>
+			</view>
+
+			<text class="section" id="states">只读与加载态</text>
+			<view class="card">
+				<m-date-picker :columns-type="yearMonthColumns" readonly title="只读" />
+				<view class="demo-btn-row">
+					<m-button size="small" @click="toggleLoading">{{ loading ? '关闭加载' : '开启加载' }}</m-button>
+				</view>
+				<m-date-picker :columns-type="yearMonthColumns" :loading="loading" title="加载中" custom-style="margin-top: 12px;" />
+				<text class="caption">readonly 滚动后回弹到当前值；loading 覆盖滚轮区并阻止交互</text>
+			</view>
+
+			<text class="section" id="methods">实例方法</text>
+			<view class="card">
+				<m-date-picker ref="methodPicker" :columns-type="yearMonthColumns" />
+				<view class="demo-btn-row">
+					<m-button size="small" @click="callGet">getSelectedDate</m-button>
+					<m-button size="small" custom-style="margin-left: 8px;" @click="callConfirm">confirm</m-button>
+				</view>
+				<view class="event-log">
+					<text class="event-text">最近调用：{{ methodLog }}</text>
+				</view>
+				<text class="caption">getSelectedDate 读取当前选中日期；confirm 程序化确认（派发 update:value 与 confirm）</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '日期选择 DatePicker', name: 'date-picker' })
+	import { DatePickerColumnType, DatePickerOption } from '@/uni_modules/m-ui-x/components/m-date-picker/date-picker.uts'
+
+	/** 日期转 YYYY-M-D 文本（演示日志用） */
+	function fmtDate(d: Date): string {
+		return d.getFullYear().toString() + '-' + (d.getMonth() + 1).toString() + '-' + d.getDate().toString()
+	}
+
+	// ========== 1 基础用法 ==========
+	/** v-model:value 双向绑定选中日期 */
+	const basicValue = ref<Date | null>(null)
+	const basicLog = ref<string>('（滚动或确认试试）')
+
+	/** 基础面板 change 记录 */
+	const onBasicChange = (date: Date, columnIndex: number) => {
+		basicLog.value = 'change → ' + fmtDate(date) + '（第 ' + (columnIndex + 1).toString() + ' 列）'
+	}
+
+	/** 基础面板 confirm 记录 */
+	const onBasicConfirm = (date: Date) => {
+		basicLog.value = 'confirm → ' + fmtDate(date)
+	}
+
+	// ========== 2 选项类型组合 ==========
+	const yearMonthColumns: DatePickerColumnType[] = ['year', 'month']
+	const monthDayColumns: DatePickerColumnType[] = ['month', 'day']
+	const yearMonthLog = ref<string>('（未确认）')
+	const monthDayLog = ref<string>('（未确认）')
+
+	/** 年月 confirm 记录 */
+	const onYearMonthConfirm = (date: Date) => {
+		yearMonthLog.value = fmtDate(date)
+	}
+
+	/** 月日 confirm 记录 */
+	const onMonthDayConfirm = (date: Date) => {
+		monthDayLog.value = fmtDate(date)
+	}
+
+	// ========== 3 可选区间 ==========
+	const rangeMin = new Date(2026, 2, 10)
+	const rangeMax = new Date(2026, 8, 20)
+	const rangeLog = ref<string>('（未确认）')
+
+	/** 区间 confirm 记录 */
+	const onRangeConfirm = (date: Date) => {
+		rangeLog.value = fmtDate(date)
+	}
+
+	// ========== 4 过滤选项 ==========
+	const filterLog = ref<string>('（未确认）')
+
+	/** 月份过滤：仅保留 6 与 12 月（value 为补零字符串） */
+	const halfYearFilter = (type: string, options: DatePickerOption[], values: string[]): DatePickerOption[] => {
+		if (type != 'month') {
+			return options
+		}
+		const result: DatePickerOption[] = []
+		for (let i = 0; i < options.length; i++) {
+			const month = options[i].value
+			if (month == '06' || month == '12') {
+				result.push(options[i])
+			}
+		}
+		return result
+	}
+
+	/** 过滤演示 confirm 记录 */
+	const onFilterConfirm = (date: Date) => {
+		filterLog.value = fmtDate(date)
+	}
+
+	// ========== 5 格式化选项 ==========
+	const formatterLog = ref<string>('（未确认）')
+
+	/** 选项文案追加单位 */
+	const suffixFormatter = (type: string, option: DatePickerOption): DatePickerOption => {
+		if (type == 'year') {
+			option.text = option.text + '年'
+		} else if (type == 'month') {
+			option.text = option.text + '月'
+		} else {
+			option.text = option.text + '日'
+		}
+		return option
+	}
+
+	/** 格式化演示 confirm 记录 */
+	const onFormatterConfirm = (date: Date) => {
+		formatterLog.value = fmtDate(date)
+	}
+
+	// ========== 6 插槽 ==========
+	const slotLog = ref<string>('（未确认）')
+
+	/** 插槽演示 confirm 记录 */
+	const onSlotConfirm = (date: Date) => {
+		slotLog.value = fmtDate(date)
+	}
+
+	// 作用域插槽传参在 VDOM 生成 Kotlin 中为 Any?，模板内直接属性访问报 Unresolved，
+	// 须经本地桥接函数显式强转 DatePickerOption 后取值（参数类型 any | null）
+	/** option 插槽文本 */
+	const slotOptionText = (option: any | null): string => {
+		if (option == null) {
+			return ''
+		}
+		return (option as DatePickerOption).text
+	}
+
+	/** option 插槽类名：首个选项高亮（验证作用域参数取值） */
+	const slotOptionClass = (option: any | null, index: any | null): string => {
+		if (index == null) {
+			return 'demo-slot-option'
+		}
+		if ((index as number) == 0) {
+			return 'demo-slot-option-active'
+		}
+		return 'demo-slot-option'
+	}
+
+	// ========== 7 只读与加载态 ==========
+	const loading = ref<boolean>(false)
+
+	/** 切换加载态 */
+	const toggleLoading = () => {
+		loading.value = !loading.value
+	}
+
+	// ========== 8 实例方法 ==========
+	const methodPicker = ref<ComponentPublicInstance | null>(null)
+	const methodLog = ref<string>('（点击按钮调用实例方法）')
+
+	/** getSelectedDate：读取当前选中日期 */
+	const callGet = () => {
+		const inst = methodPicker.value
+		if (inst == null) {
+			methodLog.value = '实例未就绪'
+			return
+		}
+		const r = inst.$callMethod('getSelectedDate')
+		if (r instanceof Date) {
+			methodLog.value = 'getSelectedDate → ' + fmtDate(r as Date)
+		} else {
+			methodLog.value = 'getSelectedDate → 无'
+		}
+	}
+
+	/** confirm：程序化确认 */
+	const callConfirm = () => {
+		const inst = methodPicker.value
+		if (inst == null) {
+			methodLog.value = '实例未就绪'
+			return
+		}
+		inst.$callMethod('confirm')
+		methodLog.value = 'confirm 已调用'
+	}
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	/* 插槽演示的自定义样式 */
+	.demo-banner {
+		flex-direction: row;
+		justify-content: center;
+		padding: 6px 0;
+	}
+	.demo-banner-text {
+		font-size: 12px;
+		color: #969799;
+	}
+	.demo-slot-title {
+		font-size: 16px;
+		font-weight: bold;
+		color: #07c160;
+	}
+	.demo-slot-confirm {
+		font-size: 14px;
+		color: #ee0a24;
+	}
+	.demo-slot-cancel {
+		font-size: 14px;
+		color: #969799;
+	}
+	.demo-slot-option {
+		font-size: 15px;
+		color: #1989fa;
+	}
+	.demo-slot-option-active {
+		font-size: 15px;
+		color: #07c160;
+	}
+	/* 实例方法按钮行 */
+	.demo-btn-row {
+		flex-direction: row;
+		align-items: center;
+		margin-top: 12px;
+	}
+</style>

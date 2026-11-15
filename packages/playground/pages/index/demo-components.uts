@@ -198,6 +198,24 @@ export const demoGroups: DemoGroup[] = [
 				desc: '颜色选择器的弹层形态：取消 / 标题 / 确定头部，确定后回写，取消丢弃本次改动。'
 			},
 			{
+				name: 'date-picker',
+				zhName: '日期选择',
+				enName: 'DatePicker',
+				desc: '年 / 月 / 日滚轮选择面板，支持列组合、可选区间、选项过滤与格式化、顶部栏与只读加载态。'
+			},
+			{
+				name: 'date-picker-input',
+				zhName: '日期输入框',
+				enName: 'DatePickerInput',
+				desc: 'm-input 与日期选择弹出框的表单组合，点击触发选择，确认后按列组合格式化回填，支持清空与禁用。'
+			},
+			{
+				name: 'date-picker-popup',
+				zhName: '日期选择弹出框',
+				enName: 'DatePickerPopup',
+				desc: 'm-popup 与 m-date-picker 的弹层组合，v-model 控制显隐，确认 / 取消后自动关闭，支持方位、圆角与安全区配置。'
+			},
+			{
 				name: 'date-strip',
 				zhName: '日期横条',
 				enName: 'DateStrip',

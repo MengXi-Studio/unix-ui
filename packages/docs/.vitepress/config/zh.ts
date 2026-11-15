@@ -120,6 +120,9 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'ColorPicker 颜色选择器', link: '/components/color-picker' },
 						{ text: 'ColorPickerInput 颜色选择器输入框', link: '/components/color-picker-input' },
 						{ text: 'ColorPickerPopup 颜色选择器弹出框', link: '/components/color-picker-popup' },
+						{ text: 'DatePicker 日期选择', link: '/components/date-picker' },
+						{ text: 'DatePickerInput 日期输入框', link: '/components/date-picker-input' },
+						{ text: 'DatePickerPopup 日期选择弹出框', link: '/components/date-picker-popup' },
 						{ text: 'DateStrip 日期横条', link: '/components/date-strip' },
 						{ text: 'Input 输入框', link: '/components/input' }
 					]

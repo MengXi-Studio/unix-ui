@@ -1,0 +1,548 @@
+<template>
+	<!-- 日期选择面板（三组件拆分后的基础组件）：纯平铺滚轮形态，弹层组合见 m-date-picker-popup，
+	     输入框触发组合见 m-date-picker-input。根节点常驻静态（LESSONS #32） -->
+	<view :class="rootClass" :style="customStyle">
+		<!-- 顶部栏：toolbar 插槽整体替换，未传时按 show-toolbar 渲染取消 / 标题 / 确认三段 -->
+		<slot name="toolbar">
+			<view v-if="showToolbar" class="m-date-picker__toolbar">
+				<view class="m-date-picker__action" @click="onCancelClick">
+					<slot name="cancel">
+						<text class="m-date-picker__cancel-text">{{ cancelButtonText }}</text>
+					</slot>
+				</view>
+				<view class="m-date-picker__title">
+					<slot name="title">
+						<text class="m-date-picker__title-text">{{ title }}</text>
+					</slot>
+				</view>
+				<view class="m-date-picker__action" @click="onConfirmClick">
+					<slot name="confirm">
+						<text class="m-date-picker__confirm-text">{{ confirmButtonText }}</text>
+					</slot>
+				</view>
+			</view>
+		</slot>
+		<slot name="columns-top"></slot>
+		<view class="m-date-picker__columns" :style="columnsStyle">
+			<!-- 选中框（两条细线）置于列层之下：uvue 无 pointer-events，覆盖层会拦截滚动手势 -->
+			<view class="m-date-picker__frame" :style="frameStyle"></view>
+			<view class="m-date-picker__column-list">
+				<m-date-picker-column
+					v-for="(column, columnIndex) in columns"
+					:key="columnIndex"
+					:options="column.options"
+					:model-value="column.index"
+					:column-index="columnIndex"
+					:option-height="optionHeightValue"
+					:visible-option-num="visibleOptionNumValue"
+					:swipe-duration="swipeDuration"
+					:readonly="readonly"
+					@change="onColumnChange"
+				>
+					<!-- 插槽条件转发：v-if="$slots.option != null" 保证未传入时不覆盖列内置文本渲染 -->
+					<!-- #ifndef MP -->
+					<template v-if="$slots['option'] != null" #option="{ option, index }">
+						<slot name="option" :option="option" :index="index"></slot>
+					</template>
+					<!-- #endif -->
+				</m-date-picker-column>
+			</view>
+			<view v-if="loading" class="m-date-picker__loading">
+				<m-loading />
+			</view>
+		</view>
+		<slot name="columns-bottom"></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-date-picker 日期选择面板：年 / 月 / 日滚轮列。
+	 * 选择状态（当前日期）在宿主维护，列经 DatePickerColumn 纯数据下发；
+	 * 滚轮交互（吸附 / 点击 / 渐隐）由 m-date-picker-column 承担。
+	 * 能力：columns-type 任意组合、min/max 限域、filter / formatter、顶部栏与只读加载态。
+	 */
+	import {
+		DatePickerColumnType,
+		DatePickerOption,
+		DatePickerColumn,
+		DatePickerFilter,
+		DatePickerFormatter,
+		DATE_PICKER_OPTION_HEIGHT,
+		DATE_PICKER_VISIBLE_OPTION_NUM,
+		normalizeDatePickerColumns,
+		padTwo,
+		optionValueToNumber,
+		composePickerDate
+	} from './date-picker.uts'
+	import { getDayStart, getDaysInMonth, addYears, clampDate } from '../../utils/date.uts'
+	import MDatePickerColumn from './m-date-picker-column.uvue'
+	import MLoading from '../m-loading/m-loading.uvue'
+
+	type Props = {
+		/** 选项类型组合（year / month / day 任意顺序；null 用默认年-月-日） */
+		columnsType?: DatePickerColumnType[]
+		/** 可选最小日期（null 默认十年前） */
+		minDate?: Date
+		/** 可选最大日期（null 默认十年后） */
+		maxDate?: Date
+		/** 当前选中日期（v-model:value；null 用今天） */
+		value?: Date
+		/** 顶部栏标题 */
+		title?: string
+		/** 确认按钮文字 */
+		confirmButtonText?: string
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 是否显示顶部栏 */
+		showToolbar?: boolean
+		/** 是否显示加载状态（覆盖滚轮区，阻止交互） */
+		loading?: boolean
+		/** 只读：滚轮回弹到当前值，不响应切换 */
+		readonly?: boolean
+		/** 选项过滤函数（null 不过滤） */
+		filter?: DatePickerFilter
+		/** 选项格式化函数（null 不格式化） */
+		formatter?: DatePickerFormatter
+		/** 选项行高 px（0 用默认 44） */
+		optionHeight?: number
+		/** 可见选项个数（0 用默认 6） */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms（停止后延迟该时长吸附） */
+		swipeDuration?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		columnsType: null,
+		minDate: null,
+		maxDate: null,
+		value: null,
+		title: '',
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		showToolbar: true,
+		loading: false,
+		readonly: false,
+		filter: null,
+		formatter: null,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 选中日期变化（v-model:value；确认后回写） */
+		'update:value': [date: Date]
+		/** 滚轮切换列（date 为切换后的日期，columnIndex 为列下标） */
+		change: [date: Date, columnIndex: number]
+		/** 点击确认按钮 */
+		confirm: [date: Date]
+		/** 点击取消按钮 */
+		cancel: []
+	}>()
+
+	/** 生效列组合（null / 空数组回退默认年-月-日） */
+	const resolvedTypes = computed<DatePickerColumnType[]>(() => normalizeDatePickerColumns(props.columnsType))
+
+	/** 生效最小日期（归一零点；null 默认十年前同日） */
+	const minDateValue = computed<Date>(() => {
+		if (props.minDate != null) {
+			return getDayStart(props.minDate!)
+		}
+		return getDayStart(addYears(new Date(), -10))
+	})
+
+	/** 生效最大日期（归一零点；null 默认十年后同日） */
+	const maxDateValue = computed<Date>(() => {
+		if (props.maxDate != null) {
+			return getDayStart(props.maxDate!)
+		}
+		return getDayStart(addYears(new Date(), 10))
+	})
+
+	/** 生效行高（0 用默认 44） */
+	const optionHeightValue = computed<number>(() => {
+		return props.optionHeight > 0 ? props.optionHeight : DATE_PICKER_OPTION_HEIGHT
+	})
+
+	/** 生效可见选项个数（0 用默认 6） */
+	const visibleOptionNumValue = computed<number>(() => {
+		return props.visibleOptionNum > 0 ? props.visibleOptionNum : DATE_PICKER_VISIBLE_OPTION_NUM
+	})
+
+	/**
+	 * 按列组合归一日期分量：未包含的列取默认值（月 0 即 1 月、日 1）
+	 * 例：['year'] → 选中年 1 月 1 日；['year','month'] → 选中年月 1 日；['month','day'] → 沿用当前年
+	 */
+	function normalizeByColumns(date: Date): Date {
+		const types = resolvedTypes.value
+		let year = date.getFullYear()
+		let month = 0
+		let day = 1
+		for (let i = 0; i < types.length; i++) {
+			const type = types[i]
+			if (type == 'year') {
+				year = date.getFullYear()
+			} else if (type == 'month') {
+				month = date.getMonth()
+			} else {
+				day = date.getDate()
+			}
+		}
+		return composePickerDate(year, month, day)
+	}
+
+	/**
+	 * 选中日期收敛到可选区间（对外输出 / 列构建统一口径）
+	 */
+	function clampToRange(date: Date): Date {
+		return clampDate(getDayStart(date), minDateValue.value, maxDateValue.value)
+	}
+
+	/**
+	 * 初始选中日期：value 优先，null 用今天，再收敛到可选区间
+	 */
+	function initialDate(): Date {
+		const base = props.value != null ? getDayStart(props.value!) : getDayStart(new Date())
+		return clampToRange(normalizeByColumns(base))
+	}
+
+	/** 当前选中日期（内部状态，列构建与确认输出的唯一真源） */
+	const selectedDate = ref<Date>(initialDate())
+
+	/**
+	 * 在选项中查找与目标值匹配的下标：完全匹配优先，缺失时取不大于目标值的最近项
+	 */
+	function findOptionIndex(options: DatePickerOption[], value: string): number {
+		if (options.length == 0) {
+			return 0
+		}
+		const target = optionValueToNumber(value)
+		let fallback = 0
+		for (let i = 0; i < options.length; i++) {
+			const current = optionValueToNumber(options[i].value)
+			if (current == target) {
+				return i
+			}
+			if (current < target) {
+				fallback = i
+			}
+		}
+		return fallback
+	}
+
+	/**
+	 * 构建日期选项：min/max 决定年界，已选年份决定月界，已选年月决定日界
+	 */
+	function buildDateOptions(type: DatePickerColumnType, year: number, month: number, day: number,
+		min: Date, max: Date, values: string[]): DatePickerOption[] {
+		const options: DatePickerOption[] = []
+		if (type == 'year') {
+			const minYear = min.getFullYear()
+			const maxYear = max.getFullYear()
+			for (let y = minYear; y <= maxYear; y++) {
+				const text = y.toString()
+				options.push({ text: text, value: text } as DatePickerOption)
+			}
+		} else if (type == 'month') {
+			const minMonth = year <= min.getFullYear() ? min.getMonth() : 0
+			const maxMonth = year >= max.getFullYear() ? max.getMonth() : 11
+			for (let m = minMonth; m <= maxMonth; m++) {
+				const text = padTwo(m + 1)
+				options.push({ text: text, value: text } as DatePickerOption)
+			}
+		} else {
+			let minDay = 1
+			let maxDay = getDaysInMonth(year, month)
+			if (year == min.getFullYear() && month == min.getMonth()) {
+				minDay = min.getDate()
+			}
+			if (year == max.getFullYear() && month == max.getMonth()) {
+				maxDay = max.getDate()
+			}
+			for (let d = minDay; d <= maxDay; d++) {
+				const text = padTwo(d)
+				options.push({ text: text, value: text } as DatePickerOption)
+			}
+		}
+		const filter = props.filter
+		if (filter != null) {
+			return filter(type, options, values)
+		}
+		return options
+	}
+
+	/**
+	 * 构建全部列：先按已选日期算出各列当前取值，再逐列生成选项、过滤、格式化并定位下标
+	 */
+	function buildColumns(): DatePickerColumn[] {
+		const types = resolvedTypes.value
+		const min = minDateValue.value
+		const max = maxDateValue.value
+		const base = clampToRange(selectedDate.value)
+		const year = base.getFullYear()
+		const selectedMonth = base.getMonth()
+		let minMonth = year <= min.getFullYear() ? min.getMonth() : 0
+		let maxMonth = year >= max.getFullYear() ? max.getMonth() : 11
+		if (minMonth > maxMonth) {
+			minMonth = maxMonth
+		}
+		let month = selectedMonth
+		if (month < minMonth) {
+			month = minMonth
+		}
+		if (month > maxMonth) {
+			month = maxMonth
+		}
+		let minDay = 1
+		let maxDay = getDaysInMonth(year, month)
+		if (year == min.getFullYear() && month == min.getMonth()) {
+			minDay = min.getDate()
+		}
+		if (year == max.getFullYear() && month == max.getMonth()) {
+			maxDay = max.getDate()
+		}
+		let day = base.getDate()
+		if (day < minDay) {
+			day = minDay
+		}
+		if (day > maxDay) {
+			day = maxDay
+		}
+
+		const result: DatePickerColumn[] = []
+		const values: string[] = []
+		for (let i = 0; i < types.length; i++) {
+			const type = types[i]
+			let current = ''
+			if (type == 'year') {
+				current = year.toString()
+			} else if (type == 'month') {
+				current = padTwo(month + 1)
+			} else {
+				current = padTwo(day)
+			}
+			let options = buildDateOptions(type, year, month, day, min, max, values)
+			const formatter = props.formatter
+			if (formatter != null) {
+				for (let j = 0; j < options.length; j++) {
+					options[j] = formatter(type, options[j])
+				}
+			}
+			result.push({
+				type: type,
+				options: options,
+				index: findOptionIndex(options, current)
+			} as DatePickerColumn)
+			values.push(current)
+		}
+		return result
+	}
+
+	/** 列渲染数据（selectedDate / 列组合 / filter / formatter 变化时重算） */
+	const columns = computed<DatePickerColumn[]>(() => buildColumns())
+
+	/** 根类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-date-picker'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 滚轮区高度：行高 × 可见个数 */
+	const columnsStyle = computed<string>(() => {
+		return 'height: ' + (optionHeightValue.value * visibleOptionNumValue.value).toString() + 'px;'
+	})
+
+	/** 选中框高度与上移量（顶边距视口中线半个行高） */
+	const frameStyle = computed<string>(() => {
+		const height = optionHeightValue.value
+		return 'height: ' + height.toString() + 'px; margin-top: -' + (height / 2).toString() + 'px;'
+	})
+
+	/**
+	 * 列切换：把选项值写回对应日期分量，收敛区间后更新内部日期并派发 change
+	 */
+	function onColumnChange(columnIndex: number, index: number) {
+		const cols = columns.value
+		if (columnIndex < 0 || columnIndex >= cols.length) {
+			return
+		}
+		const column = cols[columnIndex]
+		if (index < 0 || index >= column.options.length) {
+			return
+		}
+		const value = optionValueToNumber(column.options[index].value)
+		const base = clampToRange(selectedDate.value)
+		let year = base.getFullYear()
+		let month = base.getMonth()
+		let day = base.getDate()
+		if (column.type == 'year') {
+			year = value
+			day = Math.min(day, getDaysInMonth(year, month))
+		} else if (column.type == 'month') {
+			month = value - 1
+			day = Math.min(day, getDaysInMonth(year, month))
+		} else {
+			day = value
+		}
+		selectedDate.value = clampToRange(normalizeByColumns(composePickerDate(year, month, day)))
+		emit('change', selectedDate.value, columnIndex)
+	}
+
+	/**
+	 * 确认：回写 v-model:value 并派发 confirm
+	 */
+	function onConfirmClick() {
+		const date = clampToRange(normalizeByColumns(selectedDate.value))
+		selectedDate.value = date
+		emit('update:value', date)
+		emit('confirm', date)
+	}
+
+	/**
+	 * 取消：仅派发 cancel，不改动选中值（弹层由组合组件关闭）
+	 */
+	function onCancelClick() {
+		emit('cancel')
+	}
+
+	// 外部 value 变化：与内部状态不同日时同步（确认回写的同值不重置选择）
+	watch((): Date | null => props.value, (value: Date | null) => {
+		if (value == null) {
+			return
+		}
+		const next = clampToRange(normalizeByColumns(value))
+		if (getDayStart(selectedDate.value).getTime() == next.getTime()) {
+			return
+		}
+		selectedDate.value = next
+	})
+
+	// min/max 变化：当前选择收敛到新区间
+	watch((): Date => minDateValue.value, (_: Date) => {
+		selectedDate.value = clampToRange(selectedDate.value)
+	})
+
+	watch((): Date => maxDateValue.value, (_: Date) => {
+		selectedDate.value = clampToRange(selectedDate.value)
+	})
+
+	/**
+	 * 重置选择为 value / 今天（弹层复开时按需调用）
+	 */
+	function resetSelection() {
+		selectedDate.value = initialDate()
+	}
+
+	/**
+	 * 读取当前选中日期（实例方法，对齐 Vant getSelectedDate）
+	 */
+	function getSelectedDate(): Date {
+		return clampToRange(normalizeByColumns(selectedDate.value))
+	}
+
+	/**
+	 * 程序化确认（实例方法，对齐 Vant confirm）：立即回写并派发 confirm
+	 */
+	function confirm() {
+		onConfirmClick()
+	}
+
+	defineExpose({
+		confirm,
+		resetSelection,
+		getSelectedDate
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根 ========== */
+	.m-date-picker {
+		background-color: $m-date-picker-background;
+	}
+
+	/* ========== 顶部栏（取消 / 标题 / 确认） ========== */
+	.m-date-picker__toolbar {
+		flex-direction: row;
+		align-items: center;
+		height: $m-date-picker-toolbar-height;
+	}
+	.m-date-picker__action {
+		padding: $m-date-picker-action-padding;
+		justify-content: center;
+	}
+	.m-date-picker__cancel-text {
+		font-size: $m-date-picker-action-font-size;
+		color: $m-date-picker-cancel-color;
+	}
+	.m-date-picker__confirm-text {
+		font-size: $m-date-picker-action-font-size;
+		color: $m-date-picker-confirm-color;
+	}
+	.m-date-picker__title {
+		flex: 1;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-date-picker__title-text {
+		font-size: $m-date-picker-title-font-size;
+		color: $m-date-picker-title-color;
+		font-weight: bold;
+	}
+
+	/* ========== 滚轮区（高度 inline 下发） ========== */
+	.m-date-picker__columns {
+		position: relative;
+	}
+
+	/* 选中框：置于列层之下，避免拦截滚动手势（uvue 无 pointer-events） */
+	.m-date-picker__frame {
+		position: absolute;
+		top: 50%;
+		left: 16px;
+		right: 16px;
+		z-index: 0;
+		border-top: $m-border-width solid $m-date-picker-frame-color;
+		border-bottom: $m-border-width solid $m-date-picker-frame-color;
+	}
+
+	/* 列层：横向排布，覆盖在选中框之上 */
+	.m-date-picker__column-list {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+		flex-direction: row;
+	}
+
+	/* ========== 加载遮罩 ========== */
+	.m-date-picker__loading {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 2;
+		justify-content: center;
+		align-items: center;
+		background-color: $m-date-picker-loading-background;
+	}
+</style>

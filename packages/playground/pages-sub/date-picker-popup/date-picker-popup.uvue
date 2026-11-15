@@ -1,0 +1,249 @@
+<template>
+	<view class="page">
+		<demo-navbar title="日期选择弹出框" subtitle="DatePickerPopup" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础弹层</text>
+			<view class="card">
+				<m-button block @click="openBasic">打开日期选择</m-button>
+				<m-date-picker-popup
+					v-model:show="basicShow"
+					title="选择日期"
+					@change="onBasicChange"
+					@confirm="onBasicConfirm"
+					@cancel="onBasicCancel"
+					@open="onBasicOpen"
+					@opened="onBasicOpened"
+					@close="onBasicClose"
+					@closed="onBasicClosed"
+					@click-overlay="onBasicOverlay"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近事件：{{ basicLog }}</text>
+				</view>
+				<text class="caption">默认底部弹出 + 圆角 + 遮罩可关；确认 / 取消后自动关闭并派发 update:show；open / opened / close / closed / click-overlay 全生命周期事件</text>
+			</view>
+
+			<text class="section" id="controlled">受控选中值</text>
+			<view class="card">
+				<m-button block @click="openControlled">打开（受控回显）</m-button>
+				<view class="demo-btn-gap">
+					<m-button block @click="openControlledToday">外部设值为今天并打开</m-button>
+				</view>
+				<m-date-picker-popup v-model:show="controlledShow" v-model:value="controlledValue" />
+				<view class="event-log">
+					<text class="event-text">受控值：{{ controlledText }}</text>
+				</view>
+				<text class="caption">v-model:value 受控：确认后回写；外部赋值后打开弹层滚轮选中态跟随</text>
+			</view>
+
+			<text class="section" id="columns">列组合与区间</text>
+			<view class="card">
+				<m-button block @click="openYearMonth">打开年月选择（限定区间）</m-button>
+				<m-date-picker-popup
+					v-model:show="yearMonthShow"
+					:columns-type="yearMonthColumns"
+					:min-date="rangeMin"
+					:max-date="rangeMax"
+					title="选择年月"
+					@confirm="onYearMonthConfirm"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近确认：{{ yearMonthLog }}</text>
+				</view>
+				<text class="caption">columns-type=['year','month'] 只选年月；min/max 限定 2026-03 ~ 2026-09</text>
+			</view>
+
+			<text class="section" id="states">只读与加载态</text>
+			<view class="card">
+				<m-button block @click="openStates">打开（只读 + 加载中）</m-button>
+				<m-date-picker-popup
+					v-model:show="statesShow"
+					:columns-type="yearMonthColumns"
+					readonly
+					loading
+					title="只读 / 加载中"
+				/>
+				<text class="caption">readonly 滚轮回弹不切换；loading 覆盖滚轮区阻止交互</text>
+			</view>
+
+			<text class="section" id="slots">插槽</text>
+			<view class="card">
+				<m-button block @click="openSlots">打开（自定义顶部栏）</m-button>
+				<m-date-picker-popup v-model:show="slotsShow" :columns-type="yearMonthColumns">
+					<template #title>
+						<text class="demo-slot-title">选择账期</text>
+					</template>
+					<template #confirm>
+						<text class="demo-slot-confirm">完成</text>
+					</template>
+					<template #columns-top>
+						<view class="demo-banner">
+							<text class="demo-banner-text">columns-top 自定义内容</text>
+						</view>
+					</template>
+				</m-date-picker-popup>
+				<text class="caption">title / confirm / cancel / option / columns-top / columns-bottom / toolbar 插槽透传到内部 m-date-picker</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '日期选择弹出框 DatePickerPopup', name: 'date-picker-popup' })
+	import { DatePickerColumnType } from '@/uni_modules/m-ui-x/components/m-date-picker/date-picker.uts'
+
+	/** 日期转 YYYY-M-D 文本（演示日志用） */
+	function fmtDate(d: Date): string {
+		return d.getFullYear().toString() + '-' + (d.getMonth() + 1).toString() + '-' + d.getDate().toString()
+	}
+
+	// ========== 1 基础弹层 ==========
+	const basicShow = ref<boolean>(false)
+	const basicLog = ref<string>('（等待交互）')
+
+	/** 打开弹层 */
+	const openBasic = () => {
+		basicShow.value = true
+	}
+
+	/** change 记录 */
+	const onBasicChange = (date: Date, columnIndex: number) => {
+		basicLog.value = 'change → ' + fmtDate(date)
+	}
+
+	/** confirm 记录（弹层同步自动关闭） */
+	const onBasicConfirm = (date: Date) => {
+		basicLog.value = 'confirm → ' + fmtDate(date)
+	}
+
+	/** cancel 记录（弹层同步自动关闭） */
+	const onBasicCancel = () => {
+		basicLog.value = 'cancel'
+	}
+
+	/** open 记录 */
+	const onBasicOpen = () => {
+		basicLog.value = 'open'
+	}
+
+	/** opened 记录 */
+	const onBasicOpened = () => {
+		basicLog.value = 'opened'
+	}
+
+	/** close 记录 */
+	const onBasicClose = () => {
+		basicLog.value = 'close'
+	}
+
+	/** closed 记录 */
+	const onBasicClosed = () => {
+		basicLog.value = 'closed'
+	}
+
+	/** click-overlay 记录 */
+	const onBasicOverlay = () => {
+		basicLog.value = 'click-overlay（遮罩已关闭）'
+	}
+
+	// ========== 2 受控选中值 ==========
+	const controlledShow = ref<boolean>(false)
+	const controlledValue = ref<Date | null>(null)
+	const controlledText = computed<string>(() => {
+		const v = controlledValue.value
+		if (v == null) {
+			return 'null（未选）'
+		}
+		return fmtDate(v as Date)
+	})
+
+	/** 打开受控弹层 */
+	const openControlled = () => {
+		controlledShow.value = true
+	}
+
+	/** 外部设值为今天并打开 */
+	const openControlledToday = () => {
+		const now = new Date()
+		controlledValue.value = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+		controlledShow.value = true
+	}
+
+	// ========== 3 列组合与区间 ==========
+	const yearMonthColumns: DatePickerColumnType[] = ['year', 'month']
+	const rangeMin = new Date(2026, 2, 1)
+	const rangeMax = new Date(2026, 8, 30)
+	const yearMonthShow = ref<boolean>(false)
+	const yearMonthLog = ref<string>('（未确认）')
+
+	/** 打开年月弹层 */
+	const openYearMonth = () => {
+		yearMonthShow.value = true
+	}
+
+	/** 年月 confirm 记录 */
+	const onYearMonthConfirm = (date: Date) => {
+		yearMonthLog.value = fmtDate(date)
+	}
+
+	// ========== 4 只读与加载态 ==========
+	const statesShow = ref<boolean>(false)
+
+	/** 打开只读 / 加载弹层 */
+	const openStates = () => {
+		statesShow.value = true
+	}
+
+	// ========== 5 插槽 ==========
+	const slotsShow = ref<boolean>(false)
+
+	/** 打开插槽演示弹层 */
+	const openSlots = () => {
+		slotsShow.value = true
+	}
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	/* 受控演示双按钮间距 */
+	.demo-btn-gap {
+		margin-top: 12px;
+	}
+	/* 插槽演示的自定义样式 */
+	.demo-slot-title {
+		font-size: 16px;
+		font-weight: bold;
+		color: #07c160;
+	}
+	.demo-slot-confirm {
+		font-size: 14px;
+		color: #ee0a24;
+	}
+	.demo-banner {
+		flex-direction: row;
+		justify-content: center;
+		padding: 6px 0;
+	}
+	.demo-banner-text {
+		font-size: 12px;
+		color: #969799;
+	}
+</style>

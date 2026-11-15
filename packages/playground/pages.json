@@ -108,6 +108,24 @@
 					}
 				},
 				{
+					"path": "date-picker-input/date-picker-input",
+					"style": {
+						"navigationBarTitleText": "日期输入框 DatePickerInput"
+					}
+				},
+				{
+					"path": "date-picker-popup/date-picker-popup",
+					"style": {
+						"navigationBarTitleText": "日期选择弹出框 DatePickerPopup"
+					}
+				},
+				{
+					"path": "date-picker/date-picker",
+					"style": {
+						"navigationBarTitleText": "日期选择 DatePicker"
+					}
+				},
+				{
 					"path": "date-strip/date-strip",
 					"style": {
 						"navigationBarTitleText": "日期横条 Date Strip"

@@ -1,0 +1,155 @@
+<template>
+	<view class="page">
+		<demo-navbar title="日期输入框" subtitle="DatePickerInput" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-date-picker-input
+					v-model:value="basicValue"
+					title="选择日期"
+					@confirm="onBasicConfirm"
+					@clear="onBasicClear"
+				/>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ basicText }}；最近事件：{{ basicLog }}</text>
+				</view>
+				<text class="caption">点击输入区打开弹层，确认后按 YYYY-MM-DD 回填；清空按钮回写 null 并派发 clear</text>
+			</view>
+
+			<text class="section" id="columns">列组合</text>
+			<view class="card">
+				<m-date-picker-input
+					v-model:value="yearMonthValue"
+					:columns-type="yearMonthColumns"
+					title="选择年月"
+					placeholder="请选择年月"
+				/>
+				<view class="event-log">
+					<text class="event-text">年月：{{ yearMonthText }}</text>
+				</view>
+				<m-date-picker-input
+					v-model:value="yearValue"
+					:columns-type="yearColumns"
+					title="选择年份"
+					placeholder="请选择年份"
+					custom-style="margin-top: 16px;"
+				/>
+				<view class="event-log">
+					<text class="event-text">年份：{{ yearText }}</text>
+				</view>
+				<m-date-picker-input
+					v-model:value="monthDayValue"
+					:columns-type="monthDayColumns"
+					title="选择月日"
+					placeholder="请选择月日"
+					custom-style="margin-top: 16px;"
+				/>
+				<view class="event-log">
+					<text class="event-text">月日：{{ monthDayText }}</text>
+				</view>
+				<text class="caption">展示格式随 columns-type 派生：YYYY / YYYY-MM / MM-DD；只选年月时日归一为 1 号</text>
+			</view>
+
+			<text class="section" id="range">可选区间</text>
+			<view class="card">
+				<m-date-picker-input
+					v-model:value="rangeValue"
+					:min-date="rangeMin"
+					:max-date="rangeMax"
+					title="2026-03-10 ~ 2026-09-20"
+					placeholder="限定区间"
+				/>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ rangeText }}</text>
+				</view>
+				<text class="caption">min-date / max-date 限定滚轮取值域，越界选择自动收敛</text>
+			</view>
+
+			<text class="section" id="disabled">禁用与不可清空</text>
+			<view class="card">
+				<m-date-picker-input :value="fixedValue" disabled placeholder="禁用态" />
+				<view class="event-log">
+					<text class="event-text">禁用态不可点击、不显示清空按钮</text>
+				</view>
+				<m-date-picker-input
+					v-model:value="noClearValue"
+					:clearable="false"
+					placeholder="不可清空"
+					custom-style="margin-top: 16px;"
+				/>
+				<text class="caption">disabled 关闭触发层；clearable=false 隐藏清空按钮</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '日期输入框 DatePickerInput', name: 'date-picker-input' })
+	import { DatePickerColumnType } from '@/uni_modules/m-ui-x/components/m-date-picker/date-picker.uts'
+
+	/** 日期转 YYYY-M-D 文本（演示日志用） */
+	function fmtDate(d: Date | null): string {
+		if (d == null) {
+			return 'null（未选）'
+		}
+		return d.getFullYear().toString() + '-' + (d.getMonth() + 1).toString() + '-' + d.getDate().toString()
+	}
+
+	// ========== 1 基础用法 ==========
+	const basicValue = ref<Date | null>(null)
+	const basicLog = ref<string>('（点击输入框选择）')
+	const basicText = computed<string>(() => fmtDate(basicValue.value))
+
+	/** 确认记录 */
+	const onBasicConfirm = (date: Date) => {
+		basicLog.value = 'confirm → ' + fmtDate(date)
+	}
+
+	/** 清空记录 */
+	const onBasicClear = () => {
+		basicLog.value = 'clear'
+	}
+
+	// ========== 2 列组合 ==========
+	const yearMonthColumns: DatePickerColumnType[] = ['year', 'month']
+	const yearColumns: DatePickerColumnType[] = ['year']
+	const monthDayColumns: DatePickerColumnType[] = ['month', 'day']
+	const yearMonthValue = ref<Date | null>(null)
+	const yearValue = ref<Date | null>(null)
+	const monthDayValue = ref<Date | null>(null)
+	const yearMonthText = computed<string>(() => fmtDate(yearMonthValue.value))
+	const yearText = computed<string>(() => fmtDate(yearValue.value))
+	const monthDayText = computed<string>(() => fmtDate(monthDayValue.value))
+
+	// ========== 3 可选区间 ==========
+	const rangeMin = new Date(2026, 2, 10)
+	const rangeMax = new Date(2026, 8, 20)
+	const rangeValue = ref<Date | null>(null)
+	const rangeText = computed<string>(() => fmtDate(rangeValue.value))
+
+	// ========== 4 禁用与不可清空 ==========
+	const fixedValue = new Date(2026, 10, 15)
+	const noClearValue = ref<Date | null>(null)
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

@@ -1,5 +1,16 @@
 # 更新日志
 
+## [0.6.0] - 2026-11-15
+
+新增日期选择三件套 `m-date-picker` / `m-date-picker-popup` / `m-date-picker-input`。
+
+### 新增
+
+- **m-date-picker 日期选择面板**：年 / 月 / 日三列滚轮，滚动停止后吸附到最近选项并派发 `change(date, columnIndex)`；`columns-type` 支持 `year` / `month` / `day` 任意顺序组合（未包含的分量按 1 月 1 日归一）；`min-date` / `max-date` 默认前后十年，年界决定月界、已选年月决定日界，越界自动收敛；`filter(type, options, values)` 过滤选项、`formatter(type, option)` 改写文案；`option-height` / `visible-option-num` 调整滚轮，`swipe-duration` 为滚动停止判定时长，`readonly` 滚轮回弹、`loading` 覆盖阻断；顶部栏 `show-toolbar` / `title` / `confirm-button-text` / `cancel-button-text` 与 `toolbar` / `title` / `confirm` / `cancel` / `option` / `columns-top` / `columns-bottom` 插槽（小程序端 `option` 回退内置文本）；expose `confirm` / `resetSelection` / `getSelectedDate`；`v-model:value` 绑定 `Date`（详见 [DatePicker](/components/date-picker)）
+- **m-date-picker-popup 日期选择弹出框**：`m-popup` + `m-date-picker` 组合，`v-model:show` 受控显隐，确认 / 取消后自动关闭并回写 `update:show`；透传方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长，`reset-on-open` 控制复开时是否复位为 `value`；弹层生命周期与插槽逐项转发（详见 [DatePickerPopup](/components/date-picker-popup)）
+- **m-date-picker-input 日期输入框**：`m-input` 只读触发器 + 弹层，点击整区打开、确认后经 `v-model:value` 回写；展示格式随 `columns-type` 派生（`YYYY` / `YYYY-MM` / `YYYY-MM-DD` / `MM-DD`）；自绘清空按钮回写 `null` 并派发 `clear`，`disabled` / `clearable` / `border` / `inlaid` 可配（详见 [DatePickerInput](/components/date-picker-input)）
+- 新增 `$m-date-picker-*`（背景、顶部栏、选项、选中框、加载遮罩）与 `$m-date-picker-input-*`（触发层 / 清空按钮）主题变量段
+
 ## [0.5.3] - 2026-11-15
 
 修复 `m-calendar` 微信小程序端因日格 `v-for` 内重复声明同名插槽导致控制台被告警刷屏（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）。

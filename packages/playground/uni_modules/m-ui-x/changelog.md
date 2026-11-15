@@ -1,3 +1,7 @@
+## 0.6.0 (2026-11-15)
+
+- 新增 `m-date-picker` / `m-date-picker-popup` / `m-date-picker-input` 日期选择三件套（对标 Vant DatePicker）：年 / 月 / 日滚轮列滚动停止后吸附到最近选项，`columns-type` 支持 `year` / `month` / `day` 任意顺序组合（缺失分量按 1 月 1 日归一），`min-date` / `max-date` 默认前后十年并据已选年月收敛月 / 日取值域；`filter` / `formatter` 二次加工列选项；`option-height` / `visible-option-num` / `swipe-duration` 调整滚轮，`readonly` 回弹、`loading` 阻断交互；顶部栏支持 `show-toolbar` 与 `toolbar` / `title` / `confirm` / `cancel` 插槽，另有 `option` / `columns-top` / `columns-bottom` 插槽（小程序端 `option` 按 #17 回退内置文本）；expose `confirm` / `resetSelection` / `getSelectedDate`；弹层确认或取消后自动关闭，输入框展示格式随列组合派生（`YYYY` / `YYYY-MM` / `YYYY-MM-DD` / `MM-DD`）并支持清空；`v-model:value` 绑定 `Date`；新增 `$m-date-picker-*` 与 `$m-date-picker-input-*` 主题变量
+
 ## 0.5.3 (2026-11-15)
 
 - 修复 `m-calendar` 小程序端日格 `v-for` 内重复声明同名插槽（`month-title` / `text` / `top-info` / `bottom-info`）导致的 `More than one slot named "top-info"` 刷屏告警（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）；小程序端改用 `formatter` 文本渲染，Web / App 插槽行为不变；`m-date-strip` 的 `item` / `top-info` / `bottom-info` 同理（`show-lunar` 不受影响）；`m-cascader` 的 `option` / `options-top` / `options-bottom` 同理

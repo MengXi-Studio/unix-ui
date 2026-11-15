@@ -538,3 +538,8 @@
 - **遍历型查找 MP 编译期降级**：findDescendantById / findScrollParent 函数体 `#ifdef MP return null`——调用点本就判空（centerActiveTab / animateLine 跳过居中、scrollspy 判定按 holderTop=0 的页面级语义、点击定位回退 uni.pageScrollTo）；注意 findScrollParent 不加保护会在修复 findDescendantById 后成为下一个崩溃点（`cur.parentElement` 在 undefined 上取属性即抛错）
 - **静默降级链**：仅修崩溃点不够——同一根因在多条路径埋雷，修复时把「同一缺失能力」的全部调用点一次排查（children / parentElement / 无 id 的 getBoundingClientRectAsync 三类，m-tabs 中共 6 处）
 - **App 端 UniElement 有完整遍历能力**（children / parentElement / 同步测量都可用）——条件编译按 `#ifdef MP` / `#ifndef MP` 三分支：MP 走 id 查询、WEB 同步、APP 异步；注意 `#ifndef WEB` 会包含 MP 端，三分支必须显式互斥包裹
+
+### 88. 滚轮选择器：scroll-view 吸附定位与「无 pointer-events」的替代方案（2026-11-15 m-date-picker 三件套）
+- **滚轮列的吸附定位可用 `:scroll-top` prop**：`@scroll` 回灌 `e.detail.scrollTop` 维护镜像（`actualTop`），停止后按 `Math.round(top / optionHeight) * optionHeight` 回写；上下占位高固定为 `(visibleNum - 1) / 2 * optionHeight`（偶数可见数时是半格 2.5 行，选中项才精确居中）
+- **同值回写不触发属性下发**：用户滚走又滚回同一格时（镜像 233.2、目标 220，而上一次 prop 已是 220），直接赋同值无效——先写 `target + 0.5` 再 `nextTick` 归位 `target`，才能强制吸附；程序化滚动期间用 120ms 标记位屏蔽自身 scroll 事件，避免吸附递归
+- **uvue 无 `pointer-events`**：Vant 那种覆盖式渐变遮罩会拦截滚动手势（项目内 m-toast 亦按「全屏层天然拦截」处理）——滚轮渐隐改用每个选项按 `|index - activeIndex|` 分级 `opacity` 类实现；选中框两条细线放在列层 `z-index: 0`、列层 `z-index: 1` 且滚动区背景透明，既不挡手势也保持视觉层次

@@ -40,6 +40,12 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		'color-picker': 'pages-sub/color-picker/color-picker'
 		/** 紧凑布局 Compact */
 		compact: 'pages-sub/compact/compact'
+		/** 日期输入框 DatePickerInput */
+		'date-picker-input': 'pages-sub/date-picker-input/date-picker-input'
+		/** 日期选择弹出框 DatePickerPopup */
+		'date-picker-popup': 'pages-sub/date-picker-popup/date-picker-popup'
+		/** 日期选择 DatePicker */
+		'date-picker': 'pages-sub/date-picker/date-picker'
 		/** 日期横条 Date Strip */
 		'date-strip': 'pages-sub/date-strip/date-strip'
 		/** 分割线 Divider */

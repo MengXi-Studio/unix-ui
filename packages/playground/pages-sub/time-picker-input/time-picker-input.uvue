@@ -1,0 +1,140 @@
+<template>
+	<view class="page">
+		<demo-navbar title="时间输入框" subtitle="TimePickerInput" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-time-picker-input v-model:value="basicValue" @confirm="onBasicConfirm" @clear="onBasicClear" />
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatTime(basicValue) }}；最近事件：{{ basicLog }}</text>
+				</view>
+				<view class="demo-btn-row">
+					<m-button size="small" @click="fillTime">填入 09:30</m-button>
+				</view>
+				<text class="caption">点击输入区打开弹层，确认后回填 'HH:mm'；清空按钮回写 null 并派发 clear</text>
+			</view>
+
+			<text class="section" id="columns">时分秒</text>
+			<view class="card">
+				<m-time-picker-input
+					v-model:value="secondValue"
+					:columns-type="hmsColumns"
+					placeholder="请选择时分秒"
+				/>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatTime(secondValue) }}</text>
+				</view>
+				<text class="caption">columns-type=['hour','minute','second'] 展示与回写 'HH:mm:ss'</text>
+			</view>
+
+			<text class="section" id="constraints">步长与区间</text>
+			<view class="card">
+				<m-time-picker-input
+					v-model:value="stepValue"
+					:minute-step="15"
+					min-time="09:00"
+					max-time="18:00"
+					title="工作时间"
+					placeholder="09:00 - 18:00（15 分钟步长）"
+				/>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatTime(stepValue) }}</text>
+				</view>
+				<m-time-picker-input
+					v-model:value="cycleValue"
+					:hour-cycle="12"
+					placeholder="12 小时制"
+					custom-style="margin-top: 16px;"
+				/>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatTime(cycleValue) }}</text>
+				</view>
+				<text class="caption">步长 / 区间 / 12 制参数全部透传到弹层面板</text>
+			</view>
+
+			<text class="section" id="disabled">禁用与不可清空</text>
+			<view class="card">
+				<m-time-picker-input :value="'10:30'" disabled placeholder="禁用态" />
+				<view class="event-log">
+					<text class="event-text">禁用态不可点击、不显示清空按钮</text>
+				</view>
+				<m-time-picker-input
+					v-model:value="noClearValue"
+					:clearable="false"
+					placeholder="不可清空"
+					custom-style="margin-top: 16px;"
+				/>
+				<text class="caption">disabled 关闭触发层；clearable=false 只隐藏清空按钮</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '时间输入框 TimePickerInput', name: 'time-picker-input' })
+	import { TimePickerColumnType } from '@/uni_modules/m-ui-x/components/m-time-picker/time-picker.uts'
+
+	const hmsColumns: TimePickerColumnType[] = ['hour', 'minute', 'second']
+
+	/** 空值兜底文本 */
+	function formatTime(value: string | null): string {
+		return value == null ? 'null' : value
+	}
+
+	// ========== 1 基础用法 ==========
+	const basicValue = ref<string | null>(null)
+	const basicLog = ref<string>('（点击输入框选择）')
+
+	/** 确认记录 */
+	const onBasicConfirm = (value: string) => {
+		basicLog.value = 'confirm → ' + value
+	}
+
+	/** 清空记录 */
+	const onBasicClear = () => {
+		basicLog.value = 'clear'
+	}
+
+	/** 填入固定时间（演示有值状态与清空） */
+	const fillTime = () => {
+		basicValue.value = '09:30'
+		basicLog.value = 'fill → 09:30'
+	}
+
+	// ========== 2 时分秒 ==========
+	const secondValue = ref<string | null>(null)
+
+	// ========== 3 步长与区间 ==========
+	const stepValue = ref<string | null>(null)
+	const cycleValue = ref<string | null>(null)
+
+	// ========== 4 禁用与不可清空 ==========
+	const noClearValue = ref<string | null>(null)
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	.demo-btn-row {
+		flex-direction: row;
+		align-items: center;
+		margin-top: 12px;
+	}
+</style>

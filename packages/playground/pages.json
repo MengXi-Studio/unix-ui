@@ -246,6 +246,42 @@
 					}
 				},
 				{
+					"path": "time-picker-input/time-picker-input",
+					"style": {
+						"navigationBarTitleText": "时间输入框 TimePickerInput"
+					}
+				},
+				{
+					"path": "time-picker-popup/time-picker-popup",
+					"style": {
+						"navigationBarTitleText": "时间弹出框 TimePickerPopup"
+					}
+				},
+				{
+					"path": "time-picker/time-picker",
+					"style": {
+						"navigationBarTitleText": "时间选择 TimePicker"
+					}
+				},
+				{
+					"path": "time-range-picker-input/time-range-picker-input",
+					"style": {
+						"navigationBarTitleText": "时间范围输入框 TimeRangePickerInput"
+					}
+				},
+				{
+					"path": "time-range-picker-popup/time-range-picker-popup",
+					"style": {
+						"navigationBarTitleText": "时间范围弹出框 TimeRangePickerPopup"
+					}
+				},
+				{
+					"path": "time-range-picker/time-range-picker",
+					"style": {
+						"navigationBarTitleText": "时间范围选择 TimeRangePicker"
+					}
+				},
+				{
 					"path": "toast/toast",
 					"style": {
 						"navigationBarTitleText": "轻提示 Toast"

@@ -244,6 +244,42 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '输入框',
 				enName: 'Input',
 				desc: '文本输入框，支持六种类型、清除图标、明文切换、格式化与数字精度收敛、字数统计、多行自适应、前后插槽与紧凑布局联动。'
+			},
+			{
+				name: 'time-picker',
+				zhName: '时间选择',
+				enName: 'TimePicker',
+				desc: '时 / 分 / 秒滚轮选择，支持列组合、分钟与秒步长、min/max 时刻收敛、12/24 小时制（12 制附加上午下午列）、过滤格式化与只读加载态。'
+			},
+			{
+				name: 'time-picker-input',
+				zhName: '时间输入框',
+				enName: 'TimePickerInput',
+				desc: 'm-input 与时间弹出框的表单组合，点击触发选择，确认后回填 HH:mm（含秒为 HH:mm:ss），支持清空与禁用。'
+			},
+			{
+				name: 'time-picker-popup',
+				zhName: '时间弹出框',
+				enName: 'TimePickerPopup',
+				desc: 'm-popup 与时间选择面板的弹层组合，v-model 控制显隐与时间值，确认 / 取消后自动关闭，支持方位、圆角与安全区配置。'
+			},
+			{
+				name: 'time-range-picker',
+				zhName: '时间范围选择',
+				enName: 'TimeRangePicker',
+				desc: '开始 / 结束两段标题复用一个时间滚轮，维护两端时间字符串；确认时自动交换为升序，支持步长、时刻区间、12 小时制与快捷选项插槽。'
+			},
+			{
+				name: 'time-range-picker-input',
+				zhName: '时间范围输入框',
+				enName: 'TimeRangePickerInput',
+				desc: 'm-input 与时间范围弹出框的表单组合，点击触发选择，确认后以「起 - 止」回填，支持清空与禁用。'
+			},
+			{
+				name: 'time-range-picker-popup',
+				zhName: '时间范围弹出框',
+				enName: 'TimeRangePickerPopup',
+				desc: 'm-popup 与时间范围面板的弹层组合，v-model 控制显隐与两端值，确认 / 取消后自动关闭，支持方位、圆角与安全区配置。'
 			}
 		]
 	},

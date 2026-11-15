@@ -86,6 +86,18 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		tabs: 'pages-sub/tabs/tabs'
 		/** 文本 Text */
 		text: 'pages-sub/text/text'
+		/** 时间输入框 TimePickerInput */
+		'time-picker-input': 'pages-sub/time-picker-input/time-picker-input'
+		/** 时间弹出框 TimePickerPopup */
+		'time-picker-popup': 'pages-sub/time-picker-popup/time-picker-popup'
+		/** 时间选择 TimePicker */
+		'time-picker': 'pages-sub/time-picker/time-picker'
+		/** 时间范围输入框 TimeRangePickerInput */
+		'time-range-picker-input': 'pages-sub/time-range-picker-input/time-range-picker-input'
+		/** 时间范围弹出框 TimeRangePickerPopup */
+		'time-range-picker-popup': 'pages-sub/time-range-picker-popup/time-range-picker-popup'
+		/** 时间范围选择 TimeRangePicker */
+		'time-range-picker': 'pages-sub/time-range-picker/time-range-picker'
 		/** 轻提示 Toast */
 		toast: 'pages-sub/toast/toast'
 		/** 瀑布流 Waterfall */

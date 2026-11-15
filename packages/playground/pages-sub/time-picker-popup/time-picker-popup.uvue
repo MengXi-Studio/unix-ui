@@ -1,0 +1,202 @@
+<template>
+	<view class="page">
+		<demo-navbar title="时间弹出框" subtitle="TimePickerPopup" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础弹层</text>
+			<view class="card">
+				<m-button block @click="openBasic">打开时间选择</m-button>
+				<m-time-picker-popup
+					v-model:show="basicShow"
+					@change="onBasicChange"
+					@confirm="onBasicConfirm"
+					@cancel="onBasicCancel"
+					@opened="onBasicOpened"
+					@closed="onBasicClosed"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近事件：{{ basicLog }}</text>
+				</view>
+				<text class="caption">默认底部弹出 + 圆角 + 遮罩可关；确认 / 取消后自动关闭并派发 update:show</text>
+			</view>
+
+			<text class="section" id="controlled">受控选中值</text>
+			<view class="card">
+				<m-button block @click="openControlled">打开（受控回显 09:30）</m-button>
+				<view class="demo-btn-gap">
+					<m-button block @click="clearControlled">清空受控值</m-button>
+				</view>
+				<m-time-picker-popup v-model:show="controlledShow" v-model:value="controlledValue" :columns-type="hmsColumns" />
+				<view class="event-log">
+					<text class="event-text">受控值：{{ formatTime(controlledValue) }}</text>
+				</view>
+				<text class="caption">v-model:value 受控：确认后回写；外部赋值后打开弹层滚轮选中态跟随</text>
+			</view>
+
+			<text class="section" id="columns">步长、区间与 12 小时制</text>
+			<view class="card">
+				<m-button block @click="openStep">打开（15 分钟步长 + 09:00-18:00）</m-button>
+				<view class="demo-btn-gap">
+					<m-button block @click="openCycle">打开（12 小时制）</m-button>
+				</view>
+				<m-time-picker-popup
+					v-model:show="stepShow"
+					:minute-step="15"
+					min-time="09:00"
+					max-time="18:00"
+					title="工作时间"
+					@confirm="onStepConfirm"
+				/>
+				<m-time-picker-popup v-model:show="cycleShow" :hour-cycle="12" @confirm="onCycleConfirm" />
+				<view class="event-log">
+					<text class="event-text">最近确认：{{ lastLog }}</text>
+				</view>
+				<text class="caption">minute-step 15 只保留 00/15/30/45；min/max 收敛时列；12 制附加上午 / 下午列</text>
+			</view>
+
+			<text class="section" id="slots">插槽与状态</text>
+			<view class="card">
+				<m-button block @click="openSlots">打开（自定义确认）</m-button>
+				<m-time-picker-popup v-model:show="slotsShow" title="自定义">
+					<template #confirm>
+						<text class="demo-slot-confirm">完成</text>
+					</template>
+				</m-time-picker-popup>
+				<view class="demo-btn-gap">
+					<m-button block @click="openStates">打开（只读 + 加载中）</m-button>
+				</view>
+				<m-time-picker-popup v-model:show="statesShow" value="08:00" readonly loading />
+				<text class="caption">toolbar / title / confirm / cancel / option 插槽透传到内部面板；readonly 与 loading 生效</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '时间弹出框 TimePickerPopup', name: 'time-picker-popup' })
+	import { TimePickerColumnType } from '@/uni_modules/m-ui-x/components/m-time-picker/time-picker.uts'
+
+	const hmsColumns: TimePickerColumnType[] = ['hour', 'minute', 'second']
+
+	/** 空值兜底文本 */
+	function formatTime(value: string | null): string {
+		return value == null ? 'null' : value
+	}
+
+	// ========== 1 基础弹层 ==========
+	const basicShow = ref<boolean>(false)
+	const basicLog = ref<string>('（等待交互）')
+
+	/** 打开弹层 */
+	const openBasic = () => {
+		basicShow.value = true
+	}
+
+	/** change 记录 */
+	const onBasicChange = (value: string, columnIndex: number) => {
+		basicLog.value = 'change → ' + value
+	}
+
+	/** confirm 记录（弹层同步自动关闭） */
+	const onBasicConfirm = (value: string) => {
+		basicLog.value = 'confirm → ' + value
+	}
+
+	/** cancel 记录 */
+	const onBasicCancel = () => {
+		basicLog.value = 'cancel'
+	}
+
+	const onBasicOpened = () => {
+		basicLog.value = 'opened'
+	}
+
+	const onBasicClosed = () => {
+		// cancel / confirm 后紧跟的 closed 不覆盖结果日志
+		if (basicLog.value == 'cancel' || basicLog.value.indexOf('confirm') == 0) {
+			return
+		}
+		basicLog.value = 'closed'
+	}
+
+	// ========== 2 受控选中值 ==========
+	const controlledShow = ref<boolean>(false)
+	const controlledValue = ref<string | null>('09:30')
+
+	/** 打开受控弹层 */
+	const openControlled = () => {
+		controlledShow.value = true
+	}
+
+	/** 清空受控值 */
+	const clearControlled = () => {
+		controlledValue.value = null
+	}
+
+	// ========== 3 步长、区间与 12 小时制 ==========
+	const stepShow = ref<boolean>(false)
+	const cycleShow = ref<boolean>(false)
+	const lastLog = ref<string>('（未确认）')
+
+	/** 打开步长 / 区间弹层 */
+	const openStep = () => {
+		stepShow.value = true
+	}
+
+	/** 打开 12 制弹层 */
+	const openCycle = () => {
+		cycleShow.value = true
+	}
+
+	/** 步长 / 区间 confirm 记录 */
+	const onStepConfirm = (value: string) => {
+		lastLog.value = '步长区间 → ' + value
+	}
+
+	/** 12 制 confirm 记录 */
+	const onCycleConfirm = (value: string) => {
+		lastLog.value = '12 制 → ' + value
+	}
+
+	// ========== 4 插槽与状态 ==========
+	const slotsShow = ref<boolean>(false)
+	const statesShow = ref<boolean>(false)
+
+	/** 打开插槽演示弹层 */
+	const openSlots = () => {
+		slotsShow.value = true
+	}
+
+	/** 打开只读 / 加载弹层 */
+	const openStates = () => {
+		statesShow.value = true
+	}
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	.demo-btn-gap {
+		margin-top: 12px;
+	}
+	.demo-slot-confirm {
+		font-size: 14px;
+		color: #ee0a24;
+	}
+</style>

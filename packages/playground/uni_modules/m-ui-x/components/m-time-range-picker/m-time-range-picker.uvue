@@ -1,0 +1,462 @@
+<template>
+	<!-- 时间范围选择面板（三组件拆分后的基础组件）：开始 / 结束两段自绘标题 + 复用 m-time-picker 滚轮，
+	     区间越界在确认时自动交换两端；纯平铺形态，弹层组合见 m-time-range-picker-popup，
+	     输入框触发组合见 m-time-range-picker-input。根节点常驻静态（LESSONS #32） -->
+	<view :class="rootClass" :style="customStyle">
+		<!-- 快捷选项区（如「上午 / 下午 / 工作时间」，由使用方自绘） -->
+		<slot name="header"></slot>
+		<!-- 标题区：title 插槽整体替换两段标题，未传时按 tabs 自绘 -->
+		<slot name="title" :tabs="tabList" :active-index="activeIndex">
+			<view class="m-time-range-picker__tabs">
+				<view
+					v-for="(tab, index) in tabList"
+					:key="index"
+					class="m-time-range-picker__tab"
+					@click="onTabClick(index)"
+				>
+					<text :class="tabTextClass(index)">{{ tab }}</text>
+					<view v-if="index == activeIndex" class="m-time-range-picker__tab-line"></view>
+				</view>
+			</view>
+		</slot>
+		<!-- 滚轮区：v-if 切换保证每次重建后按当前端点值重新定位 -->
+		<view class="m-time-range-picker__panel">
+			<m-time-picker
+				v-if="activeIndex == 0"
+				key="start"
+				:value="startPickValue"
+				:show-toolbar="false"
+				:columns-type="columnsType"
+				:min-time="minTime"
+				:max-time="maxTime"
+				:minute-step="minuteStep"
+				:second-step="secondStep"
+				:hour-cycle="hourCycle"
+				:filter="filter"
+				:formatter="formatter"
+				:option-height="optionHeight"
+				:visible-option-num="visibleOptionNum"
+				:swipe-duration="swipeDuration"
+				:readonly="readonly"
+				:loading="loading"
+				@change="onStartChange"
+			/>
+			<m-time-picker
+				v-else
+				key="end"
+				:value="endPickValue"
+				:show-toolbar="false"
+				:columns-type="columnsType"
+				:min-time="minTime"
+				:max-time="maxTime"
+				:minute-step="minuteStep"
+				:second-step="secondStep"
+				:hour-cycle="hourCycle"
+				:filter="filter"
+				:formatter="formatter"
+				:option-height="optionHeight"
+				:visible-option-num="visibleOptionNum"
+				:swipe-duration="swipeDuration"
+				:readonly="readonly"
+				:loading="loading"
+				@change="onEndChange"
+			/>
+		</view>
+		<!-- 底部按钮区：footer 插槽整体替换，未传时渲染取消 + 确认 -->
+		<slot name="footer">
+			<view class="m-time-range-picker__footer">
+				<view class="m-time-range-picker__action" @click="onCancelClick">
+					<slot name="cancel">
+						<text class="m-time-range-picker__cancel-text">{{ cancelButtonText }}</text>
+					</slot>
+				</view>
+				<view class="m-time-range-picker__action" @click="onConfirmClick">
+					<slot name="confirm">
+						<text class="m-time-range-picker__confirm-text">{{ confirmButtonText }}</text>
+					</slot>
+				</view>
+			</view>
+		</slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-time-range-picker 时间范围面板：开始 / 结束两段标题 + 复用 m-time-picker 滚轮。
+	 * 两端时间字符串各自维护，切换标题只切换当前编辑端；change 实时派发两端快照，
+	 * confirm 时若起点晚于终点则自动交换（同日字符串可比较），随后回写 v-model:value。
+	 */
+	import {
+		TimePickerColumnType,
+		TimePickerFilter,
+		TimePickerFormatter
+	} from '../m-time-picker/time-picker.uts'
+	import MTimePicker from '../m-time-picker/m-time-picker.uvue'
+
+	type Props = {
+		/** 两端选中值（v-model:value；长度 0-2，按 起始、结束 顺序；null 未选） */
+		value?: string[]
+		/** 两段标题文案（默认「开始时间」「结束时间」） */
+		tabs?: string[]
+		/** 选项类型组合 */
+		columnsType?: TimePickerColumnType[]
+		/** 可选最小时刻 */
+		minTime?: string
+		/** 可选最大时刻 */
+		maxTime?: string
+		/** 分钟步长 */
+		minuteStep?: number
+		/** 秒步长 */
+		secondStep?: number
+		/** 小时制（24 / 12） */
+		hourCycle?: number
+		/** 选项过滤函数 */
+		filter?: TimePickerFilter
+		/** 选项格式化函数 */
+		formatter?: TimePickerFormatter
+		/** 选项行高 px */
+		optionHeight?: number
+		/** 可见选项个数 */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms */
+		swipeDuration?: number
+		/** 只读 */
+		readonly?: boolean
+		/** 是否显示加载状态 */
+		loading?: boolean
+		/** 确认按钮文字 */
+		confirmButtonText?: string
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: null,
+		tabs: null,
+		columnsType: null,
+		minTime: null,
+		maxTime: null,
+		minuteStep: 1,
+		secondStep: 1,
+		hourCycle: 24,
+		filter: null,
+		formatter: null,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		readonly: false,
+		loading: false,
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 确认后回写两端值（未选为 null；长度 1 表示只选了一端） */
+		'update:value': [value: string[] | null]
+		/** 当前端滚动切换后触发（value 为两端快照，activeIndex 为当前编辑端） */
+		change: [value: string[], activeIndex: number]
+		/** 点击确认按钮（已自动交换为升序） */
+		confirm: [value: string[]]
+		/** 点击取消按钮 */
+		cancel: []
+	}>()
+
+	/** 默认两段标题 */
+	const DEFAULT_TABS: string[] = ['开始时间', '结束时间']
+
+	/** 当前编辑端：0 起始 / 1 结束 */
+	const activeIndex = ref<number>(0)
+	/** 起点（null 未选） */
+	const startTime = ref<string | null>(null)
+	/** 终点（null 未选） */
+	const endTime = ref<string | null>(null)
+
+	/** 两段标题（null / 空数组回退默认，复制避免外部修改） */
+	const tabList = computed<string[]>(() => {
+		const tabs = props.tabs
+		const list: string[] = []
+		if (tabs == null || tabs.length == 0) {
+			for (let i = 0; i < DEFAULT_TABS.length; i++) {
+				list.push(DEFAULT_TABS[i])
+			}
+			return list
+		}
+		for (let i = 0; i < tabs.length; i++) {
+			list.push(tabs[i])
+		}
+		return list
+	})
+
+	/** 起始端滚轮取值：优先自身，未选时以终点作初始定位 */
+	const startPickValue = computed<string | null>(() => {
+		return startTime.value != null ? startTime.value : endTime.value
+	})
+
+	/** 结束端滚轮取值：优先自身，未选时以起点作初始定位 */
+	const endPickValue = computed<string | null>(() => {
+		return endTime.value != null ? endTime.value : startTime.value
+	})
+
+	/** 根类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-time-range-picker'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/**
+	 * 标题文本类名：激活端高亮
+	 */
+	function tabTextClass(index: number): string {
+		if (index == activeIndex.value) {
+			return 'm-time-range-picker__tab-text m-time-range-picker__tab-text--active'
+		}
+		return 'm-time-range-picker__tab-text'
+	}
+
+	/**
+	 * 从外部 value 同步两端（null / 长度 0-2 均兼容）
+	 */
+	function syncFromValue() {
+		const value = props.value
+		if (value == null || value.length == 0) {
+			startTime.value = null
+			endTime.value = null
+			return
+		}
+		startTime.value = value[0]
+		endTime.value = value.length > 1 ? value[1] : null
+	}
+
+	/**
+	 * 两端快照（保持原顺序，供 change 派发）
+	 */
+	function currentValues(): string[] {
+		const list: string[] = []
+		if (startTime.value != null) {
+			list.push(startTime.value!)
+		}
+		if (endTime.value != null) {
+			list.push(endTime.value!)
+		}
+		return list
+	}
+
+	/**
+	 * 时间文本先后比较（等长格式逐字符比较，规避部分平台字符串比较算子的差异）
+	 * 返回 true 表示 a 晚于 b
+	 */
+	function isAfter(a: string, b: string): boolean {
+		if (a.length != b.length) {
+			return a.length > b.length
+		}
+		for (let i = 0; i < a.length; i++) {
+			const codeA = a.charCodeAt(i)
+			const codeB = b.charCodeAt(i)
+			if (codeA == null || codeB == null) {
+				continue
+			}
+			if (codeA > codeB) {
+				return true
+			}
+			if (codeA < codeB) {
+				return false
+			}
+		}
+		return false
+	}
+
+	/**
+	 * 升序两端值（确认时自动交换；同一列组合下格式等长，可逐字符比较）
+	 */
+	function sortedValues(): string[] {
+		const start = startTime.value
+		const end = endTime.value
+		const list: string[] = []
+		if (start != null && end != null) {
+			if (isAfter(start, end)) {
+				list.push(end)
+				list.push(start)
+			} else {
+				list.push(start)
+				list.push(end)
+			}
+		} else if (start != null) {
+			list.push(start)
+		} else if (end != null) {
+			list.push(end)
+		}
+		return list
+	}
+
+	/**
+	 * 切换当前编辑端
+	 */
+	function onTabClick(index: number) {
+		if (index == activeIndex.value) {
+			return
+		}
+		activeIndex.value = index
+	}
+
+	/**
+	 * 起始端变化：更新状态并派发两端快照
+	 */
+	function onStartChange(value: string, columnIndex: number) {
+		startTime.value = value
+		emit('change', currentValues(), activeIndex.value)
+	}
+
+	/**
+	 * 结束端变化：更新状态并派发两端快照
+	 */
+	function onEndChange(value: string, columnIndex: number) {
+		endTime.value = value
+		emit('change', currentValues(), activeIndex.value)
+	}
+
+	/**
+	 * 确认：自动交换为升序后回写并派发 confirm
+	 */
+	function onConfirmClick() {
+		const values = sortedValues()
+		if (values.length > 1) {
+			startTime.value = values[0]
+			endTime.value = values[1]
+		}
+		if (values.length == 0) {
+			emit('update:value', null)
+		} else {
+			emit('update:value', values)
+		}
+		emit('confirm', values)
+	}
+
+	/**
+	 * 取消：仅派发 cancel（弹层由组合组件关闭）
+	 */
+	function onCancelClick() {
+		emit('cancel')
+	}
+
+	// 外部 value 变化：同步两端（确认回写的同值不重置当前编辑端）
+	watch((): string[] | null => props.value, (value: string[] | null) => {
+		const nextStart = value != null && value.length > 0 ? value[0] : null
+		const nextEnd = value != null && value.length > 1 ? value[1] : null
+		if (startTime.value == nextStart && endTime.value == nextEnd) {
+			return
+		}
+		startTime.value = nextStart
+		endTime.value = nextEnd
+	})
+
+	onMounted(() => {
+		syncFromValue()
+	})
+
+	/**
+	 * 重置两端为外部 value（弹层复开时按需调用）
+	 */
+	function resetSelection() {
+		syncFromValue()
+	}
+
+	/**
+	 * 读取当前两端值（升序快照）
+	 */
+	function getSelectedValue(): string[] {
+		return sortedValues()
+	}
+
+	/**
+	 * 程序化确认（等价点击确认按钮）
+	 */
+	function confirm() {
+		onConfirmClick()
+	}
+
+	defineExpose({
+		confirm,
+		resetSelection,
+		getSelectedValue
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根 ========== */
+	.m-time-range-picker {
+		background-color: $m-time-range-picker-background;
+	}
+
+	/* ========== 两段标题（自绘轻量 tab，避免嵌套滚动容器冲突） ========== */
+	.m-time-range-picker__tabs {
+		flex-direction: row;
+		height: $m-time-range-picker-tabs-height;
+	}
+	.m-time-range-picker__tab {
+		flex: 1;
+		position: relative;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-time-range-picker__tab-text {
+		font-size: $m-time-range-picker-tab-font-size;
+		color: $m-time-range-picker-tab-color;
+	}
+	.m-time-range-picker__tab-text--active {
+		color: $m-time-range-picker-tab-active-color;
+		font-weight: bold;
+	}
+	/* 激活下划线：定宽居中 */
+	.m-time-range-picker__tab-line {
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		width: $m-time-range-picker-tab-line-width;
+		transform: translateX(-50%);
+		height: 2px;
+		background-color: $m-time-range-picker-tab-active-color;
+		border-radius: 1px;
+	}
+
+	/* ========== 滚轮区（m-time-picker 自带背景与高度，无需额外样式） ========== */
+	.m-time-range-picker__panel {
+		background-color: $m-time-range-picker-background;
+	}
+
+	/* ========== 底部按钮区（取消 / 确认） ========== */
+	.m-time-range-picker__footer {
+		flex-direction: row;
+		height: $m-time-range-picker-footer-height;
+		border-top: $m-border-width solid $m-time-range-picker-footer-border-color;
+	}
+	.m-time-range-picker__action {
+		flex: 1;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-time-range-picker__cancel-text {
+		font-size: $m-time-range-picker-action-font-size;
+		color: $m-time-range-picker-cancel-color;
+	}
+	.m-time-range-picker__confirm-text {
+		font-size: $m-time-range-picker-action-font-size;
+		color: $m-time-range-picker-confirm-color;
+		font-weight: bold;
+	}
+</style>

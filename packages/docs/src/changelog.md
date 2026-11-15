@@ -16,6 +16,14 @@
 - **m-date-range-picker-popup 日期范围弹出框**：`m-popup` + 范围面板组合，`v-model:show` / `v-model:value` 受控，确认 / 取消后自动关闭；透传方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长，`reset-on-open` 控制复开复位（详见 [DateRangePickerPopup](/components/date-range-picker-popup)）
 - **m-date-range-picker-input 日期范围输入框**：`m-input` 只读触发器 + 范围弹层，点击整区打开；`outlet-format` 自定义「起 - 止」展示格式（缺省按列组合派生 `YYYY-MM-DD`）；自绘清空按钮回写 `null` 并派发 `clear`，`disabled` / `clearable` / `border` / `inlaid` 可配（详见 [DateRangePickerInput](/components/date-range-picker-input)）
 
+- 新增 `$m-time-picker-*` / `$m-time-picker-input-*` / `$m-time-range-picker-*` / `$m-time-range-picker-input-*` 主题变量段
+- **m-time-picker 时间选择面板**：时 / 分 / 秒滚轮列（`columns-type` 任意组合，默认时-分），值按 24 小时制输出 `'HH:mm'` / `'HH:mm:ss'`；`minute-step` / `second-step` 步长，`min-time` / `max-time` 同日收敛（单端配置自动补齐，跨天视为不约束），`hour-cycle` 24 / 12（12 制自动附加「上午 / 下午」列）；`toolbar` / `title` / `confirm` / `cancel` / `option` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue`（详见 [TimePicker](/components/time-picker)）
+- **m-time-picker-popup 时间弹出框**：`m-popup` + 时间面板组合，确认 / 取消后自动关闭；透传方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长（详见 [TimePickerPopup](/components/time-picker-popup)）
+- **m-time-picker-input 时间输入框**：`m-input` 只读触发器 + 时间弹层，确认后回填 `HH:mm`（含秒为 `HH:mm:ss`）；自绘清空按钮回写 `null` 并派发 `clear`（详见 [TimePickerInput](/components/time-picker-input)）
+- **m-time-range-picker 时间范围面板**：开始 / 结束两段标题复用一个时间滚轮，两端字符串各自维护；确认时自动交换为升序；两端共用列组合 / 步长 / 区间 / 制式；`header` / `title` / `footer` / `confirm` / `cancel` 插槽（详见 [TimeRangePicker](/components/time-range-picker)）
+- **m-time-range-picker-popup 时间范围弹出框**：`m-popup` + 时间范围面板组合，确认 / 取消后自动关闭（详见 [TimeRangePickerPopup](/components/time-range-picker-popup)）
+- **m-time-range-picker-input 时间范围输入框**：`m-input` 只读触发器 + 范围弹层，确认后以「起 - 止」回填，支持清空与禁用（详见 [TimeRangePickerInput](/components/time-range-picker-input)）
+
 ## [0.5.3] - 2026-11-15
 
 修复 `m-calendar` 微信小程序端因日格 `v-for` 内重复声明同名插槽导致控制台被告警刷屏（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）。

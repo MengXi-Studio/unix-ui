@@ -127,7 +127,13 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'DateRangePickerInput 日期范围输入框', link: '/components/date-range-picker-input' },
 						{ text: 'DateRangePickerPopup 日期范围弹出框', link: '/components/date-range-picker-popup' },
 						{ text: 'DateStrip 日期横条', link: '/components/date-strip' },
-						{ text: 'Input 输入框', link: '/components/input' }
+						{ text: 'Input 输入框', link: '/components/input' },
+						{ text: 'TimePicker 时间选择', link: '/components/time-picker' },
+						{ text: 'TimePickerInput 时间输入框', link: '/components/time-picker-input' },
+						{ text: 'TimePickerPopup 时间弹出框', link: '/components/time-picker-popup' },
+						{ text: 'TimeRangePicker 时间范围选择', link: '/components/time-range-picker' },
+						{ text: 'TimeRangePickerInput 时间范围输入框', link: '/components/time-range-picker-input' },
+						{ text: 'TimeRangePickerPopup 时间范围弹出框', link: '/components/time-range-picker-popup' }
 					]
 				},
 				{

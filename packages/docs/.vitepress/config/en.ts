@@ -114,7 +114,13 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'DateRangePickerInput', link: '/en/components/date-range-picker-input' },
 						{ text: 'DateRangePickerPopup', link: '/en/components/date-range-picker-popup' },
 						{ text: 'DateStrip', link: '/en/components/date-strip' },
-						{ text: 'Input', link: '/en/components/input' }
+						{ text: 'Input', link: '/en/components/input' },
+						{ text: 'TimePicker', link: '/en/components/time-picker' },
+						{ text: 'TimePickerInput', link: '/en/components/time-picker-input' },
+						{ text: 'TimePickerPopup', link: '/en/components/time-picker-popup' },
+						{ text: 'TimeRangePicker', link: '/en/components/time-range-picker' },
+						{ text: 'TimeRangePickerInput', link: '/en/components/time-range-picker-input' },
+						{ text: 'TimeRangePickerPopup', link: '/en/components/time-range-picker-popup' }
 					]
 				},
 				{

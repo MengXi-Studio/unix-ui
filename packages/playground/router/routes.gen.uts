@@ -207,6 +207,36 @@ export const routes: RouteConfig[] = [
 		meta: { title: '文本 Text' },
 	},
 	{
+		path: 'pages-sub/time-picker-input/time-picker-input',
+		name: 'time-picker-input',
+		meta: { title: '时间输入框 TimePickerInput' },
+	},
+	{
+		path: 'pages-sub/time-picker-popup/time-picker-popup',
+		name: 'time-picker-popup',
+		meta: { title: '时间弹出框 TimePickerPopup' },
+	},
+	{
+		path: 'pages-sub/time-picker/time-picker',
+		name: 'time-picker',
+		meta: { title: '时间选择 TimePicker' },
+	},
+	{
+		path: 'pages-sub/time-range-picker-input/time-range-picker-input',
+		name: 'time-range-picker-input',
+		meta: { title: '时间范围输入框 TimeRangePickerInput' },
+	},
+	{
+		path: 'pages-sub/time-range-picker-popup/time-range-picker-popup',
+		name: 'time-range-picker-popup',
+		meta: { title: '时间范围弹出框 TimeRangePickerPopup' },
+	},
+	{
+		path: 'pages-sub/time-range-picker/time-range-picker',
+		name: 'time-range-picker',
+		meta: { title: '时间范围选择 TimeRangePicker' },
+	},
+	{
 		path: 'pages-sub/toast/toast',
 		name: 'toast',
 		meta: { title: '轻提示 Toast' },

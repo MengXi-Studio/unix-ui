@@ -553,6 +553,18 @@ $m-date-picker-input-clear-icon-size: 16px !default;
 /** 清空图标颜色（对齐 $m-input-clear-color 默认值） */
 $m-date-picker-input-clear-color: #c8c9cc !default;
 
+/* ========== m-lunar-picker-input（农历输入框：触发层与自绘清空按钮，层叠同 m-date-picker-input） ========== */
+/** 透明触发层层级 */
+$m-lunar-picker-input-trigger-z-index: 1 !default;
+/** 清空按钮层叠（高于触发层） */
+$m-lunar-picker-input-clear-z-index: 2 !default;
+/** 清空按钮点击区宽度（组件内 padding-right 预留值与之同步） */
+$m-lunar-picker-input-clear-width: 40px !default;
+/** 清空图标字号（对齐 $m-input-clear-icon-size 默认值） */
+$m-lunar-picker-input-clear-icon-size: 16px !default;
+/** 清空图标颜色（对齐 $m-input-clear-color 默认值） */
+$m-lunar-picker-input-clear-color: #c8c9cc !default;
+
 /* ========== DateRangePicker 日期范围选择 ========== */
 /** 面板背景 */
 $m-date-range-picker-background: $m-white !default;

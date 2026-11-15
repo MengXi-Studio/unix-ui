@@ -1,0 +1,623 @@
+<template>
+	<!-- 农历选择面板（三组件拆分后的基础组件）：组合 m-picker 承担顶部栏 / 选中框 / 滚轮 / 加载遮罩，
+	     本组件只负责农历列构建、公历值映射、限域收敛、filter / formatter 与事件回写。
+	     值与 change / confirm 口径均为公历 Date（与 m-date-picker 一致）。根节点常驻静态（LESSONS #32） -->
+	<view :class="rootClass" :style="customStyle">
+		<m-picker
+			ref="picker"
+			:columns="pickerColumns"
+			:value="pickerValue"
+			:title="title"
+			:confirm-button-text="confirmButtonText"
+			:cancel-button-text="cancelButtonText"
+			:show-toolbar="showToolbar"
+			:loading="loading"
+			:readonly="readonly"
+			:option-height="optionHeight"
+			:visible-option-num="visibleOptionNum"
+			:swipe-duration="swipeDuration"
+			@change="onPickerChange"
+			@confirm="onPickerConfirm"
+			@cancel="onPickerCancel"
+		>
+			<!-- 插槽条件转发：未传入时不覆盖 m-picker 的默认渲染 -->
+			<template v-if="$slots['toolbar'] != null" #toolbar>
+				<slot name="toolbar"></slot>
+			</template>
+			<template v-if="$slots['title'] != null" #title>
+				<slot name="title"></slot>
+			</template>
+			<template v-if="$slots['confirm'] != null" #confirm>
+				<slot name="confirm"></slot>
+			</template>
+			<template v-if="$slots['cancel'] != null" #cancel>
+				<slot name="cancel"></slot>
+			</template>
+			<template v-if="$slots['columns-top'] != null" #columns-top>
+				<slot name="columns-top"></slot>
+			</template>
+			<template v-if="$slots['columns-bottom'] != null" #columns-bottom>
+				<slot name="columns-bottom"></slot>
+			</template>
+			<!-- #ifndef MP -->
+			<!-- 小程序端列选项在 v-for 内不声明具名插槽（LESSONS #17），无需转发 -->
+			<template v-if="$slots['option'] != null" #option="{ option, index }">
+				<slot name="option" :option="toLunarPickerOption(option)" :index="index"></slot>
+			</template>
+			<!-- #endif -->
+		</m-picker>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-lunar-picker 农历选择面板：农历年 / 月（含闰月）/ 日滚轮列。
+	 * 对外值是公历 Date（v-model:value），内部以收敛后的公历日期为真源，
+	 * 经 solarToLunar 派生农历列；滚动时用 lunarToSolar 回写并收敛到 min/max。
+	 * 能力：列组合、闰月、干支 / 生肖年列、min/max 限域、filter / formatter、只读加载态。
+	 */
+	import {
+		LunarPickerColumnType,
+		LunarPickerOption,
+		LunarPickerColumn,
+		LunarPickerFilter,
+		LunarPickerFormatter,
+		normalizeLunarPickerColumns,
+		getLunarDaysInMonth,
+		normalizeLunarParts
+	} from './lunar-picker.uts'
+	import {
+		getDayStart,
+		clampDate,
+		solarToLunar,
+		lunarToSolar,
+		getLunarMonthSequence,
+		getLunarYearName,
+		getZodiac,
+		getLunarMonthName,
+		getLunarDayName,
+		getLunarMonthDays,
+		LunarResult,
+		LUNAR_START_YEAR,
+		LUNAR_END_YEAR
+	} from '../../utils/date.uts'
+	import { PickerOption, PickerValue, valueToText } from '../m-picker/picker.uts'
+	import MPicker from '../m-picker/m-picker.uvue'
+
+	type Props = {
+		/** 当前选中日期（公历 Date，v-model:value；null 用今天） */
+		value?: Date
+		/** 列类型组合（year / month / day 任意顺序；null 用默认年-月-日） */
+		columnsType?: LunarPickerColumnType[]
+		/** 可选最小日期（公历 Date；null 取农历表起点 1900-01-31） */
+		minDate?: Date
+		/** 可选最大日期（公历 Date；null 取农历表终点 2100-12-31） */
+		maxDate?: Date
+		/** 年列是否附加干支（如 2026 丙午） */
+		showGanZhi?: boolean
+		/** 年列是否附加生肖（如 2026 丙午 马） */
+		showZodiac?: boolean
+		/** 顶部栏标题 */
+		title?: string
+		/** 确认按钮文字 */
+		confirmButtonText?: string
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 是否显示顶部栏 */
+		showToolbar?: boolean
+		/** 是否显示加载状态 */
+		loading?: boolean
+		/** 只读：滚轮回弹到当前值，不响应切换 */
+		readonly?: boolean
+		/** 选项过滤函数（null 不过滤） */
+		filter?: LunarPickerFilter
+		/** 选项格式化函数（null 不格式化） */
+		formatter?: LunarPickerFormatter
+		/** 选项行高 px（0 用默认 44） */
+		optionHeight?: number
+		/** 可见选项个数（0 用默认 6） */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms */
+		swipeDuration?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: null,
+		columnsType: null,
+		minDate: null,
+		maxDate: null,
+		showGanZhi: false,
+		showZodiac: false,
+		title: '',
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		showToolbar: true,
+		loading: false,
+		readonly: false,
+		filter: null,
+		formatter: null,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 确认后回写公历日期（v-model:value） */
+		'update:value': [date: Date]
+		/** 滚轮切换列（date 为切换后的公历日期，columnIndex 为列下标） */
+		change: [date: Date, columnIndex: number]
+		/** 点击确认按钮 */
+		confirm: [date: Date]
+		/** 点击取消按钮 */
+		cancel: []
+	}>()
+
+	/** 内部 m-picker 实例（复位下标时调用其 resetSelection） */
+	const picker = ref<ComponentPublicInstance | null>(null)
+
+	/**
+	 * 农历三元组转公历 Date（月 0 起对齐 Date）
+	 *
+	 * @param year 农历年
+	 * @param month 农历月（闰月为负）
+	 * @param day 农历日
+	 * @returns 公历日期；越界返回 null
+	 */
+	function lunarDateOf(year: number, month: number, day: number): Date | null {
+		const solar = lunarToSolar(year, month, day)
+		if (solar == null) {
+			return null
+		}
+		return new Date(solar!.year, solar!.month, solar!.day)
+	}
+
+	/** 农历表起点（1900 年正月初一） */
+	const LUNAR_MIN_DATE: Date = lunarDateOf(LUNAR_START_YEAR, 1, 1)!
+	/** 农历表终点（2100 年腊月最后一天） */
+	const LUNAR_MAX_DATE: Date = lunarDateOf(LUNAR_END_YEAR, 12, getLunarMonthDays(LUNAR_END_YEAR, 12))!
+
+	/** 生效列组合（null / 空数组回退默认年-月-日） */
+	const resolvedTypes = computed<LunarPickerColumnType[]>(() => normalizeLunarPickerColumns(props.columnsType))
+
+	/** 生效最小日期（钳制到农历表范围） */
+	const minDateValue = computed<Date>(() => {
+		if (props.minDate != null) {
+			const raw = getDayStart(props.minDate!)
+			return raw.getTime() < LUNAR_MIN_DATE.getTime() ? LUNAR_MIN_DATE : raw
+		}
+		return LUNAR_MIN_DATE
+	})
+
+	/** 生效最大日期（钳制到农历表范围） */
+	const maxDateValue = computed<Date>(() => {
+		if (props.maxDate != null) {
+			const raw = getDayStart(props.maxDate!)
+			return raw.getTime() > LUNAR_MAX_DATE.getTime() ? LUNAR_MAX_DATE : raw
+		}
+		return LUNAR_MAX_DATE
+	})
+
+	/**
+	 * 公历日期收敛到可选区间
+	 */
+	function clampToRange(date: Date): Date {
+		return clampDate(getDayStart(date), minDateValue.value, maxDateValue.value)
+	}
+
+	/**
+	 * 初始公历日期：value 优先，null 用今天，再收敛到可选区间
+	 */
+	function initialSolar(): Date {
+		const base = props.value != null ? getDayStart(props.value!) : getDayStart(new Date())
+		return clampToRange(base)
+	}
+
+	/** 当前选中的公历日期（唯一真源，始终在可选区间内） */
+	const selectedSolar = ref<Date>(initialSolar())
+
+	/** 当前农历三元组（由公历真源派生） */
+	const selectedLunar = computed<LunarResult>(() => {
+		const solar = selectedSolar.value
+		const lunar = solarToLunar(solar.getFullYear(), solar.getMonth(), solar.getDate())
+		if (lunar != null) {
+			return lunar!
+		}
+		// 公历超出农历表范围时回退到表起点（min/max 已钳制，正常不会走到）
+		return solarToLunar(LUNAR_START_YEAR, 0, 31)!
+	})
+
+	/**
+	 * 在选项中查找与目标值匹配的下标：完全匹配优先，缺失时取不大于目标值的最近项
+	 */
+	function findOptionIndex(options: LunarPickerOption[], value: string): number {
+		if (options.length == 0) {
+			return 0
+		}
+		const target = parseInt(value)
+		let fallback = 0
+		for (let i = 0; i < options.length; i++) {
+			const current = parseInt(options[i].value)
+			if (current == target) {
+				return i
+			}
+			if (current < target) {
+				fallback = i
+			}
+		}
+		return fallback
+	}
+
+	/**
+	 * 构建农历年列：范围取 min/max 所在农历年，按开关附加干支 / 生肖
+	 */
+	function buildYearOptions(): LunarPickerOption[] {
+		const minLunar = solarToLunar(minDateValue.value.getFullYear(), minDateValue.value.getMonth(), minDateValue.value.getDate())!
+		const maxLunar = solarToLunar(maxDateValue.value.getFullYear(), maxDateValue.value.getMonth(), maxDateValue.value.getDate())!
+		const options: LunarPickerOption[] = []
+		for (let year = minLunar.year; year <= maxLunar.year; year++) {
+			let text = year.toString()
+			if (props.showGanZhi) {
+				text = text + ' ' + getLunarYearName(year)
+			}
+			if (props.showZodiac) {
+				text = text + ' ' + getZodiac(year)
+			}
+			options.push({ text: text, value: year.toString() } as LunarPickerOption)
+		}
+		return options
+	}
+
+	/**
+	 * 构建农历月列：闰月紧随其月（负值），剔除与 min/max 完全无交集的月份
+	 */
+	function buildMonthOptions(year: number): LunarPickerOption[] {
+		const options: LunarPickerOption[] = []
+		const sequence = getLunarMonthSequence(year)
+		for (let i = 0; i < sequence.length; i++) {
+			const month = sequence[i]
+			const days = getLunarDaysInMonth(year, month)
+			const first = lunarDateOf(year, month, 1)
+			const last = lunarDateOf(year, month, days)
+			if (first == null || last == null) {
+				continue
+			}
+			if (last!.getTime() < minDateValue.value.getTime() || first!.getTime() > maxDateValue.value.getTime()) {
+				continue
+			}
+			options.push({ text: getLunarMonthName(month), value: month.toString() } as LunarPickerOption)
+		}
+		return options
+	}
+
+	/** min/max 对应的农历三元组（日列裁剪依据） */
+	const selectedMinLunar = computed<LunarResult>(() => {
+		const min = minDateValue.value
+		return solarToLunar(min.getFullYear(), min.getMonth(), min.getDate())!
+	})
+
+	const selectedMaxLunar = computed<LunarResult>(() => {
+		const max = maxDateValue.value
+		return solarToLunar(max.getFullYear(), max.getMonth(), max.getDate())!
+	})
+
+	/**
+	 * 构建农历日列：长度取当月实际天数，首尾落在 min/max 时裁剪
+	 */
+	function buildDayOptions(year: number, month: number): LunarPickerOption[] {
+		const minLunar = selectedMinLunar.value
+		const maxLunar = selectedMaxLunar.value
+		let from = 1
+		let to = getLunarDaysInMonth(year, month)
+		if (year == minLunar.year && month == minLunar.month) {
+			from = minLunar.day
+		}
+		if (year == maxLunar.year && month == maxLunar.month) {
+			to = maxLunar.day
+		}
+		const options: LunarPickerOption[] = []
+		for (let day = from; day <= to; day++) {
+			options.push({ text: getLunarDayName(day), value: day.toString() } as LunarPickerOption)
+		}
+		return options
+	}
+
+	/**
+	 * 构建全部列：按列组合生成选项、过滤、格式化并定位下标
+	 */
+	function buildColumns(): LunarPickerColumn[] {
+		const types = resolvedTypes.value
+		const lunar = selectedLunar.value
+		const year = lunar.year
+		const month = lunar.month
+		const day = lunar.day
+		const result: LunarPickerColumn[] = []
+		const values: string[] = []
+		for (let i = 0; i < types.length; i++) {
+			const type = types[i]
+			let current = ''
+			let options: LunarPickerOption[] = []
+			if (type == 'year') {
+				options = buildYearOptions()
+				current = year.toString()
+			} else if (type == 'month') {
+				options = buildMonthOptions(year)
+				current = month.toString()
+			} else {
+				options = buildDayOptions(year, month)
+				current = day.toString()
+			}
+			const filter = props.filter
+			if (filter != null) {
+				options = filter(type, options, values)
+			}
+			const formatter = props.formatter
+			if (formatter != null) {
+				for (let j = 0; j < options.length; j++) {
+					options[j] = formatter(type, options[j])
+				}
+			}
+			result.push({
+				type: type,
+				options: options,
+				index: findOptionIndex(options, current)
+			} as LunarPickerColumn)
+			values.push(current)
+		}
+		return result
+	}
+
+	/** 列渲染数据（选中日期 / 列组合 / 限域 / filter / formatter 变化时重算） */
+	const columns = computed<LunarPickerColumn[]>(() => buildColumns())
+
+	/**
+	 * 当前各列已定位下标快照（上一次 m-picker change 的基准，用于反推变化列）
+	 */
+	function currentColumnIndexes(): number[] {
+		const result: number[] = []
+		const cols = columns.value
+		for (let i = 0; i < cols.length; i++) {
+			result.push(cols[i].index)
+		}
+		return result
+	}
+
+	/** 上一次已知的各列下标 */
+	const lastIndexes = ref<number[]>(currentColumnIndexes())
+
+	/**
+	 * 列数据下发：LunarPickerOption 映射为 m-picker 的 PickerOption
+	 */
+	const pickerColumns = computed<PickerOption[][]>(() => {
+		const result: PickerOption[][] = []
+		const cols = columns.value
+		for (let i = 0; i < cols.length; i++) {
+			const options = cols[i].options
+			const list: PickerOption[] = []
+			for (let j = 0; j < options.length; j++) {
+				list.push({ label: options[j].text, value: options[j].value } as PickerOption)
+			}
+			result.push(list)
+		}
+		return result
+	})
+
+	/**
+	 * 选中值下发：取各列「已定位下标」对应的选项值，保证 m-picker 精确命中
+	 */
+	const pickerValue = computed<PickerValue>(() => {
+		const values: (string | number)[] = []
+		const cols = columns.value
+		for (let i = 0; i < cols.length; i++) {
+			const col = cols[i]
+			if (col.options.length > 0) {
+				const index = col.index >= 0 && col.index < col.options.length ? col.index : 0
+				values.push(col.options[index].value)
+			}
+		}
+		return values
+	})
+
+	/** 根类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-lunar-picker'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/**
+	 * 比较前后两轮下标，返回第一个变化的列下标（长度变化时返回较短长度；完全一致返回 -1）
+	 */
+	function firstDiffIndex(previous: number[], next: number[]): number {
+		const length = previous.length < next.length ? previous.length : next.length
+		for (let i = 0; i < length; i++) {
+			if (previous[i] != next[i]) {
+				return i
+			}
+		}
+		if (previous.length != next.length) {
+			return length
+		}
+		return -1
+	}
+
+	/**
+	 * 插槽适配：PickerOption 转回对外契约的 LunarPickerOption（text / value）
+	 */
+	function toLunarPickerOption(option: PickerOption): LunarPickerOption {
+		return { text: option.label, value: valueToText(option.value) } as LunarPickerOption
+	}
+
+	/**
+	 * 确认：收敛后回写 v-model:value 并派发 confirm
+	 */
+	function onConfirmClick() {
+		const date = clampToRange(selectedSolar.value)
+		selectedSolar.value = date
+		emit('update:value', date)
+		emit('confirm', date)
+	}
+
+	/**
+	 * 取消：仅派发 cancel
+	 */
+	function onCancelClick() {
+		emit('cancel')
+	}
+
+	/**
+	 * 通知 m-picker 按当前 value 重新定位：列内容变化后列数可能不变，其内部下标不会自动重算
+	 */
+	function resetPickerIndexes() {
+		nextTick(() => {
+			const inst = picker.value
+			if (inst != null) {
+				inst.$callMethod('resetSelection')
+			}
+		})
+	}
+
+	/**
+	 * 重置选择为 value / 今天；同时复位 m-picker 内部下标
+	 */
+	function resetSelection() {
+		selectedSolar.value = initialSolar()
+		resetPickerIndexes()
+	}
+
+	/**
+	 * m-picker 列切换：按列组合顺序重建农历三元组，转公历并收敛，派发 change
+	 */
+	const onPickerChange = (_value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
+		const types = resolvedTypes.value
+		const base = selectedLunar.value
+		let year = base.year
+		let month = base.month
+		let day = base.day
+		for (let i = 0; i < types.length && i < selectedOptions.length; i++) {
+			const type = types[i]
+			const current = parseInt(valueToText(selectedOptions[i].value))
+			if (type == 'year') {
+				year = current
+			} else if (type == 'month') {
+				month = current
+			} else {
+				day = current
+			}
+		}
+		const parts = normalizeLunarParts(year, month, day)
+		const solar = lunarDateOf(parts.year, parts.month, parts.day)
+		if (solar != null) {
+			selectedSolar.value = clampToRange(solar!)
+		}
+		const changed = firstDiffIndex(lastIndexes.value, indexes)
+		lastIndexes.value = indexes
+		if (changed < 0) {
+			return
+		}
+		emit('change', selectedSolar.value, changed)
+	}
+
+	/**
+	 * m-picker 确认：复用面板既有的收敛与回写逻辑
+	 */
+	const onPickerConfirm = (_value: PickerValue | null, _selectedOptions: PickerOption[], indexes: number[]) => {
+		lastIndexes.value = indexes
+		onConfirmClick()
+	}
+
+	/**
+	 * m-picker 取消：转发 cancel
+	 */
+	const onPickerCancel = () => {
+		onCancelClick()
+	}
+
+	// 外部 value 变化：与内部状态不同日时同步（确认回写的同值不重置选择）
+	watch((): Date | null => props.value, (value: Date | null) => {
+		if (value == null) {
+			return
+		}
+		const next = clampToRange(value!)
+		if (getDayStart(selectedSolar.value).getTime() == next.getTime()) {
+			return
+		}
+		selectedSolar.value = next
+	})
+
+	// min/max 变化：当前选择收敛到新区间，并通知 m-picker 按新列内容重新定位
+	watch((): Date => minDateValue.value, (_: Date) => {
+		selectedSolar.value = clampToRange(selectedSolar.value)
+		resetPickerIndexes()
+	})
+
+	watch((): Date => maxDateValue.value, (_: Date) => {
+		selectedSolar.value = clampToRange(selectedSolar.value)
+		resetPickerIndexes()
+	})
+
+	// filter / formatter / 列组合变化：选中值不变但列内容可能变化，需重新定位
+	watch((): LunarPickerFilter | null => props.filter, (_: LunarPickerFilter | null) => {
+		resetPickerIndexes()
+	})
+
+	watch((): LunarPickerFormatter | null => props.formatter, (_: LunarPickerFormatter | null) => {
+		resetPickerIndexes()
+	})
+
+	watch((): LunarPickerColumnType[] | null => props.columnsType, (_: LunarPickerColumnType[] | null) => {
+		resetPickerIndexes()
+	})
+
+	/**
+	 * 读取当前选中的公历日期
+	 */
+	function getSelectedDate(): Date {
+		return clampToRange(selectedSolar.value)
+	}
+
+	/**
+	 * 读取当前农历文案（如 2026年六月十五）
+	 */
+	function getSelectedLunarText(): string {
+		const lunar = selectedLunar.value
+		return lunar.year.toString() + '年' + getLunarMonthName(lunar.month) + getLunarDayName(lunar.day)
+	}
+
+	/**
+	 * 程序化确认（等价点击确认按钮）
+	 */
+	function confirm() {
+		onConfirmClick()
+	}
+
+	defineExpose({
+		confirm,
+		resetSelection,
+		getSelectedDate,
+		getSelectedLunarText
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 * 面板级视觉由内部 m-picker 的样式与 $m-picker-* 变量承担，列文本沿用 $m-date-picker-option-*
+	 * （农历列与公历列共用 m-date-picker-column）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根（customClass 设内边距时背景仍铺满） ========== */
+	.m-lunar-picker {
+		background-color: $m-picker-background;
+	}
+</style>

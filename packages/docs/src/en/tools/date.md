@@ -135,6 +135,7 @@ Constants `DAY_MS` and the legacy alias `CALENDAR_DAY_MS` are exported as well.
 | `getLunarLeapMonthDays(year)` | `number` | Leap month length (29 / 30, 0 if none) |
 | `getLunarYearDays(year)` | `number` | Lunar year length (including leap month) |
 | `getLunarMonthDays(year, month)` | `number` | Length of a lunar month (1-based) |
+| `getLunarMonthSequence(year)` | `number[]` | Lunar month sequence including leap months (e.g. `[1, 2, -2, 3]`) |
 | `getLunarYearName(year)` | `string` | Sexagenary name (e.g. `'甲辰'`) |
 | `getZodiac(year)` | `string` | Zodiac animal (e.g. `'龙'`) |
 | `getLunarMonthName(month)` | `string` | Month name (e.g. `'正月'` / `'闰六月'`) |
@@ -142,7 +143,7 @@ Constants `DAY_MS` and the legacy alias `CALENDAR_DAY_MS` are exported as well.
 | `getLunarHourName(hour)` | `string` | Traditional hour name (e.g. `'子初'` / `'子正'`) |
 | `getLunarDateText(year, month, day)` | `string` | Combined text (e.g. `'腊月初八'`) |
 
-Lunar data covers 1900-2100; out-of-range conversions return `null` (names return an empty string).
+Lunar data covers 1900-2100; out-of-range conversions return `null` (names return an empty string). The range constants `LUNAR_START_YEAR` (1900) and `LUNAR_END_YEAR` (2100) are exported as well.
 
 ## Format tokens
 

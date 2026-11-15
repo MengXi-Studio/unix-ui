@@ -72,6 +72,12 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		layout: 'pages-sub/layout/layout'
 		/** 加载 Loading */
 		loading: 'pages-sub/loading/loading'
+		/** 农历输入框 LunarPickerInput */
+		'lunar-picker-input': 'pages-sub/lunar-picker-input/lunar-picker-input'
+		/** 农历选择弹出框 LunarPickerPopup */
+		'lunar-picker-popup': 'pages-sub/lunar-picker-popup/lunar-picker-popup'
+		/** 农历选择 LunarPicker */
+		'lunar-picker': 'pages-sub/lunar-picker/lunar-picker'
 		/** 遮罩层 Overlay */
 		overlay: 'pages-sub/overlay/overlay'
 		/** 选择器输入框 PickerInput */

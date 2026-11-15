@@ -1,0 +1,148 @@
+/**
+ * m-lunar-picker 农历选择 · 共享类型与纯函数
+ *
+ * 供 m-lunar-picker / m-lunar-picker-popup / m-lunar-picker-input 三件套共用：
+ * 列类型、列结构、filter / formatter 签名、列组合归一、农历月天数与展示文案。
+ * 农历换算能力来自 utils/date.uts（lunar.uts），此处只做选择器口径的薄封装。
+ */
+
+import {
+	LunarResult,
+	solarToLunar,
+	getLunarYearName,
+	getZodiac,
+	getLunarMonthName,
+	getLunarDayName,
+	getLunarMonthDays,
+	getLunarLeapMonth,
+	getLunarLeapMonthDays
+} from '../../utils/date.uts'
+
+/** 农历选择列类型（年 / 月 / 日，任意顺序与子集） */
+export type LunarPickerColumnType = 'year' | 'month' | 'day'
+
+/** 农历选项（value 为农历数值字符串；闰月以负值表示，如 '-6'） */
+export type LunarPickerOption = {
+	/** 展示文本（如 2026 / 六月 / 十五） */
+	text: string
+	/** 农历数值字符串（年 / 月 / 日；闰月为负数） */
+	value: string
+}
+
+/** 农历列（选项列表 + 当前已定位下标） */
+export type LunarPickerColumn = {
+	/** 列类型 */
+	type: LunarPickerColumnType
+	/** 列选项 */
+	options: LunarPickerOption[]
+	/** 当前选中项下标 */
+	index: number
+}
+
+/** 选项过滤函数（返回过滤后的选项数组） */
+export type LunarPickerFilter = (type: string, options: LunarPickerOption[], values: string[]) => LunarPickerOption[]
+
+/** 选项格式化函数（返回逐项改写后的选项） */
+export type LunarPickerFormatter = (type: string, option: LunarPickerOption) => LunarPickerOption
+
+/** 默认列组合（年-月-日） */
+export const LUNAR_PICKER_DEFAULT_COLUMNS: LunarPickerColumnType[] = ['year', 'month', 'day']
+
+/**
+ * 归一列组合：null / 空数组回退默认年-月-日
+ *
+ * @param columns 原始列组合
+ * @returns 生效列组合
+ */
+export function normalizeLunarPickerColumns(columns: LunarPickerColumnType[] | null): LunarPickerColumnType[] {
+	if (columns == null || columns.length == 0) {
+		return LUNAR_PICKER_DEFAULT_COLUMNS
+	}
+	return columns
+}
+
+/**
+ * 取农历某年某月的天数
+ *
+ * @param year 农历年
+ * @param month 农历月 1-12；闰月传负数
+ * @returns 天数（29 / 30）；越界返回 0
+ */
+export function getLunarDaysInMonth(year: number, month: number): number {
+	if (month < 0) {
+		return getLunarLeapMonthDays(year)
+	}
+	return getLunarMonthDays(year, month)
+}
+
+/**
+ * 农历三元组归一：年份变化后修正非法闰月，并把日收敛到当月实际天数
+ *
+ * @param year 农历年
+ * @param month 农历月（闰月为负）
+ * @param day 农历日
+ * @returns 归一后的农历三元组
+ */
+export function normalizeLunarParts(year: number, month: number, day: number): LunarResult {
+	let safeYear = year
+	let safeMonth = month
+	let safeDay = day
+	if (safeMonth == 0) {
+		safeMonth = 1
+	}
+	if (safeMonth < 0) {
+		// 目标年份没有该闰月时回退到同月非闰月
+		const leap = getLunarLeapMonth(safeYear)
+		if (leap != -safeMonth) {
+			safeMonth = -safeMonth
+		}
+	}
+	if (safeMonth > 12) {
+		safeMonth = 12
+	}
+	const maxDay = getLunarDaysInMonth(safeYear, safeMonth)
+	if (maxDay <= 0) {
+		safeMonth = 1
+		safeDay = 1
+	} else {
+		if (safeDay < 1) {
+			safeDay = 1
+		}
+		if (safeDay > maxDay) {
+			safeDay = maxDay
+		}
+	}
+	return { year: safeYear, month: safeMonth, day: safeDay } as LunarResult
+}
+
+/**
+ * 农历展示文案（按列组合裁剪）
+ *
+ * @param date 公历日期
+ * @param columns 列组合（null 用默认年-月-日）
+ * @param showGanZhi 年是否展示干支（如 丙午年）
+ * @returns 形如 '2026年六月十五' / '丙午年六月十五'；公历超出农历表返回空串
+ */
+export function formatLunarPickerText(date: Date, columns: LunarPickerColumnType[] | null, showGanZhi: boolean): string {
+	const lunar = solarToLunar(date.getFullYear(), date.getMonth(), date.getDate())
+	if (lunar == null) {
+		return ''
+	}
+	const types = normalizeLunarPickerColumns(columns)
+	let text = ''
+	for (let i = 0; i < types.length; i++) {
+		const type = types[i]
+		if (type == 'year') {
+			if (showGanZhi) {
+				text = text + getLunarYearName(lunar!.year) + '年'
+			} else {
+				text = text + lunar!.year.toString() + '年'
+			}
+		} else if (type == 'month') {
+			text = text + getLunarMonthName(lunar!.month)
+		} else {
+			text = text + getLunarDayName(lunar!.day)
+		}
+	}
+	return text
+}

@@ -136,6 +136,7 @@ import { formatDate } from '@meng-xi/unix-ui/utils/index.uts'
 | `getLunarLeapMonthDays(year)` | `number` | 闰月天数（29 / 30，无闰月为 0） |
 | `getLunarYearDays(year)` | `number` | 农历年总天数（含闰月） |
 | `getLunarMonthDays(year, month)` | `number` | 农历某月天数（month 1 起） |
+| `getLunarMonthSequence(year)` | `number[]` | 农历月序（含闰月，如 `[1, 2, -2, 3]`） |
 | `getLunarYearName(year)` | `string` | 干支年名（如 `'甲辰'`） |
 | `getZodiac(year)` | `string` | 生肖（如 `'龙'`） |
 | `getLunarMonthName(month)` | `string` | 月名（如 `'正月'` / `'闰六月'`） |
@@ -143,7 +144,7 @@ import { formatDate } from '@meng-xi/unix-ui/utils/index.uts'
 | `getLunarHourName(hour)` | `string` | 时辰名（如 `'子初'` / `'子正'`） |
 | `getLunarDateText(year, month, day)` | `string` | 组合文案（如 `'腊月初八'`） |
 
-农历数据覆盖 1900-2100 年，超出范围返回 `null`（名称为空串）。
+农历数据覆盖 1900-2100 年，超出范围返回 `null`（名称为空串）；表范围常量 `LUNAR_START_YEAR`（1900）与 `LUNAR_END_YEAR`（2100）同样导出。
 
 ## 格式符号
 

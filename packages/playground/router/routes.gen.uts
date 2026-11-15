@@ -172,6 +172,21 @@ export const routes: RouteConfig[] = [
 		meta: { title: '加载 Loading' },
 	},
 	{
+		path: 'pages-sub/lunar-picker-input/lunar-picker-input',
+		name: 'lunar-picker-input',
+		meta: { title: '农历输入框 LunarPickerInput' },
+	},
+	{
+		path: 'pages-sub/lunar-picker-popup/lunar-picker-popup',
+		name: 'lunar-picker-popup',
+		meta: { title: '农历选择弹出框 LunarPickerPopup' },
+	},
+	{
+		path: 'pages-sub/lunar-picker/lunar-picker',
+		name: 'lunar-picker',
+		meta: { title: '农历选择 LunarPicker' },
+	},
+	{
 		path: 'pages-sub/overlay/overlay',
 		name: 'overlay',
 		meta: { title: '遮罩层 Overlay' },

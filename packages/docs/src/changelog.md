@@ -31,6 +31,8 @@
 - **m-picker-view / m-picker-view-column 选择器纯视图**：索引受控（`number[]`）、无工具栏、不展开级联，`option` 插槽自定义选项内容（详见 [PickerView](/components/picker-view)）
 - `m-date-picker-column` 新增可选 `disabledOptions`：禁用项灰显、点击忽略、吸附跳过（日期 / 时间选择不传即行为不变）
 - **面板内部迁移为 m-picker 组合**：`m-date-picker` / `m-time-picker` 的顶部栏、选中框、滚轮容器与加载遮罩改由 `m-picker` 承担，自身仅保留列构建与事件回写；对外 props / events / 插槽 / 实例方法全部不变，面板级主题变量收敛为 `$m-picker-*`（`$m-date-picker-*` 仅保留选项文本三项，`$m-time-picker-*` 不再提供面板变量）
+- **新增农历选择三件套**：`m-lunar-picker` / `m-lunar-picker-popup` / `m-lunar-picker-input`，基于 `utils/date` 的农历能力提供年 / 月（含闰月）/ 日滚轮选择，支持干支生肖年列、列组合、min/max 限域、filter / formatter 与只读加载态；对外值仍为公历 `Date`，面板视觉复用 `$m-picker-*`，新增输入框变量段 `$m-lunar-picker-input-*`
+- `utils/date` 新增导出 `getLunarMonthSequence(year)`、`LUNAR_START_YEAR`、`LUNAR_END_YEAR`
 
 ## [0.5.3] - 2026-11-15
 

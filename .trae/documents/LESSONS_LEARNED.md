@@ -550,3 +550,11 @@
 - **不要转发 `m-picker` 的 `update:value`**：它在每次滚动即派发，而面板的 `v-model:value` 契约是「仅确认回写」；转发会让外部值随滚动变化
 - **`change` 的 `columnIndex` 用前后 `indexes` 差异反推**（`firstDiffIndex`），值重建用 `selectedOptions` 按列类型全量解析——比按变化列单独写回更稳，能覆盖「切时段导致小时列重建」这类多列联动
 - **跨组件转发 `option` 插槽需做口径回退**：`m-picker` 的作用域参数是 `{ label, value }` + 行列下标，面板对外仍是 `{ text, value }` 与单个 `index`，转发时用桥接函数转换，保持既有文档契约
+
+### 90. 农历选择器的列模型（2026-11-15 农历三件套）
+- **农历月序用负数表示闰月**：`getLunarMonthSequence(year)` 返回 `[1, 2, -2, 3, ...]`（闰月紧随其月），`getLunarMonthName(-2)` 输出「闰二月」；列 value 直接存负数字符串，避免另造编码
+- **切年必须归一闰月**：从闰四月年切到无闰四月的年份时，月值 `-4` 非法，需 `getLunarLeapMonth(year)` 校验并回退到 `4`，再把日收敛到当月 29 / 30 天，否则 `lunarToSolar` 返回 `null` 导致面板停更
+- **日列长度按农历月长生成**，不能用公历 `getDaysInMonth`；`min/max` 落在月中间时用「min/max 所在农历三元组」裁剪首尾，闰月比较同样用负值
+- **年列全量 1900–2100 时约 201 项**：滚轮列可承受，但低端机首屏需实测；默认范围与日期选择器的「前后 10 年」不同，农历生日场景必须全量
+- **对外值仍用公历 `Date`**：滚动农历列后 `lunarToSolar` → 截断到 min/max → 真源回写，`pickerValue` 由列下标派生，避免 `m-picker` 精确匹配失配
+- **输入框展示文案独立于值口径**：值保持 `Date`（便于表单/弹层互换），展示用 `formatLunarPickerText` 按 `columns-type` 拼接（年/月/日名，干支按开关）

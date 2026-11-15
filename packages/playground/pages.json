@@ -204,6 +204,24 @@
 					}
 				},
 				{
+					"path": "lunar-picker-input/lunar-picker-input",
+					"style": {
+						"navigationBarTitleText": "农历输入框 LunarPickerInput"
+					}
+				},
+				{
+					"path": "lunar-picker-popup/lunar-picker-popup",
+					"style": {
+						"navigationBarTitleText": "农历选择弹出框 LunarPickerPopup"
+					}
+				},
+				{
+					"path": "lunar-picker/lunar-picker",
+					"style": {
+						"navigationBarTitleText": "农历选择 LunarPicker"
+					}
+				},
+				{
 					"path": "overlay/overlay",
 					"style": {
 						"navigationBarTitleText": "遮罩层 Overlay"

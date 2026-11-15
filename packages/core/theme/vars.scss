@@ -533,33 +533,13 @@ $m-date-strip-item-info-font-size: 10px !default;
 /** 农历 / 附加文案颜色 */
 $m-date-strip-item-info-color: $m-text-color-tertiary !default;
 
-/* ========== DatePicker 日期选择 ========== */
-/** 面板背景 */
-$m-date-picker-background: $m-white !default;
-/** 顶部栏高度 */
-$m-date-picker-toolbar-height: 44px !default;
-/** 顶部栏按钮水平内边距 */
-$m-date-picker-action-padding: 0 16px !default;
-/** 顶部栏按钮字号 */
-$m-date-picker-action-font-size: 14px !default;
-/** 取消按钮文字色 */
-$m-date-picker-cancel-color: $m-text-color-secondary !default;
-/** 确认按钮文字色 */
-$m-date-picker-confirm-color: $m-color-primary !default;
-/** 标题字号 */
-$m-date-picker-title-font-size: 16px !default;
-/** 标题文字色 */
-$m-date-picker-title-color: $m-text-color !default;
+/* ========== DatePicker 日期选择（面板视觉由 $m-picker-* 承担，此处仅列文本） ========== */
 /** 选项字号 */
 $m-date-picker-option-font-size: 16px !default;
 /** 选项文字色 */
 $m-date-picker-option-color: $m-text-color !default;
 /** 选中项文字色 */
 $m-date-picker-option-selected-color: $m-text-color !default;
-/** 选中框细线颜色 */
-$m-date-picker-frame-color: #ebedf0 !default;
-/** 加载遮罩背景色 */
-$m-date-picker-loading-background: rgba(255, 255, 255, 0.6) !default;
 
 /* ========== m-date-picker-input（日期输入框：触发层与自绘清空按钮，层叠同 m-calendar-input） ========== */
 /** 透明触发层层级 */
@@ -608,28 +588,6 @@ $m-date-range-picker-input-clear-width: 40px !default;
 $m-date-range-picker-input-clear-icon-size: 16px !default;
 /** 清空图标颜色 */
 $m-date-range-picker-input-clear-color: #c8c9cc !default;
-
-/* ========== TimePicker 时间选择 ========== */
-/** 面板背景 */
-$m-time-picker-background: $m-white !default;
-/** 顶部栏高度 */
-$m-time-picker-toolbar-height: 44px !default;
-/** 顶部栏按钮内边距 */
-$m-time-picker-action-padding: 0 16px !default;
-/** 顶部栏按钮字号 */
-$m-time-picker-action-font-size: 14px !default;
-/** 取消按钮文字色 */
-$m-time-picker-cancel-color: $m-text-color-secondary !default;
-/** 确认按钮文字色 */
-$m-time-picker-confirm-color: $m-color-primary !default;
-/** 标题字号 */
-$m-time-picker-title-font-size: 16px !default;
-/** 标题文字色 */
-$m-time-picker-title-color: $m-text-color !default;
-/** 选中框细线颜色 */
-$m-time-picker-frame-color: #ebedf0 !default;
-/** 加载遮罩背景 */
-$m-time-picker-loading-background: rgba(255, 255, 255, 0.9) !default;
 
 /* ========== m-time-picker-input（时间输入框：触发层与自绘清空按钮） ========== */
 /** 透明触发层层级 */

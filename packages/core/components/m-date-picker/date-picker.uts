@@ -43,12 +43,6 @@ export type DatePickerPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'
 /** 默认列组合（年-月-日） */
 export const DATE_PICKER_DEFAULT_COLUMNS: DatePickerColumnType[] = ['year', 'month', 'day']
 
-/** 选项默认行高 px（与 vars.scss 无对应变量，作为 option-height 未传时的兜底） */
-export const DATE_PICKER_OPTION_HEIGHT: number = 44
-
-/** 可见选项默认个数（对齐 Vant visible-option-num 默认值） */
-export const DATE_PICKER_VISIBLE_OPTION_NUM: number = 6
-
 /**
  * 规范化列组合：null / 空数组回退默认年-月-日，否则按入参顺序复制一份
  * 复制而非直接返回入参，避免外部后续修改数组影响组件内部状态

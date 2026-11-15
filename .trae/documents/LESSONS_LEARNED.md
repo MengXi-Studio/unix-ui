@@ -543,3 +543,10 @@
 - **滚轮列的吸附定位可用 `:scroll-top` prop**：`@scroll` 回灌 `e.detail.scrollTop` 维护镜像（`actualTop`），停止后按 `Math.round(top / optionHeight) * optionHeight` 回写；上下占位高固定为 `(visibleNum - 1) / 2 * optionHeight`（偶数可见数时是半格 2.5 行，选中项才精确居中）
 - **同值回写不触发属性下发**：用户滚走又滚回同一格时（镜像 233.2、目标 220，而上一次 prop 已是 220），直接赋同值无效——先写 `target + 0.5` 再 `nextTick` 归位 `target`，才能强制吸附；程序化滚动期间用 120ms 标记位屏蔽自身 scroll 事件，避免吸附递归
 - **uvue 无 `pointer-events`**：Vant 那种覆盖式渐变遮罩会拦截滚动手势（项目内 m-toast 亦按「全屏层天然拦截」处理）——滚轮渐隐改用每个选项按 `|index - activeIndex|` 分级 `opacity` 类实现；选中框两条细线放在列层 `z-index: 0`、列层 `z-index: 1` 且滚动区背景透明，既不挡手势也保持视觉层次
+
+### 89. 面板组合通用 Picker 的状态同步（2026-11-15 日期 / 时间面板迁移）
+- **`m-picker` 只监听 `columns.length`**：日期 / 时间面板把列内容重新构建后列数往往不变（限域、`minuteStep`、`hourCycle`、`filter` / `formatter`），其内部 `indexes` 不会重算，会出现「显示值正确但下标错位」；面板必须在这些依赖变化时 `nextTick` 调 `picker.$callMethod('resetSelection')`
+- **双状态边界只在两处**：常规滚动靠 `m-picker` 的「`value` 同值跳过」不会回环；`resetSelection` 与上述列内容变化必须显式复位，且面板的 `resetSelection` 要先改内部值再调 `m-picker` 的 `resetSelection`
+- **不要转发 `m-picker` 的 `update:value`**：它在每次滚动即派发，而面板的 `v-model:value` 契约是「仅确认回写」；转发会让外部值随滚动变化
+- **`change` 的 `columnIndex` 用前后 `indexes` 差异反推**（`firstDiffIndex`），值重建用 `selectedOptions` 按列类型全量解析——比按变化列单独写回更稳，能覆盖「切时段导致小时列重建」这类多列联动
+- **跨组件转发 `option` 插槽需做口径回退**：`m-picker` 的作用域参数是 `{ label, value }` + 行列下标，面板对外仍是 `{ text, value }` 与单个 `index`，转发时用桥接函数转换，保持既有文档契约

@@ -117,18 +117,7 @@ picker.value?.$callMethod('getSelectedValue')
 
 ## Theming
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| $m-time-picker-background | Panel background | #ffffff |
-| $m-time-picker-toolbar-height | Toolbar height | 44px |
-| $m-time-picker-action-padding | Toolbar button padding | 0 16px |
-| $m-time-picker-action-font-size | Toolbar button font size | 14px |
-| $m-time-picker-cancel-color | Cancel text color | #646566 |
-| $m-time-picker-confirm-color | Confirm text color | #1989fa |
-| $m-time-picker-title-font-size | Title font size | 16px |
-| $m-time-picker-title-color | Title color | #323233 |
-| $m-time-picker-frame-color | Selection frame line color | #ebedf0 |
-| $m-time-picker-loading-background | Loading overlay background | rgba(255,255,255,0.9) |
+The panel container, toolbar, selection frame, loading overlay and option text are provided by the inner `m-picker` and the shared wheel column. Customize them via the `$m-picker-*` and `$m-date-picker-option-*` variables (e.g. `$m-picker-toolbar-height`, `$m-picker-frame-color`, `$m-date-picker-option-font-size`).
 
 ## Differences from DatePicker
 

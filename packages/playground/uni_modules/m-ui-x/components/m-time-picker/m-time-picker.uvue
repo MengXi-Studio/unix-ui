@@ -1,63 +1,52 @@
 <template>
-	<!-- 时间选择面板（三组件拆分后的基础组件）：时 / 分（/ 秒）滚轮 + 顶部栏，
-	     纯平铺形态，弹层组合见 m-time-picker-popup，输入框触发组合见 m-time-picker-input。
-	     根节点常驻静态（LESSONS #32） -->
+	<!-- 时间选择面板（三组件拆分后的基础组件）：组合 m-picker 承担顶部栏 / 选中框 / 滚轮 / 加载遮罩，
+	     本组件只负责时 / 分 / 秒列构建、步长与限域收敛、filter / formatter 与事件回写。
+	     弹层组合见 m-time-picker-popup，输入框触发组合见 m-time-picker-input。根节点常驻静态（LESSONS #32） -->
 	<view :class="rootClass" :style="customStyle">
-		<!-- 顶部栏：toolbar 插槽整体替换，未传时按 show-toolbar 渲染取消 / 标题 / 确认三段 -->
-		<slot name="toolbar">
-			<view v-if="showToolbar" class="m-time-picker__toolbar">
-				<view class="m-time-picker__action" @click="onCancelClick">
-					<slot name="cancel">
-						<text class="m-time-picker__cancel-text">{{ cancelButtonText }}</text>
-					</slot>
-				</view>
-				<view class="m-time-picker__title">
-					<slot name="title">
-						<text class="m-time-picker__title-text">{{ title }}</text>
-					</slot>
-				</view>
-				<view class="m-time-picker__action" @click="onConfirmClick">
-					<slot name="confirm">
-						<text class="m-time-picker__confirm-text">{{ confirmButtonText }}</text>
-					</slot>
-				</view>
-			</view>
-		</slot>
-		<view class="m-time-picker__columns" :style="columnsStyle">
-			<!-- 选中框（两条细线）置于列层之下：uvue 无 pointer-events，覆盖层会拦截滚动手势 -->
-			<view class="m-time-picker__frame" :style="frameStyle"></view>
-			<view class="m-time-picker__column-list">
-				<m-date-picker-column
-					v-for="(column, columnIndex) in columns"
-					:key="columnIndex"
-					:options="column.options"
-					:model-value="column.index"
-					:column-index="columnIndex"
-					:option-height="optionHeightValue"
-					:visible-option-num="visibleOptionNumValue"
-					:swipe-duration="swipeDuration"
-					:readonly="readonly"
-					@change="onColumnChange"
-				>
-					<!-- 插槽条件转发：未传入时不覆盖列内置文本渲染；小程序端 v-for 内不声明具名插槽（#17） -->
-					<!-- #ifndef MP -->
-					<template v-if="$slots['option'] != null" #option="{ option, index }">
-						<slot name="option" :option="option" :index="index"></slot>
-					</template>
-					<!-- #endif -->
-				</m-date-picker-column>
-			</view>
-			<view v-if="loading" class="m-time-picker__loading">
-				<m-loading />
-			</view>
-		</view>
+		<m-picker
+			ref="picker"
+			:columns="pickerColumns"
+			:value="pickerValue"
+			:title="title"
+			:confirm-button-text="confirmButtonText"
+			:cancel-button-text="cancelButtonText"
+			:show-toolbar="showToolbar"
+			:loading="loading"
+			:readonly="readonly"
+			:option-height="optionHeight"
+			:visible-option-num="visibleOptionNum"
+			:swipe-duration="swipeDuration"
+			@change="onPickerChange"
+			@confirm="onPickerConfirm"
+			@cancel="onPickerCancel"
+		>
+			<!-- 插槽条件转发：未传入时不覆盖 m-picker 的默认渲染 -->
+			<template v-if="$slots['toolbar'] != null" #toolbar>
+				<slot name="toolbar"></slot>
+			</template>
+			<template v-if="$slots['title'] != null" #title>
+				<slot name="title"></slot>
+			</template>
+			<template v-if="$slots['confirm'] != null" #confirm>
+				<slot name="confirm"></slot>
+			</template>
+			<template v-if="$slots['cancel'] != null" #cancel>
+				<slot name="cancel"></slot>
+			</template>
+			<!-- #ifndef MP -->
+			<!-- 小程序端列选项在 v-for 内不声明具名插槽（LESSONS #17），无需转发 -->
+			<template v-if="$slots['option'] != null" #option="{ option, index }">
+				<slot name="option" :option="toTimePickerOption(option)" :index="index"></slot>
+			</template>
+			<!-- #endif -->
+		</m-picker>
 	</view>
 </template>
 
 <script setup lang="uts">
 	/**
 	 * m-time-picker 时间选择面板：时 / 分 / 秒滚轮列（columns-type 任意组合）。
-	 * 选择状态（时 / 分 / 秒，24 小时制内部口径）在宿主维护，列经 TimePickerColumn 纯数据下发；
+	 * 选择状态（时 / 分 / 秒，24 小时制内部口径）在宿主维护，列数据经 pickerColumns 下发给 m-picker；
 	 * 滚轮交互复用 m-date-picker-column。能力：min/max 时刻收敛（同日）、分钟 / 秒步长、
 	 * 12 / 24 小时制（12 制附加 AM/PM 列）、filter / formatter、顶部栏与只读加载态。
 	 */
@@ -69,8 +58,6 @@
 		TimePickerFormatter,
 		TimeParts,
 		TimePickerPeriod,
-		TIME_PICKER_OPTION_HEIGHT,
-		TIME_PICKER_VISIBLE_OPTION_NUM,
 		normalizeTimePickerColumns,
 		padTwo,
 		digitsToNumber,
@@ -82,8 +69,8 @@
 		floorToStep,
 		timeTextToSeconds
 	} from './time-picker.uts'
-	import MDatePickerColumn from '../m-date-picker/m-date-picker-column.uvue'
-	import MLoading from '../m-loading/m-loading.uvue'
+	import { PickerOption, PickerValue, valueToText } from '../m-picker/picker.uts'
+	import MPicker from '../m-picker/m-picker.uvue'
 
 	type Props = {
 		/** 选项类型组合（hour / minute / second 任意顺序；null 用默认时-分） */
@@ -162,6 +149,9 @@
 		cancel: []
 	}>()
 
+	/** 内部 m-picker 实例（复位下标时调用其 resetSelection） */
+	const picker = ref<ComponentPublicInstance | null>(null)
+
 	/** 生效列组合（null / 空数组回退默认时-分） */
 	const resolvedTypes = computed<TimePickerColumnType[]>(() => normalizeTimePickerColumns(props.columnsType))
 
@@ -202,16 +192,6 @@
 
 	/** 是否启用约束（下界晚于上界视为跨天，不做收敛） */
 	const hasRange = computed<boolean>(() => rangeMinSeconds.value <= rangeMaxSeconds.value)
-
-	/** 生效行高（0 用默认 44） */
-	const optionHeightValue = computed<number>(() => {
-		return props.optionHeight > 0 ? props.optionHeight : TIME_PICKER_OPTION_HEIGHT
-	})
-
-	/** 生效可见选项个数（0 用默认 6） */
-	const visibleOptionNumValue = computed<number>(() => {
-		return props.visibleOptionNum > 0 ? props.visibleOptionNum : TIME_PICKER_VISIBLE_OPTION_NUM
-	})
 
 	/**
 	 * 秒数收敛到约束区间（无约束时原样返回）
@@ -372,7 +352,7 @@
 	}
 
 	/**
-	 * 应用 filter / formatter（filter 缺省返回原数组副本）
+	 * 应用 filter（缺省返回原数组）
 	 */
 	function applyFilter(type: string, options: TimePickerOption[], values: string[]): TimePickerOption[] {
 		const filter = props.filter
@@ -456,6 +436,54 @@
 	/** 列渲染数据（选中时刻 / 列组合 / 约束 / filter / formatter 变化时重算） */
 	const columns = computed<TimePickerColumn[]>(() => buildColumns())
 
+	/**
+	 * 当前各列已定位下标快照（上一次 m-picker change 的基准，用于反推变化列）
+	 */
+	function currentColumnIndexes(): number[] {
+		const result: number[] = []
+		const cols = columns.value
+		for (let i = 0; i < cols.length; i++) {
+			result.push(cols[i].index)
+		}
+		return result
+	}
+
+	/** 上一次已知的各列下标 */
+	const lastIndexes = ref<number[]>(currentColumnIndexes())
+
+	/**
+	 * 列数据下发：TimePickerOption 映射为 m-picker 的 PickerOption（label 负责展示，value 保留原值参与定位）
+	 */
+	const pickerColumns = computed<PickerOption[][]>(() => {
+		const result: PickerOption[][] = []
+		const cols = columns.value
+		for (let i = 0; i < cols.length; i++) {
+			const options = cols[i].options
+			const list: PickerOption[] = []
+			for (let j = 0; j < options.length; j++) {
+				list.push({ label: options[j].text, value: options[j].value } as PickerOption)
+			}
+			result.push(list)
+		}
+		return result
+	})
+
+	/**
+	 * 选中值下发：取各列「已定位下标」对应的选项值，保证 m-picker 精确命中（不输出原始 value）
+	 */
+	const pickerValue = computed<PickerValue>(() => {
+		const values: (string | number)[] = []
+		const cols = columns.value
+		for (let i = 0; i < cols.length; i++) {
+			const col = cols[i]
+			if (col.options.length > 0) {
+				const index = col.index >= 0 && col.index < col.options.length ? col.index : 0
+				values.push(col.options[index].value)
+			}
+		}
+		return values
+	})
+
 	/** 根类名 */
 	const rootClass = computed<string>(() => {
 		let cls = 'm-time-picker'
@@ -465,55 +493,27 @@
 		return cls
 	})
 
-	/** 滚轮区高度：行高 × 可见个数 */
-	const columnsStyle = computed<string>(() => {
-		return 'height: ' + (optionHeightValue.value * visibleOptionNumValue.value).toString() + 'px;'
-	})
-
-	/** 选中框高度与上移量（顶边距视口中线半个行高） */
-	const frameStyle = computed<string>(() => {
-		const height = optionHeightValue.value
-		return 'height: ' + height.toString() + 'px; margin-top: -' + (height / 2).toString() + 'px;'
-	})
+	/**
+	 * 比较前后两轮下标，返回第一个变化的列下标（长度变化时返回较短长度；完全一致返回 -1）
+	 */
+	function firstDiffIndex(previous: number[], next: number[]): number {
+		const length = previous.length < next.length ? previous.length : next.length
+		for (let i = 0; i < length; i++) {
+			if (previous[i] != next[i]) {
+				return i
+			}
+		}
+		if (previous.length != next.length) {
+			return length
+		}
+		return -1
+	}
 
 	/**
-	 * 列切换：把选项值写回对应分量（12 制结合时段换算 24 小时制），收敛后派发 change
+	 * 插槽适配：PickerOption 转回对外契约的 TimePickerOption（text / value）
 	 */
-	function onColumnChange(columnIndex: number, index: number) {
-		const cols = columns.value
-		if (columnIndex < 0 || columnIndex >= cols.length) {
-			return
-		}
-		const column = cols[columnIndex]
-		if (index < 0 || index >= column.options.length) {
-			return
-		}
-		const optionValue = column.options[index].value
-		let hour = selectedHour.value
-		let minute = selectedMinute.value
-		let second = selectedSecond.value
-		if (column.type == 'period') {
-			const isPm = optionValue == '02'
-			const h12 = hour % 12 == 0 ? 12 : hour % 12
-			hour = isPm ? (h12 == 12 ? 12 : h12 + 12) : (h12 == 12 ? 0 : h12)
-		} else if (column.type == 'hour') {
-			const value = digitsToNumber(optionValue)
-			if (hourCycleValue.value == 12) {
-				const isPm = hour >= 12
-				hour = isPm ? (value == 12 ? 12 : value + 12) : (value == 12 ? 0 : value)
-			} else {
-				hour = value
-			}
-		} else if (column.type == 'minute') {
-			minute = digitsToNumber(optionValue)
-		} else {
-			second = digitsToNumber(optionValue)
-		}
-		const parts = clampParts({ hour: hour, minute: minute, second: second } as TimeParts)
-		selectedHour.value = parts.hour
-		selectedMinute.value = parts.minute
-		selectedSecond.value = parts.second
-		emit('change', currentText(), columnIndex)
+	function toTimePickerOption(option: PickerOption): TimePickerOption {
+		return { text: option.label, value: valueToText(option.value) } as TimePickerOption
 	}
 
 	/**
@@ -536,6 +536,90 @@
 		emit('cancel')
 	}
 
+	/**
+	 * 通知 m-picker 按当前 value 重新定位：列内容变化（约束 / 步长 / 制式 / 过滤 / 格式化）后列数可能不变，其内部下标不会自动重算
+	 */
+	function resetPickerIndexes() {
+		nextTick(() => {
+			const inst = picker.value
+			if (inst != null) {
+				inst.$callMethod('resetSelection')
+			}
+		})
+	}
+
+	/**
+	 * 重置选择为 value / 当前时间（弹层复开时按需调用）；同时复位 m-picker 内部下标
+	 */
+	function resetSelection() {
+		const parts = initialParts()
+		selectedHour.value = parts.hour
+		selectedMinute.value = parts.minute
+		selectedSecond.value = parts.second
+		resetPickerIndexes()
+	}
+
+	/**
+	 * m-picker 列切换：先解析时段列，再按列顺序重建时 / 分 / 秒（12 制按 AM/PM 换算 24 制）
+	 */
+	const onPickerChange = (_value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
+		const cols = columns.value
+		let hour = selectedHour.value
+		let minute = selectedMinute.value
+		let second = selectedSecond.value
+		let period: TimePickerPeriod = hour >= 12 ? 'pm' : 'am'
+		// 时段列决定 12 制小时换算方向，必须优先解析
+		for (let i = 0; i < cols.length && i < selectedOptions.length; i++) {
+			if (cols[i].type == 'period') {
+				period = valueToText(selectedOptions[i].value) == '02' ? 'pm' : 'am'
+			}
+		}
+		for (let i = 0; i < cols.length && i < selectedOptions.length; i++) {
+			const type = cols[i].type
+			if (type == 'period') {
+				continue
+			}
+			const current = digitsToNumber(valueToText(selectedOptions[i].value))
+			if (type == 'hour') {
+				if (hourCycleValue.value == 12) {
+					const isPm = period == 'pm'
+					hour = isPm ? (current == 12 ? 12 : current + 12) : (current == 12 ? 0 : current)
+				} else {
+					hour = current
+				}
+			} else if (type == 'minute') {
+				minute = current
+			} else {
+				second = current
+			}
+		}
+		const parts = clampParts({ hour: hour, minute: minute, second: second } as TimeParts)
+		selectedHour.value = parts.hour
+		selectedMinute.value = parts.minute
+		selectedSecond.value = parts.second
+		const changed = firstDiffIndex(lastIndexes.value, indexes)
+		lastIndexes.value = indexes
+		if (changed < 0) {
+			return
+		}
+		emit('change', currentText(), changed)
+	}
+
+	/**
+	 * m-picker 确认：复用面板既有的收敛与回写逻辑
+	 */
+	const onPickerConfirm = (_value: PickerValue | null, _selectedOptions: PickerOption[], indexes: number[]) => {
+		lastIndexes.value = indexes
+		onConfirmClick()
+	}
+
+	/**
+	 * m-picker 取消：转发 cancel（弹层由组合组件关闭）
+	 */
+	const onPickerCancel = () => {
+		onCancelClick()
+	}
+
 	// 外部 value 变化：与内部当前文本不同时同步（确认回写的同值不重置选择）
 	watch((): string | null => props.value, (value: string | null) => {
 		const parsed = parseTimeText(value)
@@ -552,12 +636,13 @@
 		selectedSecond.value = parts.second
 	})
 
-	// 约束变化：当前选择收敛到新区间
+	// 约束变化：当前选择收敛到新区间，并通知 m-picker 按新列内容重新定位
 	watch((): number => rangeMinSeconds.value, (_: number) => {
 		const parts = clampParts(currentTimeParts())
 		selectedHour.value = parts.hour
 		selectedMinute.value = parts.minute
 		selectedSecond.value = parts.second
+		resetPickerIndexes()
 	})
 
 	watch((): number => rangeMaxSeconds.value, (_: number) => {
@@ -565,17 +650,29 @@
 		selectedHour.value = parts.hour
 		selectedMinute.value = parts.minute
 		selectedSecond.value = parts.second
+		resetPickerIndexes()
 	})
 
-	/**
-	 * 重置选择为 value / 当前时间（弹层复开时按需调用）
-	 */
-	function resetSelection() {
-		const parts = initialParts()
-		selectedHour.value = parts.hour
-		selectedMinute.value = parts.minute
-		selectedSecond.value = parts.second
-	}
+	// 步长 / 制式 / 过滤 / 格式化变化：列内容变化但列数可能不变，需重新定位
+	watch((): number => minuteStepValue.value, (_: number) => {
+		resetPickerIndexes()
+	})
+
+	watch((): number => secondStepValue.value, (_: number) => {
+		resetPickerIndexes()
+	})
+
+	watch((): number => hourCycleValue.value, (_: number) => {
+		resetPickerIndexes()
+	})
+
+	watch((): TimePickerFilter | null => props.filter, (_: TimePickerFilter | null) => {
+		resetPickerIndexes()
+	})
+
+	watch((): TimePickerFormatter | null => props.formatter, (_: TimePickerFormatter | null) => {
+		resetPickerIndexes()
+	})
 
 	/**
 	 * 读取当前选中时间字符串
@@ -603,80 +700,12 @@
 	 * 主题变量说明（默认主题内置 + 变量覆盖）：
 	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
 	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 * 面板级视觉由内部 m-picker 的样式与 $m-picker-* 变量承担，此处仅保留根节点背景。
 	 */
 	@import '../../theme/vars.scss';
 
-	/* ========== 根 ========== */
+	/* ========== 根（customClass 设内边距时背景仍铺满） ========== */
 	.m-time-picker {
-		background-color: $m-time-picker-background;
-	}
-
-	/* ========== 顶部栏（取消 / 标题 / 确认） ========== */
-	.m-time-picker__toolbar {
-		flex-direction: row;
-		align-items: center;
-		height: $m-time-picker-toolbar-height;
-	}
-	.m-time-picker__action {
-		padding: $m-time-picker-action-padding;
-		justify-content: center;
-	}
-	.m-time-picker__cancel-text {
-		font-size: $m-time-picker-action-font-size;
-		color: $m-time-picker-cancel-color;
-	}
-	.m-time-picker__confirm-text {
-		font-size: $m-time-picker-action-font-size;
-		color: $m-time-picker-confirm-color;
-	}
-	.m-time-picker__title {
-		flex: 1;
-		justify-content: center;
-		align-items: center;
-	}
-	.m-time-picker__title-text {
-		font-size: $m-time-picker-title-font-size;
-		color: $m-time-picker-title-color;
-		font-weight: bold;
-	}
-
-	/* ========== 滚轮区（高度 inline 下发） ========== */
-	.m-time-picker__columns {
-		position: relative;
-	}
-
-	/* 选中框：置于列层之下，避免拦截滚动手势（uvue 无 pointer-events） */
-	.m-time-picker__frame {
-		position: absolute;
-		top: 50%;
-		left: 16px;
-		right: 16px;
-		z-index: 0;
-		border-top: $m-border-width solid $m-time-picker-frame-color;
-		border-bottom: $m-border-width solid $m-time-picker-frame-color;
-	}
-
-	/* 列层：横向排布，覆盖在选中框之上 */
-	.m-time-picker__column-list {
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		z-index: 1;
-		flex-direction: row;
-	}
-
-	/* ========== 加载遮罩 ========== */
-	.m-time-picker__loading {
-		position: absolute;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		z-index: 2;
-		justify-content: center;
-		align-items: center;
-		background-color: $m-time-picker-loading-background;
+		background-color: $m-picker-background;
 	}
 </style>

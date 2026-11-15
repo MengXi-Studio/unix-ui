@@ -8,6 +8,7 @@
 - 新增 `m-picker` / `m-picker-popup` / `m-picker-input` 通用选择器三件套：`columns` 一维 / 二维自动识别（一维按单列、元素为数组按多列），选项统一 `{ label, value, children?, disabled? }`；一维含 `children` 走级联（切换上层后下层重建并回到首项）；值单列标量、多列 / 级联数组，事件回传 `(value, selectedOptions, indexes)`；禁用项灰显 / 吸附跳过 / 点击不选中；`toolbar` / `title` / `cancel` / `confirm` / `option` / `columns-top` / `columns-bottom` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue` / `getSelectedIndexes`
 - 新增 `m-picker-view` / `m-picker-view-column` 索引受控纯视图：`value: number[]`，无工具栏、无数值换算、不展开级联，`option` 插槽可自定义选项内容
 - `m-date-picker-column` 新增可选 `disabledOptions`（默认 null）：禁用项灰显、点击忽略、吸附跳过，日期 / 时间选择不传即行为不变
+- `m-date-picker` / `m-time-picker` 面板内部迁移为 `m-picker` 组合：顶部栏 / 选中框 / 滚轮容器 / 加载遮罩由通用选择器承担，对外 props / events / 插槽 / 实例方法不变；面板级主题变量收敛为 `$m-picker-*`（`$m-date-picker-*` 仅保留选项文本三项，`$m-time-picker-*` 不再提供面板变量）
 
 ## 0.5.3 (2026-11-15)
 

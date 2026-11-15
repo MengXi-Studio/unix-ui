@@ -204,19 +204,11 @@ Customize the date picker via the following SCSS variables (define them directly
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| $m-date-picker-background | Panel background | #ffffff |
-| $m-date-picker-toolbar-height | Toolbar height | 44px |
-| $m-date-picker-action-padding | Horizontal padding of toolbar actions | 0 16px |
-| $m-date-picker-action-font-size | Toolbar action font size | 14px |
-| $m-date-picker-cancel-color | Cancel text color | #646566 |
-| $m-date-picker-confirm-color | Confirm text color | #1989fa |
-| $m-date-picker-title-font-size | Title font size | 16px |
-| $m-date-picker-title-color | Title color | #323233 |
 | $m-date-picker-option-font-size | Option font size | 16px |
 | $m-date-picker-option-color | Option color | #323233 |
 | $m-date-picker-option-selected-color | Selected option color | #323233 |
-| $m-date-picker-frame-color | Selection frame line color | #ebedf0 |
-| $m-date-picker-loading-background | Loading overlay background | rgba(255, 255, 255, 0.6) |
+
+> The panel container, toolbar, selection frame and loading overlay are provided by the inner `m-picker`; customize them via the `$m-picker-*` variables (e.g. `$m-picker-toolbar-height`, `$m-picker-frame-color`).
 
 See [Theming](/en/guide/theming) for the full variable list and override rules.
 

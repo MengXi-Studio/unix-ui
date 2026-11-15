@@ -204,19 +204,11 @@ picker.value?.$callMethod('confirm')
 
 | 变量 | 说明 | 默认值 |
 | --- | --- | --- |
-| $m-date-picker-background | 面板背景 | #ffffff |
-| $m-date-picker-toolbar-height | 顶部栏高度 | 44px |
-| $m-date-picker-action-padding | 顶部栏按钮水平内边距 | 0 16px |
-| $m-date-picker-action-font-size | 顶部栏按钮字号 | 14px |
-| $m-date-picker-cancel-color | 取消按钮文字色 | #646566 |
-| $m-date-picker-confirm-color | 确认按钮文字色 | #1989fa |
-| $m-date-picker-title-font-size | 标题字号 | 16px |
-| $m-date-picker-title-color | 标题文字色 | #323233 |
 | $m-date-picker-option-font-size | 选项字号 | 16px |
 | $m-date-picker-option-color | 选项文字色 | #323233 |
 | $m-date-picker-option-selected-color | 选中项文字色 | #323233 |
-| $m-date-picker-frame-color | 选中框细线颜色 | #ebedf0 |
-| $m-date-picker-loading-background | 加载遮罩背景色 | rgba(255, 255, 255, 0.6) |
+
+> 面板容器、顶部栏、选中框与加载遮罩由内部 `m-picker` 提供，相关视觉统一通过 `$m-picker-*` 变量定制（如 `$m-picker-toolbar-height`、`$m-picker-frame-color`）。
 
 完整变量与覆盖方式见[主题定制](/guide/theming)。
 

@@ -132,18 +132,7 @@ picker.value?.$callMethod('confirm')
 
 ## 主题定制
 
-| 变量 | 说明 | 默认值 |
-| --- | --- | --- |
-| $m-time-picker-background | 面板背景 | #ffffff |
-| $m-time-picker-toolbar-height | 顶部栏高度 | 44px |
-| $m-time-picker-action-padding | 顶部栏按钮内边距 | 0 16px |
-| $m-time-picker-action-font-size | 顶部栏按钮字号 | 14px |
-| $m-time-picker-cancel-color | 取消按钮文字色 | #646566 |
-| $m-time-picker-confirm-color | 确认按钮文字色 | #1989fa |
-| $m-time-picker-title-font-size | 标题字号 | 16px |
-| $m-time-picker-title-color | 标题文字色 | #323233 |
-| $m-time-picker-frame-color | 选中框细线颜色 | #ebedf0 |
-| $m-time-picker-loading-background | 加载遮罩背景 | rgba(255,255,255,0.9) |
+时间面板容器、顶部栏、选中框、加载遮罩与选项文本由内部 `m-picker` 及共用滚轮列提供，统一通过 `$m-picker-*` 与 `$m-date-picker-option-*` 变量定制（如 `$m-picker-toolbar-height`、`$m-picker-frame-color`、`$m-date-picker-option-font-size`）。
 
 ## 与日期选择的差异
 

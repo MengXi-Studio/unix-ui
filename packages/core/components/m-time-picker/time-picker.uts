@@ -49,12 +49,6 @@ export type TimeParts = {
 /** 默认列组合（时-分） */
 export const TIME_PICKER_DEFAULT_COLUMNS: TimePickerColumnType[] = ['hour', 'minute']
 
-/** 选项默认行高 px（option-height 未传时的兜底） */
-export const TIME_PICKER_OPTION_HEIGHT: number = 44
-
-/** 可见选项默认个数（对齐日期选择的默认值） */
-export const TIME_PICKER_VISIBLE_OPTION_NUM: number = 6
-
 /** 一天总秒数 */
 export const TIME_PICKER_SECONDS_PER_DAY: number = 86400
 

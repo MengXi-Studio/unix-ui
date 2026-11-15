@@ -177,6 +177,26 @@ export const routes: RouteConfig[] = [
 		meta: { title: '遮罩层 Overlay' },
 	},
 	{
+		path: 'pages-sub/picker-input/picker-input',
+		name: 'picker-input',
+		meta: { title: '选择器输入框 PickerInput' },
+	},
+	{
+		path: 'pages-sub/picker-popup/picker-popup',
+		name: 'picker-popup',
+		meta: { title: '选择器弹出框 PickerPopup' },
+	},
+	{
+		path: 'pages-sub/picker-view/picker-view',
+		name: 'picker-view',
+		meta: { title: '选择器纯视图 PickerView' },
+	},
+	{
+		path: 'pages-sub/picker/picker',
+		name: 'picker',
+		meta: { title: '选择器 Picker' },
+	},
+	{
 		path: 'pages-sub/popup/popup',
 		name: 'popup',
 		meta: { title: '弹出层 Popup' },

@@ -678,3 +678,43 @@ $m-time-range-picker-input-clear-width: 40px !default;
 $m-time-range-picker-input-clear-icon-size: 16px !default;
 /** 清空图标颜色 */
 $m-time-range-picker-input-clear-color: #c8c9cc !default;
+
+/* ========== Picker 通用选择器 ========== */
+/** 面板背景 */
+$m-picker-background: $m-white !default;
+/** 顶部栏高度 */
+$m-picker-toolbar-height: 44px !default;
+/** 顶部栏按钮内边距 */
+$m-picker-action-padding: 0 16px !default;
+/** 顶部栏按钮字号 */
+$m-picker-action-font-size: 14px !default;
+/** 取消按钮文字色 */
+$m-picker-cancel-color: $m-text-color-secondary !default;
+/** 确认按钮文字色 */
+$m-picker-confirm-color: $m-color-primary !default;
+/** 标题字号 */
+$m-picker-title-font-size: 16px !default;
+/** 标题文字色 */
+$m-picker-title-color: $m-text-color !default;
+/** 选中框细线颜色 */
+$m-picker-frame-color: #ebedf0 !default;
+/** 加载遮罩背景 */
+$m-picker-loading-background: rgba(255, 255, 255, 0.9) !default;
+
+/* ========== m-picker-input（选择器输入框：触发层与自绘清空按钮） ========== */
+/** 透明触发层层级 */
+$m-picker-input-trigger-z-index: 1 !default;
+/** 清空按钮层叠（高于触发层） */
+$m-picker-input-clear-z-index: 2 !default;
+/** 清空按钮点击区宽度（组件内 padding-right 预留值与之同步） */
+$m-picker-input-clear-width: 40px !default;
+/** 清空图标字号 */
+$m-picker-input-clear-icon-size: 16px !default;
+/** 清空图标颜色 */
+$m-picker-input-clear-color: #c8c9cc !default;
+
+/* ========== m-picker-view（选择器纯视图） ========== */
+/** 视图背景 */
+$m-picker-view-background: $m-white !default;
+/** 选中框细线颜色 */
+$m-picker-view-frame-color: #ebedf0 !default;

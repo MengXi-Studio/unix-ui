@@ -24,6 +24,13 @@
 - **m-time-range-picker-popup 时间范围弹出框**：`m-popup` + 时间范围面板组合，确认 / 取消后自动关闭（详见 [TimeRangePickerPopup](/components/time-range-picker-popup)）
 - **m-time-range-picker-input 时间范围输入框**：`m-input` 只读触发器 + 范围弹层，确认后以「起 - 止」回填，支持清空与禁用（详见 [TimeRangePickerInput](/components/time-range-picker-input)）
 
+- 新增 `$m-picker-*` / `$m-picker-input-*` / `$m-picker-view-*` 主题变量段
+- **m-picker 通用选择器**：`columns` 一维 / 二维自动识别（单列 / 多列），选项 `{ label, value, children?, disabled? }`；一维含 `children` 走级联；值单列标量、多列 / 级联数组，事件回传 `(value, selectedOptions, indexes)`；禁用项灰显 / 吸附跳过 / 点击不选中；`toolbar` / `title` / `cancel` / `confirm` / `option` / `columns-top` / `columns-bottom` 插槽（详见 [Picker](/components/picker)）
+- **m-picker-popup 选择器弹出框**：`m-popup` + 通用选择器面板组合，确认 / 取消后自动关闭（详见 [PickerPopup](/components/picker-popup)）
+- **m-picker-input 选择器输入框**：`m-input` 只读触发器 + 弹层，展示各列 label 以「 / 」连接，支持清空与禁用（详见 [PickerInput](/components/picker-input)）
+- **m-picker-view / m-picker-view-column 选择器纯视图**：索引受控（`number[]`）、无工具栏、不展开级联，`option` 插槽自定义选项内容（详见 [PickerView](/components/picker-view)）
+- `m-date-picker-column` 新增可选 `disabledOptions`：禁用项灰显、点击忽略、吸附跳过（日期 / 时间选择不传即行为不变）
+
 ## [0.5.3] - 2026-11-15
 
 修复 `m-calendar` 微信小程序端因日格 `v-for` 内重复声明同名插槽导致控制台被告警刷屏（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）。

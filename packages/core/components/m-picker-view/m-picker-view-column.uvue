@@ -1,0 +1,136 @@
+<template>
+	<!-- 选择器纯视图列：包装通用滚轮列，按索引受控渲染任意选项（供 m-picker-view 组合，
+	     也可在业务中单独使用做自定义列）。自身不持有选中值 -->
+	<view class="m-picker-view-column">
+		<m-date-picker-column
+			:options="texts"
+			:model-value="index"
+			:column-index="columnIndex"
+			:option-height="optionHeight"
+			:visible-option-num="visibleOptionNum"
+			:swipe-duration="swipeDuration"
+			:readonly="readonly"
+			:disabled-options="disabledFlags"
+			@change="onColumnChange"
+		>
+			<!-- 插槽条件转发：作用域回传原始选项对象与行列下标 -->
+			<!-- #ifndef MP -->
+			<template v-if="$slots['option'] != null" #option="{ index }">
+				<slot name="option" :option="optionOf(index)" :index="index" :row-index="index" :column-index="columnIndex"></slot>
+			</template>
+			<!-- #endif -->
+		</m-date-picker-column>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-picker-view-column 纯视图列：把 PickerOption 列表映射为滚轮列。
+	 * 选项值在列内映射为序号字符串，change 只上抛下标，由父级（或业务）按序号取原始值。
+	 */
+	import {
+		PickerOption,
+		PICKER_OPTION_HEIGHT,
+		PICKER_VISIBLE_OPTION_NUM,
+		buildDisabledFlags
+	} from '../m-picker/picker.uts'
+	import { DatePickerOption } from '../m-date-picker/date-picker.uts'
+	import MDatePickerColumn from '../m-date-picker/m-date-picker-column.uvue'
+
+	type Props = {
+		/** 列选项（null 按空列渲染） */
+		options?: PickerOption[]
+		/** 选中项下标（受控，0 起） */
+		index?: number
+		/** 列下标（事件回传用） */
+		columnIndex?: number
+		/** 选项行高 px（0 用默认 44） */
+		optionHeight?: number
+		/** 可见选项个数（0 用默认 6） */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms */
+		swipeDuration?: number
+		/** 只读 */
+		readonly?: boolean
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		options: null,
+		index: 0,
+		columnIndex: 0,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		readonly: false
+	})
+
+	const emit = defineEmits<{
+		/** 吸附完成且下标变化：columnIndex 列下标，index 选项下标 */
+		change: [columnIndex: number, index: number]
+	}>()
+
+	/** 生效行高 */
+	const optionHeightValue = computed<number>(() => {
+		return props.optionHeight > 0 ? props.optionHeight : PICKER_OPTION_HEIGHT
+	})
+
+	/** 生效可见选项个数 */
+	const visibleOptionNumValue = computed<number>(() => {
+		return props.visibleOptionNum > 0 ? props.visibleOptionNum : PICKER_VISIBLE_OPTION_NUM
+	})
+
+	/** 原始选项列表（null 按空列渲染） */
+	const optionList = computed<PickerOption[]>(() => {
+		const list = props.options
+		if (list != null) {
+			return list
+		}
+		const empty: PickerOption[] = []
+		return empty
+	})
+
+	/** 列组件文本（value 存列内序号） */
+	const texts = computed<DatePickerOption[]>(() => {
+		const list: DatePickerOption[] = []
+		for (let i = 0; i < optionList.value.length; i++) {
+			list.push({ value: i.toString(), text: optionList.value[i].label } as DatePickerOption)
+		}
+		return list
+	})
+
+	/** 禁用标记 */
+	const disabledFlags = computed<boolean[]>(() => buildDisabledFlags(optionList.value))
+
+	/**
+	 * 取原始选项：越界返回占位对象
+	 */
+	function optionOf(rowIndex: number): PickerOption {
+		const list = optionList.value
+		if (rowIndex >= 0 && rowIndex < list.length) {
+			return list[rowIndex]
+		}
+		return { label: '', value: '' } as PickerOption
+	}
+
+	/**
+	 * 列切换：仅上抛下标，由父级更新受控值
+	 */
+	function onColumnChange(columnIndex: number, index: number) {
+		emit('change', columnIndex, index)
+	}
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 列容器：横向等分（列组件自身带 flex: 1 / height: 100%） */
+	.m-picker-view-column {
+		flex: 1;
+		height: 100%;
+	}
+</style>

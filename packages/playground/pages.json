@@ -210,6 +210,30 @@
 					}
 				},
 				{
+					"path": "picker-input/picker-input",
+					"style": {
+						"navigationBarTitleText": "选择器输入框 PickerInput"
+					}
+				},
+				{
+					"path": "picker-popup/picker-popup",
+					"style": {
+						"navigationBarTitleText": "选择器弹出框 PickerPopup"
+					}
+				},
+				{
+					"path": "picker-view/picker-view",
+					"style": {
+						"navigationBarTitleText": "选择器纯视图 PickerView"
+					}
+				},
+				{
+					"path": "picker/picker",
+					"style": {
+						"navigationBarTitleText": "选择器 Picker"
+					}
+				},
+				{
 					"path": "popup/popup",
 					"style": {
 						"navigationBarTitleText": "弹出层 Popup"

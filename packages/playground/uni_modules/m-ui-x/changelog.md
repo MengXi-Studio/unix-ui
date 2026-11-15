@@ -5,6 +5,9 @@
 - 新增 `m-time-picker` / `m-time-picker-popup` / `m-time-picker-input` 时间三件套：时 / 分 / 秒滚轮列（`columns-type` 任意组合，默认时-分），值为 24 小时制 `'HH:mm'` / `'HH:mm:ss'` 字符串；`minute-step` / `second-step` 步长（1-59），`min-time` / `max-time` 同日选项收敛（单端配置自动补齐，跨天视为不约束），`hour-cycle` 24 / 12（12 制自动附加「上午 / 下午」列，值仍为 24 制）；复用 `m-date-picker-column` 滚轮；`toolbar` / `title` / `confirm` / `cancel` / `option` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue`
 - 新增 `m-time-range-picker` / `m-time-range-picker-popup` / `m-time-range-picker-input` 时间范围三件套：开始 / 结束两段标题（`tabs` 可自定义）复用一个时间滚轮，两端字符串各自维护，确认时自动交换为升序；两端共用列组合 / 步长 / 区间 / 制式；`header` / `title` / `footer` / `confirm` / `cancel` 插槽；输入框以「起 - 止」展示并支持清空
 - 新增 `$m-time-picker-*` / `$m-time-picker-input-*` / `$m-time-range-picker-*` / `$m-time-range-picker-input-*` 主题变量段
+- 新增 `m-picker` / `m-picker-popup` / `m-picker-input` 通用选择器三件套：`columns` 一维 / 二维自动识别（一维按单列、元素为数组按多列），选项统一 `{ label, value, children?, disabled? }`；一维含 `children` 走级联（切换上层后下层重建并回到首项）；值单列标量、多列 / 级联数组，事件回传 `(value, selectedOptions, indexes)`；禁用项灰显 / 吸附跳过 / 点击不选中；`toolbar` / `title` / `cancel` / `confirm` / `option` / `columns-top` / `columns-bottom` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue` / `getSelectedIndexes`
+- 新增 `m-picker-view` / `m-picker-view-column` 索引受控纯视图：`value: number[]`，无工具栏、无数值换算、不展开级联，`option` 插槽可自定义选项内容
+- `m-date-picker-column` 新增可选 `disabledOptions`（默认 null）：禁用项灰显、点击忽略、吸附跳过，日期 / 时间选择不传即行为不变
 
 ## 0.5.3 (2026-11-15)
 

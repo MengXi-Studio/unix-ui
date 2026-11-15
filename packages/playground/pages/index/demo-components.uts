@@ -246,6 +246,30 @@ export const demoGroups: DemoGroup[] = [
 				desc: '文本输入框，支持六种类型、清除图标、明文切换、格式化与数字精度收敛、字数统计、多行自适应、前后插槽与紧凑布局联动。'
 			},
 			{
+				name: 'picker',
+				zhName: '选择器',
+				enName: 'Picker',
+				desc: '通用滚轮选择器：一维 / 二维列数据自动识别，支持 children 级联、禁用项、对象选项与 columns-top / columns-bottom 插槽。'
+			},
+			{
+				name: 'picker-input',
+				zhName: '选择器输入框',
+				enName: 'PickerInput',
+				desc: 'm-input 与选择器弹出框的表单组合，点击触发选择，展示各列选中项文本，支持清空与禁用。'
+			},
+			{
+				name: 'picker-popup',
+				zhName: '选择器弹出框',
+				enName: 'PickerPopup',
+				desc: 'm-popup 与通用选择器面板的弹层组合，v-model 控制显隐与选中值，确认 / 取消后自动关闭。'
+			},
+			{
+				name: 'picker-view',
+				zhName: '选择器纯视图',
+				enName: 'PickerView',
+				desc: '无工具栏的索引受控多列滚轮，配合 m-picker-view-column 与 option 插槽，可嵌入自定义容器。'
+			},
+			{
 				name: 'time-picker',
 				zhName: '时间选择',
 				enName: 'TimePicker',

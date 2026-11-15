@@ -74,6 +74,14 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		loading: 'pages-sub/loading/loading'
 		/** 遮罩层 Overlay */
 		overlay: 'pages-sub/overlay/overlay'
+		/** 选择器输入框 PickerInput */
+		'picker-input': 'pages-sub/picker-input/picker-input'
+		/** 选择器弹出框 PickerPopup */
+		'picker-popup': 'pages-sub/picker-popup/picker-popup'
+		/** 选择器纯视图 PickerView */
+		'picker-view': 'pages-sub/picker-view/picker-view'
+		/** 选择器 Picker */
+		picker: 'pages-sub/picker/picker'
 		/** 弹出层 Popup */
 		popup: 'pages-sub/popup/popup'
 		/** 间距 Space */

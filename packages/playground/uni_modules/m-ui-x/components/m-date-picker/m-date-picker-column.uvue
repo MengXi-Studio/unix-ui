@@ -56,6 +56,8 @@
 		swipeDuration: number
 		/** 只读：不响应滚动切换 */
 		readonly: boolean
+		/** 禁用项标记（按索引对齐 options；null 表示无禁用；通用 Picker 使用，日期 / 时间不传） */
+		disabledOptions?: boolean[]
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
@@ -65,7 +67,8 @@
 		optionHeight: 44,
 		visibleOptionNum: 6,
 		swipeDuration: 200,
-		readonly: false
+		readonly: false,
+		disabledOptions: null
 	})
 
 	const emit = defineEmits<{
@@ -113,17 +116,65 @@
 	})
 
 	/**
-	 * 选项容器类名：按与激活项的间距分三档透明度（远处淡出，替代无法使用的覆盖遮罩）
+	 * 选项是否禁用（disabledOptions 未传时一律可用）
+	 */
+	function isDisabled(index: number): boolean {
+		const flags = props.disabledOptions
+		if (flags == null || index < 0 || index >= flags.length) {
+			return false
+		}
+		return flags[index]
+	}
+
+	/**
+	 * 从目标下标出发寻找最近可用项：先向下，再向上，全禁用时回退原下标
+	 */
+	function nearestEnabledIndex(index: number): number {
+		const count = optionList.value.length
+		if (count == 0) {
+			return 0
+		}
+		let target = index
+		if (target < 0) {
+			target = 0
+		}
+		if (target > count - 1) {
+			target = count - 1
+		}
+		if (!isDisabled(target)) {
+			return target
+		}
+		for (let i = target + 1; i < count; i++) {
+			if (!isDisabled(i)) {
+				return i
+			}
+		}
+		for (let i = target - 1; i >= 0; i--) {
+			if (!isDisabled(i)) {
+				return i
+			}
+		}
+		return target
+	}
+
+	/**
+	 * 选项容器类名：按与激活项的间距分三档透明度（远处淡出，替代无法使用的覆盖遮罩）；
+	 * 禁用项追加禁用类（灰显）
 	 */
 	function optionClass(index: number): string {
 		const distance = Math.abs(index - activeIndex.value)
+		let cls = 'm-date-picker__option'
 		if (distance == 0) {
-			return 'm-date-picker__option m-date-picker__option--active'
+			cls += ' m-date-picker__option--active'
+		} else if (distance == 1) {
+			cls += ' m-date-picker__option--near'
+		} else {
+			cls += ' m-date-picker__option--far'
 		}
-		if (distance == 1) {
-			return 'm-date-picker__option m-date-picker__option--near'
+		if (isDisabled(index)) {
+			cls += ' m-date-picker__option--disabled'
 		}
-		return 'm-date-picker__option m-date-picker__option--far'
+		return cls
 	}
 
 	/**
@@ -210,6 +261,8 @@
 		if (index > count - 1) {
 			index = count - 1
 		}
+		// 落在禁用项上时吸附到最近可用项
+		index = nearestEnabledIndex(index)
 		requestScroll(index)
 		activeIndex.value = index
 		if (index != props.modelValue) {
@@ -218,10 +271,10 @@
 	}
 
 	/**
-	 * 点击选项：只读忽略；已选中项仅回正不派发
+	 * 点击选项：只读或禁用项忽略；已选中项仅回正不派发
 	 */
 	function onOptionClick(index: number) {
-		if (props.readonly) {
+		if (props.readonly || isDisabled(index)) {
 			return
 		}
 		if (index == props.modelValue) {
@@ -294,6 +347,11 @@
 	}
 	.m-date-picker__option--far {
 		opacity: 0.3;
+	}
+
+	/* 禁用项：进一步淡出 + 文字置灰（仅通用 Picker 传入 disabledOptions 时生效） */
+	.m-date-picker__option--disabled {
+		opacity: 0.2;
 	}
 
 	/* ========== 选项文本 ========== */

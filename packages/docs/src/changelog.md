@@ -2,19 +2,25 @@
 
 ## [0.6.0] - 2026-11-15
 
-新增日期选择三件套 `m-date-picker` / `m-date-picker-popup` / `m-date-picker-input`。
+新增日期、日期范围、时间、时间范围、通用选择器与农历选择等系列组件，并完成日期 / 时间面板向 `m-picker` 的内部迁移（对外契约不变）。
 
 ### 新增
+
+**日期选择**
 
 - **m-date-picker 日期选择面板**：年 / 月 / 日三列滚轮，滚动停止后吸附到最近选项并派发 `change(date, columnIndex)`；`columns-type` 支持 `year` / `month` / `day` 任意顺序组合（未包含的分量按 1 月 1 日归一）；`min-date` / `max-date` 默认前后十年，年界决定月界、已选年月决定日界，越界自动收敛；`filter(type, options, values)` 过滤选项、`formatter(type, option)` 改写文案；`option-height` / `visible-option-num` 调整滚轮，`swipe-duration` 为滚动停止判定时长，`readonly` 滚轮回弹、`loading` 覆盖阻断；顶部栏 `show-toolbar` / `title` / `confirm-button-text` / `cancel-button-text` 与 `toolbar` / `title` / `confirm` / `cancel` / `option` / `columns-top` / `columns-bottom` 插槽（小程序端 `option` 回退内置文本）；expose `confirm` / `resetSelection` / `getSelectedDate`；`v-model:value` 绑定 `Date`（详见 [DatePicker](/components/date-picker)）
 - **m-date-picker-popup 日期选择弹出框**：`m-popup` + `m-date-picker` 组合，`v-model:show` 受控显隐，确认 / 取消后自动关闭并回写 `update:show`；透传方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长，`reset-on-open` 控制复开时是否复位为 `value`；弹层生命周期与插槽逐项转发（详见 [DatePickerPopup](/components/date-picker-popup)）
 - **m-date-picker-input 日期输入框**：`m-input` 只读触发器 + 弹层，点击整区打开、确认后经 `v-model:value` 回写；展示格式随 `columns-type` 派生（`YYYY` / `YYYY-MM` / `YYYY-MM-DD` / `MM-DD`）；自绘清空按钮回写 `null` 并派发 `clear`，`disabled` / `clearable` / `border` / `inlaid` 可配（详见 [DatePickerInput](/components/date-picker-input)）
 - 新增 `$m-date-picker-option-*`（选项文本）与 `$m-date-picker-input-*`（触发层 / 清空按钮）主题变量段
 
-- 新增 `$m-date-range-picker-*`（背景、两段标题、激活下划线、底部按钮区）与 `$m-date-range-picker-input-*`（触发层 / 清空按钮）主题变量段
+**日期范围**
+
 - **m-date-range-picker 日期范围面板**：开始 / 结束两段标题（`tabs` 可自定义）复用同一套日期滚轮，两端值分别维护；确认时若起点晚于终点自动交换为升序，`change` 实时派发两端快照与当前编辑端下标；`columns-type` / `min-date` / `max-date` / `filter` / `formatter` 沿用日期选择契约；`header`（快捷选项）/ `title`（整体替换两段标题，作用域 `tabs` / `activeIndex`）/ `footer` / `confirm` / `cancel` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue`；首版仅年 / 月 / 日粒度（详见 [DateRangePicker](/components/date-range-picker)）
 - **m-date-range-picker-popup 日期范围弹出框**：`m-popup` + 范围面板组合，`v-model:show` / `v-model:value` 受控，确认 / 取消后自动关闭；透传方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长，`reset-on-open` 控制复开复位（详见 [DateRangePickerPopup](/components/date-range-picker-popup)）
 - **m-date-range-picker-input 日期范围输入框**：`m-input` 只读触发器 + 范围弹层，点击整区打开；`outlet-format` 自定义「起 - 止」展示格式（缺省按列组合派生 `YYYY-MM-DD`）；自绘清空按钮回写 `null` 并派发 `clear`，`disabled` / `clearable` / `border` / `inlaid` 可配（详见 [DateRangePickerInput](/components/date-range-picker-input)）
+- 新增 `$m-date-range-picker-*`（背景、两段标题、激活下划线、底部按钮区）与 `$m-date-range-picker-input-*`（触发层 / 清空按钮）主题变量段
+
+**时间选择**
 
 - 新增 `$m-time-picker-input-*` / `$m-time-range-picker-*` / `$m-time-range-picker-input-*` 主题变量段（时间面板视觉复用 `$m-picker-*`）
 - **m-time-picker 时间选择面板**：时 / 分 / 秒滚轮列（`columns-type` 任意组合，默认时-分），值按 24 小时制输出 `'HH:mm'` / `'HH:mm:ss'`；`minute-step` / `second-step` 步长，`min-time` / `max-time` 同日收敛（单端配置自动补齐，跨天视为不约束），`hour-cycle` 24 / 12（12 制自动附加「上午 / 下午」列）；`toolbar` / `title` / `confirm` / `cancel` / `option` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue`（详见 [TimePicker](/components/time-picker)）
@@ -24,15 +30,29 @@
 - **m-time-range-picker-popup 时间范围弹出框**：`m-popup` + 时间范围面板组合，确认 / 取消后自动关闭（详见 [TimeRangePickerPopup](/components/time-range-picker-popup)）
 - **m-time-range-picker-input 时间范围输入框**：`m-input` 只读触发器 + 范围弹层，确认后以「起 - 止」回填，支持清空与禁用（详见 [TimeRangePickerInput](/components/time-range-picker-input)）
 
+**通用选择器**
+
 - 新增 `$m-picker-*` / `$m-picker-input-*` / `$m-picker-view-*` 主题变量段
 - **m-picker 通用选择器**：`columns` 一维 / 二维自动识别（单列 / 多列），选项 `{ label, value, children?, disabled? }`；一维含 `children` 走级联；值单列标量、多列 / 级联数组，事件回传 `(value, selectedOptions, indexes)`；禁用项灰显 / 吸附跳过 / 点击不选中；`toolbar` / `title` / `cancel` / `confirm` / `option` / `columns-top` / `columns-bottom` 插槽（详见 [Picker](/components/picker)）
 - **m-picker-popup 选择器弹出框**：`m-popup` + 通用选择器面板组合，确认 / 取消后自动关闭（详见 [PickerPopup](/components/picker-popup)）
 - **m-picker-input 选择器输入框**：`m-input` 只读触发器 + 弹层，展示各列 label 以「 / 」连接，支持清空与禁用（详见 [PickerInput](/components/picker-input)）
 - **m-picker-view / m-picker-view-column 选择器纯视图**：索引受控（`number[]`）、无工具栏、不展开级联，`option` 插槽自定义选项内容（详见 [PickerView](/components/picker-view)）
 - `m-date-picker-column` 新增可选 `disabledOptions`：禁用项灰显、点击忽略、吸附跳过（日期 / 时间选择不传即行为不变）
-- **面板内部迁移为 m-picker 组合**：`m-date-picker` / `m-time-picker` 的顶部栏、选中框、滚轮容器与加载遮罩改由 `m-picker` 承担，自身仅保留列构建与事件回写；对外 props / events / 插槽 / 实例方法全部不变，面板级主题变量收敛为 `$m-picker-*`（`$m-date-picker-*` 仅保留选项文本三项，`$m-time-picker-*` 不再提供面板变量）
-- **新增农历选择三件套**：`m-lunar-picker` / `m-lunar-picker-popup` / `m-lunar-picker-input`，基于 `utils/date` 的农历能力提供年 / 月（含闰月）/ 日滚轮选择，支持干支生肖年列、列组合、min/max 限域、filter / formatter 与只读加载态；对外值仍为公历 `Date`，面板视觉复用 `$m-picker-*`，新增输入框变量段 `$m-lunar-picker-input-*`
+
+**农历选择**
+
+- **m-lunar-picker 农历选择面板**：农历年 / 月（含闰月）/ 日三列滚轮，`columns-type` 支持任意组合；月列按 `getLunarMonthSequence` 生成（闰月紧随其月，文案形如「闰二月」），日列按农历月长 29 / 30 生成；`show-gan-zhi` / `show-zodiac` 为年列追加干支与生肖；`min-date` / `max-date` 为公历日期，列边界反向映射到农历并默认覆盖农历表 1900–2100，越界静默钳制；`filter` / `formatter` 与顶部栏 / 插槽契约同日期面板，`option` 插槽回退为 `{ text, value }` 口径；`v-model:value` 与 `change(date, columnIndex)` / `confirm(date)` 均为公历 `Date`；expose `confirm` / `resetSelection` / `getSelectedDate` / `getSelectedLunarText`（详见 [LunarPicker](/components/lunar-picker)）
+- **m-lunar-picker-popup 农历选择弹出框**：`m-popup` + 农历面板组合，`v-model:show` / `v-model:value` 受控，确认 / 取消后自动关闭；透传方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长，`reset-on-open` 控制复开复位（详见 [LunarPickerPopup](/components/lunar-picker-popup)）
+- **m-lunar-picker-input 农历输入框**：`m-input` 只读触发器 + 农历弹层，展示文本按列组合派生（如 `2026年六月十五`，开启 `show-gan-zhi` 为 `丙午年六月十五`）；自绘清空按钮回写 `null` 并派发 `clear`，`disabled` / `clearable` / `border` / `inlaid` 可配（详见 [LunarPickerInput](/components/lunar-picker-input)）
+- 新增 `$m-lunar-picker-input-*`（触发层 / 清空按钮）主题变量段；面板视觉复用 `$m-picker-*`，列文本沿用 `$m-date-picker-option-*`
+
+**日期工具**
+
 - `utils/date` 新增导出 `getLunarMonthSequence(year)`、`LUNAR_START_YEAR`、`LUNAR_END_YEAR`
+
+### 变更
+
+- **面板内部迁移为 m-picker 组合**：`m-date-picker` / `m-time-picker` 的顶部栏、选中框、滚轮容器与加载遮罩改由 `m-picker` 承担，自身仅保留列构建与事件回写；对外 props / events / 插槽 / 实例方法全部不变，无 API 变更；面板级主题变量收敛为 `$m-picker-*`（`$m-date-picker-*` 仅保留选项文本三项，`$m-time-picker-*` 不再提供面板变量）
 
 ## [0.5.3] - 2026-11-15
 

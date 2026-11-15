@@ -1,4 +1,9 @@
-# LunarPicker
+---
+title: LunarPicker
+subtitle: LunarPicker
+demo: pages-sub/lunar-picker/lunar-picker
+added: 0.6.0
+---
 
 A wheel picker for the Chinese lunar calendar (year / month including leap month / day). The external value is still a Gregorian `Date`; the lunar calendar only affects the columns and display text, so it can be swapped with `DatePicker` or mixed in the same form.
 

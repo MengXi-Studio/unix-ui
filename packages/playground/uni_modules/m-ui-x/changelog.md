@@ -8,8 +8,11 @@
 - 新增 `m-picker` / `m-picker-popup` / `m-picker-input` 通用选择器三件套：`columns` 一维 / 二维自动识别（一维按单列、元素为数组按多列），选项统一 `{ label, value, children?, disabled? }`；一维含 `children` 走级联（切换上层后下层重建并回到首项）；值单列标量、多列 / 级联数组，事件回传 `(value, selectedOptions, indexes)`；禁用项灰显 / 吸附跳过 / 点击不选中；`toolbar` / `title` / `cancel` / `confirm` / `option` / `columns-top` / `columns-bottom` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue` / `getSelectedIndexes`
 - 新增 `m-picker-view` / `m-picker-view-column` 索引受控纯视图：`value: number[]`，无工具栏、无数值换算、不展开级联，`option` 插槽可自定义选项内容
 - `m-date-picker-column` 新增可选 `disabledOptions`（默认 null）：禁用项灰显、点击忽略、吸附跳过，日期 / 时间选择不传即行为不变
-- `m-date-picker` / `m-time-picker` 面板内部迁移为 `m-picker` 组合：顶部栏 / 选中框 / 滚轮容器 / 加载遮罩由通用选择器承担，对外 props / events / 插槽 / 实例方法不变；面板级主题变量收敛为 `$m-picker-*`（`$m-date-picker-*` 仅保留选项文本三项，`$m-time-picker-*` 不再提供面板变量）
-- 新增农历选择三件套 `m-lunar-picker` / `m-lunar-picker-popup` / `m-lunar-picker-input`：农历年 / 月（含闰月）/ 日滚轮，支持干支生肖年列、列组合、min/max 限域、filter / formatter、只读加载态；对外值仍为公历 `Date`，新增 `$m-lunar-picker-input-*` 变量段
+- 变更：`m-date-picker` / `m-time-picker` 面板内部迁移为 `m-picker` 组合（无 API 变更）：顶部栏 / 选中框 / 滚轮容器 / 加载遮罩由通用选择器承担，对外 props / events / 插槽 / 实例方法不变；面板级主题变量收敛为 `$m-picker-*`（`$m-date-picker-*` 仅保留选项文本三项，`$m-time-picker-*` 不再提供面板变量）
+- 新增 `m-lunar-picker` 农历选择面板：农历年 / 月（含闰月，月序负值）/ 日三列滚轮，`columns-type` 任意组合；月列按 `getLunarMonthSequence` 生成（闰月紧随其月，文案形如「闰二月」），日列按农历月长 29 / 30 生成；`show-gan-zhi` / `show-zodiac` 为年列追加干支与生肖；`min-date` / `max-date` 为公历日期，列边界反向映射并默认覆盖农历表 1900–2100，越界静默钳制；`filter` / `formatter`、顶部栏与插槽契约同日期面板（`option` 插槽回退 `{ text, value }` 口径）；`v-model:value` 与 `change(date, columnIndex)` / `confirm(date)` 均为公历 `Date`；expose `confirm` / `resetSelection` / `getSelectedDate` / `getSelectedLunarText`
+- 新增 `m-lunar-picker-popup` 农历选择弹出框：`m-popup` + 农历面板组合，`v-model:show` / `v-model:value` 受控，确认 / 取消后自动关闭；透传方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长，`reset-on-open` 控制复开复位
+- 新增 `m-lunar-picker-input` 农历输入框：`m-input` 只读触发器 + 农历弹层，展示文本按列组合派生（如 `2026年六月十五`，开启 `show-gan-zhi` 为 `丙午年六月十五`）；自绘清空按钮回写 `null` 并派发 `clear`，`disabled` / `clearable` / `border` / `inlaid` 可配
+- 新增 `$m-lunar-picker-input-*`（触发层 / 清空按钮）主题变量段；面板视觉复用 `$m-picker-*`，列文本沿用 `$m-date-picker-option-*`
 - `utils/date` 新增导出 `getLunarMonthSequence(year)` / `LUNAR_START_YEAR` / `LUNAR_END_YEAR`
 
 ## 0.5.3 (2026-11-15)

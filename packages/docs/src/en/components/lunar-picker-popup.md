@@ -1,4 +1,9 @@
-# LunarPickerPopup
+---
+title: LunarPickerPopup
+subtitle: LunarPickerPopup
+demo: pages-sub/lunar-picker-popup/lunar-picker-popup
+added: 0.6.0
+---
 
 `Popup` + `LunarPicker` composition: a bottom sheet lunar wheel that closes automatically after confirm / cancel.
 

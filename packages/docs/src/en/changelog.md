@@ -1,5 +1,59 @@
 # Changelog
 
+## [0.6.0] - 2026-11-15
+
+Adds the date, date range, time, time range, generic picker and lunar picker series, and completes the internal migration of the date / time panels to `m-picker` (no public API changes).
+
+### Added
+
+**Date picker**
+
+- **m-date-picker**: a year / month / day wheel panel that snaps to the nearest option when scrolling stops and emits `change(date, columnIndex)`; `columns-type` accepts `year` / `month` / `day` in any order (missing parts normalize to January 1); `min-date` / `max-date` default to ten years around today, the year range defines the month range and the selected year-month defines the day range, with out-of-range values clamped; `filter(type, options, values)` filters options and `formatter(type, option)` rewrites text; `option-height` / `visible-option-num` / `swipe-duration` tune the wheels, `readonly` snaps back and `loading` blocks interaction; toolbar via `show-toolbar` / `title` / `confirm-button-text` / `cancel-button-text` plus `toolbar` / `title` / `confirm` / `cancel` / `option` / `columns-top` / `columns-bottom` slots (the `option` slot falls back to built-in text on Mini Program); exposes `confirm` / `resetSelection` / `getSelectedDate`; `v-model:value` binds a `Date` (see [DatePicker](/en/components/date-picker))
+- **m-date-picker-popup**: `m-popup` + date picker; `v-model:show` controls visibility and the popup closes automatically after confirm / cancel while emitting `update:show`; forwards position / round / overlay close / safe area / z-index / duration, and `reset-on-open` resets to `value` on open; popup lifecycle events and slots are forwarded item by item (see [DatePickerPopup](/en/components/date-picker-popup))
+- **m-date-picker-input**: `m-input` readonly trigger + popup; tapping the whole area opens it and confirm writes back through `v-model:value`; the display format follows `columns-type` (`YYYY` / `YYYY-MM` / `YYYY-MM-DD` / `MM-DD`); a custom clear button writes `null` and emits `clear`, with `disabled` / `clearable` / `border` / `inlaid` configurable (see [DatePickerInput](/en/components/date-picker-input))
+- New `$m-date-picker-option-*` (option text) and `$m-date-picker-input-*` (trigger / clear button) theme variables
+
+**Date range picker**
+
+- New `$m-date-range-picker-*` (background, two segment titles, active underline, footer button area) and `$m-date-range-picker-input-*` (trigger / clear button) theme variables
+- **m-date-range-picker**: start / end segment titles (customizable via `tabs`) share one date wheel while both values are maintained separately; on confirm the range is swapped to ascending order when start is later than end, and `change` emits both snapshots with the index of the segment being edited; `columns-type` / `min-date` / `max-date` / `filter` / `formatter` follow the date picker contract; `header` (quick options) / `title` (replaces both segment titles, scoped `tabs` / `activeIndex`) / `footer` / `confirm` / `cancel` slots; exposes `confirm` / `resetSelection` / `getSelectedValue`; the first release supports year / month / day granularity only (see [DateRangePicker](/en/components/date-range-picker))
+- **m-date-range-picker-popup**: `m-popup` + range panel; `v-model:show` / `v-model:value` controlled, closing automatically after confirm / cancel; forwards position / round / overlay close / safe area / z-index / duration, and `reset-on-open` resets on open (see [DateRangePickerPopup](/en/components/date-range-picker-popup))
+- **m-date-range-picker-input**: `m-input` readonly trigger + range popup; tapping opens it; `outlet-format` customizes the "start - end" display (defaults to `YYYY-MM-DD` derived from the column combination); a custom clear button writes `null` and emits `clear`, with `disabled` / `clearable` / `border` / `inlaid` configurable (see [DateRangePickerInput](/en/components/date-range-picker-input))
+
+**Time picker**
+
+- New `$m-time-picker-input-*` / `$m-time-range-picker-*` / `$m-time-range-picker-input-*` theme variables (time panel visuals reuse `$m-picker-*`)
+- **m-time-picker**: hour / minute / second wheels (`columns-type` in any combination, default hour-minute), output as 24-hour `'HH:mm'` / `'HH:mm:ss'`; `minute-step` / `second-step`, `min-time` / `max-time` clamp within the same day (a single bound is auto-completed; a cross-day range means no constraint), `hour-cycle` 24 / 12 (12-hour mode adds an AM/PM column); `toolbar` / `title` / `confirm` / `cancel` / `option` slots; exposes `confirm` / `resetSelection` / `getSelectedValue` (see [TimePicker](/en/components/time-picker))
+- **m-time-picker-popup**: `m-popup` + time panel, closing automatically after confirm / cancel; forwards position / round / overlay close / safe area / z-index / duration (see [TimePickerPopup](/en/components/time-picker-popup))
+- **m-time-picker-input**: `m-input` readonly trigger + time popup; confirm fills `HH:mm` (`HH:mm:ss` when seconds are included); a custom clear button writes `null` and emits `clear` (see [TimePickerInput](/en/components/time-picker-input))
+- **m-time-range-picker**: start / end segment titles share one time wheel with both strings maintained separately; on confirm the range is swapped to ascending order; both ends share the column combination / steps / range / hour cycle; `header` / `title` / `footer` / `confirm` / `cancel` slots (see [TimeRangePicker](/en/components/time-range-picker))
+- **m-time-range-picker-popup**: `m-popup` + time range panel, closing automatically after confirm / cancel (see [TimeRangePickerPopup](/en/components/time-range-picker-popup))
+- **m-time-range-picker-input**: `m-input` readonly trigger + range popup; confirm fills "start - end"; supports clearing and disabling (see [TimeRangePickerInput](/en/components/time-range-picker-input))
+
+**Generic picker**
+
+- New `$m-picker-*` / `$m-picker-input-*` / `$m-picker-view-*` theme variables
+- **m-picker**: `columns` auto-detects one-dimensional / two-dimensional data (single / multiple columns); options are `{ label, value, children?, disabled? }`; one-dimensional data with `children` becomes a cascade; the value is a scalar for a single column and an array for multiple columns / cascades, with events returning `(value, selectedOptions, indexes)`; disabled options are greyed out, skipped by snapping and cannot be tapped; `toolbar` / `title` / `cancel` / `confirm` / `option` / `columns-top` / `columns-bottom` slots (see [Picker](/en/components/picker))
+- **m-picker-popup**: `m-popup` + generic picker, closing automatically after confirm / cancel (see [PickerPopup](/en/components/picker-popup))
+- **m-picker-input**: `m-input` readonly trigger + popup; shows each column label joined with " / "; supports clearing and disabling (see [PickerInput](/en/components/picker-input))
+- **m-picker-view / m-picker-view-column**: index-controlled (`number[]`), no toolbar, no cascade expansion, `option` slot for custom option content (see [PickerView](/en/components/picker-view))
+- `m-date-picker-column` gains an optional `disabledOptions` (greyed out, taps ignored, snapping skipped; date / time pickers keep their previous behavior when omitted)
+
+**Lunar picker**
+
+- **m-lunar-picker**: year / month (including leap month) / day wheels, with `columns-type` supporting any combination; the month column comes from `getLunarMonthSequence` (a leap month follows its month and reads like "Leap 2nd Month") and the day column follows the lunar month length of 29 / 30; `show-gan-zhi` / `show-zodiac` append the sexagenary cycle and zodiac to the year column; `min-date` / `max-date` are Gregorian dates whose boundaries are mapped back to lunar, defaulting to the full 1900–2100 lunar table with out-of-range values clamped silently; `filter` / `formatter`, toolbar and slots follow the date picker contract, with the `option` slot falling back to `{ text, value }`; `v-model:value`, `change(date, columnIndex)` and `confirm(date)` all use a Gregorian `Date`; exposes `confirm` / `resetSelection` / `getSelectedDate` / `getSelectedLunarText` (see [LunarPicker](/en/components/lunar-picker))
+- **m-lunar-picker-popup**: `m-popup` + lunar panel; `v-model:show` / `v-model:value` controlled, closing automatically after confirm / cancel; forwards position / round / overlay close / safe area / z-index / duration, and `reset-on-open` resets on open (see [LunarPickerPopup](/en/components/lunar-picker-popup))
+- **m-lunar-picker-input**: `m-input` readonly trigger + lunar popup; the display text follows the column combination (e.g. `2026年六月十五`, or `丙午年六月十五` with `show-gan-zhi`); a custom clear button writes `null` and emits `clear`, with `disabled` / `clearable` / `border` / `inlaid` configurable (see [LunarPickerInput](/en/components/lunar-picker-input))
+- New `$m-lunar-picker-input-*` (trigger / clear button) theme variables; panel visuals reuse `$m-picker-*` and option text reuses `$m-date-picker-option-*`
+
+**Date utilities**
+
+- `utils/date` exports `getLunarMonthSequence(year)`, `LUNAR_START_YEAR` and `LUNAR_END_YEAR`
+
+### Changed
+
+- **Date / time panels now compose m-picker internally**: the toolbar, selection frame, wheel container and loading overlay of `m-date-picker` / `m-time-picker` are provided by `m-picker`, leaving only column building and event write-back in the panels; all public props / events / slots / instance methods are unchanged (no API change); panel-level theme variables are consolidated into `$m-picker-*` (`$m-date-picker-*` keeps only the three option-text variables and `$m-time-picker-*` no longer provides panel variables)
+
 ## [0.5.3] - 2026-11-15
 
 Fixes `m-calendar` flooding the WeChat Mini Program console with duplicate-slot warnings caused by named slots declared inside a `v-for` ([#17](https://github.com/MengXi-Studio/unix-ui/issues/17)).

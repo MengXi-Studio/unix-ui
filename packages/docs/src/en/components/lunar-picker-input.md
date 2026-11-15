@@ -1,4 +1,9 @@
-# LunarPickerInput
+---
+title: LunarPickerInput
+subtitle: LunarPickerInput
+demo: pages-sub/lunar-picker-input/lunar-picker-input
+added: 0.6.0
+---
 
 `Input` + `LunarPickerPopup` form composition: click the field to open the lunar sheet; after confirm the field shows the lunar text.
 

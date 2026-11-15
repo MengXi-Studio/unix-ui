@@ -1,4 +1,9 @@
-# LunarPickerPopup 农历选择弹出框
+---
+title: LunarPickerPopup
+subtitle: 农历选择弹出框
+demo: pages-sub/lunar-picker-popup/lunar-picker-popup
+added: 0.6.0
+---
 
 `Popup` + `LunarPicker` 的弹层组合：底部弹出农历滚轮，确认 / 取消后自动关闭。
 

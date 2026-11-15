@@ -1,4 +1,9 @@
-# LunarPicker 农历选择
+---
+title: LunarPicker
+subtitle: 农历选择
+demo: pages-sub/lunar-picker/lunar-picker
+added: 0.6.0
+---
 
 农历年 / 月（含闰月）/ 日滚轮选择面板。对外值仍是公历 `Date`，农历只体现在列与文案上，便于与 `DatePicker` 互换或同表单混用。
 

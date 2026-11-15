@@ -1,4 +1,9 @@
-# LunarPickerInput 农历输入框
+---
+title: LunarPickerInput
+subtitle: 农历输入框
+demo: pages-sub/lunar-picker-input/lunar-picker-input
+added: 0.6.0
+---
 
 `Input` + `LunarPickerPopup` 的表单组合：点击整区打开农历弹层，确认后按农历文案回填。
 

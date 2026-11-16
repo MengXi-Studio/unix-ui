@@ -12,10 +12,35 @@ export type PickerOption = {
 	label: string
 	/** 业务值（字符串或数字，回传保留原类型） */
 	value: string | number
-	/** 级联子项（存在即视为级联列） */
-	children?: PickerOption[]
+	/**
+	 * 级联子项（存在即视为级联列）
+	 *
+	 * 声明为 UTSJSONObject[] 而非 PickerOption[]：Kotlin 的 typealias 不支持递归类型，
+	 * 自引用会让整个类型在 Android 端退化为 Any?（云打包 compileReleaseKotlin 失败）。
+	 * 调用方仍可直接传对象字面量数组，读取时经 toPickerOptions 还原。
+	 */
+	children?: UTSJSONObject[]
 	/** 是否禁用（灰显、滚动跳过、点击不选中） */
 	disabled?: boolean
+}
+
+/**
+ * 级联子项还原：把 UTSJSONObject[] 逐项断言为 PickerOption[]
+ *
+ * 配合 PickerOption.children 的非递归声明使用，避免 Kotlin 端类型丢失。
+ */
+export function toPickerOptions(raws: UTSJSONObject[] | null): PickerOption[] {
+	const result: PickerOption[] = []
+	if (raws == null) {
+		return result
+	}
+	for (let i = 0; i < raws.length; i++) {
+		const option = raws[i] as PickerOption
+		if (option != null) {
+			result.push(option)
+		}
+	}
+	return result
 }
 
 /** 列数据：一维（单列或级联根）或二维（多列） */
@@ -219,7 +244,7 @@ export function resolveDisplayLabels(columns: PickerColumns | null, value: Picke
 			if (children == null || children.length == 0) {
 				break
 			}
-			options = children
+			options = toPickerOptions(children)
 			depth++
 		}
 		return labels

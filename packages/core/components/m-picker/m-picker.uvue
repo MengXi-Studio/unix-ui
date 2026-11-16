@@ -81,6 +81,7 @@
 		isMultiColumn,
 		isCascadeColumns,
 		toColumnMatrix,
+		toPickerOptions,
 		valueToTextList,
 		findIndexByValue,
 		nearestEnabledIndex,
@@ -205,7 +206,7 @@
 			if (children == null || children.length == 0) {
 				break
 			}
-			options = children
+			options = toPickerOptions(children)
 			depth++
 		}
 		return levels
@@ -233,7 +234,7 @@
 				if (children == null || children.length == 0) {
 					break
 				}
-				options = children
+				options = toPickerOptions(children)
 				depth++
 			}
 			return result
@@ -268,7 +269,7 @@
 			if (children == null || children.length == 0) {
 				break
 			}
-			options = children
+			options = toPickerOptions(children)
 			depth++
 		}
 		return levels

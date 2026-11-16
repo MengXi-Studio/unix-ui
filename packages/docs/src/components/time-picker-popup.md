@@ -113,7 +113,7 @@ const value = ref<string | null>('09:30')
 | title | 标题内容 |
 | confirm | 确认按钮内容 |
 | cancel | 取消按钮内容 |
-| option | 选项内容（作用域：`option`、`index`） |
+| option | 选项内容（作用域：`option`、`index`；仅 Web 生效，App / 小程序端回退内置文本） |
 
 ## 主题定制
 

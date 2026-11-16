@@ -58,8 +58,8 @@
 			<template v-if="$slots['cancel'] != null" #cancel>
 				<slot name="cancel"></slot>
 			</template>
-			<!-- #ifndef MP -->
-			<!-- 小程序端列选项在 v-for 内不声明具名插槽（#17），无需转发 -->
+			<!-- #ifdef WEB -->
+			<!-- 选项插槽仅 Web 转发：App 端面板不接收该插槽，小程序端同名插槽仅首个生效（#17） -->
 			<template v-if="$slots['option'] != null" #option="{ option, index }">
 				<slot name="option" :option="option" :index="index"></slot>
 			</template>

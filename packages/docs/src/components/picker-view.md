@@ -36,7 +36,7 @@ indexes.value = [1, 1, 1]
 
 ### 自定义选项内容 {#demo-slots}
 
-`option` 插槽作用域含原始选项与行列下标；小程序端回退内置文本渲染。
+`option` 插槽作用域含原始选项与行列下标；仅 Web 端生效，App / 小程序端回退内置文本渲染。
 
 ```vue
 <m-picker-view v-model:value="indexes" :columns="statusOptions">
@@ -88,7 +88,7 @@ view.value?.$callMethod('getSelectedIndexes')
 
 | 名称 | 说明 |
 | --- | --- |
-| option | 选项内容（作用域：`option`、`index`、`rowIndex`、`columnIndex`） |
+| option | 选项内容（作用域：`option`、`index`、`rowIndex`、`columnIndex`；仅 Web 生效，App / 小程序端回退内置文本） |
 
 ### PickerViewColumn
 

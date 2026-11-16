@@ -108,7 +108,7 @@ const suffixFormatter = (type: string, option: DatePickerOption): DatePickerOpti
 
 ### Slots {#demo-slots}
 
-Supports `toolbar` (replaces the whole toolbar), `title` / `confirm` / `cancel` (partial replacement), `option` (scoped: `option`, `index`) and `columns-top` / `columns-bottom`.
+Supports `toolbar` (replaces the whole toolbar), `title` / `confirm` / `cancel` (partial replacement), `option` (Web only; scoped: `option`, `index`) and `columns-top` / `columns-bottom`.
 
 ```vue
 <m-date-picker :columns-type="['year', 'month']">
@@ -124,7 +124,7 @@ Supports `toolbar` (replaces the whole toolbar), `title` / `confirm` / `cancel` 
 </m-date-picker>
 ```
 
-> **Note**: In WeChat Mini Program only the first slot with a given name takes effect per component instance. `option` is declared repeatedly inside the option `v-for`, so it is not rendered on Mini Program (avoiding duplicate-slot warnings); use `formatter` to change option text instead. Web and App behavior is unchanged.
+> **Note**: The `option` slot works on Web only. On App the slot scope index is typed `Any?`, which cannot be passed as a `number` parameter and fails Kotlin compilation; on Mini Program a repeated slot name inside `v-for` only renders the first one and emits duplicate-slot warnings. Both platforms fall back to the built-in text — use `formatter` to change option text instead.
 
 ### Readonly and loading {#demo-states}
 
@@ -194,7 +194,7 @@ Call through a template ref (uvue components are invoked via `$callMethod`).
 | title | Toolbar title |
 | confirm | Confirm button content |
 | cancel | Cancel button content |
-| option | Option content (scoped: `option`, `index`; falls back to built-in text on Mini Program) |
+| option | Option content (scoped: `option`, `index`; Web only, falls back to built-in text on App / Mini Program) |
 | columns-top | Content above the wheel area |
 | columns-bottom | Content below the wheel area |
 
@@ -219,6 +219,6 @@ See [Theming](/en/guide/theming) for the full variable list and override rules.
 - `option-height` only accepts a number in px (no string units) so wheel snapping math stays exact
 - `swipe-duration` semantics differ: built on the native `scroll-view`, it is the scroll-stop detection window (snap delay), not Vant's inertia duration
 - No gradient mask overlay: uvue has no `pointer-events`, so an overlay would block wheel gestures; distant options fade out via opacity instead
-- The `option` slot is not rendered on Mini Program (duplicate-slot limitation); use `formatter` instead
+- The `option` slot works on Web only (not rendered on App / Mini Program); use `formatter` instead
 - `getSelectedDate` returns a `Date` instead of Vant's `string[]`; `change` arguments are `(date, columnIndex)` instead of `{ selectedValues, selectedOptions, selectedIndexes, columnIndex }`
 - `filter` / `formatter` are synchronous only (UTS has no Promise-based form)

@@ -125,7 +125,7 @@ const value = ref<Date | null>(null)
 | title | 顶部栏标题 |
 | confirm | 确认按钮内容 |
 | cancel | 取消按钮内容 |
-| option | 选项内容（作用域：`option`、`index`；小程序端回退内置文本） |
+| option | 选项内容（作用域：`option`、`index`；仅 Web 生效，App / 小程序端回退内置文本） |
 | columns-top | 滚轮区上方内容 |
 | columns-bottom | 滚轮区下方内容 |
 

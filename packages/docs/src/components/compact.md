@@ -110,6 +110,8 @@ added: 0.2.0
 | --- | --- | --- | --- |
 | block | 变成块级元素，让组内子项撑满父元素宽度 | boolean | `false` |
 | direction | 排列的方向，可选值为 `horizontal` `vertical` | CompactDirection | `horizontal` |
+| custom-class | 根节点自定义类名 | string.ClassString | - |
+| custom-style | 根节点自定义内联样式 | string | - |
 
 ### Slots
 

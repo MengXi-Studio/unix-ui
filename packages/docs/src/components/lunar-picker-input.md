@@ -89,9 +89,3 @@ added: 0.6.0
 
 - 输入框本体样式由 `Input` 提供，通过 `$m-input-*` 定制。
 - 触发层与清空按钮：`$m-lunar-picker-input-trigger-z-index` / `-clear-z-index` / `-clear-width` / `-clear-icon-size` / `-clear-color`。
-
-## 下一步
-
-- [LunarPicker 农历选择](/components/lunar-picker)
-- [LunarPickerPopup 农历选择弹出框](/components/lunar-picker-popup)
-- [Input 输入框](/components/input)

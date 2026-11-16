@@ -84,7 +84,7 @@ const shiftOptions: PickerOption[] = [
 - `toolbar`：整体替换顶部栏
 - `title` / `confirm` / `cancel`：替换对应段
 - `columns-top` / `columns-bottom`：滚轮上方 / 下方自定义区
-- `option`：自定义选项内容（作用域：`option`、`index`、`rowIndex`、`columnIndex`）
+- `option`：自定义选项内容（仅 Web 生效；作用域：`option`、`index`、`rowIndex`、`columnIndex`）
 
 ### 实例方法 {#demo-methods}
 
@@ -153,7 +153,7 @@ picker.value?.$callMethod('resetSelection')
 | cancel | 取消按钮内容 |
 | columns-top | 滚轮上方内容 |
 | columns-bottom | 滚轮下方内容 |
-| option | 选项内容（作用域：`option`、`index`、`rowIndex`、`columnIndex`） |
+| option | 选项内容（作用域：`option`、`index`、`rowIndex`、`columnIndex`；仅 Web 生效，App / 小程序端回退内置文本） |
 
 ## 主题定制
 

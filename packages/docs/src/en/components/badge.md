@@ -124,7 +124,9 @@ When `content` is numeric 0, the badge is displayed by default; setting `:show-z
 </m-badge>
 ```
 
-### Platform Note: Parent Clipping
+## Notes
+
+### Parent Clipping
 
 In uni-app x, the view component's `overflow` defaults to `hidden` (unlike W3C's `visible`, see the official CSS default value table). The badge center-on-corner rendering extends about half a badge beyond the component root node; when the direct parent is a shrink-to-fit view (e.g. a flex row item), the overflowing part gets clipped. In that case, explicitly set `overflow: visible` on the parent container:
 

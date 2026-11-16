@@ -106,6 +106,23 @@ The four cascader slots are conditionally forwarded (only override the panel def
 
 > **Note**: On WeChat Mini Program, `option` / `options-top` / `options-bottom` are not forwarded — the cascader declares them inside a `v-for`, where only the first slot of a name takes effect and the rest trigger duplicate-slot warnings. Customize option text via `field-names` `labelKey` instead; Web and App are unaffected.
 
+## Theming
+
+The popup container comes from `Popup` (`$m-popup-*`); the cascader header, tabs and option rows are customized via `$m-cascader-*`:
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| $m-cascader-background | Panel background | #ffffff |
+| $m-cascader-header-height | Header height | 48px |
+| $m-cascader-header-title-font-size | Header title font size | 16px |
+| $m-cascader-header-title-color | Header title color | Body text color |
+| $m-cascader-tabs-height | Tabs height | 48px |
+| $m-cascader-tab-active-color | Active tab text color | Primary color |
+| $m-cascader-tab-line-width | Active underline width | 20px |
+| $m-cascader-option-height | Option row height | 40px |
+| $m-cascader-option-font-size | Option font size | 14px |
+| $m-cascader-option-text-color | Option text color | Body text color |
+
 ## Differences from Vant
 
 - Vant switches popup/inline forms via the `poppable` prop; this project extracts an independent composite component — popup behavior belongs to [Popup](/en/components/popup), cascader behavior belongs to [Cascader](/en/components/cascader), this component only composes and forwards

@@ -148,7 +148,7 @@ added: 0.3.0
 | --- | --- |
 | default | 子元素内容（子元素需用 m-flex-item 包裹） |
 
-### FlexItem Props（m-flex-item）
+### Props（m-flex-item）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |

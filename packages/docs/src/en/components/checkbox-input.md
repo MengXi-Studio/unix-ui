@@ -9,14 +9,53 @@ added: 0.5.0
 
 `m-checkbox-input` combines m-input (readonly trigger) with m-checkbox-popup. Tapping the trigger opens the popup; selected labels join with 「、」 (over 2 items collapse to "first two + N items"); a custom clear button (m-input's built-in clearable icon sits below the trigger layer and would be covered); controlled via `v-model:value` (empty array = none).
 
+## Demos
+
+### Basic usage {#demo-basic}
+
 ```vue
-<m-checkbox-input v-model:value="list" :options="options" title="Choose cities" />
+<m-checkbox-input v-model:value="list" :options="options" title="Choose cities" placeholder="Choose cities" />
+```
+
+```ts
+const list = ref<(string | number)[]>([])
+const options = [{ label: 'Beijing', value: 'beijing' }, { label: 'Shanghai', value: 'shanghai' }]
+```
+
+### Truncated display {#demo-ellipsis}
+
+More than 2 selected items collapse to "first two + N items".
+
+```vue
+<m-checkbox-input v-model:value="list" :options="options" title="Choose cities (over 2 collapses)" />
+```
+
+### Clear and disabled {#demo-state}
+
+```vue
+<m-checkbox-input v-model:value="list" :options="options" clearable @clear="onClear" />
+<m-checkbox-input v-model:value="list" :options="options" disabled />
+```
+
+### Field mapping and limit {#demo-fields}
+
+`field-names` adapts custom fields; `max` caps the number of selections (0 = unlimited).
+
+```vue
+<m-checkbox-input v-model:value="list" :options="codeOptions" :field-names="fields" :max="2" />
+```
+
+### Inlaid form {#demo-inlaid}
+
+`inlaid` forwards m-input's inlaid form, suitable inside m-cell.
+
+```vue
+<m-checkbox-input v-model:value="list" :options="options" inlaid />
 ```
 
 ## API
 
-### CheckboxInputProps
-
+### Props
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
 | value | Selected set (v-model:value; empty array = none) | CheckboxValueArray | `[]` |
@@ -39,14 +78,17 @@ added: 0.5.0
 | round | Popup rounded corners | boolean | `true` |
 | custom-class / custom-style | Root node styling | - | - |
 
-### CheckboxInputEvents
-
+### Events
 | Event | Description | Parameters |
 | --- | --- | --- |
 | update:value | Selected set changed (v-model:value) | value: CheckboxValueArray |
 | change | Selected set changed | value: CheckboxValueArray |
 | click-item | Option tapped (forwarded from popup) | index: number |
 | clear | Clear button tapped (writes back an empty set) | - |
+
+## Theming
+
+The input itself is styled by `Input` via `$m-input-*`; the popup container comes from `Popup` (`$m-popup-*`) and options follow `Checkbox` variables (`$m-checkbox-*`).
 
 ## Notes
 

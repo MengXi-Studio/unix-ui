@@ -105,7 +105,7 @@ const value = ref<string | number | null>('包装五线')
 | cancel | 取消按钮内容 |
 | columns-top | 滚轮上方内容 |
 | columns-bottom | 滚轮下方内容 |
-| option | 选项内容（作用域：`option`、`index`、`rowIndex`、`columnIndex`） |
+| option | 选项内容（作用域：`option`、`index`、`rowIndex`、`columnIndex`；仅 Web 生效，App / 小程序端回退内置文本） |
 
 ## 主题定制
 

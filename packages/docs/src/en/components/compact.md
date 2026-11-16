@@ -103,6 +103,8 @@ When children are added or removed dynamically via `v-if` / `v-for`, first / mid
 | --- | --- | --- | --- |
 | block | Block-level element, making inner items fill the parent element width | boolean | `false` |
 | direction | Layout direction, optional values `horizontal` `vertical` | CompactDirection | `horizontal` |
+| custom-class | Custom class name for the root node | string.ClassString | - |
+| custom-style | Custom inline style for the root node | string | - |
 
 ### Slots
 

@@ -117,8 +117,7 @@ Four slots: `title` / `option` / `options-top` / `options-bottom`; the `option` 
 
 ## API
 
-### CascaderProps
-
+### Props
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
 | value | Selected value (`v-model:value`; leaf value, `null` unselected) | CascaderValue \| null | `null` |

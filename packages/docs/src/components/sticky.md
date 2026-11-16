@@ -95,7 +95,7 @@ function onStickyScroll(detail: StickyScrollEvent) {
 
 ## API
 
-### m-sticky Props
+### Props
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -107,27 +107,27 @@ function onStickyScroll(detail: StickyScrollEvent) {
 | custom-class | 自定义内容节点类名 | string.ClassString | - |
 | custom-style | 自定义内容节点内联样式（背景色、圆角等） | string | - |
 
-### m-sticky Events
+### Events
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
 | change | 吸附状态变化时触发 | `isFixed: boolean` |
 | scroll | 滚动时触发（需传入 `scroll-top`） | `{ scrollTop: number, isFixed: boolean }` |
 
-### m-sticky Slots
+### Slots
 
 | 名称 | 说明 |
 | --- | --- |
 | default | 吸附内容 |
 
-### m-sticky-box Props
+### Props（m-sticky-box）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | custom-class | 自定义根节点类名 | string.ClassString | - |
 | custom-style | 自定义根节点内联样式（建议显式 `height`） | string | - |
 
-### m-sticky-box Slots
+### Slots（m-sticky-box）
 
 | 名称 | 说明 |
 | --- | --- |

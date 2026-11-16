@@ -98,14 +98,18 @@ added: 0.6.0
 
 ### Slots
 
-与 `LunarPicker` 一致：`toolbar` / `title` / `confirm` / `cancel` / `option` / `columns-top` / `columns-bottom`。
+与 `LunarPicker` 一致，全部透传到内部面板：
+
+| 名称 | 说明 | 作用域 |
+| --- | --- | --- |
+| toolbar | 整体替换顶部栏 | - |
+| title | 替换标题文字 | - |
+| confirm | 替换确认按钮 | - |
+| cancel | 替换取消按钮 | - |
+| option | 自定义选项（仅 Web 生效，App / 小程序端回退内置文本） | `option` 选项、`index` 下标 |
+| columns-top | 顶部栏与滚轮列之间的内容 | - |
+| columns-bottom | 滚轮列与底部之间的内容 | - |
 
 ## 主题定制
 
 面板视觉由 `Popup` 与内部 `Picker` 提供，通过 `$m-popup-*` / `$m-picker-*` 定制；列文本沿用 `$m-date-picker-option-*`。
-
-## 下一步
-
-- [LunarPicker 农历选择](/components/lunar-picker)
-- [LunarPickerInput 农历输入框](/components/lunar-picker-input)
-- [Popup 弹出层](/components/popup)

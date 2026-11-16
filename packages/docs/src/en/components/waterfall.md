@@ -122,7 +122,7 @@ function onAllLoaded() {
 
 ## API
 
-### m-waterfall Props
+### Props
 
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
@@ -132,14 +132,14 @@ function onAllLoaded() {
 | custom-class | Custom class of the root node | string.ClassString | - |
 | custom-style | Custom inline style of the root node (horizontal padding eats into column width; use an outer wrapper instead) | string | - |
 
-### m-waterfall Events
+### Events
 
 | Event | Description | Arguments |
 | --- | --- | --- |
 | loadstart | Emitted when an item is not loaded yet (a new loading round starts) | - |
 | load | Emitted when all items are loaded (first layout pass finished) | - |
 
-### m-waterfall Slots
+### Slots
 
 | Name | Description |
 | --- | --- |
@@ -152,20 +152,20 @@ function onAllLoaded() {
 | reflow | Re-measure the container width and all item heights, then re-layout | - |
 | onLoad | Register an "all loaded" callback; runs on the next tick when currently idle | `handler: () => void` |
 
-### m-waterfall-item Props
+### Props（m-waterfall-item）
 
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
 | custom-class | Custom class of the root node | string.ClassString | - |
 | custom-style | Custom inline style of the root node (margin is not counted in layout height; use inner padding instead) | string | - |
 
-### m-waterfall-item Slots
+### Slots（m-waterfall-item）
 
 | Name | Description | Slot props |
 | --- | --- | --- |
 | default | Item content | `onLoad: () => void` (call when content finishes loading to trigger re-measure); `columnWidth: number` (current column width in px) |
 
-### m-waterfall-load Props
+### Props（m-waterfall-load）
 
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
@@ -175,13 +175,13 @@ function onAllLoaded() {
 | custom-class | Custom class of the root node | string.ClassString | - |
 | custom-style | Custom inline style of the root node | string | - |
 
-### m-waterfall-load Slots
+### Slots（m-waterfall-load）
 
 | Name | Description | Slot props |
 | --- | --- | --- |
 | default | Content inside the ratio box (usually an image) | `onLoad: (event: UniImageLoadEvent \| null) => void` (pass the image load event when loaded within `max-wait` to use its natural size; pass `null` on failure); `overtime: boolean` (whether it has timed out) |
 
-### m-waterfall-load Events
+### Events（m-waterfall-load）
 
 | Event | Description | Arguments |
 | --- | --- | --- |

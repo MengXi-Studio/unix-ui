@@ -163,7 +163,7 @@ added: 0.6.0
 | title | 自定义标题 | — |
 | confirm | 自定义确认按钮 | — |
 | cancel | 自定义取消按钮 | — |
-| option | 自定义选项（小程序端不生效） | `option: { text, value }, index: number` |
+| option | 自定义选项（仅 Web 生效，App / 小程序端回退内置文本） | `option: { text, value }, index: number` |
 | columns-top | 滚轮区上方内容 | — |
 | columns-bottom | 滚轮区下方内容 | — |
 
@@ -180,10 +180,3 @@ $m-date-picker-option-font-size: 15px;
 ## 与 Vant 的差异
 
 Vant 的 `DatePicker` 只提供公历选择，农历仅用于日历副文案；本组件是新增的农历选择面板，Props / Events 命名对齐 `DatePicker`，但值口径仍为公历 `Date`，不支持 `lunar` 模式切换。
-
-## 下一步
-
-- [DatePicker 日期选择](/components/date-picker)：公历滚轮选择
-- [LunarPickerPopup 农历选择弹出框](/components/lunar-picker-popup)：弹层形态
-- [LunarPickerInput 农历输入框](/components/lunar-picker-input)：表单形态
-- [日期工具](/tools/date)：农历换算与名称函数

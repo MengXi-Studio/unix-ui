@@ -123,7 +123,7 @@ function onAllLoaded() {
 
 ## API
 
-### m-waterfall Props
+### Props
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -133,14 +133,14 @@ function onAllLoaded() {
 | custom-class | 自定义根节点类名 | string.ClassString | - |
 | custom-style | 自定义根节点内联样式（左右内边距会挤占列宽，建议用外层容器控制） | string | - |
 
-### m-waterfall Events
+### Events
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
 | loadstart | 出现未加载完成的项（新一轮加载开始）时触发 | - |
 | load | 全部项加载完成（首轮排版结束）时触发 | - |
 
-### m-waterfall Slots
+### Slots
 
 | 名称 | 说明 |
 | --- | --- |
@@ -153,20 +153,20 @@ function onAllLoaded() {
 | reflow | 重测容器宽度与全部项高度并重排 | - |
 | onLoad | 注册「全部加载完成」回调；当前空闲则下一帧立即执行 | `handler: () => void` |
 
-### m-waterfall-item Props
+### Props（m-waterfall-item）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | custom-class | 自定义根节点类名 | string.ClassString | - |
 | custom-style | 自定义根节点内联样式（margin 不计入排版高度，间距请用内部 padding） | string | - |
 
-### m-waterfall-item Slots
+### Slots（m-waterfall-item）
 
 | 名称 | 说明 | 作用域参数 |
 | --- | --- | --- |
 | default | 项内容 | `onLoad: () => void`（内容加载完成后调用，触发重测与重排）；`columnWidth: number`（当前列宽 px） |
 
-### m-waterfall-load Props
+### Props（m-waterfall-load）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -176,13 +176,13 @@ function onAllLoaded() {
 | custom-class | 自定义根节点类名 | string.ClassString | - |
 | custom-style | 自定义根节点内联样式 | string | - |
 
-### m-waterfall-load Slots
+### Slots（m-waterfall-load）
 
 | 名称 | 说明 | 作用域参数 |
 | --- | --- | --- |
 | default | 比例盒内容（通常为图片） | `onLoad: (event: UniImageLoadEvent \| null) => void`（`max-wait` 内加载完成时传入图片 load 事件，取其真实宽高；失败 / 无尺寸信息传 `null`）；`overtime: boolean`（是否已超时） |
 
-### m-waterfall-load Events
+### Events（m-waterfall-load）
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |

@@ -183,7 +183,7 @@ const tabOptions: UTSJSONObject[] = [
 
 ## API
 
-### TabsProps
+### Props
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |

@@ -68,6 +68,28 @@ A wheel picker for the Chinese lunar calendar (year / month including leap month
 </script>
 ```
 
+### Selectable range {#demo-range}
+
+```vue
+<template>
+  <m-lunar-picker v-model:value="value" :min-date="minDate" :max-date="maxDate" />
+</template>
+
+<script setup lang="uts">
+  const value = ref<Date>(new Date(2026, 5, 15))
+  const minDate = new Date(2026, 0, 1)
+  const maxDate = new Date(2026, 11, 31)
+</script>
+```
+
+### Readonly and loading {#demo-states}
+
+```vue
+<template>
+  <m-lunar-picker v-model:value="value" readonly loading />
+</template>
+```
+
 ### Instance methods {#demo-methods}
 
 ```vue
@@ -129,15 +151,8 @@ A wheel picker for the Chinese lunar calendar (year / month including leap month
 
 ### Slots
 
-`toolbar` / `title` / `confirm` / `cancel` / `option` / `columns-top` / `columns-bottom`, forwarded to the inner `Picker`.
+`toolbar` / `title` / `confirm` / `cancel` / `option` (Web only) / `columns-top` / `columns-bottom`, forwarded to the inner `Picker`.
 
 ## Theming
 
 The panel container, toolbar, selection frame and loading overlay are provided by the inner `Picker`; customize them via `$m-picker-*`. Option text uses `$m-date-picker-option-font-size` / `-color` / `-selected-color`, shared with the Gregorian picker column.
-
-## Next Steps
-
-- [DatePicker](/en/components/date-picker)
-- [LunarPickerPopup](/en/components/lunar-picker-popup)
-- [LunarPickerInput](/en/components/lunar-picker-input)
-- [Date utilities](/en/tools/date)

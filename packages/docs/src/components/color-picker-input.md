@@ -9,21 +9,42 @@ added: 0.5.0
 
 `m-color-picker-input` 颜色选择器输入框：m-input（只读展示）+ m-color-picker-popup 组合。点击输入区打开弹层选色，确定后经 `v-model:value` 回写颜色文本；左侧色块预览当前颜色，支持字段标签与自绘清空按钮（对齐 m-cascader-input 组合先例）。
 
+## 代码演示
+
+### 基础用法 {#demo-basic}
+
 ```vue
-<m-color-picker-input
-	v-model:value="color"
-	title="选择产线颜色"
-	placeholder="选择产线颜色"
-	show-alpha
-	show-presets
-	clearable
-/>
+<m-color-picker-input v-model:value="color" placeholder="选择产线颜色" />
+```
+
+```ts
+const color = ref<string>('')
+```
+
+### 字段标签与清空 {#demo-title}
+
+```vue
+<m-color-picker-input v-model:value="color" title="产线颜色" clearable @clear="onClear" />
+```
+
+### 弹层能力透传 {#demo-popup}
+
+`show-alpha` / `show-presets` / `show-inputs` / `show-recent` / `format` 透传给内部 ColorPickerPopup。
+
+```vue
+<m-color-picker-input v-model:value="color" show-alpha show-presets show-inputs />
+```
+
+### 禁用与嵌入式 {#demo-state}
+
+```vue
+<m-color-picker-input v-model:value="color" disabled />
+<m-color-picker-input v-model:value="color" inlaid />
 ```
 
 ## API
 
-### ColorPickerInputProps
-
+### Props
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | value | 当前颜色值（v-model:value） | string | `''` |
@@ -48,8 +69,7 @@ added: 0.5.0
 | round | 弹层圆角（透传 m-popup） | boolean | `true` |
 | custom-class / custom-style | 根节点样式直达 | - | - |
 
-### ColorPickerInputEvents
-
+### Events
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
 | update:value | 颜色值变化（v-model:value） | value: string |
@@ -59,6 +79,10 @@ added: 0.5.0
 | update:show | 弹层显隐变化（v-model:show） | value: boolean |
 | update:format | 格式切换（v-model:format） | format: ColorFormat |
 | format-change | 格式切换 | format: ColorFormat |
+
+## 主题定制
+
+输入框本体由 `Input` 提供（`$m-input-*`）；左侧色块与弹层内面板沿用 `$m-color-picker-*`。
 
 ## 注意事项
 

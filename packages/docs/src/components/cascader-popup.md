@@ -106,6 +106,23 @@ added: 0.3.0
 
 > **注意**：微信小程序端不转发 `option` / `options-top` / `options-bottom`——级联面板在 `v-for` 内重复声明同名插槽只会生效第一个，且会触发重复插槽告警。选项文案请通过 `field-names` 的 `labelKey` 定制；Web 与 App 端不受影响。
 
+## 主题定制
+
+弹层容器由 `Popup` 提供（`$m-popup-*`）；级联面板的头部、选项卡与选项行通过 `$m-cascader-*` 定制：
+
+| 变量 | 说明 | 默认值 |
+| --- | --- | --- |
+| $m-cascader-background | 面板背景 | #ffffff |
+| $m-cascader-header-height | 头部高度 | 48px |
+| $m-cascader-header-title-font-size | 头部标题字号 | 16px |
+| $m-cascader-header-title-color | 头部标题颜色 | 文本主色 |
+| $m-cascader-tabs-height | 选项卡高度 | 48px |
+| $m-cascader-tab-active-color | 选中选项卡文字色 | 主题色 |
+| $m-cascader-tab-line-width | 选中下划线宽度 | 20px |
+| $m-cascader-option-height | 选项行高 | 40px |
+| $m-cascader-option-font-size | 选项字号 | 14px |
+| $m-cascader-option-text-color | 选项文字色 | 文本主色 |
+
 ## 与 Vant 的差异
 
 - Vant Cascader 经 `poppable` 属性切换弹层形态，本项目拆为独立组合组件；弹层行为归 [Popup](/components/popup)，级联行为归 [Cascader](/components/cascader)，本组件仅做组合与转发

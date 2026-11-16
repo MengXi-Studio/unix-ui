@@ -113,7 +113,7 @@ picker.value?.$callMethod('getSelectedValue')
 | title | Title content |
 | confirm | Confirm button content |
 | cancel | Cancel button content |
-| option | Option content (scoped: `option`, `index`) |
+| option | Option content (scoped: `option`, `index`; Web only, falls back to built-in text on App / Mini Program) |
 
 ## Theming
 

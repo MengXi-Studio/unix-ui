@@ -108,7 +108,7 @@ const suffixFormatter = (type: string, option: DatePickerOption): DatePickerOpti
 
 ### 插槽 {#demo-slots}
 
-支持 `toolbar`（整体替换顶部栏）、`title` / `confirm` / `cancel`（分段替换）、`option`（作用域：`option` 选项、`index` 下标）、`columns-top` / `columns-bottom`。
+支持 `toolbar`（整体替换顶部栏）、`title` / `confirm` / `cancel`（分段替换）、`option`（仅 Web 生效；作用域：`option` 选项、`index` 下标）、`columns-top` / `columns-bottom`。
 
 ```vue
 <m-date-picker :columns-type="['year', 'month']">
@@ -124,7 +124,7 @@ const suffixFormatter = (type: string, option: DatePickerOption): DatePickerOpti
 </m-date-picker>
 ```
 
-> **注意**：微信小程序端同一组件实例内同名插槽只能生效第一个。`option` 在选项 `v-for` 内重复声明，因此小程序端不渲染该插槽（避免重复插槽告警），请改用 `formatter` 改写选项文案；Web 与 App 端插槽行为不变。
+> **注意**：`option` 插槽仅 Web 端生效。App 端具名插槽解构出的下标为 `Any?`，传入 number 参数无法通过 Kotlin 编译；小程序端同名插槽在 `v-for` 内只生效第一个且会触发重复告警。两端均回退内置文本，请改用 `formatter` 改写选项文案。
 
 ### 只读与加载态 {#demo-states}
 
@@ -194,7 +194,7 @@ picker.value?.$callMethod('confirm')
 | title | 顶部栏标题 |
 | confirm | 确认按钮内容 |
 | cancel | 取消按钮内容 |
-| option | 选项内容（作用域：`option` 选项、`index` 下标；小程序端回退内置文本） |
+| option | 选项内容（作用域：`option` 选项、`index` 下标；仅 Web 生效，App / 小程序端回退内置文本） |
 | columns-top | 滚轮区上方内容 |
 | columns-bottom | 滚轮区下方内容 |
 
@@ -219,6 +219,6 @@ picker.value?.$callMethod('confirm')
 - 无 `option-height` 的字符串单位形态：本项目只接受数值 px，以保证滚轮吸附的位移换算精确
 - `swipe-duration` 语义调整：本项目基于原生 `scroll-view`，该值表示「滚动停止判定时长」（停止后延迟吸附），非 Vant 的惯性动画时长
 - 无渐变遮罩层：uvue 无 `pointer-events`，覆盖式遮罩会拦截滚动手势，改用远处选项透明度渐隐实现同等视觉层次
-- `option` 插槽在小程序端不渲染（同名校验限制），请用 `formatter` 替代
+- `option` 插槽仅 Web 生效（App / 小程序端不渲染），自定义选项文案请用 `formatter` 替代
 - `getSelectedDate` 返回 `Date` 而非 Vant 的 `string[]`；`change` 事件参数为 `(date, columnIndex)`，Vant 为 `{ selectedValues, selectedOptions, selectedIndexes, columnIndex }`
 - `filter` / `formatter` 仅支持同步函数（UTS 无 Promise 化形态）

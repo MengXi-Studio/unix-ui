@@ -13,7 +13,9 @@ added: 0.6.0
 - Supports clearable, disabled, column combination, GanZhi year text and range limits.
 - The sheet always resets to the current `value` on open (internally `reset-on-open`).
 
-## Demo
+## Demos
+
+### Basic usage {#demo-basic}
 
 ```vue
 <template>
@@ -23,6 +25,29 @@ added: 0.6.0
 <script setup lang="uts">
   const value = ref<Date | null>(null)
 </script>
+```
+
+### Column combination {#demo-columns}
+
+```vue
+<template>
+  <m-lunar-picker-input v-model:value="value" :columns-type="columnsType" placeholder="Select lunar year and month" />
+</template>
+
+<script setup lang="uts">
+  import { LunarPickerColumnType } from '@/uni_modules/m-ui-x/components/m-lunar-picker/lunar-picker.uts'
+
+  const value = ref<Date | null>(null)
+  const columnsType: LunarPickerColumnType[] = ['year', 'month']
+</script>
+```
+
+### GanZhi year text {#demo-ganzhi}
+
+```vue
+<template>
+  <m-lunar-picker-input v-model:value="value" show-gan-zhi />
+</template>
 ```
 
 ## API
@@ -64,9 +89,3 @@ added: 0.6.0
 
 - The input itself is styled by `Input` via `$m-input-*`.
 - Trigger layer and clear button: `$m-lunar-picker-input-trigger-z-index` / `-clear-z-index` / `-clear-width` / `-clear-icon-size` / `-clear-color`.
-
-## Next Steps
-
-- [LunarPicker](/en/components/lunar-picker)
-- [LunarPickerPopup](/en/components/lunar-picker-popup)
-- [Input](/en/components/input)

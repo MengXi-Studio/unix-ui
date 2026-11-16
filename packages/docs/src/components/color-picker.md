@@ -9,14 +9,61 @@ added: 0.5.0
 
 `m-color-picker` 颜色选择器：饱和度-明度面板搭配色相滑块，开启 `show-alpha` 后可继续调节透明度。颜色值以字符串受控（`v-model:value`），输出格式支持 `hex` / `rgb` / `hsl`；可选格式切换、预设色、R/G/B/A 数值输入、最近使用颜色，以及 Web 端吸管取色。
 
+## 代码演示
+
+### 基础用法 {#demo-basic}
+
+```vue
+<m-color-picker v-model:value="color" />
+```
+
+```ts
+const color = ref<string>('#1989FA')
+```
+
+### 透明度 {#demo-alpha}
+
+`show-alpha` 增加透明度条与 A 分量，hex 输出 8 位，rgb / hsl 输出带 alpha 的写法。
+
 ```vue
 <m-color-picker v-model:value="color" show-alpha />
 ```
 
+### 预设色与最近使用 {#demo-presets}
+
+`show-presets` 显示预设色（可用 `presets` 覆盖内置色板）；`show-recent` 记录最近使用的 8 个颜色。
+
+```vue
+<m-color-picker v-model:value="color" show-presets show-recent />
+<m-color-picker v-model:value="color" show-presets :presets="presets" />
+```
+
+### 输出格式与数值输入 {#demo-format}
+
+`format` 指定输出格式；`show-format` 显示格式切换与当前值；`show-inputs` 显示 R / G / B / A 数值输入。
+
+```vue
+<m-color-picker v-model:value="color" show-alpha show-format show-inputs />
+```
+
+### 吸管取色（Web） {#demo-eyedropper}
+
+`show-eyedropper` 仅在 Web 端渲染，依赖 Chromium `EyeDropper` API。
+
+```vue
+<m-color-picker v-model:value="color" show-eyedropper />
+```
+
+### 禁用与只读 {#demo-state}
+
+```vue
+<m-color-picker v-model:value="color" disabled />
+<m-color-picker v-model:value="color" readonly />
+```
+
 ## API
 
-### ColorPickerProps
-
+### Props
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | value | 当前颜色值（v-model:value） | string | `#1989FA` |
@@ -33,8 +80,7 @@ added: 0.5.0
 | readonly | 是否只读（不响应交互，无禁用视觉） | boolean | `false` |
 | custom-class / custom-style | 根节点样式直达 | - | - |
 
-### ColorPickerEvents
-
+### Events
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
 | update:value | 颜色变化（v-model:value） | value: string |
@@ -48,6 +94,16 @@ added: 0.5.0
 - `rgb`：`rgb(r, g, b)` / `rgba(r, g, b, a)`
 - `hsl`：`hsl(h, s%, l%)` / `hsla(h, s%, l%, a)`
 - 传入值兼容 `#RGB` / `#RGBA` / `#RRGGBB` / `#RRGGBBAA` / `rgb()` / `rgba()` / `hsl()` / `hsla()`，非法或空串回退默认色
+
+### Methods
+
+| 方法名 | 说明 | 参数 |
+| --- | --- | --- |
+| refresh | 重新测量面板与滑块尺寸并刷新布局（容器尺寸变化后调用） | - |
+
+## 主题定制
+
+面板背景、面板高度、滑块尺寸与色块样式通过 `$m-color-picker-*` 定制；数值输入行沿用 `Input` 的 `$m-input-*`。
 
 ## 注意事项
 

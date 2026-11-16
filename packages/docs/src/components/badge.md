@@ -125,7 +125,9 @@ added: 0.1.0
 </m-badge>
 ```
 
-### 平台注意：父级容器裁剪
+## 注意事项
+
+### 父级容器裁剪
 
 uni-app x 中 view 组件的 `overflow` 默认值为 `hidden`（与 W3C 的 `visible` 不同，见官方 CSS 默认值表）。徽标中心压角展示会超出组件根节点约半个徽标高度，当直接父级是「收缩贴合」的 view（如 flex 行内子项）时，超出部分会被裁剪。此时需给父级容器显式设置 `overflow: visible`：
 

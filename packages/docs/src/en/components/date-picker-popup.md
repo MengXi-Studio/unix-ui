@@ -125,7 +125,7 @@ const value = ref<Date | null>(null)
 | title | Toolbar title |
 | confirm | Confirm button content |
 | cancel | Cancel button content |
-| option | Option content (scoped: `option`, `index`; falls back to built-in text on Mini Program) |
+| option | Option content (scoped: `option`, `index`; Web only, falls back to built-in text on App / Mini Program) |
 | columns-top | Content above the wheel area |
 | columns-bottom | Content below the wheel area |
 

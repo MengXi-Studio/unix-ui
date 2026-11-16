@@ -135,7 +135,7 @@ picker.value?.$callMethod('getSelectedIndexes')
 | cancel | Cancel button content |
 | columns-top | Content above the wheels |
 | columns-bottom | Content below the wheels |
-| option | Option content (scoped: `option`, `index`, `rowIndex`, `columnIndex`) |
+| option | Option content (scoped: `option`, `index`, `rowIndex`, `columnIndex`; Web only, falls back to built-in text on App / Mini Program) |
 
 ## Theming
 

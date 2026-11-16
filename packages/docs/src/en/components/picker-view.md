@@ -86,7 +86,7 @@ view.value?.$callMethod('getSelectedIndexes')
 
 | Name | Description |
 | --- | --- |
-| option | Option content (scoped: `option`, `index`, `rowIndex`, `columnIndex`) |
+| option | Option content (scoped: `option`, `index`, `rowIndex`, `columnIndex`; Web only, falls back to built-in text on App / Mini Program) |
 
 ### PickerViewColumn
 

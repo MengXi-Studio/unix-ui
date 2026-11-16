@@ -13,7 +13,9 @@ added: 0.6.0
 - `v-model:show` controls visibility, `v-model:value` holds the selected Gregorian `Date`.
 - With `reset-on-open`, every open resets the selection to `value` / today.
 
-## Demo
+## Demos
+
+### Basic usage {#demo-basic}
 
 ```vue
 <template>
@@ -24,6 +26,26 @@ added: 0.6.0
 <script setup lang="uts">
   const show = ref<boolean>(false)
   const value = ref<Date>(new Date(2026, 5, 15))
+</script>
+```
+
+### Leap month and range {#demo-leap}
+
+```vue
+<template>
+  <m-lunar-picker-popup
+    v-model:show="show"
+    v-model:value="value"
+    :min-date="minDate"
+    :max-date="maxDate"
+  />
+</template>
+
+<script setup lang="uts">
+  const show = ref<boolean>(false)
+  const value = ref<Date>(new Date(2023, 2, 22))
+  const minDate = new Date(2023, 2, 1)
+  const maxDate = new Date(2023, 3, 30)
 </script>
 ```
 
@@ -68,14 +90,18 @@ added: 0.6.0
 
 ### Slots
 
-Same as `LunarPicker`: `toolbar` / `title` / `confirm` / `cancel` / `option` / `columns-top` / `columns-bottom`.
+Same as `LunarPicker`; all slots are forwarded to the inner panel:
+
+| Name | Description | Scope |
+| --- | --- | --- |
+| toolbar | Replaces the whole toolbar | - |
+| title | Replaces the title text | - |
+| confirm | Replaces the confirm button | - |
+| cancel | Replaces the cancel button | - |
+| option | Custom option content (Web only; falls back to built-in text on App / Mini Program) | `option` item, `index` row index |
+| columns-top | Content between the toolbar and the wheel columns | - |
+| columns-bottom | Content between the wheel columns and the bottom | - |
 
 ## Theming
 
 Customize via `$m-popup-*` and `$m-picker-*`; option text uses `$m-date-picker-option-*`.
-
-## Next Steps
-
-- [LunarPicker](/en/components/lunar-picker)
-- [LunarPickerInput](/en/components/lunar-picker-input)
-- [Popup](/en/components/popup)

@@ -137,14 +137,14 @@ Toggle on the whole row: put m-checkbox into m-cell's `value` slot and call `tog
 | shape | Shape: `round` / `square` | CheckboxShape | `round` |
 | custom-class / custom-style | Root node styling | - | - |
 
-### CheckboxGroupEvents
+### Events（m-checkbox-group）
 
 | Event | Description | Parameters |
 | --- | --- | --- |
 | update:value | Selected set changed | value: CheckboxValueArray |
 | change | Selected set changed | value: CheckboxValueArray |
 
-### CheckboxGroupMethods
+### Methods（m-checkbox-group）
 
 | Method | Description | Parameters |
 | --- | --- | --- |
@@ -166,14 +166,14 @@ Toggle on the whole row: put m-checkbox into m-cell's `value` slot and call `tog
 | indeterminate | Indeterminate state (dash visual) | boolean | `false` |
 | custom-class / custom-style | Root node styling | - | - |
 
-### CheckboxSlots
+### Slots（m-checkbox）
 
 | Slot | Description | Scoped props |
 | --- | --- | --- |
 | default | Custom text | `{ checked, disabled }` |
 | icon | Custom icon | `{ checked, disabled }` |
 
-### CheckboxEvents
+### Events（m-checkbox）
 
 | Event | Description | Parameters |
 | --- | --- | --- |
@@ -181,7 +181,7 @@ Toggle on the whole row: put m-checkbox into m-cell's `value` slot and call `tog
 | change | Checked changed (both in-group and standalone) | checked: boolean |
 | click | Checkbox tapped (also when disabled or max-rejected) | event: MouseEvent |
 
-### CheckboxMethods
+### Methods（m-checkbox）
 
 | Method | Description | Parameters |
 | --- | --- | --- |

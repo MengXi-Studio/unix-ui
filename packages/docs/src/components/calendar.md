@@ -180,6 +180,7 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
+| update:value | 选中值变化时回写（`v-model:value`；值为 single 的 `Date` 或 multiple / range 的 `Date[]`，取消到空为 `null`） | value: Date \| Date[] \| null |
 | select | 点击日期格后触发（每次点击均触发，取消选中后也会触发；值形态随 type） | value: Date \| Date[] |
 | confirm | 点击确认按钮 / 选满自动确认后触发 | value: Date \| Date[] |
 | unselect | 多选取消选中某日时触发（先于同次 select） | date: Date |

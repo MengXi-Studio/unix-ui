@@ -88,7 +88,7 @@ npm 方式把前缀换成包名即可（如 `@meng-xi/unix-ui/utils/date.uts`）
 
 ## 真机体验
 
-不写代码也可以先在真机上看效果：[下载 Android 演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794590278532-__UNI__F1AA560_1794590268233.apk)。它是示例工程（playground）的云打包产物，每个组件一页穷举全部 props / 变体 / 事件；安装包随版本重新打包，链接以最新发版说明为准。
+不写代码也可以先在真机上看效果：[下载 Android 演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794836242885-__UNI__F1AA560_1794836231235.apk)。它是示例工程（playground）的云打包产物，每个组件一页穷举全部 props / 变体 / 事件；安装包随版本重新打包，链接以最新发版说明为准。
 
 ## 下一步
 

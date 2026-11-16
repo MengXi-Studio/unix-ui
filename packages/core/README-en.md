@@ -241,7 +241,7 @@ Full details (HBuilderX version requirements, vapor mode configuration, platform
 
 The example project [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) provides one page per component exhaustively covering all props / variants / events, deployed as a [live demo](https://mengxi-studio.github.io/unix-ui/playground/) on the documentation site — try it right in your browser.
 
-**Try it on a real Android device**: [download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794590278532-__UNI__F1AA560_1794590268233.apk) — a cloud-packaged Android build showcasing native rendering of all components. The package is rebuilt with each release; use the link in the latest release notes.
+**Try it on a real Android device**: [download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794836242885-__UNI__F1AA560_1794836231235.apk) — a cloud-packaged Android build showcasing native rendering of all components. The package is rebuilt with each release; use the link in the latest release notes.
 
 ## Project Structure
 

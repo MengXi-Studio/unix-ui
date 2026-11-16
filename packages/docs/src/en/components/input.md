@@ -153,7 +153,7 @@ Note: the `value` area of `m-cell` is right-aligned by default; add `text-align:
 | clearable | Whether to enable the clear icon | boolean | `false` |
 | clear-trigger | When the clear icon shows, one of `focus` `always` | ClearTrigger | `focus` |
 | border | Whether to show the bordered container | boolean | `true` |
-| inlaid | Inlaid mode: removes border, radius, padding and background for embedding into m-cell etc. | boolean | `false` |
+| inlaid | Inlaid mode: removes border, radius, padding and background for embedding into m-cell etc.; the control's minimum height is controlled by `$m-input-inlaid-min-height` (default 24px) | boolean | `false` |
 | disabled | Whether disabled | boolean | `false` |
 | readonly | Whether readonly: looks normal but not editable (simulated via native disabled, cannot be focused) | boolean | `false` |
 | confirm-type | Confirm key text, one of `done` `search` `send` `go` `next`, single-line only | string | `''` |

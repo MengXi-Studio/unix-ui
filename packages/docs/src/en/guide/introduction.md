@@ -38,7 +38,9 @@ Components stay within the capabilities of uni-app x and follow these convention
 | --- | --- |
 | Basic | Button, Icon, Image, Text |
 | Layout | Compact, Divider, Flex, Grid, Layout, Space, StatusBar, Sticky, Waterfall |
-| Form | Calendar, Cascader, Checkbox, ColorPicker, DateStrip, Input; Calendar / Cascader / Checkbox / ColorPicker also provide popup and input variants |
+| Data Entry | Checkbox, ColorPicker, Input; Checkbox / ColorPicker also provide popup and input variants |
+| Pickers | Cascader, Picker; Cascader and Picker also provide popup and input variants |
+| Date & Time | Calendar, DatePicker, DateRangePicker, DateStrip, TimePicker, TimeRangePicker, LunarPicker; the date / time / lunar series also provide popup and input variants |
 | Feedback | Fab, Loading, Overlay, Popup, Toast |
 | Data Display | Badge, Cell and CellGroup |
 | Navigation | Tabs |

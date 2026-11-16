@@ -106,20 +106,35 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					]
 				},
 				{
-					text: '表单组件',
+					text: '数据录入',
 					items: [
-						{ text: 'Calendar 日历', link: '/components/calendar' },
-						{ text: 'CalendarInput 日历输入框', link: '/components/calendar-input' },
-						{ text: 'CalendarPopup 日历弹出框', link: '/components/calendar-popup' },
-						{ text: 'Cascader 级联选择', link: '/components/cascader' },
-						{ text: 'CascaderInput 级联输入框', link: '/components/cascader-input' },
-						{ text: 'CascaderPopup 级联弹出框', link: '/components/cascader-popup' },
 						{ text: 'Checkbox 复选框', link: '/components/checkbox' },
 						{ text: 'CheckboxInput 复选输入框', link: '/components/checkbox-input' },
 						{ text: 'CheckboxPopup 复选弹出框', link: '/components/checkbox-popup' },
 						{ text: 'ColorPicker 颜色选择器', link: '/components/color-picker' },
 						{ text: 'ColorPickerInput 颜色选择器输入框', link: '/components/color-picker-input' },
 						{ text: 'ColorPickerPopup 颜色选择器弹出框', link: '/components/color-picker-popup' },
+						{ text: 'Input 输入框', link: '/components/input' }
+					]
+				},
+				{
+					text: '选择器',
+					items: [
+						{ text: 'Cascader 级联选择', link: '/components/cascader' },
+						{ text: 'CascaderInput 级联输入框', link: '/components/cascader-input' },
+						{ text: 'CascaderPopup 级联弹出框', link: '/components/cascader-popup' },
+						{ text: 'Picker 选择器', link: '/components/picker' },
+						{ text: 'PickerInput 选择器输入框', link: '/components/picker-input' },
+						{ text: 'PickerPopup 选择器弹出框', link: '/components/picker-popup' },
+						{ text: 'PickerView 选择器纯视图', link: '/components/picker-view' }
+					]
+				},
+				{
+					text: '日期时间',
+					items: [
+						{ text: 'Calendar 日历', link: '/components/calendar' },
+						{ text: 'CalendarInput 日历输入框', link: '/components/calendar-input' },
+						{ text: 'CalendarPopup 日历弹出框', link: '/components/calendar-popup' },
 						{ text: 'DatePicker 日期选择', link: '/components/date-picker' },
 						{ text: 'DatePickerInput 日期输入框', link: '/components/date-picker-input' },
 						{ text: 'DatePickerPopup 日期选择弹出框', link: '/components/date-picker-popup' },
@@ -127,14 +142,9 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'DateRangePickerInput 日期范围输入框', link: '/components/date-range-picker-input' },
 						{ text: 'DateRangePickerPopup 日期范围弹出框', link: '/components/date-range-picker-popup' },
 						{ text: 'DateStrip 日期横条', link: '/components/date-strip' },
-						{ text: 'Input 输入框', link: '/components/input' },
 						{ text: 'LunarPicker 农历选择', link: '/components/lunar-picker' },
 						{ text: 'LunarPickerInput 农历输入框', link: '/components/lunar-picker-input' },
 						{ text: 'LunarPickerPopup 农历选择弹出框', link: '/components/lunar-picker-popup' },
-						{ text: 'Picker 选择器', link: '/components/picker' },
-						{ text: 'PickerInput 选择器输入框', link: '/components/picker-input' },
-						{ text: 'PickerPopup 选择器弹出框', link: '/components/picker-popup' },
-						{ text: 'PickerView 选择器纯视图', link: '/components/picker-view' },
 						{ text: 'TimePicker 时间选择', link: '/components/time-picker' },
 						{ text: 'TimePickerInput 时间输入框', link: '/components/time-picker-input' },
 						{ text: 'TimePickerPopup 时间弹出框', link: '/components/time-picker-popup' },

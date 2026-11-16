@@ -54,6 +54,11 @@
 
 - **面板内部迁移为 m-picker 组合**：`m-date-picker` / `m-time-picker` 的顶部栏、选中框、滚轮容器与加载遮罩改由 `m-picker` 承担，自身仅保留列构建与事件回写；对外 props / events / 插槽 / 实例方法全部不变，无 API 变更；面板级主题变量收敛为 `$m-picker-*`（`$m-date-picker-*` 仅保留选项文本三项，`$m-time-picker-*` 不再提供面板变量）
 
+### 修复
+
+- **m-input `inlaid` 嵌入 m-cell 时高度塌陷**：`inlaid` 清除容器内边距后控件高度仅剩文本行高（约 19.6px），嵌入 44px 行高的 `m-cell` 后贴顶、上下留白不对称且可点击区过小。新增 `$m-input-inlaid-min-height`（默认 `24px`，与 `m-cell` 单行内容区一致）并挂到 inlaid 控件上，占位符随之垂直居中；所有透传 `inlaid` 的输入类组件（`calendar-input` / `cascader-input` / `checkbox-input` / `color-picker-input` / `date-picker-input` / `picker-input` / 时间与农历系列）同步受益
+- **m-input 在 `m-compact` 水平组合中输入文字贴顶**：边框容器改为 `flex: 1` 撑满根节点，与同行的 `m-button`（44px）等高后输入文字垂直居中，不再出现上半部大片空白；普通形态（35.6px）与 `textarea` 高度不受影响
+
 ## [0.5.3] - 2026-11-15
 
 修复 `m-calendar` 微信小程序端因日格 `v-for` 内重复声明同名插槽导致控制台被告警刷屏（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）。

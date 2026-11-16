@@ -54,6 +54,11 @@ Adds the date, date range, time, time range, generic picker and lunar picker ser
 
 - **Date / time panels now compose m-picker internally**: the toolbar, selection frame, wheel container and loading overlay of `m-date-picker` / `m-time-picker` are provided by `m-picker`, leaving only column building and event write-back in the panels; all public props / events / slots / instance methods are unchanged (no API change); panel-level theme variables are consolidated into `$m-picker-*` (`$m-date-picker-*` keeps only the three option-text variables and `$m-time-picker-*` no longer provides panel variables)
 
+### Fixed
+
+- **`m-input` with `inlaid` collapsed in height when embedded in `m-cell`**: after `inlaid` removed the container padding, the control kept only its text line height (~19.6px), so inside a 44px `m-cell` row it stuck to the top with asymmetric spacing and a too-small tap area. Added `$m-input-inlaid-min-height` (default `24px`, matching the single-line content box of `m-cell`) on the inlaid control, which also centers the placeholder vertically; every input-family component forwarding `inlaid` (`calendar-input` / `cascader-input` / `checkbox-input` / `color-picker-input` / `date-picker-input` / `picker-input` / the time and lunar series) benefits as well
+- **`m-input` text stuck to the top inside a horizontal `m-compact`**: the bordered body now uses `flex: 1` to fill the root node, so after matching the sibling `m-button` height (44px) the input text is vertically centered instead of leaving a large blank area above; the normal form (35.6px) and `textarea` heights are unaffected
+
 ## [0.5.3] - 2026-11-15
 
 Fixes `m-calendar` flooding the WeChat Mini Program console with duplicate-slot warnings caused by named slots declared inside a `v-for` ([#17](https://github.com/MengXi-Studio/unix-ui/issues/17)).

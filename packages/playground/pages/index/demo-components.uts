@@ -27,7 +27,7 @@ export type DemoGroup = {
 }
 
 /**
- * 组件演示分组表（标准 UI 库分类体系：基础 / 布局 / 表单 / 反馈 / 数据展示 / 导航，组内按字母序）
+ * 组件演示分组表（标准 UI 库分类体系：基础 / 布局 / 数据录入 / 选择器 / 日期时间 / 反馈 / 数据展示 / 导航，组内按字母序）
  *
  * 新增组件时在对应分组的 components 中登记一条即可，
  * 首页分组列表与搜索过滤自动生效；演示页路由无需手工登记——
@@ -123,44 +123,8 @@ export const demoGroups: DemoGroup[] = [
 		]
 	},
 	{
-		title: '表单组件',
+		title: '数据录入',
 		components: [
-			{
-				name: 'calendar',
-				zhName: '日历',
-				enName: 'Calendar',
-				desc: '日历面板，支持单选、多选、范围选择、年月切换导航、formatter 定制与超限提示。'
-			},
-			{
-				name: 'calendar-input',
-				zhName: '日历输入框',
-				enName: 'CalendarInput',
-				desc: 'm-input 与日历弹出框的表单组合，点击触发选择，选中值格式化回填展示，支持清空与禁用。'
-			},
-			{
-				name: 'calendar-popup',
-				zhName: '日历弹出框',
-				enName: 'CalendarPopup',
-				desc: 'm-popup 与 m-calendar 的弹层组合，v-model 控制显隐，确认后自动关闭，支持方位、圆角、面板高度与安全区配置。'
-			},
-			{
-				name: 'cascader',
-				zhName: '级联选择',
-				enName: 'Cascader',
-				desc: '多级联动选择面板，支持层级 tab 与手势滑动、field-names 字段映射、异步加载、主题色与四插槽。'
-			},
-			{
-				name: 'cascader-input',
-				zhName: '级联输入框',
-				enName: 'CascaderInput',
-				desc: 'm-input 与级联弹出框的表单组合，点击触发选择，选中路径文字回填展示，支持清空与禁用。'
-			},
-			{
-				name: 'cascader-popup',
-				zhName: '级联弹出框',
-				enName: 'CascaderPopup',
-				desc: 'm-popup 与 m-cascader 的弹层组合，v-model 控制显隐，选完最后一级自动关闭，支持方位、圆角与安全区配置。'
-			},
 			{
 				name: 'checkbox',
 				zhName: '复选框',
@@ -196,6 +160,82 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '颜色选择器弹出框',
 				enName: 'ColorPickerPopup',
 				desc: '颜色选择器的弹层形态：取消 / 标题 / 确定头部，确定后回写，取消丢弃本次改动。'
+			},
+			{
+				name: 'input',
+				zhName: '输入框',
+				enName: 'Input',
+				desc: '文本输入框，支持六种类型、清除图标、明文切换、格式化与数字精度收敛、字数统计、多行自适应、前后插槽与紧凑布局联动。'
+			}
+		]
+	},
+	{
+		title: '选择器',
+		components: [
+			{
+				name: 'cascader',
+				zhName: '级联选择',
+				enName: 'Cascader',
+				desc: '多级联动选择面板，支持层级 tab 与手势滑动、field-names 字段映射、异步加载、主题色与四插槽。'
+			},
+			{
+				name: 'cascader-input',
+				zhName: '级联输入框',
+				enName: 'CascaderInput',
+				desc: 'm-input 与级联弹出框的表单组合，点击触发选择，选中路径文字回填展示，支持清空与禁用。'
+			},
+			{
+				name: 'cascader-popup',
+				zhName: '级联弹出框',
+				enName: 'CascaderPopup',
+				desc: 'm-popup 与 m-cascader 的弹层组合，v-model 控制显隐，选完最后一级自动关闭，支持方位、圆角与安全区配置。'
+			},
+			{
+				name: 'picker',
+				zhName: '选择器',
+				enName: 'Picker',
+				desc: '通用滚轮选择器：一维 / 二维列数据自动识别，支持 children 级联、禁用项、对象选项与 columns-top / columns-bottom 插槽。'
+			},
+			{
+				name: 'picker-input',
+				zhName: '选择器输入框',
+				enName: 'PickerInput',
+				desc: 'm-input 与选择器弹出框的表单组合，点击触发选择，展示各列选中项文本，支持清空与禁用。'
+			},
+			{
+				name: 'picker-popup',
+				zhName: '选择器弹出框',
+				enName: 'PickerPopup',
+				desc: 'm-popup 与通用选择器面板的弹层组合，v-model 控制显隐与选中值，确认 / 取消后自动关闭。'
+			},
+			{
+				name: 'picker-view',
+				zhName: '选择器纯视图',
+				enName: 'PickerView',
+				desc: '无工具栏的索引受控多列滚轮，配合 m-picker-view-column 与 option 插槽，可嵌入自定义容器。'
+			}
+		]
+	},
+	{
+		title: '日期时间',
+		components: [
+			{
+				name: 'calendar',
+				zhName: '日历',
+				enName: 'Calendar',
+				desc: '日历面板，支持单选、多选、范围选择、年月切换导航、formatter 定制与超限提示。'
+			},
+			{
+				name: 'calendar-input',
+				zhName: '日历输入框',
+				enName: 'CalendarInput',
+				desc: 'm-input 与日历弹出框的表单组合，点击触发选择，选中值格式化回填展示，支持清空与禁用。'
+			},
+			{
+				name: 'calendar-popup',
+				zhName: '日历弹出框',
+				enName: 'CalendarPopup',
+				desc: 'm-popup 与 m-calendar 的弹层组合，v-model 控制显隐，确认后自动关闭，支持方位、圆角、面板高度与安全区配置。'
 			},
 			{
 				name: 'date-picker',
@@ -240,12 +280,6 @@ export const demoGroups: DemoGroup[] = [
 				desc: '横向日期条，支持单选、多选、范围选择、value-format 字符串绑定、农历文案、过滤禁用与插槽定制。'
 			},
 			{
-				name: 'input',
-				zhName: '输入框',
-				enName: 'Input',
-				desc: '文本输入框，支持六种类型、清除图标、明文切换、格式化与数字精度收敛、字数统计、多行自适应、前后插槽与紧凑布局联动。'
-			},
-			{
 				name: 'lunar-picker',
 				zhName: '农历选择',
 				enName: 'LunarPicker',
@@ -262,30 +296,6 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '农历选择弹出框',
 				enName: 'LunarPickerPopup',
 				desc: 'm-popup 与农历选择面板的弹层组合，v-model 控制显隐，确认 / 取消后自动关闭，支持方位、圆角与安全区配置。'
-			},
-			{
-				name: 'picker',
-				zhName: '选择器',
-				enName: 'Picker',
-				desc: '通用滚轮选择器：一维 / 二维列数据自动识别，支持 children 级联、禁用项、对象选项与 columns-top / columns-bottom 插槽。'
-			},
-			{
-				name: 'picker-input',
-				zhName: '选择器输入框',
-				enName: 'PickerInput',
-				desc: 'm-input 与选择器弹出框的表单组合，点击触发选择，展示各列选中项文本，支持清空与禁用。'
-			},
-			{
-				name: 'picker-popup',
-				zhName: '选择器弹出框',
-				enName: 'PickerPopup',
-				desc: 'm-popup 与通用选择器面板的弹层组合，v-model 控制显隐与选中值，确认 / 取消后自动关闭。'
-			},
-			{
-				name: 'picker-view',
-				zhName: '选择器纯视图',
-				enName: 'PickerView',
-				desc: '无工具栏的索引受控多列滚轮，配合 m-picker-view-column 与 option 插槽，可嵌入自定义容器。'
 			},
 			{
 				name: 'time-picker',

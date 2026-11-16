@@ -14,6 +14,8 @@
 - 新增 `m-lunar-picker-input` 农历输入框：`m-input` 只读触发器 + 农历弹层，展示文本按列组合派生（如 `2026年六月十五`，开启 `show-gan-zhi` 为 `丙午年六月十五`）；自绘清空按钮回写 `null` 并派发 `clear`，`disabled` / `clearable` / `border` / `inlaid` 可配
 - 新增 `$m-lunar-picker-input-*`（触发层 / 清空按钮）主题变量段；面板视觉复用 `$m-picker-*`，列文本沿用 `$m-date-picker-option-*`
 - `utils/date` 新增导出 `getLunarMonthSequence(year)` / `LUNAR_START_YEAR` / `LUNAR_END_YEAR`
+- 修复：`m-input` 开启 `inlaid` 嵌入 `m-cell` 时控件高度塌陷（仅剩文本行高约 19.6px，贴顶且可点击区过小）；新增 `$m-input-inlaid-min-height`（默认 24px，与 `m-cell` 单行内容区一致），inlaid 控件保底高度并垂直居中占位符；所有透传 inlaid 的输入类组件同步生效
+- 修复：`m-input` 在 `m-compact` 水平组合中输入文字贴顶（边框容器改为 `flex: 1` 撑满根节点，与同行 `m-button` 等高后文字垂直居中），普通形态与 `textarea` 高度不受影响
 
 ## 0.5.3 (2026-11-15)
 

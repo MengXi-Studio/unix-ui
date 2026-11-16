@@ -153,7 +153,7 @@ label / 必填星号 / 校验与错误提示属表单体系，留待未来 `m-fo
 | clearable | 是否启用清除图标 | boolean | `false` |
 | clear-trigger | 清除图标显示时机，可选值 `focus` `always` | ClearTrigger | `focus` |
 | border | 是否显示边框容器 | boolean | `true` |
-| inlaid | 嵌入式形态：清边框、圆角、内边距与背景，用于嵌入 m-cell 等 | boolean | `false` |
+| inlaid | 嵌入式形态：清边框、圆角、内边距与背景，用于嵌入 m-cell 等；控件保底高度由 `$m-input-inlaid-min-height`（默认 24px）控制 | boolean | `false` |
 | disabled | 是否禁用 | boolean | `false` |
 | readonly | 是否只读：外观正常但不可编辑（经原生 disabled 模拟，只读态不可聚焦） | boolean | `false` |
 | confirm-type | 键盘确认键文字，可选值 `done` `search` `send` `go` `next`，仅单行生效 | string | `''` |

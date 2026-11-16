@@ -173,6 +173,7 @@ $m-toast-overlay-background: rgba(0, 0, 0, 0.7) !default;
 /* ========== Input 输入框 ========== */
 $m-input-font-size: 14px !default;                        /* 输入控件基准字号 */
 $m-input-padding-y: 7px !default;                         /* 边框容器纵向内边距 */
+$m-input-inlaid-min-height: 24px !default;                /* inlaid 形态控件最小高度（与 m-cell 单行内容区高度一致，避免嵌入后高度塌陷） */
 $m-input-padding-x: 10px !default;                        /* 边框容器横向内边距 */
 $m-input-gap: 6px !default;                               /* 控件与前后部（插槽 / 图标）间距 */
 $m-input-border-radius: $m-radius-md !default;

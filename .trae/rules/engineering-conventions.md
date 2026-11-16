@@ -80,9 +80,9 @@ packages/docs（VitePress 双语文档站，手工维护）
 
 ### 6.1 组件排序（强制）
 
-- **组内按组件名字母序升序**：`playground/pages/index/demo-components.uts` 各分组的 `components` 数组、文档侧栏 `docs/.vitepress/config/zh.ts` 与 `en.ts` 各分组的 `items`，一律按组件名（kebab-case 小写标识，对应 `name`）字母升序排列；分组之间的先后顺序保持现状，禁止按新增时间追加到组末。
+- **组内按组件名字母序升序**：`playground/pages/index/demo-components.uts` 各分组的 `components` 数组、文档侧栏 `docs/.vitepress/config/zh.ts` 与 `en.ts` 各分组的 `items`，一律按组件名（kebab-case 小写标识，对应 `name`）字母升序排列；分组之间的先后顺序固定为「基础 → 布局 → 数据录入 → 选择器 → 日期时间 → 反馈 → 数据展示 → 导航」，禁止按新增时间追加到组末。
 - **三处同序**：同一分组的组件顺序在 `demo-components.uts`、`zh.ts`、`en.ts` 中必须完全一致（中英文侧栏的英文项目名也同序），新增组件须插入到正确位置而非追加。
-- 示例（表单组件组）：`calendar → calendar-input → calendar-popup → cascader → cascader-input → cascader-popup → checkbox → checkbox-input → checkbox-popup → input`。
+- 示例（数据录入组）：`checkbox → checkbox-input → checkbox-popup → color-picker → color-picker-input → color-picker-popup → input`；示例（选择器组）：`cascader → cascader-input → cascader-popup → picker → picker-input → picker-popup → picker-view`。
 
 ## 7. 验证（core-protocol DoD 的项目级补充）
 

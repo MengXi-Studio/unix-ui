@@ -93,20 +93,35 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					]
 				},
 				{
-					text: 'Form Components',
+					text: 'Data Entry',
 					items: [
-						{ text: 'Calendar', link: '/en/components/calendar' },
-						{ text: 'CalendarInput', link: '/en/components/calendar-input' },
-						{ text: 'CalendarPopup', link: '/en/components/calendar-popup' },
-						{ text: 'Cascader', link: '/en/components/cascader' },
-						{ text: 'CascaderInput', link: '/en/components/cascader-input' },
-						{ text: 'CascaderPopup', link: '/en/components/cascader-popup' },
 						{ text: 'Checkbox', link: '/en/components/checkbox' },
 						{ text: 'CheckboxInput', link: '/en/components/checkbox-input' },
 						{ text: 'CheckboxPopup', link: '/en/components/checkbox-popup' },
 						{ text: 'ColorPicker', link: '/en/components/color-picker' },
 						{ text: 'ColorPickerInput', link: '/en/components/color-picker-input' },
 						{ text: 'ColorPickerPopup', link: '/en/components/color-picker-popup' },
+						{ text: 'Input', link: '/en/components/input' }
+					]
+				},
+				{
+					text: 'Pickers',
+					items: [
+						{ text: 'Cascader', link: '/en/components/cascader' },
+						{ text: 'CascaderInput', link: '/en/components/cascader-input' },
+						{ text: 'CascaderPopup', link: '/en/components/cascader-popup' },
+						{ text: 'Picker', link: '/en/components/picker' },
+						{ text: 'PickerInput', link: '/en/components/picker-input' },
+						{ text: 'PickerPopup', link: '/en/components/picker-popup' },
+						{ text: 'PickerView', link: '/en/components/picker-view' }
+					]
+				},
+				{
+					text: 'Date & Time',
+					items: [
+						{ text: 'Calendar', link: '/en/components/calendar' },
+						{ text: 'CalendarInput', link: '/en/components/calendar-input' },
+						{ text: 'CalendarPopup', link: '/en/components/calendar-popup' },
 						{ text: 'DatePicker', link: '/en/components/date-picker' },
 						{ text: 'DatePickerInput', link: '/en/components/date-picker-input' },
 						{ text: 'DatePickerPopup', link: '/en/components/date-picker-popup' },
@@ -114,14 +129,9 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'DateRangePickerInput', link: '/en/components/date-range-picker-input' },
 						{ text: 'DateRangePickerPopup', link: '/en/components/date-range-picker-popup' },
 						{ text: 'DateStrip', link: '/en/components/date-strip' },
-						{ text: 'Input', link: '/en/components/input' },
 						{ text: 'LunarPicker', link: '/en/components/lunar-picker' },
 						{ text: 'LunarPickerInput', link: '/en/components/lunar-picker-input' },
 						{ text: 'LunarPickerPopup', link: '/en/components/lunar-picker-popup' },
-						{ text: 'Picker', link: '/en/components/picker' },
-						{ text: 'PickerInput', link: '/en/components/picker-input' },
-						{ text: 'PickerPopup', link: '/en/components/picker-popup' },
-						{ text: 'PickerView', link: '/en/components/picker-view' },
 						{ text: 'TimePicker', link: '/en/components/time-picker' },
 						{ text: 'TimePickerInput', link: '/en/components/time-picker-input' },
 						{ text: 'TimePickerPopup', link: '/en/components/time-picker-popup' },

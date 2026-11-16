@@ -1,86 +1,80 @@
 # Theming
 
-unix-ui theming is driven by SCSS variables. **A default theme ships out of the box**: every component imports the variable file, so the full visual design works with zero configuration and no initialization code.
+unix-ui theming is driven by SCSS variables, and the **default theme works out of the box**: components already import the variable file, so no initialization code is required and there is no runtime theme computation.
 
-## Overriding Theme Variables
+## Overriding variables
 
-Define variables with the same names directly in the project root `uni.scss` to override globally:
+Define the same variables **directly** in the project-root `uni.scss`:
 
 ```scss
-// Custom theme colors (applies to all components)
+// 1. Brand colors: affect every component that uses them
 $m-color-primary: #10b981;
 $m-color-danger: #dc2626;
 
-// Custom component metrics
+// 2. Component specs: override only what you need
 $m-button-normal-height: 48px;
+$m-button-radius: 12px;
 $m-radius-md: 12px;
 ```
 
-All variables in the variable file are declared with `!default`, so user-defined values always win over component defaults, regardless of where they are written.
+Every variable uses `!default`, so user-defined values always win over component defaults, regardless of where they are written.
 
-## How It Works
+## How it works
 
-1. Each component imports `theme/vars.scss` at the top level of its style (all `!default`), which expands to the default values at compile time
-2. The uni-app x compiler injects the project root `uni.scss` into every component's style for the same compilation
-3. Variables defined by the user in `uni.scss` make the `!default` declarations skip, thus overriding the defaults
+1. Each component imports `theme/vars.scss` (all `!default`) at the top of its style block, expanding to defaults at compile time;
+2. The uni-app x compiler injects the project-root `uni.scss` into every component style in the same compilation;
+3. User-defined variables make the `!default` declarations skip, completing the override.
 
-Everything happens at compile time — theming has zero runtime cost.
+Everything happens at compile time — zero runtime theming cost. The variable contract is identical for uni_modules and npm installs.
 
 ::: warning Never import vars.scss in uni.scss
-Do not `@import` the library's `vars.scss` in `uni.scss` — the compiler injects `uni.scss` into every component's style, and importing the same file again forms a circular import that fails the build:
+Do not `@import` the library's `vars.scss` in `uni.scss`: the compiler injects `uni.scss` into every component style, which then imports the same file again and triggers a circular import:
 
 ```
 [sass] This file is already being loaded.
 ```
 
-To override the theme, just **define the variables directly** — no import of any file is needed.
+Just **define variables** — no file import is needed.
 :::
 
-## Variable Reference
+## Variable layers
 
-### Theme Colors
+| Layer | Naming | Examples | Scope |
+| --- | --- | --- | --- |
+| Global base | `$m-<property>` | `$m-color-primary`, `$m-radius-md`, `$m-border-width` | brand colors and cross-component specs |
+| Component | `$m-<component>-<property>` | `$m-button-normal-height`, `$m-tabs-nav-height` | one component's sizes and colors |
+| Variants | `$m-<component>-input-*` / `-popup-*` | `$m-lunar-picker-input-*` | appearance of input / popup variants |
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| $m-color-primary | Primary color | #1989fa |
-| $m-color-success | Success color | #07c160 |
-| $m-color-warning | Warning color | #ff976a |
-| $m-color-danger | Danger color | #ee0a24 |
-| $m-white | Base white | #ffffff |
-| $m-text-color | Base text color | #323233 |
-| $m-disabled-opacity | Disabled opacity | 0.5 |
-| $m-color-default-bg | Background of the default type | #ffffff |
-| $m-color-default-border | Border of the default type | #ebedf0 |
-
-### Base Metrics
+Global base variables:
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| $m-border-width | Base border width | 1px |
-| $m-radius-md | Base radius | 8px |
-| $m-radius-max | Full radius | 999px |
+| `$m-color-primary` | Primary color | `#1989fa` |
+| `$m-color-success` | Success color | `#07c160` |
+| `$m-color-warning` | Warning color | `#ff976a` |
+| `$m-color-danger` | Danger color | `#ee0a24` |
+| `$m-text-color` | Base text color | `#323233` |
+| `$m-white` | Base white | `#ffffff` |
+| `$m-disabled-opacity` | Disabled opacity | `0.5` |
+| `$m-border-width` | Base border width | `1px` |
+| `$m-radius-md` | Base radius | `8px` |
+| `$m-radius-max` | Pill radius | `999px` |
 
-### Button
+Component-level defaults and usage live in each component's "Theming" section.
 
-See [Button Theming](/en/components/button#theming) for the full set of Button variables, including height, padding, font size and radius for each size.
+## Finding variables
 
-### Component-level Variables
-
-Besides the global variables above, each component ships its own `$m-<component>-*` variables (e.g. `$m-sticky-z-index` for Sticky, the `$m-tabs-*` series for Tabs, the `$m-calendar-*` series for Calendar), all declared with `!default`. See the "Theming" section of each component's documentation for the complete list.
-
-## Naming and Discovery
-
-- Global variables are named `$m-<property>`, component-specific ones `$m-<component>-<property>`;
-- All variables are defined in [theme/vars.scss](https://github.com/MengXi-Studio/unix-ui/blob/master/packages/core/theme/vars.scss), grouped by component with comments;
-- To check what a single component exposes, read the "Theming" section of its documentation.
+- All variables live in [theme/vars.scss](https://github.com/MengXi-Studio/unix-ui/blob/master/packages/core/theme/vars.scss), grouped per component with comments;
+- For a single component, check its documentation's "Theming" section (e.g. [Button theming](/en/components/button#theming));
+- When only one instance should change, prefer `custom-class` / `custom-style`.
 
 ## Notes
 
-- `uni.scss` is injected at compile time and **does not participate in hot updates**; restart the dev server after changing variables — see the [FAQ](/en/guide/faq).
-- Override only the variables you need and keep the rest at their defaults — this keeps upgrade diffs minimal.
-- Use theme variables for global visual consistency; for one-off tweaks prefer the `custom-class` / `custom-style` props instead of changing global variables.
+- `uni.scss` is compile-time injected and **not hot-reloaded**; restart the dev server after changing variables — see [FAQ](/en/guide/faq#theme-does-not-change-after-editing-uni-scss).
+- Override only what you need; keeping the rest at defaults minimizes upgrade diffs.
+- Panel visuals are now owned by `$m-picker-*`; after the date / time panels moved onto `m-picker`, the old panel-level variables no longer apply — see the [changelog](/en/changelog).
 
-## Next Steps
+## Next steps
 
-- [Button](/en/components/button): component props and events
-- [FAQ](/en/guide/faq#why-cant-i-import-the-variable-file-in-uni-scss): common pitfalls of the theming mechanism
+- [FAQ](/en/guide/faq#why-can-t-i-import-the-variable-file-in-uni-scss): common theming pitfalls
+- [Button](/en/components/button): props and events of the button component

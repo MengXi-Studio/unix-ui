@@ -1,78 +1,93 @@
 # FAQ
 
-Grouped by topic. For anything not covered here, ask in [GitHub Discussions](https://github.com/MengXi-Studio/unix-ui/discussions).
+## Installation and imports
 
-## Environment & Build
-
-### Build error: "index.html is missing in the root directory"
-
-The uni-app x Web build is based on Vite, so the project root must contain an `index.html` entry template (containing `<script type="module" src="/main">`). Projects created by the CLI include it by default; manually scaffolded projects need to add it themselves.
-
-### manifest.json appid errors
-
-- An appid already taken by someone else → "You are not a member of this application's project"
-- A made-up, unregistered appid → "The appid does not exist, please re-acquire it in manifest.json"
-
-During local Web development you can set `appid` in `manifest.json` to an empty string `""`. Before cloud-packaging an App, obtain a real one from [dev.dcloud.net.cn](https://dev.dcloud.net.cn/).
-
-### The local port is taken by another project
-
-When multiple projects share the same machine, Vite's default port 5173 may be grabbed by another dev server (the log looks normal but the page content belongs to a different project). Specify the port explicitly in `manifest.json`:
-
-```json
-{
-	"web": {
-		"devServer": {
-			"port": 5174
-		}
-	}
-}
-```
-
-After starting, confirm which process owns the port so the page content does not come from another project.
-
-### Component tags do not render (easycom miss)
+### Component tag not rendered
 
 Check in order:
 
-1. Is the directory under `uni_modules` named `m-ui-x` (it must match the plugin id)?
-2. For npm installs, is the `^m-(.*)` easycom rule configured in `pages.json`?
-3. Does `pages.json` contain another easycom mapping for the same component name that wins the match?
+1. The directory under `uni_modules` must be `m-ui-x` (matching the plugin id); otherwise easycom will not scan it;
+2. For npm installs, register the easycom rule in `pages.json`: `"^m-(.*)": "@meng-xi/unix-ui/components/m-$1/m-$1.uvue"`;
+3. Restart the dev server after editing `pages.json`;
+4. If it still fails, copy the package into `uni_modules/m-ui-x/` and use the zero-config route.
 
-### Custom styles do not take effect on App
+### No type hints after npm install
 
-ucss on App has strict rules: text styles only apply to `<text>` / `button` and are not inherited, pseudo-elements and descendant selectors are unsupported, and `@keyframes` is unavailable. When overriding component styles, prefer the exposed `custom-class` / `custom-style` props and put text styles on `<text>`.
+Make sure the project's `tsconfig.json` / `jsconfig.json` does not override `moduleResolution`; the uni-app x template defaults already resolve `.uvue` and `.uts` inside the package. Restore the template defaults if you changed them.
+
+### Can I import only some components?
+
+Yes. With uni_modules, keep only the `components/m-*` directories you need — but keep `theme/`, `utils/` and `static/` (icon font), otherwise variables or icons go missing.
 
 ## Theming
 
-### Why can't I import the variable file in uni.scss? {#why-cant-i-import-the-variable-file-in-uni-scss}
+### Why can't I import the variable file in uni.scss?
 
-The uni-app x compiler **injects the project root `uni.scss` into every component's styles** at compile time. The library's `theme/vars.scss` is already imported inside each component; importing the same file again from `uni.scss` triggers a sass circular import:
+`uni.scss` is injected into every component style, and components already import `vars.scss`, so pointing both at the same file triggers a circular import:
 
 ```
 [sass] This file is already being loaded.
 ```
 
-To override the theme, simply **define** `$m-*` variables directly in `uni.scss`. See [Theming](/en/guide/theming) for details.
+Define variables directly in `uni.scss` instead — see [Theming](/en/guide/theming).
 
-### The theme doesn't change after editing uni.scss
+### Theme does not change after editing uni.scss
 
-`uni.scss` is injected at compile time and does **not** participate in hot updates. After changing variables you must restart the dev server (stop it first, then `launch web` again).
+`uni.scss` is compile-time injected and is not hot-reloaded. Restart the dev server (recompile if needed) and refresh.
 
-## Usage & Routing
+### How do I style a single instance?
 
-### In-page navigation with # in the URL doesn't work on Web
+Pass a class via `custom-class` or inline styles via `custom-style`; avoid changing global variables for one-off cases.
 
-When `web.router.mode` in `manifest.json` is set to `history`, routing reads the URL pathname (e.g. `http://localhost:5174/pages-sub/button/button`) and the hash part after `#` is ignored. Use the pathname form when sharing or bookmarking page links.
+## Using components
 
-## Platform
+### What value types do date, time and picker components use?
 
-### How do I enable vapor mode?
+| Component | Value type |
+| --- | --- |
+| `m-input` / `m-picker` | `string` / `string[]` |
+| `m-date-picker` / `m-calendar` | `Date \| null` |
+| `m-time-picker` | `'HH:mm'` or `'HH:mm:ss'` |
+| `m-lunar-picker` | Gregorian `Date` (lunar only appears in columns and echo text) |
+| `m-checkbox-group` | array |
 
-See [Platform Compatibility · Vapor Mode](/en/guide/compatibility#vapor-mode).
+Multi-column `columns` accepts `PickerOption[][]` or a plain string matrix; items can be `{ text, value, disabled }`.
 
-## Next Steps
+### The lunar date looks off by one day
 
-- [Theming](/en/guide/theming): the full guide to variable overrides
-- [Platform Compatibility](/en/guide/compatibility): per-platform support and known limitations
-- [GitHub Discussions](https://github.com/MengXi-Studio/unix-ui/discussions): ask about anything not covered here
+`m-lunar-picker` always exposes a Gregorian `Date` (local midnight); lunar values only drive columns and input echo. When formatting, use helpers such as `formatDate` and avoid `toISOString()` slicing, which converts to UTC and can shift the day.
+
+### Input height looks wrong inside m-cell
+
+Use the `inlaid` mode inside `m-cell`: the control height is guaranteed by `$m-input-inlaid-min-height` (default `24px`) to match a single-line cell. If that variable was customized, restore it or adjust the cell row height accordingly.
+
+### Icons are not showing
+
+Icons rely on font files under `static/`. Verify:
+1. The directory was copied along with the library;
+2. The `m-icon` `name` exists in the [icon list](/en/components/icon);
+3. Custom fonts are packaged on App — cloud builds and local runs behave the same.
+
+## Platforms
+
+### Text styles do not apply on App
+
+Set text styles on `text` / `button` only; `view`s on App do not inherit text styles. Move `font-size` / `color` onto `text`.
+
+### The option slot does not work on mini programs
+
+Mini programs render only the first same-named slot inside a `v-for`, so per-column slots such as `option` fall back to built-in text. Use `formatter` for custom text, or use the slot on Web / App only.
+
+### Is vapor mode supported?
+
+Yes — see [Compatibility · Vapor mode](/en/guide/compatibility#vapor-mode).
+
+## Versions and migration
+
+### What changed in the date / time panels?
+
+Since 0.6.0, `m-date-picker` / `m-time-picker` compose `m-picker` internally. **Public props / events / slots / value types are unchanged**; visuals are owned by `$m-picker-*` and the old panel-level variables no longer apply. See the [changelog](/en/changelog).
+
+### How do I see what changed in a release?
+
+The [changelog](/en/changelog) lists additions, fixes and changes per version; the plugin marketplace and npm package ship the same content.

@@ -1,65 +1,52 @@
 # 平台兼容性
 
-unix-ui 以 UTS + uvue 编写，平台差异在组件内部通过条件编译隔离，业务代码无需自行判断平台。
-
-## 平台矩阵
+## 支持矩阵
 
 | 平台 | 状态 | 说明 |
 | --- | --- | --- |
-| Web | ✅ 已实测 | HBuilderX 编译运行，渲染 / 事件 / 主题覆盖矩阵与逐组件场景浏览器实测通过 |
-| App-Android | ✅ 云打包验证 | 蒸汽与 VDOM 双模式云打包编译通过，真机演示 App 随版本发布（见[安装](/guide/installation#真机体验)） |
-| App-iOS | 🔧 已适配 | 代码条件编译适配，待真机实测（需 macOS 环境） |
-| App-HarmonyOS | 🔧 已适配 | 代码条件编译适配，待实测（需 DevEco Studio） |
-| 微信小程序 | 🔧 基线已实测 | 遮罩显隐 / 弹层 / 字体加载等基线问题已在 v0.3.1 实测修复；新组件随版本陆续实测 |
-| 其他小程序 | 🔧 已适配 | 代码条件编译适配，待开发者工具实测 |
+| Web（H5 / PC 浏览器） | 已逐组件实测 | 演示站即 Web 端，可交互验证全部变体 |
+| App · Android | 支持 | 云打包产物可安装体验，见[安装](/guide/installation#真机体验) |
+| App · iOS | 支持 | 与 Android 共用同一套 uvue 源码 |
+| App · HarmonyOS | 支持 | 依赖 HBuilderX 对应版本的原生渲染能力 |
+| 微信 / 支付宝等小程序 | 支持（有限制） | 见下方「已知限制」 |
 
-## HBuilderX 版本要求
+设计目标是同一套源码在各端表现一致；平台差异全部收敛在组件内部的条件编译中，业务代码不需要判断平台。
 
-| 能力 | 最低版本 |
+## 环境要求
+
+| 项目 | 要求 |
 | --- | --- |
-| 组件编译（uni-app x） | 5.08 |
-| 样式隔离策略 2.0 | 4.13+ |
-| `UniElement.animate`（加载动画，Android 蒸汽模式） | 4.53+ |
+| HBuilderX | `5.08` 及以上 |
+| uni-app x 编译器 | 随 HBuilderX 提供，无需单独安装 |
+| 样式隔离 | 建议策略 2.0（HBuilderX 4.13+） |
+| Node.js | 仅 npm 安装方式需要 |
 
 ## 蒸汽模式
 
-unix-ui 组件兼容蒸汽模式（vapor）编译。项目启用方式——在 `manifest.json` 中配置：
+组件库兼容 uni-app x 的[蒸汽模式](https://doc.dcloud.net.cn/uni-app-x/compiler/#vapor)（vapor + bytecode）：组件模板不使用 VDOM 特有写法，动画统一走 `UniElement.animate`，在开启 `manifest.json` 的 vapor 配置后可直接编译运行。
 
-```json
-{
-	"uni-app-x": {
-		"styleIsolationVersion": "2",
-		"vapor": true,
-		"vapor-render-target": "bytecode"
-	}
-}
-```
+## 平台差异如何处理
 
-组件内部不使用 vdom 模式专属能力，vdom 与 vapor 两种模式下行为一致。
-
-## 平台差异处理
-
-平台差异在组件内部处理，业务代码无需感知：
-
-- Web 端补充 `cursor: pointer` 等鼠标体验样式
-- 文字渲染统一置于 `<text>` 节点（ucss 约束文字样式不继承）
-- 0.5px 细边框统一使用绝对定位 + `transform: scale(0.5)` 方案，避免各端 border 渲染差异
-- 样式隔离采用策略 2.0，组件样式不污染全局
+| 差异点 | 组件内的处理 |
+| --- | --- |
+| 0.5px 细边框 | 绝对定位层 + `transform: scale(0.5)`，各端统一 |
+| 动画 | `UniElement.animate`（ucss 无 `@keyframes`、无伪元素） |
+| 字体图标 | 打包进 `static/` 的字体文件 + `text` 渲染，不依赖 Web 字体加载 |
+| 文字样式 | 只设在 `text` / `button` 上（App 端 `view` 无文字样式继承） |
+| 平台专属能力 | 用 `#ifdef APP-ANDROID` / `APP-IOS` / `WEB` 隔离，对使用方透明 |
 
 ## 已知限制
 
-| 场景 | 说明 |
-| --- | --- |
-| App-iOS / App-HarmonyOS | 仅完成条件编译适配，尚未真机实测；如遇问题请附复现工程反馈 |
-| 微信小程序 · DOM 能力 | 小程序端 `UniElement` 不提供 `children` / `parentElement`，依赖子树遍历或同步测量的滚动类特性会降级（如部分切换动画直接落位而非播放） |
-| 微信小程序 · 字体图标 | `@font-face` 不支持本地字体路径，改为运行时 `loadFontFace` 加载，首帧可能先显示默认字形 |
-| Web · 路由 | `web.router.mode` 为 `history` 时，URL 中 `#` 后的部分不参与路由，详见[常见问题](/guide/faq) |
+- **小程序端具名插槽**：`v-for` 内使用同名具名插槽时仅第一个生效，因此 `option` 这类按列 / 按项转发的插槽在小程序端不可用，列文本回退为内置渲染；Web 与 App 端不受影响。
+- **滚动吸附手感**：滚轮类组件的吸附动画依赖各端 `UniElement` 实现，真机上的惯性曲线与 Web 略有差异，属平台特性。
+- **农历范围**：农历换算数据覆盖 1900–2100，超出范围的公历日期会被钳制到边界。
+- **面板级主题变量**：日期 / 时间面板已迁移为 `m-picker` 组合，面板级 `$m-date-picker-*` / `$m-time-picker-*` 视觉变量不再生效，统一由 `$m-picker-*` 控制。
 
-## 问题反馈
+## 反馈
 
-平台相关问题请附上：HBuilderX 版本、运行平台与设备 / 浏览器版本、最小复现工程或代码片段，提交到 [GitHub Issues](https://github.com/MengXi-Studio/unix-ui/issues)。
+发现某端表现与文档不一致时，请在 [GitHub Issues](https://github.com/MengXi-Studio/unix-ui/issues) 附上平台、HBuilderX 版本、组件名与最小复现，便于定位是否为平台差异。
 
 ## 下一步
 
-- [常见问题](/guide/faq)：编译与运行的高频问题
-- [Button 按钮](/components/button)：组件 API 参考
+- [常见问题](/guide/faq)：编译、主题与运行时的常见问题
+- [主题定制](/guide/theming)：变量覆盖与优先级

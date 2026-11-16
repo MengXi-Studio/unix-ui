@@ -126,7 +126,7 @@ For all available variables see [theme/vars.scss](./packages/core/theme/vars.scs
 
 ## Components
 
-46 components in total (including sub-components), organized into 6 categories that mirror the documentation sidebar. Each row lists the tag and its core capabilities; see the [component reference](https://mengxi-studio.github.io/unix-ui/en/components/button.html) for full APIs.
+65 components in total (including sub-components and variants), organized into 8 categories that mirror the documentation sidebar. Each row lists the tag and its core capabilities; see the [component reference](https://mengxi-studio.github.io/unix-ui/en/components/button.html) for full APIs.
 
 ### Basic Components
 
@@ -222,7 +222,7 @@ For all available variables see [theme/vars.scss](./packages/core/theme/vars.scs
 | --- | --- |
 | `m-tabs` / `m-tab` | Tabs: line / card / pill styles, index and name mixed matching, horizontally scrollable bar, content transition and swipe switching, sticky, scrollspy, before-change interception |
 
-> A date utility set also ships with the library (`utils/date.uts`, 69 pure functions covering comparison, arithmetic, week / month / year boundaries, formatting / parsing and lunar conversion) — see [Date tools](https://mengxi-studio.github.io/unix-ui/en/tools/date.html).
+> A date utility set also ships with the library (`utils/date.uts`, a pure-function set covering comparison, arithmetic, week / month / year boundaries, formatting / parsing and lunar conversion) — see [Date tools](https://mengxi-studio.github.io/unix-ui/en/tools/date.html).
 
 ## Platform Compatibility
 

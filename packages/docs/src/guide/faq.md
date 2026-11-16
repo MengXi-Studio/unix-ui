@@ -1,78 +1,93 @@
 # 常见问题
 
-按问题类型分组；未覆盖的问题欢迎到 [GitHub Discussions](https://github.com/MengXi-Studio/unix-ui/discussions) 提问。
+## 安装与导入
 
-## 环境与编译
+### 组件标签没有渲染
 
-### 编译报「根目录缺少 index.html」
+按顺序排查：
 
-uni-app x 的 Web 端基于 Vite 编译，工程根目录必须有 `index.html` 入口模板（内含 `<script type="module" src="/main">`）。CLI 创建的 uni-app x 工程默认包含；手动搭建的工程需自行补齐。
+1. `uni_modules` 下的目录名必须是 `m-ui-x`（与插件 id 一致），否则 easycom 不会扫描；
+2. npm 方式必须在 `pages.json` 配置 easycom 规则：`"^m-(.*)": "@meng-xi/unix-ui/components/m-$1/m-$1.uvue"`；
+3. 改完 `pages.json` 需要重启 dev server；
+4. 仍未生效时，把包内容复制到 `uni_modules/m-ui-x/`，改用零配置方式。
 
-### manifest.json 的 appid 报错
+### npm 安装后没有类型提示
 
-- 已被占用的 appid → 「您不是这个应用的项目成员」
-- 编造的未注册 appid → 「appid 不存在，请在 manifest.json 中重新获取」
+确认 `tsconfig.json` / `jsconfig.json` 未被项目覆盖了 `moduleResolution`；uni-app x 工程的默认配置已能解析包内 `.uvue` 与 `.uts`，如手动改过请恢复为工程模板的默认值。
 
-本地 Web 开发阶段可将 `manifest.json` 中 `appid` 置为空字符串 `""`；App 云打包前需在 [dev.dcloud.net.cn](https://dev.dcloud.net.cn/) 正式获取。
+### 可以只引入部分组件吗
 
-### 本地端口被其他项目占用
-
-多个项目共用开发机时，Vite 默认端口 5173 可能被其他 dev server 抢占（日志仍显示正常但页面内容是别的项目）。在 `manifest.json` 中显式指定端口：
-
-```json
-{
-	"web": {
-		"devServer": {
-			"port": 5174
-		}
-	}
-}
-```
-
-启动后确认端口的占用进程归属，避免页面内容来自其他项目。
-
-### 组件标签没有渲染（easycom 未命中）
-
-按顺序检查：
-
-1. `uni_modules` 下的目录名是否为 `m-ui-x`（须与插件 id 一致）；
-2. npm 方式是否已在 `pages.json` 配置 `^m-(.*)` 的 easycom 规则；
-3. `pages.json` 中是否存在同名组件的其他 easycom 映射，导致匹配被抢占。
-
-### App 端自定义样式不生效
-
-App 端 ucss 有明确约束：文字样式只对 `<text>` / `button` 生效且不继承、不支持伪元素与后代选择器、无 `@keyframes`。覆盖组件样式时优先使用组件暴露的 `custom-class` / `custom-style`，并把文字样式写在 `<text>` 上。
+可以。uni_modules 方式只保留需要的 `components/m-*` 目录；但主题变量、`utils/` 与 `static/`（图标字体）需保留，否则会出现样式变量缺失或图标空白。
 
 ## 主题
 
-### 为什么不能在 uni.scss 中 import 变量文件？
+### 为什么不能在 uni.scss 中 import 变量文件
 
-uni-app x 编译器会把项目根 `uni.scss` **注入每个组件的样式**参与编译。组件库的 `theme/vars.scss` 已在组件内部引入，若 `uni.scss` 再引入同一文件，会触发 sass 循环导入：
+`uni.scss` 会被编译器注入每个组件样式，而组件内部已引入 `vars.scss`，两者指向同一文件会触发 sass 循环导入并报错：
 
 ```
 [sass] This file is already being loaded.
 ```
 
-覆盖主题只需在 `uni.scss` 中**直接定义** `$m-*` 变量，详见[主题定制](/guide/theming)。
+正确做法是在 `uni.scss` 中**直接定义变量**，详见[主题定制](/guide/theming)。
 
 ### 修改 uni.scss 后主题没变化
 
-`uni.scss` 是编译期注入，**不参与热更新**。修改变量后必须重启 dev server（先停止再 `launch web`）。
+`uni.scss` 是编译期注入，不参与热更新。修改后需要重启 dev server（必要时重新编译），再刷新页面。
 
-## 使用与路由
+### 只想改一个实例的样式
 
-### Web 端页面跳转地址带 # 不生效
+用 `custom-class` 传类名，或用 `custom-style` 传内联样式；不要为个别实例改动全局变量，否则会影响所有同类组件。
 
-`manifest.json` 中 `web.router.mode` 配置为 `history` 时，路由读取的是 URL pathname（如 `http://localhost:5174/pages-sub/button/button`），`#` 后的 hash 部分不参与路由。分享或收藏页面链接时使用 pathname 形式。
+## 组件使用
+
+### 日期、时间与选择器的值类型是什么
+
+| 组件 | 值类型 |
+| --- | --- |
+| `m-input` / `m-picker` | `string` / `string[]` |
+| `m-date-picker` / `m-calendar` | `Date \| null` |
+| `m-time-picker` | `'HH:mm'` 或 `'HH:mm:ss'` |
+| `m-lunar-picker` | 公历 `Date`（农历只体现在列与回显） |
+| `m-checkbox-group` | 数组 |
+
+多列选择器的 `columns` 支持 `PickerOption[][]`，也支持纯字符串二维数组，元素可为 `{ text, value, disabled }`。
+
+### 农历日期和我预期的不一致
+
+`m-lunar-picker` 对外值始终是公历 `Date`（本地零点），农历仅用于列渲染与输入框回显。做字符串输出时请用 `formatDate` 等工具函数，避免用 `toISOString()` 直接截取（会按 UTC 换算导致日期偏移）。
+
+### 输入框嵌进 m-cell 后高度不对
+
+使用 `inlaid` 模式嵌入 `m-cell`，控件高度由 `$m-input-inlaid-min-height`（默认 `24px`）保底，与单元格单行内容区一致。若自定义过该变量导致挤压，请恢复默认或同步调整 `m-cell` 的行高。
+
+### 图标不显示
+
+图标依赖 `static/` 下的字体文件。确认：
+1. 该目录已随组件库一并复制（不完整拷贝会丢失）；
+2. `m-icon` 的 `name` 在[图标文档](/components/icon)列表内；
+3. App 端自定义字体需在 `manifest` 中正常打包，云端打包与本地运行行为一致。
 
 ## 平台
 
-### 蒸汽模式如何开启
+### App 端文字样式不生效
 
-见[平台兼容性 · 蒸汽模式](/guide/compatibility#蒸汽模式)。
+文字样式只应设在 `text` / `button` 上，`view` 在 App 端没有文字样式继承。把 `font-size` / `color` 写到 `text` 上即可。
 
-## 下一步
+### 小程序端 option 插槽不生效
 
-- [主题定制](/guide/theming)：变量覆盖的完整说明
-- [平台兼容性](/guide/compatibility)：各端支持情况与已知限制
-- [GitHub Discussions](https://github.com/MengXi-Studio/unix-ui/discussions)：未覆盖的问题欢迎提问
+小程序对同一 `v-for` 内的同名具名插槽只渲染第一个，`option` 这类按列转发的插槽因此在小程序端回退为内置文本。需要自定义样式时请用 `formatter` 改写文本，或仅面向 Web / App 使用插槽。
+
+### 支持蒸汽模式吗
+
+支持。详见[平台兼容性 · 蒸汽模式](/guide/compatibility#蒸汽模式)。
+
+## 版本与迁移
+
+### 升级后日期 / 时间面板有什么变化
+
+0.6.0 起，`m-date-picker` / `m-time-picker` 的面板内部改为组合 `m-picker`，**对外 props / events / 插槽 / 值类型保持不变**；视觉统一由 `$m-picker-*` 控制，原先的面板级变量不再生效。详见[更新日志](/changelog)。
+
+### 如何查看某个版本改了什么
+
+[更新日志](/changelog)按版本记录新增、修复与变更；插件市场与 npm 包的 changelog 内容一致。

@@ -50,6 +50,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			'/en/guide/': [
 				{
 					text: 'Getting Started',
+					collapsed: false,
 					items: [
 						{ text: 'Introduction', link: '/en/guide/introduction' },
 						{ text: 'Installation', link: '/en/guide/installation' },
@@ -58,10 +59,12 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Fundamentals',
+					collapsed: false,
 					items: [{ text: 'Theming', link: '/en/guide/theming' }]
 				},
 				{
 					text: 'Advanced',
+					collapsed: false,
 					items: [
 						{ text: 'Compatibility', link: '/en/guide/compatibility' },
 						{ text: 'FAQ', link: '/en/guide/faq' }
@@ -71,6 +74,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			'/en/components/': [
 				{
 					text: 'Basic Components',
+					collapsed: false,
 					items: [
 						{ text: 'Button', link: '/en/components/button' },
 						{ text: 'Icon', link: '/en/components/icon' },
@@ -80,6 +84,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Layout Components',
+					collapsed: false,
 					items: [
 						{ text: 'Compact', link: '/en/components/compact' },
 						{ text: 'Divider', link: '/en/components/divider' },
@@ -94,6 +99,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Data Entry',
+					collapsed: false,
 					items: [
 						{ text: 'Checkbox', link: '/en/components/checkbox' },
 						{ text: 'CheckboxInput', link: '/en/components/checkbox-input' },
@@ -106,6 +112,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Pickers',
+					collapsed: false,
 					items: [
 						{ text: 'Cascader', link: '/en/components/cascader' },
 						{ text: 'CascaderInput', link: '/en/components/cascader-input' },
@@ -118,6 +125,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Date & Time',
+					collapsed: false,
 					items: [
 						{ text: 'Calendar', link: '/en/components/calendar' },
 						{ text: 'CalendarInput', link: '/en/components/calendar-input' },
@@ -142,6 +150,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Feedback Components',
+					collapsed: false,
 					items: [
 						{ text: 'Fab', link: '/en/components/fab' },
 						{ text: 'Loading', link: '/en/components/loading' },
@@ -152,6 +161,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Data Display',
+					collapsed: false,
 					items: [
 						{ text: 'Badge', link: '/en/components/badge' },
 						{ text: 'Cell', link: '/en/components/cell' }
@@ -159,12 +169,14 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Navigation Components',
+					collapsed: false,
 					items: [{ text: 'Tabs', link: '/en/components/tabs' }]
 				}
 			],
 			'/en/tools/': [
 				{
 					text: 'Tools',
+					collapsed: false,
 					items: [{ text: 'Date', link: '/en/tools/date' }]
 				}
 			]

@@ -4,7 +4,7 @@
 
 为 uni-app x 提供功能完善的 UI 组件库（UTS + uvue 编写，一套组件多端覆盖）。
 
-**m-ui-x** 是开源项目 [unix-ui](https://github.com/MengXi-Studio/unix-ui) 的 uni_modules 插件发行版（npm 包名 [`@meng-xi/unix-ui`](https://www.npmjs.com/package/@meng-xi/unix-ui)），内置 46 个组件（含子组件），覆盖基础、布局、表单、反馈、数据展示与导航六类场景，把原生开发的交互细节（按压反馈、0.5px 细边框、文本省略、徽标截断……）与多端差异一次收敛。
+**m-ui-x** 是开源项目 [unix-ui](https://github.com/MengXi-Studio/unix-ui) 的 uni_modules 插件发行版（npm 包名 [`@meng-xi/unix-ui`](https://www.npmjs.com/package/@meng-xi/unix-ui)），内置 65 个组件（含子组件与组合形态），覆盖基础、布局、数据录入、选择器、日期时间、反馈、数据展示与导航八类场景，把原生开发的交互细节（按压反馈、0.5px 细边框、文本省略、徽标截断……）与多端差异一次收敛。
 
 ## 目录
 
@@ -81,7 +81,7 @@ $m-button-normal-height: 48px;
 
 ## 组件清单
 
-共 46 个组件（含子组件），按 6 大类组织；表中列出组件标签与核心能力，完整 API 见[组件参考](https://mengxi-studio.github.io/unix-ui/components/button.html)。
+共 65 个组件（含子组件与组合形态），按 8 类组织；表中列出组件标签与核心能力，完整 API 见[组件参考](https://mengxi-studio.github.io/unix-ui/components/button.html)。
 
 ### 基础组件
 
@@ -179,7 +179,7 @@ $m-button-normal-height: 48px;
 
 ## 工具函数
 
-插件内置与组件同源的日期工具集（`utils/date.uts`，69 个纯函数：比较、算术、周月年边界、格式化解析、农历换算）：
+插件内置与组件同源的日期工具集（`utils/date.uts`，覆盖比较、算术、周月年边界、格式化解析与农历换算的纯函数集）：
 
 ```ts
 import { formatDate, parseDate, addDays, solarToLunar } from '@/uni_modules/m-ui-x/utils/index.uts'

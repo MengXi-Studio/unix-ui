@@ -2,15 +2,15 @@
 
 ## Prerequisites
 
-Complete the [Installation](/en/guide/installation) first (uni_modules or npm, either one) and make sure `<m-button>` renders on a page.
+[Installation](/en/guide/installation) is done (either uni_modules or npm) and `<m-button>` renders in a page.
 
-## 1. Using Components
+## 1. Use a component in a template
 
-Components follow the easycom convention — use them directly in templates without import or registration:
+Components follow easycom — no import, no registration:
 
 ```html
 <template>
-	<m-button type="primary" @click="onClick">Primary Button</m-button>
+	<m-button type="primary" @click="onClick">Primary</m-button>
 </template>
 
 <script setup lang="uts">
@@ -20,70 +20,69 @@ Components follow the easycom convention — use them directly in templates with
 </script>
 ```
 
-## 2. Binding Props
+## 2. Props and events
 
-Props are written like native attributes; boolean props can be written bare or bound with an expression via `:`:
+Props work like native attributes; boolean props can be written bare or bound:
 
 ```html
 <!-- Types and sizes -->
 <m-button type="primary">Primary</m-button>
-<m-button type="danger" size="large">Large Danger</m-button>
-<m-button type="success" size="small">Small Success</m-button>
+<m-button type="danger" size="large">Danger large</m-button>
+<m-button type="success" size="small">Success small</m-button>
 
-<!-- Loading: click is suppressed, the icon spins automatically -->
+<!-- Loading: click suppressed, spinner rotates -->
 <m-button type="primary" loading loading-text="Submitting..." />
 
-<!-- Disabled: click is suppressed -->
+<!-- Disabled: click suppressed -->
 <m-button type="primary" disabled>Disabled</m-button>
 ```
 
-See the "Props" section of each component's documentation for the full list, e.g. [Button](/en/components/button).
+While `loading` or `disabled`, `click` is not emitted, so async submissions need no extra duplicate-guard. Full props live under each component's "Props" section, e.g. [Button](/en/components/button).
 
-## 3. Handling Events
+## 3. Two-way binding
 
-Bind events with `@event-name` and type the handler parameters in UTS:
-
-```html
-<template>
-	<m-button type="primary" :loading="loading" @click="submit">
-		Submit
-	</m-button>
-</template>
-
-<script setup lang="uts">
-	const loading = ref(false)
-
-	function submit() {
-		loading.value = true
-		// Simulate an async task
-		setTimeout(() => {
-			loading.value = false
-		}, 2000)
-	}
-</script>
-```
-
-::: tip
-A button in the `loading` or `disabled` state does not emit `click`, so no extra duplicate-submit guard is needed during async submissions.
-:::
-
-## 4. Two-way Binding
-
-Form components use `v-model` for two-way binding:
+Form components use `v-model`, and the value type follows the component's semantics:
 
 ```html
-<template>
-	<m-input v-model="value" :clearable="true" placeholder="Type something" />
-</template>
+<!-- String value -->
+<m-input v-model="keyword" :clearable="true" placeholder="Keyword" />
 
-<script setup lang="uts">
-	const value = ref('')
-</script>
+<!-- Date value (Date | null) -->
+<m-date-picker v-model:value="date" title="Pick a date" :min-date="minDate" :max-date="maxDate" />
 ```
 
-## 5. Composing Components
+```uts
+const keyword = ref('')
+const date = ref<Date | null>(null)
+const minDate = new Date(2020, 0, 1)
+const maxDate = new Date(2030, 11, 31)
+```
 
-Container components compose children through slots — for example, group cells with `m-cell-group`:
+| Component type | Value type | Examples |
+| --- | --- | --- |
+| Text / picker | `string` | `m-input`, `m-picker` |
+| Date | `Date \| null` | `m-date-picker`, `m-calendar` |
+| Time | `'HH:mm'` / `'HH:mm:ss'` | `m-time-picker` |
+| Multi-select | array | `m-checkbox-group` |
+
+## 4. Popup and input variants
+
+For form fields, use the composed variants instead of wiring `popup` yourself:
+
+```html
+<m-date-picker-input
+	v-model:value="birthday"
+	title="Date of birth"
+	placeholder="Select a date"
+	:clearable="true"
+/>
+```
+
+The trio always splits the same way: `m-date-picker` is the panel, `m-date-picker-popup` is the overlay, and `m-date-picker-input` is the form field. The same applies to time, date range, lunar and the generic picker.
+
+## 5. Composing with slots
+
+Container components compose children through slots, e.g. `m-cell-group`:
 
 ```html
 <m-cell-group inset>
@@ -92,7 +91,7 @@ Container components compose children through slots — for example, group cells
 </m-cell-group>
 ```
 
-When buttons / inputs should sit flush against each other, wrap them in `m-compact` and corners and borders are merged automatically:
+To join buttons / inputs tightly, wrap them in `m-compact` and radii and borders merge automatically:
 
 ```html
 <m-compact>
@@ -101,8 +100,31 @@ When buttons / inputs should sit flush against each other, wrap them in `m-compa
 </m-compact>
 ```
 
-## Next Steps
+## 6. Theming
 
-- [Theming](/en/guide/theming): override the default theme variables
-- [Component reference](/en/components/button): all props and events
-- [FAQ](/en/guide/faq): common compile and runtime issues
+Re-theme globally by defining variables in the project-root `uni.scss` (see [Theming](/en/guide/theming)):
+
+```scss
+$m-color-primary: #10b981;
+$m-button-normal-height: 48px;
+```
+
+For one-off tweaks prefer `custom-style` / `custom-class` over changing a global variable:
+
+```html
+<m-button type="primary" custom-style="margin-left: 12px;">Offset</m-button>
+```
+
+## 7. Common mistakes
+
+| Symptom | Cause and fix |
+| --- | --- |
+| Tag not rendered | Directory is not `m-ui-x`, or the easycom rule is missing for npm — see [FAQ](/en/guide/faq#component-tag-not-rendered) |
+| Theme variable has no effect | `vars.scss` was `@import`ed in `uni.scss` (define values instead), or the dev server was not restarted |
+| Text styles look wrong on App | Put text styles on `<text>`, not on container `view`s |
+
+## Next steps
+
+- [Theming](/en/guide/theming): variable layers, precedence and pitfalls
+- [Components](/en/components/button): props, events and slots of every component
+- [FAQ](/en/guide/faq): common build and runtime issues

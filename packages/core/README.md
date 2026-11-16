@@ -126,7 +126,7 @@ $m-button-normal-height: 48px;
 
 ## 组件清单
 
-共 46 个组件（含子组件），按 6 大类组织，与文档站侧栏分组一一对应；表中列出组件标签与核心能力，完整 API 见[组件参考](https://mengxi-studio.github.io/unix-ui/components/button.html)。
+共 65 个组件（含子组件与组合形态），按 8 类组织，与文档站侧栏分组一一对应；表中列出组件标签与核心能力，完整 API 见[组件参考](https://mengxi-studio.github.io/unix-ui/components/button.html)。
 
 ### 基础组件
 
@@ -222,7 +222,7 @@ $m-button-normal-height: 48px;
 | --- | --- |
 | `m-tabs` / `m-tab` | 标签页：line / card / pill 三种风格、索引与 name 混用匹配、标签栏横向滚动、内容转场与手势切换、吸顶、scrollspy、切换前拦截 |
 
-> 另有与组件同源的日期工具集（`utils/date.uts`，69 个纯函数：比较、算术、周月年边界、格式化解析、农历换算），详见[日期工具](https://mengxi-studio.github.io/unix-ui/tools/date.html)。
+> 另有与组件同源的日期工具集（`utils/date.uts`，覆盖比较、算术、周月年边界、格式化解析与农历换算的纯函数集），详见[日期工具](https://mengxi-studio.github.io/unix-ui/tools/date.html)。
 
 ## 平台兼容性
 

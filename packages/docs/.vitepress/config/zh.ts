@@ -63,6 +63,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			'/guide/': [
 				{
 					text: '入门',
+					collapsed: false,
 					items: [
 						{ text: '介绍', link: '/guide/introduction' },
 						{ text: '安装', link: '/guide/installation' },
@@ -71,10 +72,12 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '基础',
+					collapsed: false,
 					items: [{ text: '主题定制', link: '/guide/theming' }]
 				},
 				{
 					text: '进阶',
+					collapsed: false,
 					items: [
 						{ text: '平台兼容性', link: '/guide/compatibility' },
 						{ text: '常见问题', link: '/guide/faq' }
@@ -84,6 +87,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			'/components/': [
 				{
 					text: '基础组件',
+					collapsed: false,
 					items: [
 						{ text: 'Button 按钮', link: '/components/button' },
 						{ text: 'Icon 图标', link: '/components/icon' },
@@ -93,6 +97,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '布局组件',
+					collapsed: false,
 					items: [
 						{ text: 'Compact 紧凑布局', link: '/components/compact' },
 						{ text: 'Divider 分割线', link: '/components/divider' },
@@ -107,6 +112,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '数据录入',
+					collapsed: false,
 					items: [
 						{ text: 'Checkbox 复选框', link: '/components/checkbox' },
 						{ text: 'CheckboxInput 复选输入框', link: '/components/checkbox-input' },
@@ -119,6 +125,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '选择器',
+					collapsed: false,
 					items: [
 						{ text: 'Cascader 级联选择', link: '/components/cascader' },
 						{ text: 'CascaderInput 级联输入框', link: '/components/cascader-input' },
@@ -131,6 +138,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '日期时间',
+					collapsed: false,
 					items: [
 						{ text: 'Calendar 日历', link: '/components/calendar' },
 						{ text: 'CalendarInput 日历输入框', link: '/components/calendar-input' },
@@ -155,6 +163,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '反馈组件',
+					collapsed: false,
 					items: [
 						{ text: 'Fab 悬浮按钮', link: '/components/fab' },
 						{ text: 'Loading 加载', link: '/components/loading' },
@@ -165,6 +174,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '数据展示',
+					collapsed: false,
 					items: [
 						{ text: 'Badge 徽标', link: '/components/badge' },
 						{ text: 'Cell 单元格', link: '/components/cell' }
@@ -172,12 +182,14 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '导航组件',
+					collapsed: false,
 					items: [{ text: 'Tabs 标签页', link: '/components/tabs' }]
 				}
 			],
 			'/tools/': [
 				{
 					text: '工具',
+					collapsed: false,
 					items: [{ text: 'Date 日期工具', link: '/tools/date' }]
 				}
 			]

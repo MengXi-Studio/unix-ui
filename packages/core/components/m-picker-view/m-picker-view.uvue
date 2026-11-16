@@ -19,7 +19,7 @@
 					@change="onColumnChange"
 				>
 					<!-- 插槽条件转发：未传入时不覆盖列内置文本 -->
-					<!-- #ifndef MP -->
+					<!-- #ifdef WEB -->
 					<template v-if="$slots['option'] != null" #option="{ option, index, rowIndex, columnIndex }">
 						<slot
 							name="option"

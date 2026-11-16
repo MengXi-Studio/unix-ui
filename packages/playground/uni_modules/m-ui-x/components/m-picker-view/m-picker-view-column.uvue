@@ -38,24 +38,24 @@
 	import MDatePickerColumn from '../m-date-picker/m-date-picker-column.uvue'
 
 	type Props = {
-		/** 列选项（null 按空列渲染） */
-		options?: PickerOption[]
+		/** 列选项（空数组渲染空列） */
+		options: PickerOption[]
 		/** 选中项下标（受控，0 起） */
-		index?: number
+		index: number
 		/** 列下标（事件回传用） */
-		columnIndex?: number
+		columnIndex: number
 		/** 选项行高 px（0 用默认 44） */
-		optionHeight?: number
+		optionHeight: number
 		/** 可见选项个数（0 用默认 6） */
-		visibleOptionNum?: number
+		visibleOptionNum: number
 		/** 滚动停止判定时长 ms */
-		swipeDuration?: number
+		swipeDuration: number
 		/** 只读 */
-		readonly?: boolean
+		readonly: boolean
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
-		options: null,
+		options: [],
 		index: 0,
 		columnIndex: 0,
 		optionHeight: 0,

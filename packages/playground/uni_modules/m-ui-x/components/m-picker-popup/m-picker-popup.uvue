@@ -57,7 +57,7 @@
 			<template v-if="$slots['columns-bottom'] != null" #columns-bottom>
 				<slot name="columns-bottom"></slot>
 			</template>
-			<!-- #ifndef MP -->
+			<!-- #ifdef WEB -->
 			<!-- 小程序端列选项在 v-for 内不声明具名插槽（#17），无需转发 -->
 			<template v-if="$slots['option'] != null" #option="{ option, index, rowIndex, columnIndex }">
 				<slot name="option" :option="option" :index="index" :row-index="rowIndex" :column-index="columnIndex"></slot>

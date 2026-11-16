@@ -50,6 +50,7 @@
 		DatePickerColumnType,
 		DatePickerFilter,
 		DatePickerFormatter,
+		DatePickerOption,
 		DatePickerPosition,
 		getDatePickerDisplayFormat
 	} from '../m-date-picker/date-picker.uts'

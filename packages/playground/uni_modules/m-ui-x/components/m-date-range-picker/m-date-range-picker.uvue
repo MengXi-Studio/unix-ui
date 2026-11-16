@@ -84,7 +84,8 @@
 	import {
 		DatePickerColumnType,
 		DatePickerFilter,
-		DatePickerFormatter
+		DatePickerFormatter,
+		DatePickerOption
 	} from '../m-date-picker/date-picker.uts'
 	import MDatePicker from '../m-date-picker/m-date-picker.uvue'
 

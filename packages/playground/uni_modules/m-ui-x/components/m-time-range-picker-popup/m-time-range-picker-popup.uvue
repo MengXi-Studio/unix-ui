@@ -73,7 +73,8 @@
 	import {
 		TimePickerColumnType,
 		TimePickerFilter,
-		TimePickerFormatter
+		TimePickerFormatter,
+		TimePickerOption
 	} from '../m-time-picker/time-picker.uts'
 	import { DatePickerPosition } from '../m-date-picker/date-picker.uts'
 	import MTimeRangePicker from '../m-time-range-picker/m-time-range-picker.uvue'

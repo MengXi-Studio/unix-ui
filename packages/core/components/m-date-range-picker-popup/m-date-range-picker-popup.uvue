@@ -71,6 +71,7 @@
 		DatePickerColumnType,
 		DatePickerFilter,
 		DatePickerFormatter,
+		DatePickerOption,
 		DatePickerPosition
 	} from '../m-date-picker/date-picker.uts'
 	import MDateRangePicker from '../m-date-range-picker/m-date-range-picker.uvue'

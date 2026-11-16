@@ -77,7 +77,8 @@
 	import {
 		TimePickerColumnType,
 		TimePickerFilter,
-		TimePickerFormatter
+		TimePickerFormatter,
+		TimePickerOption
 	} from '../m-time-picker/time-picker.uts'
 	import { DatePickerPosition } from '../m-date-picker/date-picker.uts'
 	import MTimePicker from '../m-time-picker/m-time-picker.uvue'

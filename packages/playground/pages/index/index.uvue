@@ -65,7 +65,7 @@
 	const router = useRouter()
 
 	/** 搜索关键字（空串 = 不过滤） */
-	const keyword = ref('')
+	const keyword = ref<string>('')
 
 	/** 按关键字过滤分组：中文名 / 英文标识模糊匹配，过滤后为空的分组整体剔除 */
 	const filteredGroups = computed<DemoGroup[]>((): DemoGroup[] => {

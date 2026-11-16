@@ -52,6 +52,7 @@
 		LunarPickerColumnType,
 		LunarPickerFilter,
 		LunarPickerFormatter,
+		LunarPickerOption,
 		formatLunarPickerText
 	} from '../m-lunar-picker/lunar-picker.uts'
 	import { DatePickerPosition } from '../m-date-picker/date-picker.uts'

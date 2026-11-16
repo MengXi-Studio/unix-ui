@@ -558,3 +558,9 @@
 - **年列全量 1900–2100 时约 201 项**：滚轮列可承受，但低端机首屏需实测；默认范围与日期选择器的「前后 10 年」不同，农历生日场景必须全量
 - **对外值仍用公历 `Date`**：滚动农历列后 `lunarToSolar` → 截断到 min/max → 真源回写，`pickerValue` 由列下标派生，避免 `m-picker` 精确匹配失配
 - **输入框展示文案独立于值口径**：值保持 `Date`（便于表单/弹层互换），展示用 `formatLunarPickerText` 按 `columns-type` 拼接（年/月/日名，干支按开关）
+
+### 91. Android 云打包暴露的函数声明顺序问题（2026-11-16）
+- **Web 编译通过 ≠ Android 通过**：uvue 的 `<script setup>` 内 `function` 在 Web（JS，函数提升）可用后置声明，但 uni-app x 编译到 Kotlin 时不提升；被 `setTimeout` 箭头函数或其它函数提前引用的函数若定义在调用之后，云打包报 `Unresolved reference 'xxx'`
+- **已修复两处**：`m-picker` 的 `resolveColumnsForNormalize`（被 `normalizeIndexes` 调用）与 `m-date-picker-column` 的 `onScrollSettle`（被 `setTimeout` 回调调用），统一移到首个调用之前
+- **排查方法**：对每个 `.uvue` 的 `<script` 之后区域，按 `^\s*function (\w+)` 收集定义行，再扫描其前的调用行；模板中的事件引用不计入
+- **日志中的 `DatePickerOption` / `TimePickerOption` / `LunarPickerOption` unresolved 属旧产物特征**：当前 popup / input 三件套已改为复用 `PickerOption`，只有面板与列组件引用各自 `.uts` 中的类型；遇到同批报错先用 `grep` 确认源码是否仍存在该标识，再决定是否改码

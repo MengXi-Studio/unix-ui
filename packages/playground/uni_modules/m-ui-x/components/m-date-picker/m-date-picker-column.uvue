@@ -212,6 +212,34 @@
 	}
 
 	/**
+	 * 滚动停止：吸附到最近选项；readonly 回弹到受控下标；选中项变化时上抛 change
+	 */
+	function onScrollSettle() {
+		const count = optionList.value.length
+		if (count == 0) {
+			return
+		}
+		if (props.readonly) {
+			requestScroll(props.modelValue)
+			return
+		}
+		let index = Math.round(actualTop.value / props.optionHeight)
+		if (index < 0) {
+			index = 0
+		}
+		if (index > count - 1) {
+			index = count - 1
+		}
+		// 落在禁用项上时吸附到最近可用项
+		index = nearestEnabledIndex(index)
+		requestScroll(index)
+		activeIndex.value = index
+		if (index != props.modelValue) {
+			emit('change', props.columnIndex, index)
+		}
+	}
+
+	/**
 	 * 滚动事件：同步镜像位置与视觉激活下标；非程序化滚动按 swipeDuration 延迟判定停止
 	 */
 	function onScroll(e: UniScrollEvent) {
@@ -240,34 +268,6 @@
 			snapTimer = -1
 			onScrollSettle()
 		}, props.swipeDuration)
-	}
-
-	/**
-	 * 滚动停止：吸附到最近选项；readonly 回弹到受控下标；选中项变化时上抛 change
-	 */
-	function onScrollSettle() {
-		const count = optionList.value.length
-		if (count == 0) {
-			return
-		}
-		if (props.readonly) {
-			requestScroll(props.modelValue)
-			return
-		}
-		let index = Math.round(actualTop.value / props.optionHeight)
-		if (index < 0) {
-			index = 0
-		}
-		if (index > count - 1) {
-			index = count - 1
-		}
-		// 落在禁用项上时吸附到最近可用项
-		index = nearestEnabledIndex(index)
-		requestScroll(index)
-		activeIndex.value = index
-		if (index != props.modelValue) {
-			emit('change', props.columnIndex, index)
-		}
 	}
 
 	/**

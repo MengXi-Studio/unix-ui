@@ -250,21 +250,6 @@
 	const indexes = ref<number[]>(initialIndexes())
 
 	/**
-	 * 收敛下标：长度对齐列数、越界夹取、禁用项跳到最近可用
-	 */
-	function normalizeIndexes() {
-		const levels = resolveColumnsForNormalize()
-		const next: number[] = []
-		for (let i = 0; i < levels.length; i++) {
-			const options = levels[i]
-			const raw = i < indexes.value.length ? indexes.value[i] : 0
-			const clamped = clampIndex(raw, options.length)
-			next.push(nearestEnabledIndex(options, clamped))
-		}
-		indexes.value = next
-	}
-
-	/**
 	 * 归一化用的列结构：级联按当前下标逐层展开（与 resolveColumns 一致，供非 computed 上下文复用）
 	 */
 	function resolveColumnsForNormalize(): PickerOption[][] {
@@ -286,6 +271,21 @@
 			depth++
 		}
 		return levels
+	}
+
+	/**
+	 * 收敛下标：长度对齐列数、越界夹取、禁用项跳到最近可用
+	 */
+	function normalizeIndexes() {
+		const levels = resolveColumnsForNormalize()
+		const next: number[] = []
+		for (let i = 0; i < levels.length; i++) {
+			const options = levels[i]
+			const raw = i < indexes.value.length ? indexes.value[i] : 0
+			const clamped = clampIndex(raw, options.length)
+			next.push(nearestEnabledIndex(options, clamped))
+		}
+		indexes.value = next
 	}
 
 	/** 列视图：原始选项 / 列组件文本 / 选中下标 / 禁用标记 */

@@ -400,7 +400,8 @@
 			const options = cols[i].options
 			const list: PickerOption[] = []
 			for (let j = 0; j < options.length; j++) {
-				list.push({ label: options[j].text, value: options[j].value } as PickerOption)
+				const item: PickerOption = { label: options[j].text, value: options[j].value }
+				list.push(item)
 			}
 			result.push(list)
 		}

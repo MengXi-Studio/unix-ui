@@ -56,9 +56,11 @@
 					<template #columns-bottom>
 						<view class="demo-hint"><text class="demo-hint-text">columns-bottom：滚轮下方</text></view>
 					</template>
+					<!-- #ifdef WEB -->
 					<template #option="{ option }">
 						<text class="demo-slot-option">{{ option.label }}</text>
 					</template>
+					<!-- #endif -->
 				</m-picker>
 				<view class="event-log">
 					<text class="event-text">当前值：{{ formatValue(slotValue) }}</text>

@@ -33,12 +33,14 @@
 			<text class="section" id="slots">自定义选项内容</text>
 			<view class="card">
 				<m-picker-view v-model:value="slotValue" :columns="statusOptions">
+					<!-- #ifdef WEB -->
 					<template #option="{ option }">
 						<view class="demo-option">
 							<view class="demo-option-dot" :style="dotStyle(option)"></view>
 							<text class="demo-option-text">{{ option.label }}</text>
 						</view>
 					</template>
+					<!-- #endif -->
 				</m-picker-view>
 				<view class="event-log">
 					<text class="event-text">当前下标：{{ formatIndexes(slotValue) }}</text>

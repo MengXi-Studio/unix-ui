@@ -60,7 +60,7 @@
 	import { useRouter } from '@/uni_modules/ux-router/utssdk/index.uts'
 	import type { RawLocation } from '@/uni_modules/ux-router/utssdk/index.uts'
 	import { demoGroups } from './demo-components.uts'
-	import type { DemoComponent, DemoGroup } from './demo-components.uts'
+	import { DemoComponent, DemoGroup } from './demo-components.uts'
 
 	const router = useRouter()
 

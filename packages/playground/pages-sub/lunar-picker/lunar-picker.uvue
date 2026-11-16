@@ -76,9 +76,11 @@
 								<text class="demo-banner-text">columns-top 自定义内容</text>
 							</view>
 						</template>
+						<!-- #ifdef WEB -->
 						<template #option="{ option }">
 							<text :class="option.value == '1' ? 'demo-option-demo' : 'demo-option'">{{ option.text }}</text>
 						</template>
+						<!-- #endif -->
 					</m-lunar-picker>
 					<text class="caption">title / confirm / cancel / option / columns-top / columns-bottom / toolbar 插槽透传到内部 m-picker（小程序端 option 不生效）</text>
 				</view>

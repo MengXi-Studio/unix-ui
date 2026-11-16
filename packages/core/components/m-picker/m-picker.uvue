@@ -258,11 +258,12 @@
 			return matrix
 		}
 		const levels: PickerOption[][] = []
+		const currentIndexes: number[] = indexes.value
 		let options = matrix[0]
 		let depth = 0
 		while (options.length > 0) {
 			levels.push(options)
-			const index = clampIndex(depth < indexes.value.length ? indexes.value[depth] : 0, options.length)
+			const index = clampIndex(depth < currentIndexes.length ? currentIndexes[depth] : 0, options.length)
 			const children = options[index].children
 			if (children == null || children.length == 0) {
 				break
@@ -278,10 +279,11 @@
 	 */
 	function normalizeIndexes() {
 		const levels = resolveColumnsForNormalize()
+		const currentIndexes: number[] = indexes.value
 		const next: number[] = []
 		for (let i = 0; i < levels.length; i++) {
 			const options = levels[i]
-			const raw = i < indexes.value.length ? indexes.value[i] : 0
+			const raw = i < currentIndexes.length ? currentIndexes[i] : 0
 			const clamped = clampIndex(raw, options.length)
 			next.push(nearestEnabledIndex(options, clamped))
 		}
@@ -291,17 +293,19 @@
 	/** 列视图：原始选项 / 列组件文本 / 选中下标 / 禁用标记 */
 	const columnViews = computed<PickerColumnView[]>(() => {
 		const levels = resolveColumns(indexes.value)
+		const currentIndexes: number[] = indexes.value
 		const result: PickerColumnView[] = []
 		for (let i = 0; i < levels.length; i++) {
 			const options = levels[i]
 			const index = nearestEnabledIndex(options, clampIndex(
-				i < indexes.value.length ? indexes.value[i] : 0, options.length))
-			result.push({
+				i < currentIndexes.length ? currentIndexes[i] : 0, options.length))
+			const view: PickerColumnView = {
 				options: options,
 				texts: buildColumnTexts(options),
 				index: index,
 				disabledFlags: buildDisabledFlags(options)
-			} as PickerColumnView)
+			}
+			result.push(view)
 		}
 		return result
 	})
@@ -382,9 +386,10 @@
 		if (props.readonly) {
 			return
 		}
+		const currentIndexes: number[] = indexes.value
 		const next: number[] = []
-		for (let i = 0; i < indexes.value.length; i++) {
-			next.push(indexes.value[i])
+		for (let i = 0; i < currentIndexes.length; i++) {
+			next.push(currentIndexes[i])
 		}
 		while (next.length <= columnIndex) {
 			next.push(0)

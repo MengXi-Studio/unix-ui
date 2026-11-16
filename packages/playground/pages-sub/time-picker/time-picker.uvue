@@ -57,9 +57,11 @@
 					<template #cancel>
 						<text class="demo-slot-cancel">返回</text>
 					</template>
+					<!-- #ifdef WEB -->
 					<template #option="{ option }">
 						<text class="demo-slot-option">{{ option.text }} 时</text>
 					</template>
+					<!-- #endif -->
 				</m-time-picker>
 				<view class="event-log">
 					<text class="event-text">当前值：{{ formatTime(slotValue) }}</text>

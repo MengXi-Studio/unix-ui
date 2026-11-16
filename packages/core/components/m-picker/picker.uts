@@ -18,8 +18,16 @@ export type PickerOption = {
 	disabled?: boolean
 }
 
-/** 列数据：一维（单列或级联根）或二维（多列） */
-export type PickerColumns = PickerOption[] | PickerOption[][]
+/**
+ * 列数据：一维（单列或级联根）或二维（多列）
+ *
+ * 必须声明为具体数组类型而不是 `PickerOption[] | PickerOption[][]` 联合：
+ * 联合类型作为 props 类型时，Kotlin 产物会把 `type` 编译成空泛型调用 `_uA()`，
+ * 触发 `Cannot infer type argument for 'E'`；且联合在 Kotlin 端退化为 `Any?`，
+ * 任何 `.length` / `[i]` 访问都会报 `Unresolved reference`。
+ * 用 `any[]` 承载后，`.length` / `[i]` 可用，一维/二维由 isMultiColumn 运行时判别。
+ */
+export type PickerColumns = any[]
 
 /** 选中值：单列标量或各列值数组 */
 export type PickerValue = string | number | (string | number)[]
@@ -43,15 +51,13 @@ export const PICKER_VISIBLE_OPTION_NUM: number = 6
 /**
  * 判断列数据是否为二维多列：首元素为数组即为多列
  * （一维元素是 PickerOption 对象，二维元素是 PickerOption[]）
+ * 元素为 `any`，Array.isArray 可正常推断泛型参数
  */
 export function isMultiColumn(columns: PickerColumns | null): boolean {
 	if (columns == null || columns.length == 0) {
 		return false
 	}
-	// 用结构断言替代 Array.isArray：UTS 的 Array.isArray 在联合类型下无法推断泛型参数，
-	// Kotlin 产物会报 "Cannot infer type argument for 'E'"；数组断言为 PickerOption 时结果为 null
-	const asOption = columns[0] as PickerOption
-	return asOption == null
+	return Array.isArray(columns[0])
 }
 
 /**

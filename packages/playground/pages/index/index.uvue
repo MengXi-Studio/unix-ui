@@ -67,11 +67,8 @@
 	/** 搜索关键字（空串 = 不过滤） */
 	const keyword = ref<string>('')
 
-	/** 过滤结果：关键字变化时重算；用 ref 而不是 computed（Kotlin 端泛型 computed 会退化为 Any?） */
-	const filteredGroups = ref<DemoGroup[]>(demoGroups)
-
-	/** 重算分组过滤：中文名 / 英文标识模糊匹配，过滤后为空的分组整体剔除 */
-	function applyFilter() {
+	/** 过滤结果：关键字变化时重算；中文名 / 英文标识模糊匹配，过滤后为空的分组整体剔除 */
+	const filteredGroups = computed<DemoGroup[]>(() => {
 		const kw: string = keyword.value.trim().toLowerCase()
 		const all: DemoGroup[] = demoGroups
 		const result: DemoGroup[] = []
@@ -79,8 +76,7 @@
 			for (let i = 0; i < all.length; i++) {
 				result.push(all[i])
 			}
-			filteredGroups.value = result
-			return
+			return result
 		}
 		for (let i = 0; i < all.length; i++) {
 			const group: DemoGroup = all[i]
@@ -95,16 +91,11 @@
 				}
 			}
 			if (items.length > 0) {
-				const item: DemoGroup = { title: group.title, components: items }
+				const item: DemoGroup = { title: group.title, components: items } as DemoGroup
 				result.push(item)
 			}
 		}
-		filteredGroups.value = result
-	}
-
-	watchEffect(() => {
-		keyword.value
-		applyFilter()
+		return result
 	})
 
 	/** input 输入回调：同步关键字触发过滤 */

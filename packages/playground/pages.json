@@ -108,6 +108,42 @@
 					}
 				},
 				{
+					"path": "date-picker-input/date-picker-input",
+					"style": {
+						"navigationBarTitleText": "日期输入框 DatePickerInput"
+					}
+				},
+				{
+					"path": "date-picker-popup/date-picker-popup",
+					"style": {
+						"navigationBarTitleText": "日期选择弹出框 DatePickerPopup"
+					}
+				},
+				{
+					"path": "date-picker/date-picker",
+					"style": {
+						"navigationBarTitleText": "日期选择 DatePicker"
+					}
+				},
+				{
+					"path": "date-range-picker-input/date-range-picker-input",
+					"style": {
+						"navigationBarTitleText": "日期范围输入框 DateRangePickerInput"
+					}
+				},
+				{
+					"path": "date-range-picker-popup/date-range-picker-popup",
+					"style": {
+						"navigationBarTitleText": "日期范围弹出框 DateRangePickerPopup"
+					}
+				},
+				{
+					"path": "date-range-picker/date-range-picker",
+					"style": {
+						"navigationBarTitleText": "日期范围选择 DateRangePicker"
+					}
+				},
+				{
 					"path": "date-strip/date-strip",
 					"style": {
 						"navigationBarTitleText": "日期横条 Date Strip"
@@ -168,9 +204,51 @@
 					}
 				},
 				{
+					"path": "lunar-picker-input/lunar-picker-input",
+					"style": {
+						"navigationBarTitleText": "农历输入框 LunarPickerInput"
+					}
+				},
+				{
+					"path": "lunar-picker-popup/lunar-picker-popup",
+					"style": {
+						"navigationBarTitleText": "农历选择弹出框 LunarPickerPopup"
+					}
+				},
+				{
+					"path": "lunar-picker/lunar-picker",
+					"style": {
+						"navigationBarTitleText": "农历选择 LunarPicker"
+					}
+				},
+				{
 					"path": "overlay/overlay",
 					"style": {
 						"navigationBarTitleText": "遮罩层 Overlay"
+					}
+				},
+				{
+					"path": "picker-input/picker-input",
+					"style": {
+						"navigationBarTitleText": "选择器输入框 PickerInput"
+					}
+				},
+				{
+					"path": "picker-popup/picker-popup",
+					"style": {
+						"navigationBarTitleText": "选择器弹出框 PickerPopup"
+					}
+				},
+				{
+					"path": "picker-view/picker-view",
+					"style": {
+						"navigationBarTitleText": "选择器纯视图 PickerView"
+					}
+				},
+				{
+					"path": "picker/picker",
+					"style": {
+						"navigationBarTitleText": "选择器 Picker"
 					}
 				},
 				{
@@ -207,6 +285,42 @@
 					"path": "text/text",
 					"style": {
 						"navigationBarTitleText": "文本 Text"
+					}
+				},
+				{
+					"path": "time-picker-input/time-picker-input",
+					"style": {
+						"navigationBarTitleText": "时间输入框 TimePickerInput"
+					}
+				},
+				{
+					"path": "time-picker-popup/time-picker-popup",
+					"style": {
+						"navigationBarTitleText": "时间弹出框 TimePickerPopup"
+					}
+				},
+				{
+					"path": "time-picker/time-picker",
+					"style": {
+						"navigationBarTitleText": "时间选择 TimePicker"
+					}
+				},
+				{
+					"path": "time-range-picker-input/time-range-picker-input",
+					"style": {
+						"navigationBarTitleText": "时间范围输入框 TimeRangePickerInput"
+					}
+				},
+				{
+					"path": "time-range-picker-popup/time-range-picker-popup",
+					"style": {
+						"navigationBarTitleText": "时间范围弹出框 TimeRangePickerPopup"
+					}
+				},
+				{
+					"path": "time-range-picker/time-range-picker",
+					"style": {
+						"navigationBarTitleText": "时间范围选择 TimeRangePicker"
 					}
 				},
 				{

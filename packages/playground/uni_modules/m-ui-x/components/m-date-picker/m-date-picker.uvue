@@ -1,0 +1,572 @@
+<template>
+	<!-- 日期选择面板（三组件拆分后的基础组件）：组合 m-picker 承担顶部栏 / 选中框 / 多列滚轮 / 加载遮罩，
+	     本组件只负责日期列构建、限域、filter / formatter 与事件回写。
+	     弹层组合见 m-date-picker-popup，输入框触发组合见 m-date-picker-input。根节点常驻静态（LESSONS #32） -->
+	<view :class="rootClass" :style="customStyle">
+		<m-picker
+			ref="picker"
+			:columns="pickerColumns"
+			:value="pickerValue"
+			:title="title"
+			:confirm-button-text="confirmButtonText"
+			:cancel-button-text="cancelButtonText"
+			:show-toolbar="showToolbar"
+			:loading="loading"
+			:readonly="readonly"
+			:option-height="optionHeight"
+			:visible-option-num="visibleOptionNum"
+			:swipe-duration="swipeDuration"
+			@change="onPickerChange"
+			@confirm="onPickerConfirm"
+			@cancel="onPickerCancel"
+		>
+			<!-- 插槽条件转发：未传入时不覆盖 m-picker 的默认渲染 -->
+			<template v-if="$slots['toolbar'] != null" #toolbar>
+				<slot name="toolbar"></slot>
+			</template>
+			<template v-if="$slots['title'] != null" #title>
+				<slot name="title"></slot>
+			</template>
+			<template v-if="$slots['confirm'] != null" #confirm>
+				<slot name="confirm"></slot>
+			</template>
+			<template v-if="$slots['cancel'] != null" #cancel>
+				<slot name="cancel"></slot>
+			</template>
+			<template v-if="$slots['columns-top'] != null" #columns-top>
+				<slot name="columns-top"></slot>
+			</template>
+			<template v-if="$slots['columns-bottom'] != null" #columns-bottom>
+				<slot name="columns-bottom"></slot>
+			</template>
+			<!-- #ifdef WEB -->
+			<!-- 小程序端列选项在 v-for 内不声明具名插槽（LESSONS #17），无需转发 -->
+			<template v-if="$slots['option'] != null" #option="{ option, index }">
+				<slot name="option" :option="toDatePickerOption(option)" :index="index"></slot>
+			</template>
+			<!-- #endif -->
+		</m-picker>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-date-picker 日期选择面板：年 / 月 / 日滚轮列。
+	 * 选择状态（当前日期）在宿主维护，列数据经 pickerColumns 下发给 m-picker；
+	 * 滚轮交互（吸附 / 点击 / 渐隐）由 m-picker 组合的 m-date-picker-column 承担。
+	 * 能力：columns-type 任意组合、min/max 限域、filter / formatter、顶部栏与只读加载态。
+	 */
+	import {
+		DatePickerColumnType,
+		DatePickerOption,
+		DatePickerColumn,
+		DatePickerFilter,
+		DatePickerFormatter,
+		normalizeDatePickerColumns,
+		padTwo,
+		optionValueToNumber,
+		composePickerDate
+	} from './date-picker.uts'
+	import { getDayStart, getDaysInMonth, addYears, clampDate } from '../../utils/date.uts'
+	import { PickerOption, PickerValue, valueToText } from '../m-picker/picker.uts'
+	import MPicker from '../m-picker/m-picker.uvue'
+
+	type Props = {
+		/** 选项类型组合（year / month / day 任意顺序；null 用默认年-月-日） */
+		columnsType?: DatePickerColumnType[]
+		/** 可选最小日期（null 默认十年前） */
+		minDate?: Date
+		/** 可选最大日期（null 默认十年后） */
+		maxDate?: Date
+		/** 当前选中日期（v-model:value；null 用今天） */
+		value?: Date
+		/** 顶部栏标题 */
+		title?: string
+		/** 确认按钮文字 */
+		confirmButtonText?: string
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 是否显示顶部栏 */
+		showToolbar?: boolean
+		/** 是否显示加载状态（覆盖滚轮区，阻止交互） */
+		loading?: boolean
+		/** 只读：滚轮回弹到当前值，不响应切换 */
+		readonly?: boolean
+		/** 选项过滤函数（null 不过滤） */
+		filter?: DatePickerFilter
+		/** 选项格式化函数（null 不格式化） */
+		formatter?: DatePickerFormatter
+		/** 选项行高 px（0 用默认 44） */
+		optionHeight?: number
+		/** 可见选项个数（0 用默认 6） */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms（停止后延迟该时长吸附） */
+		swipeDuration?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		columnsType: null,
+		minDate: null,
+		maxDate: null,
+		value: null,
+		title: '',
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		showToolbar: true,
+		loading: false,
+		readonly: false,
+		filter: null,
+		formatter: null,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 选中日期变化（v-model:value；确认后回写） */
+		'update:value': [date: Date]
+		/** 滚轮切换列（date 为切换后的日期，columnIndex 为列下标） */
+		change: [date: Date, columnIndex: number]
+		/** 点击确认按钮 */
+		confirm: [date: Date]
+		/** 点击取消按钮 */
+		cancel: []
+	}>()
+
+	/** 内部 m-picker 实例（复位下标时调用其 resetSelection） */
+	const picker = ref<ComponentPublicInstance | null>(null)
+
+	/** 生效列组合（null / 空数组回退默认年-月-日） */
+	const resolvedTypes = computed<DatePickerColumnType[]>(() => normalizeDatePickerColumns(props.columnsType))
+
+	/** 生效最小日期（归一零点；null 默认十年前同日） */
+	const minDateValue = computed<Date>(() => {
+		if (props.minDate != null) {
+			return getDayStart(props.minDate!)
+		}
+		return getDayStart(addYears(new Date(), -10))
+	})
+
+	/** 生效最大日期（归一零点；null 默认十年后同日） */
+	const maxDateValue = computed<Date>(() => {
+		if (props.maxDate != null) {
+			return getDayStart(props.maxDate!)
+		}
+		return getDayStart(addYears(new Date(), 10))
+	})
+
+	/**
+	 * 按列组合归一日期分量：未包含的列取默认值（月 0 即 1 月、日 1）
+	 * 例：['year'] → 选中年 1 月 1 日；['year','month'] → 选中年月 1 日；['month','day'] → 沿用当前年
+	 */
+	function normalizeByColumns(date: Date): Date {
+		const types = resolvedTypes.value
+		let year = date.getFullYear()
+		let month = 0
+		let day = 1
+		for (let i = 0; i < types.length; i++) {
+			const type = types[i]
+			if (type == 'year') {
+				year = date.getFullYear()
+			} else if (type == 'month') {
+				month = date.getMonth()
+			} else {
+				day = date.getDate()
+			}
+		}
+		return composePickerDate(year, month, day)
+	}
+
+	/**
+	 * 选中日期收敛到可选区间（对外输出 / 列构建统一口径）
+	 */
+	function clampToRange(date: Date): Date {
+		return clampDate(getDayStart(date), minDateValue.value, maxDateValue.value)
+	}
+
+	/**
+	 * 初始选中日期：value 优先，null 用今天，再收敛到可选区间
+	 */
+	function initialDate(): Date {
+		const base = props.value != null ? getDayStart(props.value!) : getDayStart(new Date())
+		return clampToRange(normalizeByColumns(base))
+	}
+
+	/** 当前选中日期（内部状态，列构建与确认输出的唯一真源） */
+	const selectedDate = ref<Date>(initialDate())
+
+	/**
+	 * 在选项中查找与目标值匹配的下标：完全匹配优先，缺失时取不大于目标值的最近项
+	 */
+	function findOptionIndex(options: DatePickerOption[], value: string): number {
+		if (options.length == 0) {
+			return 0
+		}
+		const target = optionValueToNumber(value)
+		let fallback = 0
+		for (let i = 0; i < options.length; i++) {
+			const current = optionValueToNumber(options[i].value)
+			if (current == target) {
+				return i
+			}
+			if (current < target) {
+				fallback = i
+			}
+		}
+		return fallback
+	}
+
+	/**
+	 * 构建日期选项：min/max 决定年界，已选年份决定月界，已选年月决定日界
+	 */
+	function buildDateOptions(type: DatePickerColumnType, year: number, month: number, day: number,
+		min: Date, max: Date, values: string[]): DatePickerOption[] {
+		const options: DatePickerOption[] = []
+		if (type == 'year') {
+			const minYear = min.getFullYear()
+			const maxYear = max.getFullYear()
+			for (let y = minYear; y <= maxYear; y++) {
+				const text = y.toString()
+				options.push({ text: text, value: text } as DatePickerOption)
+			}
+		} else if (type == 'month') {
+			const minMonth = year <= min.getFullYear() ? min.getMonth() : 0
+			const maxMonth = year >= max.getFullYear() ? max.getMonth() : 11
+			for (let m = minMonth; m <= maxMonth; m++) {
+				const text = padTwo(m + 1)
+				options.push({ text: text, value: text } as DatePickerOption)
+			}
+		} else {
+			let minDay = 1
+			let maxDay = getDaysInMonth(year, month)
+			if (year == min.getFullYear() && month == min.getMonth()) {
+				minDay = min.getDate()
+			}
+			if (year == max.getFullYear() && month == max.getMonth()) {
+				maxDay = max.getDate()
+			}
+			for (let d = minDay; d <= maxDay; d++) {
+				const text = padTwo(d)
+				options.push({ text: text, value: text } as DatePickerOption)
+			}
+		}
+		const filter = props.filter
+		if (filter != null) {
+			return filter(type, options, values)
+		}
+		return options
+	}
+
+	/**
+	 * 构建全部列：先按已选日期算出各列当前取值，再逐列生成选项、过滤、格式化并定位下标
+	 */
+	function buildColumns(): DatePickerColumn[] {
+		const types = resolvedTypes.value
+		const min = minDateValue.value
+		const max = maxDateValue.value
+		const base = clampToRange(selectedDate.value)
+		const year = base.getFullYear()
+		const selectedMonth = base.getMonth()
+		let minMonth = year <= min.getFullYear() ? min.getMonth() : 0
+		let maxMonth = year >= max.getFullYear() ? max.getMonth() : 11
+		if (minMonth > maxMonth) {
+			minMonth = maxMonth
+		}
+		let month = selectedMonth
+		if (month < minMonth) {
+			month = minMonth
+		}
+		if (month > maxMonth) {
+			month = maxMonth
+		}
+		let minDay = 1
+		let maxDay = getDaysInMonth(year, month)
+		if (year == min.getFullYear() && month == min.getMonth()) {
+			minDay = min.getDate()
+		}
+		if (year == max.getFullYear() && month == max.getMonth()) {
+			maxDay = max.getDate()
+		}
+		let day = base.getDate()
+		if (day < minDay) {
+			day = minDay
+		}
+		if (day > maxDay) {
+			day = maxDay
+		}
+
+		const result: DatePickerColumn[] = []
+		const values: string[] = []
+		for (let i = 0; i < types.length; i++) {
+			const type = types[i]
+			let current = ''
+			if (type == 'year') {
+				current = year.toString()
+			} else if (type == 'month') {
+				current = padTwo(month + 1)
+			} else {
+				current = padTwo(day)
+			}
+			let options = buildDateOptions(type, year, month, day, min, max, values)
+			const formatter = props.formatter
+			if (formatter != null) {
+				for (let j = 0; j < options.length; j++) {
+					options[j] = formatter(type, options[j])
+				}
+			}
+			result.push({
+				type: type,
+				options: options,
+				index: findOptionIndex(options, current)
+			} as DatePickerColumn)
+			values.push(current)
+		}
+		return result
+	}
+
+	/** 列渲染数据（selectedDate / 列组合 / filter / formatter 变化时重算） */
+	const columns = computed<DatePickerColumn[]>(() => buildColumns())
+
+	/**
+	 * 当前各列已定位下标快照（上一次 m-picker change 的基准，用于反推变化列）
+	 */
+	function currentColumnIndexes(): number[] {
+		const result: number[] = []
+		const cols = columns.value
+		for (let i = 0; i < cols.length; i++) {
+			result.push(cols[i].index)
+		}
+		return result
+	}
+
+	/** 上一次已知的各列下标 */
+	const lastIndexes = ref<number[]>(currentColumnIndexes())
+
+	/**
+	 * 列数据下发：DatePickerOption 映射为 m-picker 的 PickerOption（label 负责展示，value 保留原值参与定位）
+	 */
+	const pickerColumns = computed<PickerOption[][]>(() => {
+		const result: PickerOption[][] = []
+		const cols = columns.value
+		for (let i = 0; i < cols.length; i++) {
+			const options = cols[i].options
+			const list: PickerOption[] = []
+			for (let j = 0; j < options.length; j++) {
+				const item: PickerOption = { label: options[j].text, value: options[j].value }
+				list.push(item)
+			}
+			result.push(list)
+		}
+		return result
+	})
+
+	/**
+	 * 选中值下发：取各列「已定位下标」对应的选项值，保证 m-picker 精确命中（不输出原始 value）
+	 */
+	const pickerValue = computed<PickerValue>(() => {
+		const values: (string | number)[] = []
+		const cols = columns.value
+		for (let i = 0; i < cols.length; i++) {
+			const col = cols[i]
+			if (col.options.length > 0) {
+				const index = col.index >= 0 && col.index < col.options.length ? col.index : 0
+				values.push(col.options[index].value)
+			}
+		}
+		return values
+	})
+
+	/** 根类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-date-picker'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/**
+	 * 比较前后两轮下标，返回第一个变化的列下标（长度变化时返回较短长度；完全一致返回 -1）
+	 */
+	function firstDiffIndex(previous: number[], next: number[]): number {
+		const length = previous.length < next.length ? previous.length : next.length
+		for (let i = 0; i < length; i++) {
+			if (previous[i] != next[i]) {
+				return i
+			}
+		}
+		if (previous.length != next.length) {
+			return length
+		}
+		return -1
+	}
+
+	/**
+	 * 插槽适配：PickerOption 转回对外契约的 DatePickerOption（text / value）
+	 */
+	function toDatePickerOption(option: PickerOption): DatePickerOption {
+		return { text: option.label, value: valueToText(option.value) } as DatePickerOption
+	}
+
+	/**
+	 * 确认：收敛后回写 v-model:value 并派发 confirm
+	 */
+	function onConfirmClick() {
+		const date = clampToRange(normalizeByColumns(selectedDate.value))
+		selectedDate.value = date
+		emit('update:value', date)
+		emit('confirm', date)
+	}
+
+	/**
+	 * 取消：仅派发 cancel，不改动选中值（弹层由组合组件关闭）
+	 */
+	function onCancelClick() {
+		emit('cancel')
+	}
+
+	/**
+	 * 通知 m-picker 按当前 value 重新定位：列内容变化（限域 / 过滤 / 格式化）后列数不变，其内部下标不会自动重算
+	 */
+	function resetPickerIndexes() {
+		nextTick(() => {
+			const inst = picker.value
+			if (inst != null) {
+				inst.$callMethod('resetSelection')
+			}
+		})
+	}
+
+	/**
+	 * 重置选择为 value / 今天（弹层复开时按需调用）；同时复位 m-picker 内部下标
+	 */
+	function resetSelection() {
+		selectedDate.value = initialDate()
+		resetPickerIndexes()
+	}
+
+	/**
+	 * m-picker 列切换：按列组合顺序从 selectedOptions 重建日期分量，再定位变化列派发 change
+	 */
+	const onPickerChange = (_value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
+		const types = resolvedTypes.value
+		const base = clampToRange(selectedDate.value)
+		let year = base.getFullYear()
+		let month = base.getMonth()
+		let day = base.getDate()
+		for (let i = 0; i < types.length && i < selectedOptions.length; i++) {
+			const type = types[i]
+			const current = optionValueToNumber(valueToText(selectedOptions[i].value))
+			if (type == 'year') {
+				year = current
+				const maxDay = getDaysInMonth(year, month)
+				if (day > maxDay) {
+					day = maxDay
+				}
+			} else if (type == 'month') {
+				month = current - 1
+				const maxDay = getDaysInMonth(year, month)
+				if (day > maxDay) {
+					day = maxDay
+				}
+			} else {
+				day = current
+			}
+		}
+		selectedDate.value = clampToRange(normalizeByColumns(composePickerDate(year, month, day)))
+		const changed = firstDiffIndex(lastIndexes.value, indexes)
+		lastIndexes.value = indexes
+		if (changed < 0) {
+			return
+		}
+		emit('change', selectedDate.value, changed)
+	}
+
+	/**
+	 * m-picker 确认：复用面板既有的收敛与回写逻辑
+	 */
+	const onPickerConfirm = (_value: PickerValue | null, _selectedOptions: PickerOption[], indexes: number[]) => {
+		lastIndexes.value = indexes
+		onConfirmClick()
+	}
+
+	/**
+	 * m-picker 取消：转发 cancel（弹层由组合组件关闭）
+	 */
+	const onPickerCancel = () => {
+		onCancelClick()
+	}
+
+	// 外部 value 变化：与内部状态不同日时同步（确认回写的同值不重置选择）
+	watch((): Date | null => props.value, (value: Date | null) => {
+		if (value == null) {
+			return
+		}
+		const next = clampToRange(normalizeByColumns(value))
+		if (getDayStart(selectedDate.value).getTime() == next.getTime()) {
+			return
+		}
+		selectedDate.value = next
+	})
+
+	// min/max 变化：当前选择收敛到新区间，并通知 m-picker 按新列内容重新定位
+	watch((): Date => minDateValue.value, (_: Date) => {
+		selectedDate.value = clampToRange(selectedDate.value)
+		resetPickerIndexes()
+	})
+
+	watch((): Date => maxDateValue.value, (_: Date) => {
+		selectedDate.value = clampToRange(selectedDate.value)
+		resetPickerIndexes()
+	})
+
+	// filter / formatter 变化：选中值不变但列内容可能变化，需重新定位
+	watch((): DatePickerFilter | null => props.filter, (_: DatePickerFilter | null) => {
+		resetPickerIndexes()
+	})
+
+	watch((): DatePickerFormatter | null => props.formatter, (_: DatePickerFormatter | null) => {
+		resetPickerIndexes()
+	})
+
+	/**
+	 * 读取当前选中日期（实例方法，对齐 Vant getSelectedDate）
+	 */
+	function getSelectedDate(): Date {
+		return clampToRange(normalizeByColumns(selectedDate.value))
+	}
+
+	/**
+	 * 程序化确认（实例方法，对齐 Vant confirm）：立即回写并派发 confirm
+	 */
+	function confirm() {
+		onConfirmClick()
+	}
+
+	defineExpose({
+		confirm,
+		resetSelection,
+		getSelectedDate
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 * 面板级视觉由内部 m-picker 的样式与 $m-picker-* 变量承担，此处仅保留根节点背景。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根（customClass 设内边距时背景仍铺满） ========== */
+	.m-date-picker {
+		background-color: $m-picker-background;
+	}
+</style>

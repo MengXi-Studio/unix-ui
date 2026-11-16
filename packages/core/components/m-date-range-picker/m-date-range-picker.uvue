@@ -1,0 +1,429 @@
+<template>
+	<!-- 日期范围选择面板（三组件拆分后的基础组件）：开始 / 结束两段自绘标题 + 复用 m-date-picker 滚轮，
+	     区间越界在确认时自动交换两端；纯平铺形态，弹层组合见 m-date-range-picker-popup，
+	     输入框触发组合见 m-date-range-picker-input。根节点常驻静态（LESSONS #32） -->
+	<view :class="rootClass" :style="customStyle">
+		<!-- 快捷选项区（如「上周 / 上月 / 近三月」，由使用方自绘） -->
+		<slot name="header"></slot>
+		<!-- 标题区：title 插槽整体替换两段标题，未传时按 tabs 自绘 -->
+		<slot name="title" :tabs="tabList" :active-index="activeIndex">
+			<view class="m-date-range-picker__tabs">
+				<view
+					v-for="(tab, index) in tabList"
+					:key="index"
+					class="m-date-range-picker__tab"
+					@click="onTabClick(index)"
+				>
+					<text :class="tabTextClass(index)">{{ tab }}</text>
+					<view v-if="index == activeIndex" class="m-date-range-picker__tab-line"></view>
+				</view>
+			</view>
+		</slot>
+		<!-- 滚轮区：v-if 切换保证每次重建后按当前端点值重新定位（m-date-picker 挂载锚点逻辑） -->
+		<view class="m-date-range-picker__panel">
+			<m-date-picker
+				v-if="activeIndex == 0"
+				key="start"
+				:value="startPickValue"
+				:show-toolbar="false"
+				:columns-type="columnsType"
+				:min-date="minDate"
+				:max-date="maxDate"
+				:filter="filter"
+				:formatter="formatter"
+				:option-height="optionHeight"
+				:visible-option-num="visibleOptionNum"
+				:swipe-duration="swipeDuration"
+				:readonly="readonly"
+				:loading="loading"
+				@change="onStartChange"
+			/>
+			<m-date-picker
+				v-else
+				key="end"
+				:value="endPickValue"
+				:show-toolbar="false"
+				:columns-type="columnsType"
+				:min-date="minDate"
+				:max-date="maxDate"
+				:filter="filter"
+				:formatter="formatter"
+				:option-height="optionHeight"
+				:visible-option-num="visibleOptionNum"
+				:swipe-duration="swipeDuration"
+				:readonly="readonly"
+				:loading="loading"
+				@change="onEndChange"
+			/>
+		</view>
+		<!-- 底部按钮区：footer 插槽整体替换，未传时渲染取消 + 确认 -->
+		<slot name="footer">
+			<view class="m-date-range-picker__footer">
+				<view class="m-date-range-picker__action" @click="onCancelClick">
+					<slot name="cancel">
+						<text class="m-date-range-picker__cancel-text">{{ cancelButtonText }}</text>
+					</slot>
+				</view>
+				<view class="m-date-range-picker__action" @click="onConfirmClick">
+					<slot name="confirm">
+						<text class="m-date-range-picker__confirm-text">{{ confirmButtonText }}</text>
+					</slot>
+				</view>
+			</view>
+		</slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-date-range-picker 日期范围面板：开始 / 结束两段标题 + 复用 m-date-picker 滚轮。
+	 * 两端值各自维护，切换标题只切换当前编辑端；change 实时派发两端快照，
+	 * confirm 时若起点晚于终点则自动交换（Q6 方案 A），随后回写 v-model:value。
+	 * 弹层形态见 m-date-range-picker-popup，输入框形态见 m-date-range-picker-input。
+	 */
+	import {
+		DatePickerColumnType,
+		DatePickerFilter,
+		DatePickerFormatter,
+		DatePickerOption
+	} from '../m-date-picker/date-picker.uts'
+	import MDatePicker from '../m-date-picker/m-date-picker.uvue'
+
+	type Props = {
+		/** 两端选中值（v-model:value；长度 0-2，按 起始、结束 顺序；null 未选） */
+		value?: Date[]
+		/** 两段标题文案（默认「开始日期」「结束日期」） */
+		tabs?: string[]
+		/** 选项类型组合（year / month / day 任意顺序；null 用默认年-月-日） */
+		columnsType?: DatePickerColumnType[]
+		/** 可选最小日期（null 默认十年前） */
+		minDate?: Date
+		/** 可选最大日期（null 默认十年后） */
+		maxDate?: Date
+		/** 选项过滤函数（null 不过滤） */
+		filter?: DatePickerFilter
+		/** 选项格式化函数（null 不格式化） */
+		formatter?: DatePickerFormatter
+		/** 选项行高 px（0 用默认 44） */
+		optionHeight?: number
+		/** 可见选项个数（0 用默认 6） */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms */
+		swipeDuration?: number
+		/** 只读：滚轮回弹，不响应切换 */
+		readonly?: boolean
+		/** 是否显示加载状态 */
+		loading?: boolean
+		/** 确认按钮文字 */
+		confirmButtonText?: string
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: null,
+		tabs: null,
+		columnsType: null,
+		minDate: null,
+		maxDate: null,
+		filter: null,
+		formatter: null,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		readonly: false,
+		loading: false,
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 确认后回写两端值（未选为 null；长度 1 表示只选了一端） */
+		'update:value': [value: Date[] | null]
+		/** 当前端滚动切换后触发（value 为两端快照，activeIndex 为当前编辑端） */
+		change: [value: Date[], activeIndex: number]
+		/** 点击确认按钮（已自动交换为升序） */
+		confirm: [value: Date[]]
+		/** 点击取消按钮 */
+		cancel: []
+	}>()
+
+	/** 默认两段标题 */
+	const DEFAULT_TABS: string[] = ['开始日期', '结束日期']
+
+	/** 当前编辑端：0 起始 / 1 结束 */
+	const activeIndex = ref<number>(0)
+	/** 起点（null 未选） */
+	const startDate = ref<Date | null>(null)
+	/** 终点（null 未选） */
+	const endDate = ref<Date | null>(null)
+
+	/** 两段标题（null / 空数组回退默认，复制避免外部修改） */
+	const tabList = computed<string[]>(() => {
+		const tabs = props.tabs
+		const list: string[] = []
+		if (tabs == null || tabs.length == 0) {
+			for (let i = 0; i < DEFAULT_TABS.length; i++) {
+				list.push(DEFAULT_TABS[i])
+			}
+			return list
+		}
+		for (let i = 0; i < tabs.length; i++) {
+			list.push(tabs[i])
+		}
+		return list
+	})
+
+	/** 起始端滚轮取值：优先自身，未选时以终点作初始定位（不回写状态） */
+	const startPickValue = computed<Date | null>(() => {
+		return startDate.value != null ? startDate.value : endDate.value
+	})
+
+	/** 结束端滚轮取值：优先自身，未选时以起点作初始定位（不回写状态） */
+	const endPickValue = computed<Date | null>(() => {
+		return endDate.value != null ? endDate.value : startDate.value
+	})
+
+	/** 根类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-date-range-picker'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/**
+	 * 标题文本类名：激活端高亮
+	 */
+	function tabTextClass(index: number): string {
+		if (index == activeIndex.value) {
+			return 'm-date-range-picker__tab-text m-date-range-picker__tab-text--active'
+		}
+		return 'm-date-range-picker__tab-text'
+	}
+
+	/**
+	 * 从外部 value 同步两端（null / 长度 0-2 均兼容）
+	 */
+	function syncFromValue() {
+		const value = props.value
+		if (value == null || value.length == 0) {
+			startDate.value = null
+			endDate.value = null
+			return
+		}
+		startDate.value = value[0]
+		endDate.value = value.length > 1 ? value[1] : null
+	}
+
+	/**
+	 * 两端快照（保持原顺序，供 change 派发）
+	 */
+	function currentValues(): Date[] {
+		const list: Date[] = []
+		if (startDate.value != null) {
+			list.push(startDate.value!)
+		}
+		if (endDate.value != null) {
+			list.push(endDate.value!)
+		}
+		return list
+	}
+
+	/**
+	 * 升序两端值（确认时自动交换，Q6 方案 A）
+	 */
+	function sortedValues(): Date[] {
+		const start = startDate.value
+		const end = endDate.value
+		const list: Date[] = []
+		if (start != null && end != null) {
+			if (start.getTime() <= end.getTime()) {
+				list.push(start)
+				list.push(end)
+			} else {
+				list.push(end)
+				list.push(start)
+			}
+		} else if (start != null) {
+			list.push(start)
+		} else if (end != null) {
+			list.push(end)
+		}
+		return list
+	}
+
+	/**
+	 * 切换当前编辑端
+	 */
+	function onTabClick(index: number) {
+		if (index == activeIndex.value) {
+			return
+		}
+		activeIndex.value = index
+	}
+
+	/**
+	 * 起始端变化：更新状态并派发两端快照
+	 */
+	function onStartChange(date: Date, columnIndex: number) {
+		startDate.value = date
+		emit('change', currentValues(), activeIndex.value)
+	}
+
+	/**
+	 * 结束端变化：更新状态并派发两端快照
+	 */
+	function onEndChange(date: Date, columnIndex: number) {
+		endDate.value = date
+		emit('change', currentValues(), activeIndex.value)
+	}
+
+	/**
+	 * 确认：自动交换为升序后回写并派发 confirm
+	 */
+	function onConfirmClick() {
+		const values = sortedValues()
+		if (values.length > 1) {
+			startDate.value = values[0]
+			endDate.value = values[1]
+		}
+		if (values.length == 0) {
+			emit('update:value', null)
+		} else {
+			emit('update:value', values)
+		}
+		emit('confirm', values)
+	}
+
+	/**
+	 * 取消：仅派发 cancel（弹层由组合组件关闭）
+	 */
+	function onCancelClick() {
+		emit('cancel')
+	}
+
+	// 外部 value 变化：同步两端（确认回写的同值不重置当前编辑端）
+	watch((): Date[] | null => props.value, (value: Date[] | null) => {
+		const nextStart = value != null && value.length > 0 ? value[0] : null
+		const nextEnd = value != null && value.length > 1 ? value[1] : null
+		const sameStart = (startDate.value == null && nextStart == null)
+			|| (startDate.value != null && nextStart != null && startDate.value!.getTime() == nextStart.getTime())
+		const sameEnd = (endDate.value == null && nextEnd == null)
+			|| (endDate.value != null && nextEnd != null && endDate.value!.getTime() == nextEnd.getTime())
+		if (sameStart && sameEnd) {
+			return
+		}
+		startDate.value = nextStart
+		endDate.value = nextEnd
+	})
+
+	onMounted(() => {
+		syncFromValue()
+	})
+
+	/**
+	 * 重置两端为外部 value（弹层复开时按需调用）
+	 */
+	function resetSelection() {
+		syncFromValue()
+	}
+
+	/**
+	 * 读取当前两端值（升序快照）
+	 */
+	function getSelectedValue(): Date[] {
+		return sortedValues()
+	}
+
+	/**
+	 * 程序化确认（等价点击确认按钮）
+	 */
+	function confirm() {
+		onConfirmClick()
+	}
+
+	defineExpose({
+		confirm,
+		resetSelection,
+		getSelectedValue
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根 ========== */
+	.m-date-range-picker {
+		background-color: $m-date-range-picker-background;
+	}
+
+	/* ========== 两段标题（自绘轻量 tab，避免嵌套滚动容器冲突） ========== */
+	.m-date-range-picker__tabs {
+		flex-direction: row;
+		height: $m-date-range-picker-tabs-height;
+	}
+	.m-date-range-picker__tab {
+		flex: 1;
+		position: relative;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-date-range-picker__tab-text {
+		font-size: $m-date-range-picker-tab-font-size;
+		color: $m-date-range-picker-tab-color;
+	}
+	.m-date-range-picker__tab-text--active {
+		color: $m-date-range-picker-tab-active-color;
+		font-weight: bold;
+	}
+	/* 激活下划线：定宽居中 */
+	.m-date-range-picker__tab-line {
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		width: $m-date-range-picker-tab-line-width;
+		transform: translateX(-50%);
+		height: 2px;
+		background-color: $m-date-range-picker-tab-active-color;
+		border-radius: 1px;
+	}
+
+	/* ========== 滚轮区（m-date-picker 自带背景与高度，无需额外样式） ========== */
+	.m-date-range-picker__panel {
+		background-color: $m-date-range-picker-background;
+	}
+
+	/* ========== 底部按钮区（取消 / 确认） ========== */
+	.m-date-range-picker__footer {
+		flex-direction: row;
+		height: $m-date-range-picker-footer-height;
+		border-top: $m-border-width solid $m-date-range-picker-footer-border-color;
+	}
+	.m-date-range-picker__action {
+		flex: 1;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-date-range-picker__cancel-text {
+		font-size: $m-date-range-picker-action-font-size;
+		color: $m-date-range-picker-cancel-color;
+	}
+	.m-date-range-picker__confirm-text {
+		font-size: $m-date-range-picker-action-font-size;
+		color: $m-date-range-picker-confirm-color;
+		font-weight: bold;
+	}
+</style>

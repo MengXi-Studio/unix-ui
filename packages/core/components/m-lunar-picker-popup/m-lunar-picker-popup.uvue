@@ -1,0 +1,253 @@
+<template>
+	<!-- 农历选择弹出框：m-popup + m-lunar-picker 组合（三组件拆分后的弹层形态组件）。
+	     弹层 props 经 m-popup，农历选择 props / 事件 / 插槽逐项透传给 m-lunar-picker；
+	     confirm / cancel 后自动关闭弹层；reset-on-open 打开时复位选择为 value（null 为今天） -->
+	<m-popup
+		:show="show"
+		:position="position"
+		:round="round"
+		:close-on-click-overlay="closeOnClickOverlay"
+		:safe-area-inset-top="safeAreaInsetTop"
+		:safe-area-inset-bottom="safeAreaInsetBottom"
+		:z-index="zIndex"
+		:duration="duration"
+		@update:show="onPopupUpdateShow"
+		@open="onPopupOpen"
+		@opened="onPopupOpened"
+		@close="onPopupClose"
+		@closed="onPopupClosed"
+		@click-overlay="onPopupClickOverlay"
+	>
+		<m-lunar-picker
+			ref="picker"
+			:value="value"
+			:columns-type="columnsType"
+			:min-date="minDate"
+			:max-date="maxDate"
+			:show-gan-zhi="showGanZhi"
+			:show-zodiac="showZodiac"
+			:title="title"
+			:confirm-button-text="confirmButtonText"
+			:cancel-button-text="cancelButtonText"
+			:show-toolbar="showToolbar"
+			:loading="loading"
+			:readonly="readonly"
+			:filter="filter"
+			:formatter="formatter"
+			:option-height="optionHeight"
+			:visible-option-num="visibleOptionNum"
+			:swipe-duration="swipeDuration"
+			:custom-class="customClass"
+			:custom-style="customStyle"
+			@change="onPickerChange"
+			@confirm="onPickerConfirm"
+			@cancel="onPickerCancel"
+			@update:value="onPickerValueChange"
+		>
+			<!-- 插槽条件转发：未传入时不覆盖 m-lunar-picker 的默认渲染 -->
+			<template v-if="$slots['toolbar'] != null" #toolbar>
+				<slot name="toolbar"></slot>
+			</template>
+			<template v-if="$slots['title'] != null" #title>
+				<slot name="title"></slot>
+			</template>
+			<template v-if="$slots['confirm'] != null" #confirm>
+				<slot name="confirm"></slot>
+			</template>
+			<template v-if="$slots['cancel'] != null" #cancel>
+				<slot name="cancel"></slot>
+			</template>
+			<!-- #ifdef WEB -->
+			<!-- 选项插槽仅 Web 转发：App 端面板不接收该插槽，小程序端同名插槽仅首个生效（LESSONS #17） -->
+			<template v-if="$slots['option'] != null" #option="{ option, index }">
+				<slot name="option" :option="option" :index="index"></slot>
+			</template>
+			<!-- #endif -->
+			<template v-if="$slots['columns-top'] != null" #columns-top>
+				<slot name="columns-top"></slot>
+			</template>
+			<template v-if="$slots['columns-bottom'] != null" #columns-bottom>
+				<slot name="columns-bottom"></slot>
+			</template>
+		</m-lunar-picker>
+	</m-popup>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-lunar-picker-popup 农历选择弹出框：m-popup + m-lunar-picker 组合组件。
+	 * 自身无选择状态与样式，弹层行为归 m-popup，农历滚轮选择行为归 m-lunar-picker。
+	 */
+	import {
+		LunarPickerColumnType,
+		LunarPickerFilter,
+		LunarPickerFormatter,
+		LunarPickerOption
+	} from '../m-lunar-picker/lunar-picker.uts'
+	import { DatePickerPosition } from '../m-date-picker/date-picker.uts'
+	import MLunarPicker from '../m-lunar-picker/m-lunar-picker.uvue'
+
+	type Props = {
+		/** 是否显示弹出层（v-model:show） */
+		show?: boolean
+		/** 当前选中日期（公历 Date，v-model:value；null 用今天） */
+		value?: Date
+		/** 列类型组合（year / month / day 任意顺序；null 用默认年-月-日） */
+		columnsType?: LunarPickerColumnType[]
+		/** 可选最小日期（null 取农历表起点） */
+		minDate?: Date
+		/** 可选最大日期（null 取农历表终点） */
+		maxDate?: Date
+		/** 年列是否附加干支 */
+		showGanZhi?: boolean
+		/** 年列是否附加生肖 */
+		showZodiac?: boolean
+		/** 顶部栏标题 */
+		title?: string
+		/** 确认按钮文字 */
+		confirmButtonText?: string
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 是否显示顶部栏 */
+		showToolbar?: boolean
+		/** 是否显示加载状态 */
+		loading?: boolean
+		/** 只读：不响应滚轮切换 */
+		readonly?: boolean
+		/** 选项过滤函数（null 不过滤） */
+		filter?: LunarPickerFilter
+		/** 选项格式化函数（null 不格式化） */
+		formatter?: LunarPickerFormatter
+		/** 选项行高 px（0 用默认 44） */
+		optionHeight?: number
+		/** 可见选项个数（0 用默认 6） */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms */
+		swipeDuration?: number
+		/** 弹出方位（透传 m-popup） */
+		position?: DatePickerPosition
+		/** 弹层圆角（透传 m-popup） */
+		round?: boolean
+		/** 点击遮罩后是否关闭（透传 m-popup） */
+		closeOnClickOverlay?: boolean
+		/** 弹层打开时是否复位选择为 value / 今天（默认 false） */
+		resetOnOpen?: boolean
+		/** 顶部安全区（透传 m-popup） */
+		safeAreaInsetTop?: boolean
+		/** 底部安全区（透传 m-popup） */
+		safeAreaInsetBottom?: boolean
+		/** z-index 层级（透传 m-popup） */
+		zIndex?: number
+		/** 动画时长秒（透传 m-popup） */
+		duration?: number
+		/** 自定义面板根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义面板根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		value: null,
+		columnsType: null,
+		minDate: null,
+		maxDate: null,
+		showGanZhi: false,
+		showZodiac: false,
+		title: '',
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		showToolbar: true,
+		loading: false,
+		readonly: false,
+		filter: null,
+		formatter: null,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		position: 'bottom',
+		round: true,
+		closeOnClickOverlay: true,
+		resetOnOpen: false,
+		safeAreaInsetTop: false,
+		safeAreaInsetBottom: true,
+		zIndex: 1,
+		duration: 0.3,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		'update:show': [value: boolean]
+		/** 确认后回写公历日期（v-model:value） */
+		'update:value': [date: Date]
+		/** 滚轮切换列 */
+		change: [date: Date, columnIndex: number]
+		/** 点击确认按钮（确认后弹层自动关闭） */
+		confirm: [date: Date]
+		/** 点击取消按钮（取消后弹层自动关闭） */
+		cancel: []
+		open: []
+		opened: []
+		close: []
+		closed: []
+		/** 点击遮罩 */
+		'click-overlay': [event: MouseEvent]
+	}>()
+
+	/** 内部面板实例（复开时按需调用 resetSelection） */
+	const picker = ref<ComponentPublicInstance | null>(null)
+
+	// 模板绑定的组件事件处理函数一律 const 箭头函数（VDOM 生成 Kotlin 中裸名传递会报错）
+
+	const onPopupUpdateShow = (value: boolean) => {
+		emit('update:show', value)
+	}
+
+	/** 弹层打开：派发 open；resetOnOpen 时复位选择为 value / 今天 */
+	const onPopupOpen = () => {
+		emit('open')
+		const inst = picker.value
+		if (inst != null && props.resetOnOpen) {
+			inst.$callMethod('resetSelection')
+		}
+	}
+
+	const onPopupOpened = () => {
+		emit('opened')
+	}
+
+	const onPopupClose = () => {
+		emit('close')
+	}
+
+	const onPopupClosed = () => {
+		emit('closed')
+	}
+
+	const onPopupClickOverlay = (e: MouseEvent) => {
+		emit('click-overlay', e)
+	}
+
+	// ========== 面板事件转发（confirm / cancel 额外触发关闭） ==========
+
+	const onPickerChange = (date: Date, columnIndex: number) => {
+		emit('change', date, columnIndex)
+	}
+
+	const onPickerValueChange = (date: Date) => {
+		emit('update:value', date)
+	}
+
+	/** 确认：派发 confirm 后关闭弹层 */
+	const onPickerConfirm = (date: Date) => {
+		emit('confirm', date)
+		emit('update:show', false)
+	}
+
+	/** 取消：派发 cancel 后关闭弹层 */
+	const onPickerCancel = () => {
+		emit('cancel')
+		emit('update:show', false)
+	}
+</script>

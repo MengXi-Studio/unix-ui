@@ -7,6 +7,7 @@ import DemoPhone from './components/DemoPhone.vue'
 import DocHeader from './components/DocHeader.vue'
 import VersionBadge from './components/VersionBadge.vue'
 import './styles/demo.css'
+import './styles/sidebar.css'
 
 /**
  * 站点根布局组件：默认主题扩展

@@ -1,0 +1,235 @@
+<template>
+	<!-- 时间范围输入框：m-input（只读展示）+ m-time-range-picker-popup 组合。
+	     触发器点击整区打开弹层，确认后经 v-model:value 回写两端值并展示「起 - 止」；
+	     清空为自绘按钮（m-input 内置 clearable 图标位于触发层之下会被挡住） -->
+	<!-- 开启逻辑挂在触发层而非根节点：弹层遮罩点击会沿 DOM 冒泡经过本组件根，
+	     若根监听 @click 会在遮罩关闭的同一事件派发内把 show 置回 true（关闭即重开） -->
+	<view :class="rootClass" :style="customStyle">
+		<m-input
+			:model-value="displayText"
+			:placeholder="placeholder"
+			:disabled="disabled"
+			:border="border"
+			:inlaid="inlaid"
+			:custom-style="inputStyle"
+		/>
+		<!-- 透明触发层：m-input 的 readonly 以原生 disabled 模拟，原生 disabled 控件吞点击事件，
+		     覆盖层接住整区点击打开弹层（disabled 态不渲染） -->
+		<view v-if="!disabled" class="m-time-range-picker-input__trigger" @click="onTriggerClick"></view>
+		<view v-if="showClear" class="m-time-range-picker-input__clear" @click.stop="onClearClick">
+			<m-icon name="clear" custom-class="m-time-range-picker-input__clear-icon" />
+		</view>
+		<!-- z-index 3 高于触发层(1)/清空钮(2)：弹层遮罩须盖住本组件浮层 -->
+		<m-time-range-picker-popup
+			v-model:show="popupShow"
+			:value="value"
+			:tabs="tabs"
+			:columns-type="columnsType"
+			:min-time="minTime"
+			:max-time="maxTime"
+			:minute-step="minuteStep"
+			:second-step="secondStep"
+			:hour-cycle="hourCycle"
+			:filter="filter"
+			:formatter="formatter"
+			:confirm-button-text="confirmButtonText"
+			:cancel-button-text="cancelButtonText"
+			:reset-on-open="true"
+			:position="position"
+			:round="round"
+			:z-index="3"
+			@confirm="onRangeConfirm"
+		/>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-time-range-picker-input 时间范围输入框：m-input + m-time-range-picker-popup 组合组件。
+	 * 值单向受控：外部 value（v-model:value）作为弹层初始选择，确认后经 update:value 回写；
+	 * 展示文本为两端时间以「 - 」连接（格式随 columns-type：'HH:mm' 或 'HH:mm:ss'）。
+	 */
+	import {
+		TimePickerColumnType,
+		TimePickerFilter,
+		TimePickerFormatter,
+		TimePickerOption
+	} from '../m-time-picker/time-picker.uts'
+	import { DatePickerPosition } from '../m-date-picker/date-picker.uts'
+
+	type Props = {
+		/** 两端选中值（v-model:value；长度 0-2，null 未选） */
+		value?: string[]
+		/** 两段标题文案 */
+		tabs?: string[]
+		/** 选项类型组合 */
+		columnsType?: TimePickerColumnType[]
+		/** 占位符 */
+		placeholder?: string
+		/** 是否禁用 */
+		disabled?: boolean
+		/** 是否显示清空按钮（有值且非 disabled 时可见） */
+		clearable?: boolean
+		/** 触发器是否显示边框容器（透传 m-input） */
+		border?: boolean
+		/** 触发器嵌入式形态（透传 m-input） */
+		inlaid?: boolean
+		/** 确认按钮文字 */
+		confirmButtonText?: string
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 可选最小时刻 */
+		minTime?: string
+		/** 可选最大时刻 */
+		maxTime?: string
+		/** 分钟步长 */
+		minuteStep?: number
+		/** 秒步长 */
+		secondStep?: number
+		/** 小时制（24 / 12） */
+		hourCycle?: number
+		/** 选项过滤函数 */
+		filter?: TimePickerFilter
+		/** 选项格式化函数 */
+		formatter?: TimePickerFormatter
+		/** 弹出方位（透传 m-popup） */
+		position?: DatePickerPosition
+		/** 弹层圆角 */
+		round?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: null,
+		tabs: null,
+		columnsType: null,
+		placeholder: '请选择时间范围',
+		disabled: false,
+		clearable: true,
+		border: true,
+		inlaid: false,
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		minTime: null,
+		maxTime: null,
+		minuteStep: 1,
+		secondStep: 1,
+		hourCycle: 24,
+		filter: null,
+		formatter: null,
+		position: 'bottom',
+		round: true,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 确认后回写两端值（清空时为 null） */
+		'update:value': [value: string[] | null]
+		/** 弹层确认后触发 */
+		confirm: [value: string[]]
+		/** 点击清空按钮后触发 */
+		clear: []
+	}>()
+
+	/** 弹层显隐（内部状态；confirm 后由弹层组件派发 update:show 关闭） */
+	const popupShow = ref<boolean>(false)
+
+	/** 根类名：基础类 + customClass 透传 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-time-range-picker-input'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 清空按钮可见性（有值且非 disabled） */
+	const showClear = computed<boolean>(() => {
+		const value = props.value
+		return props.clearable && !props.disabled && value != null && value.length > 0
+	})
+
+	/** 展示文本：两端以「 - 」连接，单端只显示单值，未选为空串 */
+	const displayText = computed<string>(() => {
+		const value = props.value
+		if (value == null || value.length == 0) {
+			return ''
+		}
+		if (value.length == 1) {
+			return value[0]
+		}
+		return value[0] + ' - ' + value[1]
+	})
+
+	/** 输入区右侧预留清空按钮宽度（与 $m-time-range-picker-input-clear-width 同步） */
+	const inputStyle = computed<string>(() => {
+		if (showClear.value) {
+			return 'padding-right: 40px;'
+		}
+		return ''
+	})
+
+	/** 触发区点击：disabled 不响应，其余打开弹层 */
+	function onTriggerClick() {
+		if (props.disabled) {
+			return
+		}
+		popupShow.value = true
+	}
+
+	/** 确认回写：两端值经 v-model 回写外部，弹层关闭由弹层组件内部完成 */
+	const onRangeConfirm = (value: string[]) => {
+		emit('update:value', value)
+		emit('confirm', value)
+	}
+
+	/** 清空：回写 null 并派发 clear（.stop 阻止冒泡） */
+	function onClearClick(e: MouseEvent) {
+		emit('update:value', null)
+		emit('clear')
+	}
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根（触发区，承载触发层与清空按钮的定位包含块） ========== */
+	.m-time-range-picker-input {
+		position: relative;
+	}
+
+	/* ========== 透明触发层（覆盖整区接住点击，disabled 态不渲染） ========== */
+	.m-time-range-picker-input__trigger {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: $m-time-range-picker-input-trigger-z-index;
+	}
+
+	/* ========== 清空按钮（触发层之上，右侧定宽纵向居中） ========== */
+	.m-time-range-picker-input__clear {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: $m-time-range-picker-input-clear-width;
+		z-index: $m-time-range-picker-input-clear-z-index;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-time-range-picker-input__clear-icon {
+		font-size: $m-time-range-picker-input-clear-icon-size;
+		color: $m-time-range-picker-input-clear-color;
+	}
+</style>

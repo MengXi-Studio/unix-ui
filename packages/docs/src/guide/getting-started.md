@@ -2,11 +2,11 @@
 
 ## 前置条件
 
-已完成[安装](/guide/installation)（uni_modules 或 npm 方式二选一），并能在页面中渲染出 `<m-button>`。
+已完成[安装](/guide/installation)（uni_modules 或 npm 二选一），并能在页面中渲染出 `<m-button>`。
 
-## 1. 在模板中使用组件
+## 1. 在模板中使用
 
-组件遵循 easycom 规范，无需 import 与注册，直接在模板中使用：
+组件遵循 easycom 规范，无需 import 与注册：
 
 ```html
 <template>
@@ -20,9 +20,9 @@
 </script>
 ```
 
-## 2. 属性绑定
+## 2. 属性与事件
 
-props 与原生属性写法一致，布尔属性可直接书写或使用 `:` 绑定表达式：
+props 写法与原生属性一致，布尔属性可直接书写或绑定表达式：
 
 ```html
 <!-- 类型与尺寸 -->
@@ -37,51 +37,50 @@ props 与原生属性写法一致，布尔属性可直接书写或使用 `:` 绑
 <m-button type="primary" disabled>禁用状态</m-button>
 ```
 
-完整的属性列表见各组件文档的「Props」小节，例如 [Button 按钮](/components/button)。
+`loading` 与 `disabled` 期间 `click` 不会派发，异步提交无需额外做防重复点击。完整属性见各组件文档的「Props」，例如 [Button 按钮](/components/button)。
 
-## 3. 事件处理
+## 3. 双向绑定
 
-事件通过 `@事件名` 绑定，处理函数按 UTS 类型标注参数：
-
-```html
-<template>
-	<m-button type="primary" :loading="loading" @click="submit">
-		提交
-	</m-button>
-</template>
-
-<script setup lang="uts">
-	const loading = ref(false)
-
-	function submit() {
-		loading.value = true
-		// 模拟异步任务
-		setTimeout(() => {
-			loading.value = false
-		}, 2000)
-	}
-</script>
-```
-
-::: tip
-按钮处于 `loading` 或 `disabled` 状态时不会触发 `click`，因此异步提交期间无需额外做防重复点击处理。
-:::
-
-## 4. 双向绑定
-
-表单类组件通过 `v-model` 双向绑定值：
+表单类组件统一用 `v-model`，值类型随组件语义而定：
 
 ```html
-<template>
-	<m-input v-model="value" :clearable="true" placeholder="请输入内容" />
-</template>
+<!-- 字符串值 -->
+<m-input v-model="keyword" :clearable="true" placeholder="请输入关键词" />
 
-<script setup lang="uts">
-	const value = ref('')
-</script>
+<!-- 日期值（Date | null） -->
+<m-date-picker v-model:value="date" title="选择日期" :min-date="minDate" :max-date="maxDate" />
 ```
 
-## 5. 组合使用
+```uts
+const keyword = ref('')
+const date = ref<Date | null>(null)
+const minDate = new Date(2020, 0, 1)
+const maxDate = new Date(2030, 11, 31)
+```
+
+| 组件类型 | 值类型 | 示例 |
+| --- | --- | --- |
+| 文本 / 选择器 | `string` | `m-input`、`m-picker` |
+| 日期 | `Date \| null` | `m-date-picker`、`m-calendar` |
+| 时间 | `'HH:mm'` / `'HH:mm:ss'` | `m-time-picker` |
+| 多选 | 数组 | `m-checkbox-group` |
+
+## 4. 弹出框与输入框组合
+
+需要表单外观时，优先使用组合形态，而不是自己拼 `popup`：
+
+```html
+<m-date-picker-input
+	v-model:value="birthday"
+	title="出生日期"
+	placeholder="请选择日期"
+	:clearable="true"
+/>
+```
+
+三件套的分工固定：`m-date-picker` 是面板，`m-date-picker-popup` 负责弹层，`m-date-picker-input` 负责表单回显；时间、日期范围、农历、通用选择器同理。
+
+## 5. 用插槽组合
 
 容器类组件通过插槽组合子组件，例如用 `m-cell-group` 组织一组单元格：
 
@@ -101,8 +100,31 @@ props 与原生属性写法一致，布尔属性可直接书写或使用 `:` 绑
 </m-compact>
 ```
 
+## 6. 调整主题
+
+全局换肤在工程根 `uni.scss` 直接定义变量（详见[主题定制](/guide/theming)）：
+
+```scss
+$m-color-primary: #10b981;
+$m-button-normal-height: 48px;
+```
+
+单个实例的微调优先用 `custom-style` / `custom-class`，不要为局部样式改动全局变量：
+
+```html
+<m-button type="primary" custom-style="margin-left: 12px;">偏移按钮</m-button>
+```
+
+## 7. 常见错误
+
+| 现象 | 原因与处理 |
+| --- | --- |
+| 标签未渲染 | 目录名不是 `m-ui-x`，或 npm 方式漏配 easycom 规则，见[常见问题](/guide/faq#组件标签没有渲染) |
+| 主题变量不生效 | 在 `uni.scss` 中 `@import` 了 `vars.scss`（应直接定义变量），或修改后未重启 dev server |
+| App 端文字样式异常 | 文字样式写在 `<text>` 上，不要写在容器 `view` 上 |
+
 ## 下一步
 
-- [主题定制](/guide/theming)：覆盖默认主题变量，打造专属视觉
-- [组件参考](/components/button)：查看全部组件的 Props 与事件
+- [主题定制](/guide/theming)：变量分层、覆盖优先级与常见坑
+- [组件参考](/components/button)：查全部组件的 Props、Events 与插槽
 - [常见问题](/guide/faq)：编译与运行的高频问题

@@ -4,7 +4,7 @@
 
 为 uni-app x 提供功能完善的 UI 组件库（UTS + uvue 编写，一套组件多端覆盖）。
 
-**m-ui-x** 是开源项目 [unix-ui](https://github.com/MengXi-Studio/unix-ui) 的 uni_modules 插件发行版（npm 包名 [`@meng-xi/unix-ui`](https://www.npmjs.com/package/@meng-xi/unix-ui)），内置 46 个组件（含子组件），覆盖基础、布局、表单、反馈、数据展示与导航六类场景，把原生开发的交互细节（按压反馈、0.5px 细边框、文本省略、徽标截断……）与多端差异一次收敛。
+**m-ui-x** 是开源项目 [unix-ui](https://github.com/MengXi-Studio/unix-ui) 的 uni_modules 插件发行版（npm 包名 [`@meng-xi/unix-ui`](https://www.npmjs.com/package/@meng-xi/unix-ui)），内置 65 个组件（含子组件与组合形态），覆盖基础、布局、数据录入、选择器、日期时间、反馈、数据展示与导航八类场景，把原生开发的交互细节（按压反馈、0.5px 细边框、文本省略、徽标截断……）与多端差异一次收敛。
 
 ## 目录
 
@@ -81,7 +81,7 @@ $m-button-normal-height: 48px;
 
 ## 组件清单
 
-共 46 个组件（含子组件），按 6 大类组织；表中列出组件标签与核心能力，完整 API 见[组件参考](https://mengxi-studio.github.io/unix-ui/components/button.html)。
+共 65 个组件（含子组件与组合形态），按 8 类组织；表中列出组件标签与核心能力，完整 API 见[组件参考](https://mengxi-studio.github.io/unix-ui/components/button.html)。
 
 ### 基础组件
 
@@ -106,24 +106,53 @@ $m-button-normal-height: 48px;
 | m-sticky / m-sticky-box | 粘性布局：吸顶 / 吸底、容器边界约束、吸附状态事件 |
 | m-waterfall / m-waterfall-item / m-waterfall-load | 瀑布流：按内容实际高度多列排列、列数与间距、已知宽高占位、动态增删与重新排版 |
 
-### 表单组件
+### 数据录入
 
 | 组件 | 说明 |
 | --- | --- |
-| m-calendar | 日历面板：单选 / 多选 / 范围选择、年月切换导航、formatter 定制、超限提示 |
-| m-calendar-popup | 日历弹出框：m-popup + m-calendar，确认后自动关闭，支持方位、圆角、面板高度与安全区配置 |
-| m-calendar-input | 日历输入框：只读触发器 + 弹层选日期、选中值格式化回填、清空与禁用 |
-| m-cascader | 级联选择：多级联动、层级 tab 与手势滑动、field-names 字段映射、异步加载、四插槽 |
-| m-cascader-popup | 级联弹出框：m-popup + m-cascader，选完最后一级自动关闭 |
-| m-cascader-input | 级联输入框：只读触发器 + 弹层选择、选中路径文字回填、清空与禁用 |
 | m-checkbox / m-checkbox-group | 复选框：组容器 + 单项双形态、形状 / 颜色 / 大小定制、max 限制、indeterminate 全选 |
 | m-checkbox-popup | 复选弹出框：底部弹层多选，options 数组驱动 + field-names 映射 + footer 插槽 |
 | m-checkbox-input | 复选输入框：只读触发器 + 弹层多选、「、」连接回显、超 2 项截断、自绘清空 |
 | m-color-picker | 颜色选择器：饱和度-明度面板 + 色相 / 透明度滑块，hex / rgb / hsl 输出、预设色、最近色、Web 端吸管取色 |
 | m-color-picker-popup | 颜色选择器弹出框：取消 / 标题 / 确定头部，确定后回写、取消与遮罩关闭丢弃 |
 | m-color-picker-input | 颜色选择器输入框：只读触发器 + 左侧色块预览 + 弹层选色、可选字段标签与清空 |
-| m-date-strip | 日期横条：横向连续日期、单选 / 多选 / 范围、value-format 字符串绑定、农历文案、过滤禁用、插槽定制 |
 | m-input | 输入框：六种类型、clearable 两时机、formatter / precision / min-max 收敛、明文切换、字数统计、多行自适应、前后插槽 |
+
+### 选择器
+
+| 组件 | 说明 |
+| --- | --- |
+| m-cascader | 级联选择：多级联动、层级 tab 与手势滑动、field-names 字段映射、异步加载、四插槽 |
+| m-cascader-popup | 级联弹出框：m-popup + m-cascader，选完最后一级自动关闭 |
+| m-cascader-input | 级联输入框：只读触发器 + 弹层选择、选中路径文字回填、清空与禁用 |
+| m-picker | 通用滚轮选择器：一维 / 二维列数据自动识别、children 级联、禁用项、对象选项、columns-top / columns-bottom 插槽 |
+| m-picker-popup | 选择器弹出框：m-popup + m-picker，v-model 控制显隐与选中值，确认 / 取消后自动关闭 |
+| m-picker-input | 选择器输入框：只读触发器 + 弹层选择、各列选中项文本回显、清空与禁用 |
+| m-picker-view | 选择器纯视图：无工具栏的索引受控多列滚轮，配合 m-picker-view-column 与 option 插槽嵌入自定义容器 |
+
+### 日期时间
+
+| 组件 | 说明 |
+| --- | --- |
+| m-calendar | 日历面板：单选 / 多选 / 范围选择、年月切换导航、formatter 定制、超限提示 |
+| m-calendar-popup | 日历弹出框：m-popup + m-calendar，确认后自动关闭，支持方位、圆角、面板高度与安全区配置 |
+| m-calendar-input | 日历输入框：只读触发器 + 弹层选日期、选中值格式化回填、清空与禁用 |
+| m-date-picker | 日期选择：年 / 月 / 日滚轮、列组合、min / max 区间、filter / formatter、顶部栏与只读加载态 |
+| m-date-picker-popup | 日期选择弹出框：m-popup + 日期面板，确认 / 取消后自动关闭，支持方位、圆角与安全区配置 |
+| m-date-picker-input | 日期输入框：只读触发器 + 弹层选择、按列组合格式化回填、清空与禁用 |
+| m-date-range-picker | 日期范围选择：开始 / 结束两段标题复用一个日期滚轮，确认时自动升序，支持区间、过滤格式化与快捷选项插槽 |
+| m-date-range-picker-popup | 日期范围弹出框：m-popup + 日期范围面板，确认 / 取消后自动关闭 |
+| m-date-range-picker-input | 日期范围输入框：只读触发器 + 弹层选择、按 outlet-format 回填「起 - 止」 |
+| m-date-strip | 日期横条：横向连续日期、单选 / 多选 / 范围、value-format 字符串绑定、农历文案、过滤禁用、插槽定制 |
+| m-lunar-picker | 农历选择：农历年 / 月（含闰月）/ 日滚轮、干支生肖年列、列组合、min / max 反向映射，对外值为公历 Date |
+| m-lunar-picker-popup | 农历选择弹出框：m-popup + 农历面板，确认 / 取消后自动关闭 |
+| m-lunar-picker-input | 农历输入框：只读触发器 + 农历弹层，回填农历文案（如 2026年六月十五） |
+| m-time-picker | 时间选择：时 / 分 / 秒滚轮、列组合、分钟与秒步长、min / max 时刻、12/24 小时制（12 制附上午下午列） |
+| m-time-picker-popup | 时间弹出框：m-popup + 时间面板，确认 / 取消后自动关闭 |
+| m-time-picker-input | 时间输入框：只读触发器 + 弹层选择，回填 HH:mm（含秒为 HH:mm:ss） |
+| m-time-range-picker | 时间范围选择：开始 / 结束两段标题复用一个时间滚轮，确认时自动升序，支持步长、时刻区间、12 小时制与快捷选项插槽 |
+| m-time-range-picker-popup | 时间范围弹出框：m-popup + 时间范围面板，确认 / 取消后自动关闭 |
+| m-time-range-picker-input | 时间范围输入框：只读触发器 + 弹层选择，以「起 - 止」回填 |
 
 ### 反馈组件
 
@@ -150,7 +179,7 @@ $m-button-normal-height: 48px;
 
 ## 工具函数
 
-插件内置与组件同源的日期工具集（`utils/date.uts`，69 个纯函数：比较、算术、周月年边界、格式化解析、农历换算）：
+插件内置与组件同源的日期工具集（`utils/date.uts`，覆盖比较、算术、周月年边界、格式化解析与农历换算的纯函数集）：
 
 ```ts
 import { formatDate, parseDate, addDays, solarToLunar } from '@/uni_modules/m-ui-x/utils/index.uts'
@@ -160,7 +189,7 @@ import { formatDate, parseDate, addDays, solarToLunar } from '@/uni_modules/m-ui
 
 - 📖 完整文档（指南 + 组件参考 + 更新日志，中英双语）：[https://mengxi-studio.github.io/unix-ui/](https://mengxi-studio.github.io/unix-ui/)
 - 💻 在线演示（浏览器直接体验）：[Playground](https://mengxi-studio.github.io/unix-ui/playground/)
-- 📱 Android 真机体验：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794590278532-__UNI__F1AA560_1794590268233.apk)
+- 📱 Android 真机体验：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794836242885-__UNI__F1AA560_1794836231235.apk)
 
 ## 更新记录
 

@@ -94,7 +94,7 @@ function onStickyScroll(detail: StickyScrollEvent) {
 
 ## API
 
-### m-sticky Props
+### Props
 
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
@@ -106,27 +106,27 @@ function onStickyScroll(detail: StickyScrollEvent) {
 | custom-class | Custom class name for the content node | string.ClassString | - |
 | custom-style | Custom inline style for the content node (background, radius, etc.) | string | - |
 
-### m-sticky Events
+### Events
 
 | Event | Description | Arguments |
 | --- | --- | --- |
 | change | Emitted when the sticky state changes | `isFixed: boolean` |
 | scroll | Emitted on scroll (requires `scroll-top`) | `{ scrollTop: number, isFixed: boolean }` |
 
-### m-sticky Slots
+### Slots
 
 | Name | Description |
 | --- | --- |
 | default | Sticky content |
 
-### m-sticky-box Props
+### Props（m-sticky-box）
 
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
 | custom-class | Custom class name for the root node | string.ClassString | - |
 | custom-style | Custom inline style for the root node (an explicit `height` is recommended) | string | - |
 
-### m-sticky-box Slots
+### Slots（m-sticky-box）
 
 | Name | Description |
 | --- | --- |

@@ -135,7 +135,7 @@ Set the `clickable` prop to enable press feedback on cells (background color cha
 
 ## API
 
-### Grid Props
+### Props
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
@@ -149,7 +149,7 @@ Set the `clickable` prop to enable press feedback on cells (background color cha
 | direction | Direction of cell content, optional value is `horizontal` | GridDirection | `vertical` |
 | reverse | Whether to swap the positions of the icon and text | boolean | `false` |
 
-### GridItem Props
+### Props（m-grid-item）
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
@@ -159,15 +159,17 @@ Set the `clickable` prop to enable press feedback on cells (background color cha
 | dot | Whether to show a small red dot in the upper right corner of the icon | boolean | `false` |
 | badge | Content of the badge in the upper right corner of the icon (numeric semantics as string, e.g. `"99+"`) | string | - |
 | url | In-app page path to navigate to on click | string | - |
+| custom-class | Custom class name for the root node | string.ClassString | - |
+| custom-style | Custom inline style for the root node | string | - |
 | replace | Whether to replace the current page history when navigating | boolean | `false` |
 
-### GridItem Events
+### Events（m-grid-item）
 
 | Event | Description | Arguments |
 | --- | --- | --- |
 | click | Emitted when a cell is clicked | event: MouseEvent |
 
-### GridItem Slots
+### Slots（m-grid-item）
 
 | Name | Description |
 | --- | --- |

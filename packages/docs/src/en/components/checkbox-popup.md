@@ -9,19 +9,54 @@ added: 0.5.0
 
 `m-checkbox-popup` combines m-popup (bottom sheet) with m-checkbox-group; options render from an options array (no item templates required), with a header title and close icon, and the selected set is controlled via `v-model:value`. Popup props are fully forwarded (following the m-cascader-popup precedent).
 
+## Demos
+
+### Basic usage {#demo-basic}
+
+```vue
+<m-checkbox-popup v-model:show="show" v-model:value="list" :options="options" title="Pick tags" />
+```
+
+```ts
+const show = ref<boolean>(false)
+const list = ref<(string | number)[]>([])
+const options = [{ label: 'Tag A', value: 'a' }, { label: 'Tag B', value: 'b' }]
+```
+
+### Direction and shape {#demo-shape}
+
 ```vue
 <m-checkbox-popup
 	v-model:show="show"
 	v-model:value="list"
 	:options="options"
-	title="Pick tags"
+	direction="horizontal"
+	shape="square"
 />
+```
+
+### Limit and disabled {#demo-limit}
+
+```vue
+<m-checkbox-popup v-model:show="show" v-model:value="list" :options="options" :max="2" />
+<m-checkbox-popup v-model:show="show" v-model:value="list" :options="options" disabled />
+```
+
+### Footer slot {#demo-footer}
+
+The `footer` slot holds bottom content such as a confirm button (selections are written back immediately; keep a local copy if you need confirm-to-apply).
+
+```vue
+<m-checkbox-popup v-model:show="show" v-model:value="list" :options="options">
+	<template #footer>
+		<m-button block @click="show = false">Confirm</m-button>
+	</template>
+</m-checkbox-popup>
 ```
 
 ## API
 
-### CheckboxPopupProps
-
+### Props
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
 | show | Popup visible (v-model:show) | boolean | `false` |
@@ -48,8 +83,7 @@ added: 0.5.0
 | duration | Transition duration in seconds | number | `0.3` |
 | custom-class / custom-style | Root node styling | - | - |
 
-### CheckboxPopupEvents
-
+### Events
 | Event | Description | Parameters |
 | --- | --- | --- |
 | update:show | Popup visibility changed (overlay and close icon both route here) | value: boolean |
@@ -58,11 +92,14 @@ added: 0.5.0
 | click-item | Option tapped (including disabled) | index: number |
 | close | Closed (close icon or overlay) | - |
 
-### CheckboxPopupSlots
-
+### Slots
 | Slot | Description |
 | --- | --- |
 | footer | Popup footer area (e.g. a confirm button) |
+
+## Theming
+
+The popup container comes from `Popup` (`$m-popup-*`); option rows, icons and text follow `Checkbox` variables (`$m-checkbox-*`).
 
 ## Notes
 

@@ -1,0 +1,220 @@
+<template>
+	<!-- 选择器弹出框：m-popup + m-picker 组合（三组件拆分后的弹层形态组件）。
+	     弹层 props 经 m-popup，选择器 props / 事件 / 插槽逐项透传给面板；
+	     confirm / cancel 后自动关闭弹层；reset-on-open 打开时复位为 value -->
+	<m-popup
+		:show="show"
+		:position="position"
+		:round="round"
+		:close-on-click-overlay="closeOnClickOverlay"
+		:safe-area-inset-top="safeAreaInsetTop"
+		:safe-area-inset-bottom="safeAreaInsetBottom"
+		:z-index="zIndex"
+		:duration="duration"
+		@update:show="onPopupUpdateShow"
+		@open="onPopupOpen"
+		@opened="onPopupOpened"
+		@close="onPopupClose"
+		@closed="onPopupClosed"
+		@click-overlay="onPopupClickOverlay"
+	>
+		<m-picker
+			ref="picker"
+			:columns="columns"
+			:value="value"
+			:title="title"
+			:confirm-button-text="confirmButtonText"
+			:cancel-button-text="cancelButtonText"
+			:show-toolbar="showToolbar"
+			:loading="loading"
+			:readonly="readonly"
+			:option-height="optionHeight"
+			:visible-option-num="visibleOptionNum"
+			:swipe-duration="swipeDuration"
+			:custom-class="customClass"
+			:custom-style="customStyle"
+			@change="onPickerChange"
+			@confirm="onPickerConfirm"
+			@cancel="onPickerCancel"
+			@update:value="onPickerValueChange"
+		>
+			<!-- 插槽条件转发：未传入时不覆盖面板默认渲染 -->
+			<template v-if="$slots['toolbar'] != null" #toolbar>
+				<slot name="toolbar"></slot>
+			</template>
+			<template v-if="$slots['title'] != null" #title>
+				<slot name="title"></slot>
+			</template>
+			<template v-if="$slots['confirm'] != null" #confirm>
+				<slot name="confirm"></slot>
+			</template>
+			<template v-if="$slots['cancel'] != null" #cancel>
+				<slot name="cancel"></slot>
+			</template>
+			<template v-if="$slots['columns-top'] != null" #columns-top>
+				<slot name="columns-top"></slot>
+			</template>
+			<template v-if="$slots['columns-bottom'] != null" #columns-bottom>
+				<slot name="columns-bottom"></slot>
+			</template>
+			<!-- #ifdef WEB -->
+			<!-- 小程序端列选项在 v-for 内不声明具名插槽（#17），无需转发 -->
+			<template v-if="$slots['option'] != null" #option="{ option, index, rowIndex, columnIndex }">
+				<slot name="option" :option="option" :index="index" :row-index="rowIndex" :column-index="columnIndex"></slot>
+			</template>
+			<!-- #endif -->
+		</m-picker>
+	</m-popup>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-picker-popup 选择器弹出框：m-popup + m-picker 组合组件。
+	 * 自身无选择状态与样式：弹层行为归 m-popup，选择行为（列 / 级联 / 禁用）归面板，
+	 * 本组件仅做组合、转发，并在 confirm / cancel 后关闭弹层。
+	 */
+	import { PickerOption, PickerColumns, PickerValue } from '../m-picker/picker.uts'
+	import { DatePickerPosition } from '../m-date-picker/date-picker.uts'
+	import MPicker from '../m-picker/m-picker.uvue'
+
+	type Props = {
+		/** 是否显示弹出层（v-model:show） */
+		show?: boolean
+		/** 列数据（一维 / 二维） */
+		columns?: PickerColumns
+		/** 选中值（v-model:value） */
+		value?: PickerValue
+		/** 顶部栏标题 */
+		title?: string
+		/** 确认按钮文字 */
+		confirmButtonText?: string
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 是否显示顶部栏 */
+		showToolbar?: boolean
+		/** 是否显示加载状态 */
+		loading?: boolean
+		/** 只读 */
+		readonly?: boolean
+		/** 选项行高 px（0 用默认 44） */
+		optionHeight?: number
+		/** 可见选项个数（0 用默认 6） */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms */
+		swipeDuration?: number
+		/** 弹出方位（透传 m-popup） */
+		position?: DatePickerPosition
+		/** 弹层圆角 */
+		round?: boolean
+		/** 点击遮罩后是否关闭 */
+		closeOnClickOverlay?: boolean
+		/** 打开时是否复位为 value（默认 false） */
+		resetOnOpen?: boolean
+		/** 顶部安全区 */
+		safeAreaInsetTop?: boolean
+		/** 底部安全区 */
+		safeAreaInsetBottom?: boolean
+		/** z-index 层级 */
+		zIndex?: number
+		/** 动画时长秒 */
+		duration?: number
+		/** 自定义面板根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义面板根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		columns: null,
+		value: null,
+		title: '请选择',
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		showToolbar: true,
+		loading: false,
+		readonly: false,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		position: 'bottom',
+		round: true,
+		closeOnClickOverlay: true,
+		resetOnOpen: false,
+		safeAreaInsetTop: false,
+		safeAreaInsetBottom: true,
+		zIndex: 1,
+		duration: 0.3,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		'update:show': [value: boolean]
+		/** 选中值回写 */
+		'update:value': [value: PickerValue | null]
+		/** 滚轮切换列 */
+		change: [value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]]
+		/** 点击确认按钮（随后自动关闭） */
+		confirm: [value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]]
+		/** 点击取消按钮（随后自动关闭） */
+		cancel: []
+		open: []
+		opened: []
+		close: []
+		closed: []
+		'click-overlay': [event: MouseEvent]
+	}>()
+
+	/** 内部面板实例（复开时按需调用 resetSelection） */
+	const picker = ref<ComponentPublicInstance | null>(null)
+
+	const onPopupUpdateShow = (value: boolean) => {
+		emit('update:show', value)
+	}
+
+	/** 弹层打开：派发 open；resetOnOpen 时复位为 value */
+	const onPopupOpen = () => {
+		emit('open')
+		const inst = picker.value
+		if (inst != null && props.resetOnOpen) {
+			inst.$callMethod('resetSelection')
+		}
+	}
+
+	const onPopupOpened = () => {
+		emit('opened')
+	}
+
+	const onPopupClose = () => {
+		emit('close')
+	}
+
+	const onPopupClosed = () => {
+		emit('closed')
+	}
+
+	const onPopupClickOverlay = (e: MouseEvent) => {
+		emit('click-overlay', e)
+	}
+
+	const onPickerChange = (value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
+		emit('change', value, selectedOptions, indexes)
+	}
+
+	const onPickerValueChange = (value: PickerValue | null) => {
+		emit('update:value', value)
+	}
+
+	/** 确认：派发 confirm 后关闭弹层 */
+	const onPickerConfirm = (value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
+		emit('confirm', value, selectedOptions, indexes)
+		emit('update:show', false)
+	}
+
+	/** 取消：派发 cancel 后关闭弹层 */
+	const onPickerCancel = () => {
+		emit('cancel')
+		emit('update:show', false)
+	}
+</script>

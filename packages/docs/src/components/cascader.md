@@ -117,8 +117,7 @@ const nameFields: CascaderFieldNames = {
 
 ## API
 
-### CascaderProps
-
+### Props
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | value | 选中值（`v-model:value`；叶子 value，`null` 未选） | CascaderValue \| null | `null` |

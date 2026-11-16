@@ -9,21 +9,42 @@ added: 0.5.0
 
 `m-color-picker-input` combines m-input (read-only display) with m-color-picker-popup. Tapping the field opens the popup and the chosen color is written back through `v-model:value`; a swatch on the left previews the current color. Optional field label and a custom clear button are supported (following the m-cascader-input precedent).
 
+## Demos
+
+### Basic usage {#demo-basic}
+
 ```vue
-<m-color-picker-input
-	v-model:value="color"
-	title="Line color"
-	placeholder="Pick a color"
-	show-alpha
-	show-presets
-	clearable
-/>
+<m-color-picker-input v-model:value="color" placeholder="Pick a color" />
+```
+
+```ts
+const color = ref<string>('')
+```
+
+### Field label and clear {#demo-title}
+
+```vue
+<m-color-picker-input v-model:value="color" title="Line color" clearable @clear="onClear" />
+```
+
+### Forwarded popup features {#demo-popup}
+
+`show-alpha` / `show-presets` / `show-inputs` / `show-recent` / `format` are forwarded to the inner ColorPickerPopup.
+
+```vue
+<m-color-picker-input v-model:value="color" show-alpha show-presets show-inputs />
+```
+
+### Disabled and inlaid {#demo-state}
+
+```vue
+<m-color-picker-input v-model:value="color" disabled />
+<m-color-picker-input v-model:value="color" inlaid />
 ```
 
 ## API
 
-### ColorPickerInputProps
-
+### Props
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
 | value | Current color (v-model:value) | string | `''` |
@@ -48,8 +69,7 @@ added: 0.5.0
 | round | Popup rounded corners (forwarded to m-popup) | boolean | `true` |
 | custom-class / custom-style | Root style passthrough | - | - |
 
-### ColorPickerInputEvents
-
+### Events
 | Event | Description | Arguments |
 | --- | --- | --- |
 | update:value | Color changed (v-model:value) | value: string |
@@ -59,6 +79,10 @@ added: 0.5.0
 | update:show | Popup visibility changed (v-model:show) | value: boolean |
 | update:format | Format switched (v-model:format) | format: ColorFormat |
 | format-change | Format switched | format: ColorFormat |
+
+## Theming
+
+The input itself is styled by `Input` (`$m-input-*`); the swatch and the inner panel follow `$m-color-picker-*`.
 
 ## Notes
 

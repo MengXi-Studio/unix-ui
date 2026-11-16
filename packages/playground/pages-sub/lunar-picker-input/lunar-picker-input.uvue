@@ -1,0 +1,124 @@
+<template>
+	<view class="page">
+		<demo-navbar title="农历输入框" subtitle="LunarPickerInput" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-lunar-picker-input
+						v-model:value="basicValue"
+						title="选择农历日期"
+						@confirm="onBasicConfirm"
+						@clear="onBasicClear"
+					/>
+					<view class="event-log">
+						<text class="event-text">当前值：{{ basicText }}</text>
+					</view>
+					<view class="event-log">
+						<text class="event-text">最近事件：{{ basicLog }}</text>
+					</view>
+					<text class="caption">点击整区打开农历弹层；确认后按农历文案回填（如 2026年六月十五），支持清空</text>
+				</view>
+
+				<text class="section" id="columns">列组合展示</text>
+				<view class="card">
+					<m-lunar-picker-input
+						v-model:value="monthValue"
+						:columns-type="yearMonthColumns"
+						placeholder="请选择农历年月"
+						title="选择农历年月"
+					/>
+					<text class="caption">columns-type=['year','month'] 时展示「2026年六月」；值仍为该月首日的公历 Date</text>
+				</view>
+
+				<text class="section" id="ganzhi">干支与生肖</text>
+				<view class="card">
+					<m-lunar-picker-input
+						v-model:value="ganzhiValue"
+						show-gan-zhi
+						show-zodiac
+						title="干支 + 生肖"
+					/>
+					<text class="caption">show-gan-zhi 展示「丙午年六月十五」；show-zodiac 仅影响弹层年列</text>
+				</view>
+
+				<text class="section" id="states">禁用与不可清空</text>
+				<view class="card">
+					<m-lunar-picker-input v-model:value="disabledValue" disabled />
+					<view class="demo-btn-gap">
+						<m-lunar-picker-input v-model:value="noClearValue" :clearable="false" />
+					</view>
+					<text class="caption">disabled 不响应点击；clearable=false 不显示清空按钮</text>
+				</view>
+
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { formatDate, solarToLunar, getLunarDateText } from '@/uni_modules/m-ui-x/utils/date.uts'
+	import { LunarPickerColumnType } from '@/uni_modules/m-ui-x/components/m-lunar-picker/lunar-picker.uts'
+
+	defineUniPage({
+		title: '农历输入框 LunarPickerInput',
+		name: 'lunar-picker-input'
+	})
+
+	/** 基础用法选中值 */
+	const basicValue = ref<Date | null>(new Date(2026, 5, 15))
+	/** 基础用法最近事件 */
+	const basicLog = ref<string>('—')
+
+	/** 基础值展示（公历 + 农历） */
+	const basicText = computed<string>(() => {
+		const d = basicValue.value
+		if (d == null) {
+			return '空'
+		}
+		const lunar = solarToLunar(d!.getFullYear(), d!.getMonth(), d!.getDate())
+		const lunarText = lunar == null ? '' : getLunarDateText(lunar!.year, lunar!.month, lunar!.day)
+		return formatDate(d!, 'YYYY-MM-DD') + '（农历 ' + lunarText + '）'
+	})
+
+	const onBasicConfirm = (date: Date) => {
+		basicLog.value = 'confirm → ' + formatDate(date, 'YYYY-MM-DD')
+	}
+
+	const onBasicClear = () => {
+		basicLog.value = 'clear'
+	}
+
+	/** 年月列组合 */
+	const yearMonthColumns: LunarPickerColumnType[] = ['year', 'month']
+	/** 年月列组合选中值 */
+	const monthValue = ref<Date | null>(new Date(2026, 5, 1))
+	/** 干支演示选中值 */
+	const ganzhiValue = ref<Date | null>(new Date(2026, 5, 15))
+	/** 禁用演示选中值 */
+	const disabledValue = ref<Date | null>(new Date(2026, 5, 15))
+	/** 不可清空演示选中值 */
+	const noClearValue = ref<Date | null>(new Date(2026, 5, 15))
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	/* 输入框之间的间距 */
+	.demo-btn-gap {
+		margin-top: 12px;
+	}
+</style>

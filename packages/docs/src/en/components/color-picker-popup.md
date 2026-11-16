@@ -9,20 +9,49 @@ added: 0.5.0
 
 `m-color-picker-popup` combines m-popup with m-color-picker. The header has three columns (cancel / title / confirm); interactions only update an internal draft, and the value is written back through `v-model:value` and the popup closes on confirm. Cancel or overlay close discards the pending change. Popup props are fully forwarded (following the m-calendar-popup precedent).
 
+## Demos
+
+### Basic usage {#demo-basic}
+
+```vue
+<m-color-picker-popup v-model:show="show" v-model:value="color" title="Pick a color" />
+```
+
+```ts
+const show = ref<boolean>(false)
+const color = ref<string>('#1989FA')
+```
+
+### Confirm semantics {#demo-confirm}
+
+With `show-confirm=false` a selection applies immediately and overlay close keeps it.
+
+```vue
+<m-color-picker-popup v-model:show="show" v-model:value="color" :show-confirm="false" />
+```
+
+### Alpha, presets and numeric inputs {#demo-panel}
+
 ```vue
 <m-color-picker-popup
-	v-model:show="visible"
+	v-model:show="show"
 	v-model:value="color"
-	title="Pick a color"
 	show-alpha
 	show-presets
+	show-inputs
+	show-recent
 />
+```
+
+### Position and radius {#demo-shape}
+
+```vue
+<m-color-picker-popup v-model:show="show" v-model:value="color" position="center" :round="false" />
 ```
 
 ## API
 
-### ColorPickerPopupProps
-
+### Props
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
 | show | Popup visible (v-model:show) | boolean | `false` |
@@ -51,8 +80,7 @@ added: 0.5.0
 | duration | Animation duration in seconds (forwarded to m-popup) | number | `0.3` |
 | custom-class / custom-style | Content root style passthrough | - | - |
 
-### ColorPickerPopupEvents
-
+### Events
 | Event | Description | Arguments |
 | --- | --- | --- |
 | update:show | Popup visibility changed (v-model:show) | value: boolean |
@@ -65,6 +93,10 @@ added: 0.5.0
 | open / opened | Popup opened / open animation finished | - |
 | close / closed | Popup closed / close animation finished | - |
 | click-overlay | Overlay clicked | event: MouseEvent |
+
+## Theming
+
+The popup container comes from `Popup` (`$m-popup-*`); the inner panel follows `$m-color-picker-*`.
 
 ## Notes
 

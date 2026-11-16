@@ -1,0 +1,209 @@
+<template>
+	<view class="page">
+		<demo-navbar title="选择器输入框" subtitle="PickerInput" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-picker-input
+					v-model:value="basicValue"
+					:columns="lineOptions"
+					title="选择产线"
+					placeholder="请选择产线"
+					@confirm="onBasicConfirm"
+					@clear="onBasicClear"
+				/>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValue(basicValue) }}；最近事件：{{ basicLog }}</text>
+				</view>
+				<view class="demo-btn-row">
+					<m-button size="small" @click="fillLine">填入「包装五线」</m-button>
+				</view>
+				<text class="caption">点击输入区打开弹层，确认后展示选中项 label；清空按钮回写 null 并派发 clear</text>
+			</view>
+
+			<text class="section" id="multi">多列</text>
+			<view class="card">
+				<m-picker-input
+					v-model:value="multiValue"
+					:columns="yearMonthDay"
+					title="选择日期"
+					placeholder="请选择年月日"
+				/>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValue(multiValue) }}</text>
+				</view>
+				<text class="caption">多列展示各列 label 以「 / 」连接；回写值为各列值数组</text>
+			</view>
+
+			<text class="section" id="cascade">级联</text>
+			<view class="card">
+				<m-picker-input
+					v-model:value="cascadeValue"
+					:columns="regionTree"
+					title="选择地区"
+					placeholder="请选择厂区 / 车间 / 产线"
+				/>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValue(cascadeValue) }}</text>
+				</view>
+				<view class="demo-btn-row">
+					<m-button size="small" @click="fillRegion">设为「华东厂区 / 机加车间 / 机加工一线」</m-button>
+				</view>
+				<text class="caption">级联展示逐层 label；外部赋值后打开弹层各层选中态跟随</text>
+			</view>
+
+			<text class="section" id="disabled">禁用与不可清空</text>
+			<view class="card">
+				<m-picker-input :columns="lineOptions" :value="'注塑二线'" disabled placeholder="禁用态" />
+				<view class="event-log">
+					<text class="event-text">禁用态不可点击、不显示清空按钮</text>
+				</view>
+				<m-picker-input
+					v-model:value="noClearValue"
+					:columns="lineOptions"
+					:clearable="false"
+					placeholder="不可清空"
+					custom-style="margin-top: 16px;"
+				/>
+				<text class="caption">disabled 关闭触发层；clearable=false 只隐藏清空按钮</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '选择器输入框 PickerInput', name: 'picker-input' })
+	import { PickerOption, PickerValue } from '@/uni_modules/m-ui-x/components/m-picker/picker.uts'
+
+	/** 值转展示文本 */
+	function formatValue(value: PickerValue | null): string {
+		if (value == null) {
+			return 'null'
+		}
+		if (Array.isArray(value)) {
+			const list = value as (string | number)[]
+			const parts: string[] = []
+			for (let i = 0; i < list.length; i++) {
+				parts.push(list[i].toString())
+			}
+			return parts.join(' / ')
+		}
+		return (value as string | number).toString()
+	}
+
+	const lineOptions: PickerOption[] = [
+		{ label: '机加工一线', value: '机加工一线' } as PickerOption,
+		{ label: '注塑二线', value: '注塑二线' } as PickerOption,
+		{ label: '压铸四线', value: '压铸四线' } as PickerOption,
+		{ label: '包装五线', value: '包装五线' } as PickerOption
+	]
+
+	const yearMonthDay: PickerOption[][] = [
+		[
+			{ label: '2024', value: 2024 } as PickerOption,
+			{ label: '2025', value: 2025 } as PickerOption,
+			{ label: '2026', value: 2026 } as PickerOption
+		],
+		[
+			{ label: '1 月', value: 1 } as PickerOption,
+			{ label: '2 月', value: 2 } as PickerOption,
+			{ label: '3 月', value: 3 } as PickerOption
+		],
+		[
+			{ label: '1 日', value: 1 } as PickerOption,
+			{ label: '15 日', value: 15 } as PickerOption,
+			{ label: '28 日', value: 28 } as PickerOption
+		]
+	]
+
+	const regionTree: PickerOption[] = [
+		{
+			label: '华东厂区',
+			value: 1000,
+			children: [
+				{
+					label: '机加车间',
+					value: 1100,
+					children: [
+						{ label: '机加工一线', value: 1110 } as PickerOption,
+						{ label: '机加工二线', value: 1111 } as PickerOption
+					]
+				} as PickerOption
+			]
+		} as PickerOption,
+		{
+			label: '华南厂区',
+			value: 2000,
+			children: [
+				{
+					label: '注塑车间',
+					value: 2100,
+					children: [
+						{ label: '注塑二线', value: 2110 } as PickerOption
+					]
+				} as PickerOption
+			]
+		} as PickerOption
+	]
+
+	// ========== 1 基础用法 ==========
+	const basicValue = ref<PickerValue | null>(null)
+	const basicLog = ref<string>('（点击输入框选择）')
+
+	/** 确认记录 */
+	const onBasicConfirm = (value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
+		basicLog.value = 'confirm → ' + formatValue(value)
+	}
+
+	/** 清空记录 */
+	const onBasicClear = () => {
+		basicLog.value = 'clear'
+	}
+
+	/** 填入固定值（演示有值状态与清空） */
+	const fillLine = () => {
+		basicValue.value = '包装五线'
+		basicLog.value = 'fill → 包装五线'
+	}
+
+	// ========== 2 多列 ==========
+	const multiValue = ref<PickerValue | null>(null)
+
+	// ========== 3 级联 ==========
+	const cascadeValue = ref<PickerValue | null>(null)
+
+	/** 填入级联路径（验证外部赋值后的各层选中态） */
+	const fillRegion = () => {
+		cascadeValue.value = [1000, 1100, 1110]
+	}
+
+	// ========== 4 禁用与不可清空 ==========
+	const noClearValue = ref<PickerValue | null>(null)
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	.demo-btn-row {
+		flex-direction: row;
+		align-items: center;
+		margin-top: 12px;
+	}
+</style>

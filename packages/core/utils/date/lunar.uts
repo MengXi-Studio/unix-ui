@@ -9,10 +9,10 @@
 import { DAY_MS } from './core.uts'
 
 /** 农历数据表起始年 */
-const LUNAR_START_YEAR: number = 1900
+export const LUNAR_START_YEAR: number = 1900
 
 /** 农历数据表结束年 */
-const LUNAR_END_YEAR: number = 2100
+export const LUNAR_END_YEAR: number = 2100
 
 /** 基准公历日：1900-01-31 为农历 1900 年正月初一 */
 const LUNAR_BASE_SOLAR: Date = new Date(1900, 0, 31)
@@ -183,7 +183,7 @@ export function getLunarYearDays(year: number): number {
  * @param year 农历年
  * @returns 月序数组（如 [1, 2, -2, 3, ...]）
  */
-function buildLunarMonthSequence(year: number): number[] {
+export function getLunarMonthSequence(year: number): number[] {
 	const sequence: number[] = []
 	const leap = getLunarLeapMonth(year)
 	for (let month = 1; month <= 12; month++) {
@@ -240,7 +240,7 @@ export function solarToLunar(year: number, month: number, day: number): LunarRes
 	if (lunarYear > LUNAR_END_YEAR) {
 		return null
 	}
-	const sequence = buildLunarMonthSequence(lunarYear)
+	const sequence = getLunarMonthSequence(lunarYear)
 	for (let i = 0; i < sequence.length; i++) {
 		const monthValue = sequence[i]
 		const monthDays = monthValue > 0 ? getLunarMonthDays(lunarYear, monthValue) : getLunarLeapMonthDays(lunarYear)
@@ -268,7 +268,7 @@ export function lunarToSolar(year: number, month: number, day: number): SolarRes
 	if (month == 0 || month < -12 || month > 12) {
 		return null
 	}
-	const sequence = buildLunarMonthSequence(year)
+	const sequence = getLunarMonthSequence(year)
 	let index = -1
 	for (let i = 0; i < sequence.length; i++) {
 		if (sequence[i] == month) {

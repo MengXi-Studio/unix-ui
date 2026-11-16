@@ -183,7 +183,7 @@ const tabOptions: UTSJSONObject[] = [
 
 ## API
 
-### TabsProps
+### Props
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -224,7 +224,7 @@ const tabOptions: UTSJSONObject[] = [
 | dot | 红点字段名 | string | `dot` |
 | badge | 徽标字段名 | string | `badge` |
 
-### TabProps（m-tab）
+### Props（m-tab）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |

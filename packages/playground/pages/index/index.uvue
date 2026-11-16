@@ -6,7 +6,7 @@
 				<view class="brand">
 					<view class="brand-row">
 						<text class="brand-name">unix-ui</text>
-						<text class="brand-version">v0.4.0</text>
+						<text class="brand-version">v0.6.0</text>
 					</view>
 					<text class="brand-slogan">轻量、可靠的 uni-app x 组件库</text>
 				</view>
@@ -60,37 +60,48 @@
 	import { useRouter } from '@/uni_modules/ux-router/utssdk/index.uts'
 	import type { RawLocation } from '@/uni_modules/ux-router/utssdk/index.uts'
 	import { demoGroups } from './demo-components.uts'
-	import type { DemoComponent, DemoGroup } from './demo-components.uts'
+	import { DemoComponent, DemoGroup } from './demo-components.uts'
 
 	const router = useRouter()
 
 	/** 搜索关键字（空串 = 不过滤） */
-	const keyword = ref('')
+	const keyword = ref<string>('')
 
-	/** 按关键字过滤分组：中文名 / 英文标识模糊匹配，过滤后为空的分组整体剔除 */
-	const filteredGroups = computed<DemoGroup[]>((): DemoGroup[] => {
-		const kw = keyword.value.trim().toLowerCase()
-		if (kw.length == 0) {
-			return demoGroups
-		}
+	/** 过滤结果：关键字变化时重算；中文名 / 英文标识模糊匹配，过滤后为空的分组整体剔除 */
+	const filteredGroups = computed<DemoGroup[]>(() => {
+		const kw: string = keyword.value.trim().toLowerCase()
+		const all: DemoGroup[] = demoGroups
 		const result: DemoGroup[] = []
-		demoGroups.forEach((group: DemoGroup) => {
+		if (kw.length == 0) {
+			for (let i = 0; i < all.length; i++) {
+				result.push(all[i])
+			}
+			return result
+		}
+		for (let i = 0; i < all.length; i++) {
+			const group: DemoGroup = all[i]
+			const comps: DemoComponent[] = group.components
 			const items: DemoComponent[] = []
-			group.components.forEach((comp: DemoComponent) => {
-				if (comp.zhName.indexOf(kw) != -1 || comp.enName.toLowerCase().indexOf(kw) != -1) {
+			for (let j = 0; j < comps.length; j++) {
+				const comp: DemoComponent = comps[j]
+				const zh: string = comp.zhName.toLowerCase()
+				const en: string = comp.enName.toLowerCase()
+				if (zh.indexOf(kw) != -1 || en.indexOf(kw) != -1) {
 					items.push(comp)
 				}
-			})
-			if (items.length > 0) {
-				result.push({ title: group.title, components: items })
 			}
-		})
+			if (items.length > 0) {
+				const item: DemoGroup = { title: group.title, components: items } as DemoGroup
+				result.push(item)
+			}
+		}
 		return result
 	})
 
 	/** input 输入回调：同步关键字触发过滤 */
 	const onSearchInput = (e: InputEvent) => {
-		keyword.value = e.detail.value
+		const text: string = e.detail.value
+		keyword.value = text
 	}
 
 	/** 按名导航到组件演示页 */

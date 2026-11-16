@@ -135,7 +135,7 @@ added: 0.2.0
 
 ## API
 
-### Grid Props
+### Props
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -149,7 +149,7 @@ added: 0.2.0
 | direction | 格子内容排列的方向，可选值为 `horizontal` | GridDirection | `vertical` |
 | reverse | 是否调换图标和文本的位置 | boolean | `false` |
 
-### GridItem Props
+### Props（m-grid-item）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -159,15 +159,17 @@ added: 0.2.0
 | dot | 是否显示图标右上角小红点 | boolean | `false` |
 | badge | 图标右上角徽标的内容（数字用字符串表达，如 `"99+"`） | string | - |
 | url | 点击后跳转的应用内页面路径 | string | - |
+| custom-class | 根节点自定义类名 | string.ClassString | - |
+| custom-style | 根节点自定义内联样式 | string | - |
 | replace | 是否在跳转时替换当前页面历史 | boolean | `false` |
 
-### GridItem Events
+### Events（m-grid-item）
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
 | click | 点击格子时触发 | event: MouseEvent |
 
-### GridItem Slots
+### Slots（m-grid-item）
 
 | 名称 | 说明 |
 | --- | --- |

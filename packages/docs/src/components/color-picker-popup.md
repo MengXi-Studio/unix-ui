@@ -9,20 +9,49 @@ added: 0.5.0
 
 `m-color-picker-popup` 颜色选择器弹出框：m-popup + m-color-picker 组合。头部为「取消 / 标题 / 确定」三栏，选择过程只改内部草稿，点确定才回写 `v-model:value` 并关闭；取消或遮罩关闭丢弃本次改动。弹层 props 全透传（对齐 m-calendar-popup 组合先例）。
 
+## 代码演示
+
+### 基础用法 {#demo-basic}
+
+```vue
+<m-color-picker-popup v-model:show="show" v-model:value="color" title="选择颜色" />
+```
+
+```ts
+const show = ref<boolean>(false)
+const color = ref<string>('#1989FA')
+```
+
+### 改动确认语义 {#demo-confirm}
+
+`show-confirm=false` 时选择即生效，遮罩关闭不丢弃。
+
+```vue
+<m-color-picker-popup v-model:show="show" v-model:value="color" :show-confirm="false" />
+```
+
+### 透明度、预设与数值输入 {#demo-panel}
+
 ```vue
 <m-color-picker-popup
-	v-model:show="visible"
+	v-model:show="show"
 	v-model:value="color"
-	title="选择颜色"
 	show-alpha
 	show-presets
+	show-inputs
+	show-recent
 />
+```
+
+### 方位与圆角 {#demo-shape}
+
+```vue
+<m-color-picker-popup v-model:show="show" v-model:value="color" position="center" :round="false" />
 ```
 
 ## API
 
-### ColorPickerPopupProps
-
+### Props
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | show | 是否显示弹层（v-model:show） | boolean | `false` |
@@ -51,8 +80,7 @@ added: 0.5.0
 | duration | 动画时长秒（透传 m-popup） | number | `0.3` |
 | custom-class / custom-style | 内容根节点样式直达 | - | - |
 
-### ColorPickerPopupEvents
-
+### Events
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
 | update:show | 弹层显隐变化（v-model:show） | value: boolean |
@@ -65,6 +93,10 @@ added: 0.5.0
 | open / opened | 弹层打开 / 打开动画结束 | - |
 | close / closed | 弹层关闭 / 关闭动画结束 | - |
 | click-overlay | 点击遮罩 | event: MouseEvent |
+
+## 主题定制
+
+弹层容器由 `Popup` 提供（`$m-popup-*`）；面板内部沿用 `$m-color-picker-*`。
 
 ## 注意事项
 

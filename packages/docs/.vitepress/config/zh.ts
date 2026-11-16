@@ -63,6 +63,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			'/guide/': [
 				{
 					text: '入门',
+					collapsed: false,
 					items: [
 						{ text: '介绍', link: '/guide/introduction' },
 						{ text: '安装', link: '/guide/installation' },
@@ -71,10 +72,12 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '基础',
+					collapsed: false,
 					items: [{ text: '主题定制', link: '/guide/theming' }]
 				},
 				{
 					text: '进阶',
+					collapsed: false,
 					items: [
 						{ text: '平台兼容性', link: '/guide/compatibility' },
 						{ text: '常见问题', link: '/guide/faq' }
@@ -84,6 +87,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			'/components/': [
 				{
 					text: '基础组件',
+					collapsed: false,
 					items: [
 						{ text: 'Button 按钮', link: '/components/button' },
 						{ text: 'Icon 图标', link: '/components/icon' },
@@ -93,6 +97,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '布局组件',
+					collapsed: false,
 					items: [
 						{ text: 'Compact 紧凑布局', link: '/components/compact' },
 						{ text: 'Divider 分割线', link: '/components/divider' },
@@ -106,26 +111,59 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					]
 				},
 				{
-					text: '表单组件',
+					text: '数据录入',
+					collapsed: false,
 					items: [
-						{ text: 'Calendar 日历', link: '/components/calendar' },
-						{ text: 'CalendarInput 日历输入框', link: '/components/calendar-input' },
-						{ text: 'CalendarPopup 日历弹出框', link: '/components/calendar-popup' },
-						{ text: 'Cascader 级联选择', link: '/components/cascader' },
-						{ text: 'CascaderInput 级联输入框', link: '/components/cascader-input' },
-						{ text: 'CascaderPopup 级联弹出框', link: '/components/cascader-popup' },
 						{ text: 'Checkbox 复选框', link: '/components/checkbox' },
 						{ text: 'CheckboxInput 复选输入框', link: '/components/checkbox-input' },
 						{ text: 'CheckboxPopup 复选弹出框', link: '/components/checkbox-popup' },
 						{ text: 'ColorPicker 颜色选择器', link: '/components/color-picker' },
 						{ text: 'ColorPickerInput 颜色选择器输入框', link: '/components/color-picker-input' },
 						{ text: 'ColorPickerPopup 颜色选择器弹出框', link: '/components/color-picker-popup' },
-						{ text: 'DateStrip 日期横条', link: '/components/date-strip' },
 						{ text: 'Input 输入框', link: '/components/input' }
 					]
 				},
 				{
+					text: '选择器',
+					collapsed: false,
+					items: [
+						{ text: 'Cascader 级联选择', link: '/components/cascader' },
+						{ text: 'CascaderInput 级联输入框', link: '/components/cascader-input' },
+						{ text: 'CascaderPopup 级联弹出框', link: '/components/cascader-popup' },
+						{ text: 'Picker 选择器', link: '/components/picker' },
+						{ text: 'PickerInput 选择器输入框', link: '/components/picker-input' },
+						{ text: 'PickerPopup 选择器弹出框', link: '/components/picker-popup' },
+						{ text: 'PickerView 选择器纯视图', link: '/components/picker-view' }
+					]
+				},
+				{
+					text: '日期时间',
+					collapsed: false,
+					items: [
+						{ text: 'Calendar 日历', link: '/components/calendar' },
+						{ text: 'CalendarInput 日历输入框', link: '/components/calendar-input' },
+						{ text: 'CalendarPopup 日历弹出框', link: '/components/calendar-popup' },
+						{ text: 'DatePicker 日期选择', link: '/components/date-picker' },
+						{ text: 'DatePickerInput 日期输入框', link: '/components/date-picker-input' },
+						{ text: 'DatePickerPopup 日期选择弹出框', link: '/components/date-picker-popup' },
+						{ text: 'DateRangePicker 日期范围选择', link: '/components/date-range-picker' },
+						{ text: 'DateRangePickerInput 日期范围输入框', link: '/components/date-range-picker-input' },
+						{ text: 'DateRangePickerPopup 日期范围弹出框', link: '/components/date-range-picker-popup' },
+						{ text: 'DateStrip 日期横条', link: '/components/date-strip' },
+						{ text: 'LunarPicker 农历选择', link: '/components/lunar-picker' },
+						{ text: 'LunarPickerInput 农历输入框', link: '/components/lunar-picker-input' },
+						{ text: 'LunarPickerPopup 农历选择弹出框', link: '/components/lunar-picker-popup' },
+						{ text: 'TimePicker 时间选择', link: '/components/time-picker' },
+						{ text: 'TimePickerInput 时间输入框', link: '/components/time-picker-input' },
+						{ text: 'TimePickerPopup 时间弹出框', link: '/components/time-picker-popup' },
+						{ text: 'TimeRangePicker 时间范围选择', link: '/components/time-range-picker' },
+						{ text: 'TimeRangePickerInput 时间范围输入框', link: '/components/time-range-picker-input' },
+						{ text: 'TimeRangePickerPopup 时间范围弹出框', link: '/components/time-range-picker-popup' }
+					]
+				},
+				{
 					text: '反馈组件',
+					collapsed: false,
 					items: [
 						{ text: 'Fab 悬浮按钮', link: '/components/fab' },
 						{ text: 'Loading 加载', link: '/components/loading' },
@@ -136,6 +174,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '数据展示',
+					collapsed: false,
 					items: [
 						{ text: 'Badge 徽标', link: '/components/badge' },
 						{ text: 'Cell 单元格', link: '/components/cell' }
@@ -143,12 +182,14 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: '导航组件',
+					collapsed: false,
 					items: [{ text: 'Tabs 标签页', link: '/components/tabs' }]
 				}
 			],
 			'/tools/': [
 				{
 					text: '工具',
+					collapsed: false,
 					items: [{ text: 'Date 日期工具', link: '/tools/date' }]
 				}
 			]

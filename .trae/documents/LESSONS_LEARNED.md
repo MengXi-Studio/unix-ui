@@ -538,3 +538,30 @@
 - **遍历型查找 MP 编译期降级**：findDescendantById / findScrollParent 函数体 `#ifdef MP return null`——调用点本就判空（centerActiveTab / animateLine 跳过居中、scrollspy 判定按 holderTop=0 的页面级语义、点击定位回退 uni.pageScrollTo）；注意 findScrollParent 不加保护会在修复 findDescendantById 后成为下一个崩溃点（`cur.parentElement` 在 undefined 上取属性即抛错）
 - **静默降级链**：仅修崩溃点不够——同一根因在多条路径埋雷，修复时把「同一缺失能力」的全部调用点一次排查（children / parentElement / 无 id 的 getBoundingClientRectAsync 三类，m-tabs 中共 6 处）
 - **App 端 UniElement 有完整遍历能力**（children / parentElement / 同步测量都可用）——条件编译按 `#ifdef MP` / `#ifndef MP` 三分支：MP 走 id 查询、WEB 同步、APP 异步；注意 `#ifndef WEB` 会包含 MP 端，三分支必须显式互斥包裹
+
+### 88. 滚轮选择器：scroll-view 吸附定位与「无 pointer-events」的替代方案（2026-11-15 m-date-picker 三件套）
+- **滚轮列的吸附定位可用 `:scroll-top` prop**：`@scroll` 回灌 `e.detail.scrollTop` 维护镜像（`actualTop`），停止后按 `Math.round(top / optionHeight) * optionHeight` 回写；上下占位高固定为 `(visibleNum - 1) / 2 * optionHeight`（偶数可见数时是半格 2.5 行，选中项才精确居中）
+- **同值回写不触发属性下发**：用户滚走又滚回同一格时（镜像 233.2、目标 220，而上一次 prop 已是 220），直接赋同值无效——先写 `target + 0.5` 再 `nextTick` 归位 `target`，才能强制吸附；程序化滚动期间用 120ms 标记位屏蔽自身 scroll 事件，避免吸附递归
+- **uvue 无 `pointer-events`**：Vant 那种覆盖式渐变遮罩会拦截滚动手势（项目内 m-toast 亦按「全屏层天然拦截」处理）——滚轮渐隐改用每个选项按 `|index - activeIndex|` 分级 `opacity` 类实现；选中框两条细线放在列层 `z-index: 0`、列层 `z-index: 1` 且滚动区背景透明，既不挡手势也保持视觉层次
+
+### 89. 面板组合通用 Picker 的状态同步（2026-11-15 日期 / 时间面板迁移）
+- **`m-picker` 只监听 `columns.length`**：日期 / 时间面板把列内容重新构建后列数往往不变（限域、`minuteStep`、`hourCycle`、`filter` / `formatter`），其内部 `indexes` 不会重算，会出现「显示值正确但下标错位」；面板必须在这些依赖变化时 `nextTick` 调 `picker.$callMethod('resetSelection')`
+- **双状态边界只在两处**：常规滚动靠 `m-picker` 的「`value` 同值跳过」不会回环；`resetSelection` 与上述列内容变化必须显式复位，且面板的 `resetSelection` 要先改内部值再调 `m-picker` 的 `resetSelection`
+- **不要转发 `m-picker` 的 `update:value`**：它在每次滚动即派发，而面板的 `v-model:value` 契约是「仅确认回写」；转发会让外部值随滚动变化
+- **`change` 的 `columnIndex` 用前后 `indexes` 差异反推**（`firstDiffIndex`），值重建用 `selectedOptions` 按列类型全量解析——比按变化列单独写回更稳，能覆盖「切时段导致小时列重建」这类多列联动
+- **跨组件转发 `option` 插槽需做口径回退**：`m-picker` 的作用域参数是 `{ label, value }` + 行列下标，面板对外仍是 `{ text, value }` 与单个 `index`，转发时用桥接函数转换，保持既有文档契约
+
+### 90. 农历选择器的列模型（2026-11-15 农历三件套）
+- **农历月序用负数表示闰月**：`getLunarMonthSequence(year)` 返回 `[1, 2, -2, 3, ...]`（闰月紧随其月），`getLunarMonthName(-2)` 输出「闰二月」；列 value 直接存负数字符串，避免另造编码
+- **切年必须归一闰月**：从闰四月年切到无闰四月的年份时，月值 `-4` 非法，需 `getLunarLeapMonth(year)` 校验并回退到 `4`，再把日收敛到当月 29 / 30 天，否则 `lunarToSolar` 返回 `null` 导致面板停更
+- **日列长度按农历月长生成**，不能用公历 `getDaysInMonth`；`min/max` 落在月中间时用「min/max 所在农历三元组」裁剪首尾，闰月比较同样用负值
+- **年列全量 1900–2100 时约 201 项**：滚轮列可承受，但低端机首屏需实测；默认范围与日期选择器的「前后 10 年」不同，农历生日场景必须全量
+- **对外值仍用公历 `Date`**：滚动农历列后 `lunarToSolar` → 截断到 min/max → 真源回写，`pickerValue` 由列下标派生，避免 `m-picker` 精确匹配失配
+- **输入框展示文案独立于值口径**：值保持 `Date`（便于表单/弹层互换），展示用 `formatLunarPickerText` 按 `columns-type` 拼接（年/月/日名，干支按开关）
+
+### 91. Android 云打包暴露的函数声明顺序问题（2026-11-16）
+- **Web 编译通过 ≠ Android 通过**：uvue 的 `<script setup>` 内 `function` 在 Web（JS，函数提升）可用后置声明，但 uni-app x 编译到 Kotlin 时不提升；被 `setTimeout` 箭头函数或其它函数提前引用的函数若定义在调用之后，云打包报 `Unresolved reference 'xxx'`
+- **已修复两处**：`m-picker` 的 `resolveColumnsForNormalize`（被 `normalizeIndexes` 调用）与 `m-date-picker-column` 的 `onScrollSettle`（被 `setTimeout` 回调调用），统一移到首个调用之前
+- **排查方法**：对每个 `.uvue` 的 `<script` 之后区域，按 `^\s*function (\w+)` 收集定义行，再扫描其前的调用行；模板中的事件引用不计入
+- **日志中的 `DatePickerOption` / `TimePickerOption` / `LunarPickerOption` unresolved 属跨界 type 依赖问题**：popup / input / range 三件套只导入了 `XxxFormatter` / `XxxFilter` 这些**引用 Option 的 type 别名**，UTS 生成 Kotlin 时把别名展开却不为被引用的 Option 生成 import，导致 `Unresolved reference`。修法是在这些文件的 import 列表里**显式加入 Option 类型**（即使源码不直接使用），让编译器生成对应 Kotlin import；`PickerOption` 能正常解析正是因为它被各组件显式 import
+- **`Any?` 与泛型推断错误多来自跨文件类型别名与 `ref` 元素访问**：`Cannot infer type argument for 'E'` 出现在未标注参数类型的 `map` / `filter` 回调；`Unresolved reference 'length'` 往往意味着上游表达式被推断为 `Any?`（先查该变量/返回值是否缺少显式类型标注）

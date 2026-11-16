@@ -1,0 +1,211 @@
+<template>
+	<view class="page">
+		<demo-navbar title="农历选择弹出框" subtitle="LunarPickerPopup" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+
+				<text class="section" id="basic">基础弹层</text>
+				<view class="card">
+					<m-button block @click="openBasic">打开农历选择</m-button>
+					<m-lunar-picker-popup
+						v-model:show="basicShow"
+						title="选择农历日期"
+						@change="onBasicChange"
+						@confirm="onBasicConfirm"
+						@cancel="onBasicCancel"
+						@open="onBasicOpen"
+						@closed="onBasicClosed"
+					/>
+					<view class="event-log">
+						<text class="event-text">最近事件：{{ basicLog }}</text>
+					</view>
+					<text class="caption">默认底部弹出 + 圆角 + 遮罩可关；确认 / 取消后自动关闭并派发 update:show</text>
+				</view>
+
+				<text class="section" id="controlled">受控选中值</text>
+				<view class="card">
+					<m-button block @click="openControlled">打开（受控回显）</m-button>
+					<view class="demo-btn-gap">
+						<m-button block @click="openControlledToday">外部设值为今天并打开</m-button>
+					</view>
+					<m-lunar-picker-popup v-model:show="controlledShow" v-model:value="controlledValue" />
+					<view class="event-log">
+						<text class="event-text">受控值：{{ controlledText }}</text>
+					</view>
+					<text class="caption">v-model:value 受控：确认后回写公历 Date；外部赋值后打开弹层滚轮选中态跟随</text>
+				</view>
+
+				<text class="section" id="leap">闰月与限域</text>
+				<view class="card">
+					<m-button block @click="openLeap">打开（2023 闰二月区间）</m-button>
+					<m-lunar-picker-popup
+						v-model:show="leapShow"
+						:min-date="leapMin"
+						:max-date="leapMax"
+						title="闰二月区间"
+						@confirm="onLeapConfirm"
+					/>
+					<view class="event-log">
+						<text class="event-text">最近确认：{{ leapLog }}</text>
+					</view>
+					<text class="caption">min/max 限定 2023-03-01 ~ 2023-04-30：月列出现「闰二月」</text>
+				</view>
+
+				<text class="section" id="states">只读与加载态</text>
+				<view class="card">
+					<m-button block @click="openStates">打开（只读 + 加载中）</m-button>
+					<m-lunar-picker-popup v-model:show="statesShow" readonly loading title="只读 / 加载中" />
+					<text class="caption">readonly 滚轮回弹不切换；loading 覆盖滚轮区阻止交互</text>
+				</view>
+
+				<text class="section" id="slots">插槽</text>
+				<view class="card">
+					<m-button block @click="openSlots">打开（自定义顶部栏）</m-button>
+					<m-lunar-picker-popup v-model:show="slotsShow" show-gan-zhi show-zodiac>
+						<template #title>
+							<text class="demo-slot-title">选择生日</text>
+						</template>
+						<template #confirm>
+							<text class="demo-slot-confirm">完成</text>
+						</template>
+						<template #columns-top>
+							<view class="demo-banner">
+								<text class="demo-banner-text">columns-top 自定义内容</text>
+							</view>
+						</template>
+					</m-lunar-picker-popup>
+					<text class="caption">title / confirm / cancel / option / columns-top / columns-bottom / toolbar 插槽透传到内部 m-lunar-picker</text>
+				</view>
+
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { formatDate } from '@/uni_modules/m-ui-x/utils/date.uts'
+
+	defineUniPage({
+		title: '农历选择弹出框 LunarPickerPopup',
+		name: 'lunar-picker-popup'
+	})
+
+	/** 基础弹层显隐 */
+	const basicShow = ref<boolean>(false)
+	/** 基础弹层最近事件 */
+	const basicLog = ref<string>('—')
+
+	const openBasic = () => {
+		basicShow.value = true
+	}
+
+	const onBasicChange = (date: Date, columnIndex: number) => {
+		basicLog.value = 'change → ' + formatDate(date, 'YYYY-MM-DD') + '（第 ' + (columnIndex + 1).toString() + ' 列）'
+	}
+
+	const onBasicConfirm = (date: Date) => {
+		basicLog.value = 'confirm → ' + formatDate(date, 'YYYY-MM-DD')
+	}
+
+	const onBasicCancel = () => {
+		basicLog.value = 'cancel'
+	}
+
+	const onBasicOpen = () => {
+		basicLog.value = 'open'
+	}
+
+	const onBasicClosed = () => {
+		basicLog.value = 'closed'
+	}
+
+	/** 受控弹层显隐 */
+	const controlledShow = ref<boolean>(false)
+	/** 受控值 */
+	const controlledValue = ref<Date>(new Date(2026, 5, 15))
+
+	/** 受控值展示文本 */
+	const controlledText = computed<string>(() => {
+		return formatDate(controlledValue.value, 'YYYY-MM-DD')
+	})
+
+	const openControlled = () => {
+		controlledShow.value = true
+	}
+
+	const openControlledToday = () => {
+		controlledValue.value = new Date()
+		controlledShow.value = true
+	}
+
+	/** 闰月弹层显隐 */
+	const leapShow = ref<boolean>(false)
+	/** 闰月区间起点 */
+	const leapMin = new Date(2023, 2, 1)
+	/** 闰月区间终点 */
+	const leapMax = new Date(2023, 3, 30)
+	/** 闰月最近确认 */
+	const leapLog = ref<string>('—')
+
+	const openLeap = () => {
+		leapShow.value = true
+	}
+
+	const onLeapConfirm = (date: Date) => {
+		leapLog.value = formatDate(date, 'YYYY-MM-DD')
+	}
+
+	/** 只读加载弹层显隐 */
+	const statesShow = ref<boolean>(false)
+
+	const openStates = () => {
+		statesShow.value = true
+	}
+
+	/** 插槽弹层显隐 */
+	const slotsShow = ref<boolean>(false)
+
+	const openSlots = () => {
+		slotsShow.value = true
+	}
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	/* 受控演示双按钮间距 */
+	.demo-btn-gap {
+		margin-top: 12px;
+	}
+	/* 插槽演示的自定义样式 */
+	.demo-slot-title {
+		font-size: 16px;
+		font-weight: bold;
+		color: #07c160;
+	}
+	.demo-slot-confirm {
+		font-size: 14px;
+		color: #ee0a24;
+	}
+	.demo-banner {
+		flex-direction: row;
+		justify-content: center;
+		padding: 6px 0;
+	}
+	.demo-banner-text {
+		font-size: 12px;
+		color: #969799;
+	}
+</style>

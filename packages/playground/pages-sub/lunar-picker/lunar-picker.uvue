@@ -1,0 +1,247 @@
+<template>
+	<view class="page">
+		<demo-navbar title="农历选择" subtitle="LunarPicker" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-lunar-picker
+						v-model:value="basicValue"
+						title="选择农历日期"
+						@change="onBasicChange"
+						@confirm="onBasicConfirm"
+						@cancel="onBasicCancel"
+					/>
+					<view class="event-log">
+						<text class="event-text">当前值：{{ basicText }}</text>
+					</view>
+					<view class="event-log">
+						<text class="event-text">最近事件：{{ basicLog }}</text>
+					</view>
+					<text class="caption">三列农历滚轮（年 / 月 / 日）；对外 v-model:value 与 change / confirm 均为公历 Date</text>
+				</view>
+
+				<text class="section" id="leap">闰月与月长</text>
+				<view class="card">
+					<m-lunar-picker
+						v-model:value="leapValue"
+						:min-date="leapMin"
+						:max-date="leapMax"
+						title="闰二月区间"
+						@confirm="onLeapConfirm"
+					/>
+					<view class="event-log">
+						<text class="event-text">最近确认：{{ leapLog }}</text>
+					</view>
+					<text class="caption">min/max 限定在 2023 年闰二月前后：月列出现「闰二月」，日列按 29 / 30 天生成</text>
+				</view>
+
+				<text class="section" id="ganzhi">干支与生肖</text>
+				<view class="card">
+					<m-lunar-picker v-model:value="ganzhiValue" show-gan-zhi show-zodiac title="干支 + 生肖" />
+					<text class="caption">show-gan-zhi 年列追加干支（如 2026 丙午）；show-zodiac 再追加生肖（马）</text>
+				</view>
+
+				<text class="section" id="columns">列组合</text>
+				<view class="card">
+					<m-lunar-picker
+						v-model:value="columnsValue"
+						:columns-type="yearMonthColumns"
+						:min-date="columnsMin"
+						:max-date="columnsMax"
+						title="只选年月"
+					/>
+					<text class="caption">columns-type=['year','month'] 只选农历年月；值仍输出该农历月的首日公历 Date</text>
+				</view>
+
+				<text class="section" id="states">只读与加载态</text>
+				<view class="card">
+					<m-lunar-picker v-model:value="statesValue" readonly loading title="只读 / 加载中" />
+					<text class="caption">readonly 滚轮回弹不切换；loading 覆盖滚轮区阻止交互</text>
+				</view>
+
+				<text class="section" id="slots">插槽</text>
+				<view class="card">
+					<m-lunar-picker v-model:value="slotsValue">
+						<template #title>
+							<text class="demo-slot-title">选择生日</text>
+						</template>
+						<template #confirm>
+							<text class="demo-slot-confirm">完成</text>
+						</template>
+						<template #columns-top>
+							<view class="demo-banner">
+								<text class="demo-banner-text">columns-top 自定义内容</text>
+							</view>
+						</template>
+						<!-- #ifdef WEB -->
+						<template #option="{ option }">
+							<text :class="option.value == '1' ? 'demo-option-demo' : 'demo-option'">{{ option.text }}</text>
+						</template>
+						<!-- #endif -->
+					</m-lunar-picker>
+					<text class="caption">title / confirm / cancel / option / columns-top / columns-bottom / toolbar 插槽透传到内部 m-picker（小程序端 option 不生效）</text>
+				</view>
+
+				<text class="section" id="methods">实例方法</text>
+				<view class="card">
+					<m-lunar-picker ref="methodPicker" v-model:value="methodValue" title="实例方法演示" />
+					<view class="demo-btn-gap">
+						<m-button block @click="onReset">resetSelection 复位</m-button>
+					</view>
+					<view class="demo-btn-gap">
+						<m-button block @click="onReadLunar">读取农历文案</m-button>
+					</view>
+					<view class="event-log">
+						<text class="event-text">读取结果：{{ methodLog }}</text>
+					</view>
+					<text class="caption">expose：confirm / resetSelection / getSelectedDate / getSelectedLunarText</text>
+				</view>
+
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	import { formatDate } from '@/uni_modules/m-ui-x/utils/date.uts'
+	import { getLunarDateText, solarToLunar } from '@/uni_modules/m-ui-x/utils/date.uts'
+	import { LunarPickerColumnType } from '@/uni_modules/m-ui-x/components/m-lunar-picker/lunar-picker.uts'
+
+	defineUniPage({
+		title: '农历选择 LunarPicker',
+		name: 'lunar-picker'
+	})
+
+	/** 基础用法选中值 */
+	const basicValue = ref<Date>(new Date(2026, 5, 15))
+	/** 基础用法最近事件 */
+	const basicLog = ref<string>('—')
+
+	/** 基础用法展示文本（公历 + 农历对照） */
+	const basicText = computed<string>(() => {
+		const d = basicValue.value
+		const lunar = solarToLunar(d.getFullYear(), d.getMonth(), d.getDate())
+		const lunarText = lunar == null ? '' : getLunarDateText(lunar!.year, lunar!.month, lunar!.day)
+		return formatDate(d, 'YYYY-MM-DD') + '（农历 ' + lunarText + '）'
+	})
+
+	/** 滚轮切换：记录 change */
+	const onBasicChange = (date: Date, columnIndex: number) => {
+		basicLog.value = 'change → ' + formatDate(date, 'YYYY-MM-DD') + '（第 ' + (columnIndex + 1).toString() + ' 列）'
+	}
+
+	/** 确认：记录 confirm */
+	const onBasicConfirm = (date: Date) => {
+		basicLog.value = 'confirm → ' + formatDate(date, 'YYYY-MM-DD')
+	}
+
+	/** 取消 */
+	const onBasicCancel = () => {
+		basicLog.value = 'cancel'
+	}
+
+	/** 闰月区间起点（2023-03-01） */
+	const leapMin = new Date(2023, 2, 1)
+	/** 闰月区间终点（2023-04-30） */
+	const leapMax = new Date(2023, 3, 30)
+	/** 闰月演示选中值 */
+	const leapValue = ref<Date>(new Date(2023, 2, 22))
+	/** 闰月最近确认 */
+	const leapLog = ref<string>('—')
+
+	const onLeapConfirm = (date: Date) => {
+		const lunar = solarToLunar(date.getFullYear(), date.getMonth(), date.getDate())
+		const lunarText = lunar == null ? '' : getLunarDateText(lunar!.year, lunar!.month, lunar!.day)
+		leapLog.value = formatDate(date, 'YYYY-MM-DD') + '（农历 ' + lunarText + '）'
+	}
+
+	/** 干支 / 生肖演示选中值 */
+	const ganzhiValue = ref<Date>(new Date(2026, 5, 15))
+	/** 年月列组合 */
+	const yearMonthColumns: LunarPickerColumnType[] = ['year', 'month']
+	/** 列组合演示选中值 */
+	const columnsValue = ref<Date>(new Date(2026, 5, 1))
+	/** 列组合区间起点 */
+	const columnsMin = new Date(2020, 0, 1)
+	/** 列组合区间终点 */
+	const columnsMax = new Date(2030, 11, 31)
+	/** 只读 / 加载演示选中值 */
+	const statesValue = ref<Date>(new Date(2026, 5, 15))
+	/** 插槽演示选中值 */
+	const slotsValue = ref<Date>(new Date(2026, 5, 15))
+	/** 实例方法演示选中值 */
+	const methodValue = ref<Date>(new Date(2026, 5, 15))
+	/** 实例方法读取结果 */
+	const methodLog = ref<string>('—')
+	/** 面板实例 */
+	const methodPicker = ref<ComponentPublicInstance | null>(null)
+
+	/** 复位选择为 value / 今天 */
+	const onReset = () => {
+		const inst = methodPicker.value
+		if (inst != null) {
+			inst.$callMethod('resetSelection')
+			methodLog.value = 'resetSelection'
+		}
+	}
+
+	/** 读取当前农历文案 */
+	const onReadLunar = () => {
+		const inst = methodPicker.value
+		if (inst != null) {
+			const text = inst.$callMethod('getSelectedLunarText') as string
+			methodLog.value = text
+		}
+	}
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	/* 按钮间距 */
+	.demo-btn-gap {
+		margin-top: 12px;
+	}
+	/* 插槽演示的自定义样式 */
+	.demo-slot-title {
+		font-size: 16px;
+		font-weight: bold;
+		color: #07c160;
+	}
+	.demo-slot-confirm {
+		font-size: 14px;
+		color: #ee0a24;
+	}
+	.demo-banner {
+		flex-direction: row;
+		justify-content: center;
+		padding: 6px 0;
+	}
+	.demo-banner-text {
+		font-size: 12px;
+		color: #969799;
+	}
+	/* option 插槽：正月初一高亮 */
+	.demo-option {
+		font-size: 14px;
+		color: #1989fa;
+	}
+	.demo-option-demo {
+		font-size: 14px;
+		color: #ee0a24;
+	}
+</style>

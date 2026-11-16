@@ -147,7 +147,7 @@ With `wrap` enabled, child elements wrap automatically when they exceed the widt
 | --- | --- |
 | default | Child content (children should be wrapped with m-flex-item) |
 
-### FlexItem Props (m-flex-item)
+### Props (m-flex-item)
 
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |

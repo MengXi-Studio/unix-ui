@@ -88,7 +88,7 @@ The `wrap` attribute is enabled by default, so columns wrap naturally when the s
 
 ## API
 
-### Row Props
+### Props（m-row）
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
@@ -99,7 +99,7 @@ The `wrap` attribute is enabled by default, so columns wrap naturally when the s
 | custom-class | Custom root node class name | string.ClassString | - |
 | custom-style | Custom root node inline style | string | - |
 
-### Col Props
+### Props（m-col）
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |

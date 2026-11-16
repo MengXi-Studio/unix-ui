@@ -1,0 +1,223 @@
+/**
+ * m-time-picker 共享类型与工具（跨文件共享，独立 .uts）
+ *
+ * 三件套共用：m-time-picker.uvue（滚轮面板）/ m-time-picker-popup.uvue（弹层）/
+ * m-time-picker-input.uvue（输入框）；时间范围三件套（m-time-range-picker 系列）同样取此口径，
+ * 避免各组件重复声明导致格式与步长语义漂移。
+ */
+
+/** 选项列类型：时 / 分 / 秒（columns-type 的取值，可任意顺序组合） */
+export type TimePickerColumnType = 'hour' | 'minute' | 'second'
+
+/** 12 小时制时段（仅在 hour-cycle=12 时启用，以额外的一列呈现） */
+export type TimePickerPeriod = 'am' | 'pm'
+
+/** 单个选项（text 展示文案；value 为两位数补零字符串，digitsToNumber 还原） */
+export type TimePickerOption = {
+	/** 展示文案（formatter 可改写） */
+	text: string
+	/** 取值字符串（两位补零） */
+	value: string
+}
+
+/**
+ * 选项过滤函数：type 为当前列类型（含 12 小时制的 'period'），options 为待过滤选项，
+ * values 为已确定的更靠前列取值；返回过滤后的新数组（不要原地修改入参）
+ */
+export type TimePickerFilter = (type: string, options: TimePickerOption[], values: string[]) => TimePickerOption[]
+
+/** 选项格式化函数：返回改写后的同一选项对象 */
+export type TimePickerFormatter = (type: string, option: TimePickerOption) => TimePickerOption
+
+/** 单列渲染配置（面板 computed 计算后下发给列子组件） */
+export type TimePickerColumn = {
+	/** 列类型（'hour' | 'minute' | 'second' | 'period'） */
+	type: string
+	/** 列选项（已应用 filter / formatter） */
+	options: TimePickerOption[]
+	/** 当前选中项下标（0 起） */
+	index: number
+}
+
+/** 时刻分量（秒级精度，24 小时制） */
+export type TimeParts = {
+	hour: number
+	minute: number
+	second: number
+}
+
+/** 默认列组合（时-分） */
+export const TIME_PICKER_DEFAULT_COLUMNS: TimePickerColumnType[] = ['hour', 'minute']
+
+/** 一天总秒数 */
+export const TIME_PICKER_SECONDS_PER_DAY: number = 86400
+
+/**
+ * 规范化列组合：null / 空数组回退默认时-分，否则按入参顺序复制一份
+ * 复制而非直接返回入参，避免外部后续修改数组影响组件内部状态
+ */
+export function normalizeTimePickerColumns(types: TimePickerColumnType[] | null): TimePickerColumnType[] {
+	const result: TimePickerColumnType[] = []
+	if (types == null || types.length == 0) {
+		for (let i = 0; i < TIME_PICKER_DEFAULT_COLUMNS.length; i++) {
+			result.push(TIME_PICKER_DEFAULT_COLUMNS[i])
+		}
+		return result
+	}
+	for (let i = 0; i < types.length; i++) {
+		result.push(types[i])
+	}
+	return result
+}
+
+/**
+ * 数值补零到两位（时 / 分 / 秒列文案与取值）
+ */
+export function padTwo(value: number): string {
+	return value < 10 ? '0' + value.toString() : value.toString()
+}
+
+/**
+ * 数字串转数值（仅取前导数字，规避 parseInt 在原生端的 radix 差异）
+ */
+export function digitsToNumber(text: string): number {
+	let result = 0
+	for (let i = 0; i < text.length; i++) {
+		const code = text.charCodeAt(i)
+		if (code == null) {
+			break
+		}
+		if (code < 48 || code > 57) {
+			break
+		}
+		result = result * 10 + (code - 48)
+	}
+	return result
+}
+
+/**
+ * 解析时间文本（'HH:mm' / 'HH:mm:ss'，也兼容不补零写法）
+ * 返回 null 表示格式不可识别；越界分量收敛到日界内（时 ≤ 23、分 / 秒 ≤ 59）
+ */
+export function parseTimeText(text: string | null): TimeParts | null {
+	if (text == null || text == '') {
+		return null
+	}
+	const pieces = text.split(':')
+	if (pieces.length < 2) {
+		return null
+	}
+	let hour = digitsToNumber(pieces[0])
+	let minute = digitsToNumber(pieces[1])
+	let second = pieces.length > 2 ? digitsToNumber(pieces[2]) : 0
+	if (hour > 23) {
+		hour = 23
+	}
+	if (minute > 59) {
+		minute = 59
+	}
+	if (second > 59) {
+		second = 59
+	}
+	return { hour: hour, minute: minute, second: second } as TimeParts
+}
+
+/**
+ * 时间文本转当日秒数用于约束比较；null / 非法格式返回 -1（调用方按「不约束」处理）
+ */
+export function timeTextToSeconds(text: string | null): number {
+	const parts = parseTimeText(text)
+	if (parts == null) {
+		return -1
+	}
+	return parts.hour * 3600 + parts.minute * 60 + parts.second
+}
+
+/**
+ * 当日秒数转时刻分量
+ */
+export function secondsToParts(seconds: number): TimeParts {
+	let safe = seconds
+	if (safe < 0) {
+		safe = 0
+	}
+	if (safe >= TIME_PICKER_SECONDS_PER_DAY) {
+		safe = TIME_PICKER_SECONDS_PER_DAY - 1
+	}
+	return {
+		hour: Math.floor(safe / 3600),
+		minute: Math.floor(safe / 60) % 60,
+		second: safe % 60
+	} as TimeParts
+}
+
+/**
+ * 时刻分量转当日秒数
+ */
+export function partsToSeconds(parts: TimeParts): number {
+	return parts.hour * 3600 + parts.minute * 60 + parts.second
+}
+
+/**
+ * 秒数收敛到 [minSeconds, maxSeconds]：任一端为负（未配置）或 min > max（跨天）时不收敛
+ */
+export function clampTimeSeconds(seconds: number, minSeconds: number, maxSeconds: number): number {
+	if (minSeconds < 0 || maxSeconds < 0 || minSeconds > maxSeconds) {
+		return seconds
+	}
+	if (seconds < minSeconds) {
+		return minSeconds
+	}
+	if (seconds > maxSeconds) {
+		return maxSeconds
+	}
+	return seconds
+}
+
+/**
+ * 数值向下对齐步长（分钟 / 秒步长，最小 1）
+ */
+export function floorToStep(value: number, step: number): number {
+	const safeStep = step < 1 ? 1 : step
+	return Math.floor(value / safeStep) * safeStep
+}
+
+/**
+ * 按列组合输出时间字符串（24 小时制两位；12 小时制仅影响列展示，值口径不随制式变化）
+ * 例：['hour','minute'] → 'HH:mm'；['hour','minute','second'] → 'HH:mm:ss'
+ */
+export function formatTimeParts(parts: TimeParts, types: TimePickerColumnType[] | null): string {
+	const columns = normalizeTimePickerColumns(types)
+	const list: string[] = []
+	for (let i = 0; i < columns.length; i++) {
+		const type = columns[i]
+		if (type == 'hour') {
+			list.push(padTwo(parts.hour))
+		} else if (type == 'minute') {
+			list.push(padTwo(parts.minute))
+		} else {
+			list.push(padTwo(parts.second))
+		}
+	}
+	return list.join(':')
+}
+
+/**
+ * 按列组合生成展示格式模板：hour→HH / minute→mm / second→ss，冒号连接
+ * 例：['hour','minute','second'] → 'HH:mm:ss'；['minute','second'] → 'mm:ss'
+ */
+export function getTimePickerDisplayFormat(types: TimePickerColumnType[] | null): string {
+	const columns = normalizeTimePickerColumns(types)
+	const parts: string[] = []
+	for (let i = 0; i < columns.length; i++) {
+		const type = columns[i]
+		if (type == 'hour') {
+			parts.push('HH')
+		} else if (type == 'minute') {
+			parts.push('mm')
+		} else {
+			parts.push('ss')
+		}
+	}
+	return parts.join(':')
+}

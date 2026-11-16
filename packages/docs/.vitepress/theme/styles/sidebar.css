@@ -1,0 +1,22 @@
+/**
+ * 侧栏顶部站点标题左对齐
+ *
+ * VitePress 在 >960px 且存在侧栏时把标题区域设为绝对定位，内容默认居中；
+ * 这里改为 flex-start 与分组标题一起靠左，左缩进交给主题与 demo.css 的既有 padding，
+ * 不额外叠加自定义 padding（≥1440px 时 demo.css 已统一为 32px）。
+ */
+.VPNavBarTitle.has-sidebar .title {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+}
+
+/**
+ * 可折叠分组的标题增加手型光标
+ *
+ * VitePress 对声明 collapsed 的分组标题渲染为 role="button"，
+ * 但默认 cursor 仍是 auto，补上手型提示更易识别可点击。
+ */
+.VPSidebarItem.level-0.is-collapsible > .item {
+	cursor: pointer;
+}

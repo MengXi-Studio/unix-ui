@@ -1,0 +1,248 @@
+/**
+ * m-picker 通用选择器共享类型与工具（跨文件共享，独立 .uts）
+ *
+ * 四件套共用：m-picker.uvue（面板）/ m-picker-popup.uvue（弹层）/
+ * m-picker-input.uvue（输入框）/ m-picker-view.uvue（无工具栏纯视图 + 列）。
+ * 列渲染复用 m-date-picker-column：任意选项值在列内映射为序号字符串，回传时按序号取原始值。
+ */
+
+/** 选项（label 展示、value 业务值、children 级联子项、disabled 禁用） */
+export type PickerOption = {
+	/** 展示文本 */
+	label: string
+	/** 业务值（字符串或数字，回传保留原类型） */
+	value: string | number
+	/** 级联子项（存在即视为级联列） */
+	children?: PickerOption[]
+	/** 是否禁用（灰显、滚动跳过、点击不选中） */
+	disabled?: boolean
+}
+
+/**
+ * 列数据：一维（单列或级联根）或二维（多列）
+ *
+ * 必须声明为具体数组类型而不是 `PickerOption[] | PickerOption[][]` 联合：
+ * 联合类型作为 props 类型时，Kotlin 产物会把 `type` 编译成空泛型调用 `_uA()`，
+ * 触发 `Cannot infer type argument for 'E'`；且联合在 Kotlin 端退化为 `Any?`，
+ * 任何 `.length` / `[i]` 访问都会报 `Unresolved reference`。
+ * 用 `any[]` 承载后，`.length` / `[i]` 可用，一维/二维由 isMultiColumn 运行时判别。
+ */
+export type PickerColumns = any[]
+
+/** 选中值：单列标量或各列值数组 */
+export type PickerValue = string | number | (string | number)[]
+
+/** 选择结果（事件回传） */
+export type PickerResult = {
+	/** 选中值（单列标量 / 多列数组） */
+	value: PickerValue | null
+	/** 各列选中项原始对象 */
+	selectedOptions: PickerOption[]
+	/** 各列选中下标 */
+	indexes: number[]
+}
+
+/** 默认选项行高 px */
+export const PICKER_OPTION_HEIGHT: number = 44
+
+/** 默认可见选项个数 */
+export const PICKER_VISIBLE_OPTION_NUM: number = 6
+
+/**
+ * 判断列数据是否为二维多列：首元素为数组即为多列
+ * （一维元素是 PickerOption 对象，二维元素是 PickerOption[]）
+ * 元素为 `any`，Array.isArray 可正常推断泛型参数
+ */
+export function isMultiColumn(columns: PickerColumns | null): boolean {
+	if (columns == null || columns.length == 0) {
+		return false
+	}
+	return Array.isArray(columns[0])
+}
+
+/**
+ * 列数据归一为二维矩阵：一维包装为单列；空数据返回空数组
+ */
+export function toColumnMatrix(columns: PickerColumns | null): PickerOption[][] {
+	const result: PickerOption[][] = []
+	if (columns == null || columns.length == 0) {
+		return result
+	}
+	if (isMultiColumn(columns)) {
+		const matrix = columns as PickerOption[][]
+		for (let i = 0; i < matrix.length; i++) {
+			result.push(matrix[i])
+		}
+		return result
+	}
+	result.push(columns as PickerOption[])
+	return result
+}
+
+/**
+ * 判断一维列数据是否级联（任一顶层项带非空 children）
+ */
+export function isCascadeColumns(columns: PickerColumns | null): boolean {
+	if (columns == null || columns.length == 0 || isMultiColumn(columns)) {
+		return false
+	}
+	const options = columns as PickerOption[]
+	for (let i = 0; i < options.length; i++) {
+		const children = options[i].children
+		if (children != null && children.length > 0) {
+			return true
+		}
+	}
+	return false
+}
+
+/**
+ * 值转比较文本（统一字符串口径；值类型不同但文本相同视为同一项）
+ */
+export function valueToText(value: string | number): string {
+	return value.toString()
+}
+
+/**
+ * 把外部选中值归一为文本数组：null → 空；数组 → 逐项；标量 → 单元素
+ */
+export function valueToTextList(value: PickerValue | null): string[] {
+	const list: string[] = []
+	if (value == null) {
+		return list
+	}
+	// 用 typeof 判别数组，避免 Array.isArray 在 Kotlin 端无法推断泛型参数
+	const valueType = typeof value
+	if (valueType != 'string' && valueType != 'number') {
+		const array = value as (string | number)[]
+		for (let i = 0; i < array.length; i++) {
+			list.push(valueToText(array[i]))
+		}
+		return list
+	}
+	list.push(valueToText(value as string | number))
+	return list
+}
+
+/**
+ * 在选项中按值查找下标：未命中返回 -1
+ */
+export function findIndexByValue(options: PickerOption[], target: string): number {
+	for (let i = 0; i < options.length; i++) {
+		if (valueToText(options[i].value) == target) {
+			return i
+		}
+	}
+	return -1
+}
+
+/**
+ * 选项是否禁用（未标记视为可用）
+ */
+export function isDisabledOption(option: PickerOption): boolean {
+	const flag = option.disabled
+	return flag != null && flag
+}
+
+/**
+ * 从指定下标开始寻找最近可用（非禁用）项：向下优先、再向上，全禁用时回退 0
+ */
+export function nearestEnabledIndex(options: PickerOption[], from: number): number {
+	if (options.length == 0) {
+		return 0
+	}
+	let start = from
+	if (start < 0) {
+		start = 0
+	}
+	if (start > options.length - 1) {
+		start = options.length - 1
+	}
+	if (!isDisabledOption(options[start])) {
+		return start
+	}
+	for (let i = start + 1; i < options.length; i++) {
+		if (!isDisabledOption(options[i])) {
+			return i
+		}
+	}
+	for (let i = start - 1; i >= 0; i--) {
+		if (!isDisabledOption(options[i])) {
+			return i
+		}
+	}
+	return 0
+}
+
+/**
+ * 生成一列的禁用标记数组（供列组件跳过禁用项）
+ */
+export function buildDisabledFlags(options: PickerOption[]): boolean[] {
+	const flags: boolean[] = []
+	for (let i = 0; i < options.length; i++) {
+		flags.push(isDisabledOption(options[i]))
+	}
+	return flags
+}
+
+/**
+ * 校验并收敛下标到列长度内
+ */
+export function clampIndex(index: number, length: number): number {
+	if (length <= 0) {
+		return 0
+	}
+	if (index < 0) {
+		return 0
+	}
+	if (index > length - 1) {
+		return length - 1
+	}
+	return index
+}
+
+/**
+ * 把选中值解析为各列展示文本（输入框展示用）：未选返回空数组
+ * 级联按层下钻（命中项 children 继续），多列逐列匹配，单列取首个命中项
+ */
+export function resolveDisplayLabels(columns: PickerColumns | null, value: PickerValue | null): string[] {
+	const labels: string[] = []
+	if (columns == null || value == null) {
+		return labels
+	}
+	const matrix = toColumnMatrix(columns)
+	if (matrix.length == 0) {
+		return labels
+	}
+	const targets = valueToTextList(value)
+	if (isCascadeColumns(columns)) {
+		let options = matrix[0]
+		let depth = 0
+		while (options.length > 0) {
+			const target = depth < targets.length ? targets[depth] : ''
+			let hit = findIndexByValue(options, target)
+			if (hit < 0) {
+				hit = 0
+			}
+			labels.push(options[hit].label)
+			const children = options[hit].children
+			if (children == null || children.length == 0) {
+				break
+			}
+			options = children
+			depth++
+		}
+		return labels
+	}
+	for (let i = 0; i < matrix.length; i++) {
+		const target = i < targets.length ? targets[i] : ''
+		let hit = findIndexByValue(matrix[i], target)
+		if (hit < 0) {
+			hit = 0
+		}
+		if (matrix[i].length > hit) {
+			labels.push(matrix[i][hit].label)
+		}
+	}
+	return labels
+}

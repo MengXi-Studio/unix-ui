@@ -126,7 +126,7 @@ For all available variables see [theme/vars.scss](./theme/vars.scss), named as `
 
 ## Components
 
-46 components in total (including sub-components), organized into 6 categories that mirror the documentation sidebar. Each row lists the tag and its core capabilities; see the [component reference](https://mengxi-studio.github.io/unix-ui/en/components/button.html) for full APIs.
+65 components in total (including sub-components and variants), organized into 8 categories that mirror the documentation sidebar. Each row lists the tag and its core capabilities; see the [component reference](https://mengxi-studio.github.io/unix-ui/en/components/button.html) for full APIs.
 
 ### Basic Components
 
@@ -151,24 +151,53 @@ For all available variables see [theme/vars.scss](./theme/vars.scss), named as `
 | `m-sticky` / `m-sticky-box` | Sticky layout: stick to top / bottom, container bounds constraint, stick-state events |
 | `m-waterfall` / `m-waterfall-item` / `m-waterfall-load` | Waterfall: multi-column layout by actual content height, columns and gutter, known-size placeholders, dynamic add / remove and re-layout |
 
-### Form Components
+### Data Entry
 
 | Component | Description |
 | --- | --- |
-| `m-calendar` | Calendar panel: single / multiple / range selection, year-month switching navigation, formatter, over-limit feedback |
-| `m-calendar-popup` | Calendar popup: m-popup + m-calendar, closes on confirm, position / round corners / panel height / safe area |
-| `m-calendar-input` | Calendar input: read-only trigger + popup picking, formatted echo, clearable and disabled |
-| `m-cascader` | Cascader: multi-level linkage, level tabs and swipe gestures, field-names mapping, async loading, four slots |
-| `m-cascader-popup` | Cascader popup: m-popup + m-cascader, closes automatically after picking the last level |
-| `m-cascader-input` | Cascader input: read-only trigger + popup picking, selected path echo, clearable and disabled |
 | `m-checkbox` / `m-checkbox-group` | Checkbox: group container + standalone item, shape / color / size customization, max limit, indeterminate state |
 | `m-checkbox-popup` | Checkbox popup: bottom-sheet multi-select, options array driven, field-names mapping, footer slot |
 | `m-checkbox-input` | Checkbox input: read-only trigger + popup multi-select, "、" joined echo, truncation over 2 items, custom clear button |
 | `m-color-picker` | Color picker: saturation-value panel + hue / alpha sliders, hex / rgb / hsl output, presets, recent colors, Web eyedropper |
 | `m-color-picker-popup` | Color picker popup: cancel / title / confirm header, commit on confirm, discard on cancel or overlay tap |
 | `m-color-picker-input` | Color picker input: read-only trigger + color swatch preview + popup picking, optional label and clear |
-| `m-date-strip` | Date strip: horizontal consecutive dates, single / multiple / range, value-format string binding, lunar text, filter and disabled dates, slot customization |
 | `m-input` | Input: six types, clearable with trigger timing, formatter / precision / min-max clamping, password eye toggle, word limit, multiline auto-height, prepend / append slots |
+
+### Pickers
+
+| Component | Description |
+| --- | --- |
+| `m-cascader` | Cascader: multi-level linkage, level tabs and swipe gestures, field-names mapping, async loading, four slots |
+| `m-cascader-popup` | Cascader popup: m-popup + m-cascader, closes automatically after picking the last level |
+| `m-cascader-input` | Cascader input: read-only trigger + popup picking, selected path echo, clearable and disabled |
+| `m-picker` | Generic wheel picker: auto-detects 1D / 2D columns, children cascade, disabled options, object options, columns-top / columns-bottom slots |
+| `m-picker-popup` | Picker popup: m-popup + m-picker, v-model controls visibility and value, closes on confirm / cancel |
+| `m-picker-input` | Picker input: read-only trigger + popup picking, echoes the selected text of each column, clearable and disabled |
+| `m-picker-view` | Picker view: toolbar-less index-controlled wheel columns, compose with m-picker-view-column and the option slot inside custom containers |
+
+### Date & Time
+
+| Component | Description |
+| --- | --- |
+| `m-calendar` | Calendar panel: single / multiple / range selection, year-month switching navigation, formatter, over-limit feedback |
+| `m-calendar-popup` | Calendar popup: m-popup + m-calendar, closes on confirm, position / round corners / panel height / safe area |
+| `m-calendar-input` | Calendar input: read-only trigger + popup picking, formatted echo, clearable and disabled |
+| `m-date-picker` | Date picker: year / month / day wheels, column sets, min / max range, filter / formatter, toolbar and readonly loading state |
+| `m-date-picker-popup` | Date picker popup: m-popup + date panel, closes on confirm / cancel, position / corners / safe area |
+| `m-date-picker-input` | Date picker input: read-only trigger + popup picking, formatted echo by column set, clearable and disabled |
+| `m-date-range-picker` | Date range picker: start / end titles share one date wheel, auto-swaps to ascending order on confirm, range, filter / formatter and quick-option slot |
+| `m-date-range-picker-popup` | Date range popup: m-popup + date range panel, closes on confirm / cancel |
+| `m-date-range-picker-input` | Date range input: read-only trigger + popup picking, echoes "start - end" by outlet-format |
+| `m-date-strip` | Date strip: horizontal consecutive dates, single / multiple / range, value-format string binding, lunar text, filter and disabled dates, slot customization |
+| `m-lunar-picker` | Lunar picker: lunar year / month (including leap month) / day wheels, GanZhi and zodiac year column, column sets, reverse-mapped min / max; the public value stays a Gregorian Date |
+| `m-lunar-picker-popup` | Lunar picker popup: m-popup + lunar panel, closes on confirm / cancel |
+| `m-lunar-picker-input` | Lunar picker input: read-only trigger + lunar popup, echoes lunar text (e.g. 2026年六月十五) |
+| `m-time-picker` | Time picker: hour / minute / second wheels, column sets, minute and second steps, min / max time, 12/24-hour (AM / PM column for 12-hour mode) |
+| `m-time-picker-popup` | Time picker popup: m-popup + time panel, closes on confirm / cancel |
+| `m-time-picker-input` | Time picker input: read-only trigger + popup picking, echoes HH:mm (HH:mm:ss with seconds) |
+| `m-time-range-picker` | Time range picker: start / end titles share one time wheel, auto-swaps to ascending order on confirm, steps, time range, 12-hour mode and quick-option slot |
+| `m-time-range-picker-popup` | Time range popup: m-popup + time range panel, closes on confirm / cancel |
+| `m-time-range-picker-input` | Time range input: read-only trigger + popup picking, echoes "start - end" |
 
 ### Feedback Components
 
@@ -193,7 +222,7 @@ For all available variables see [theme/vars.scss](./theme/vars.scss), named as `
 | --- | --- |
 | `m-tabs` / `m-tab` | Tabs: line / card / pill styles, index and name mixed matching, horizontally scrollable bar, content transition and swipe switching, sticky, scrollspy, before-change interception |
 
-> A date utility set also ships with the library (`utils/date.uts`, 69 pure functions covering comparison, arithmetic, week / month / year boundaries, formatting / parsing and lunar conversion) — see [Date tools](https://mengxi-studio.github.io/unix-ui/en/tools/date.html).
+> A date utility set also ships with the library (`utils/date.uts`, a pure-function set covering comparison, arithmetic, week / month / year boundaries, formatting / parsing and lunar conversion) — see [Date tools](https://mengxi-studio.github.io/unix-ui/en/tools/date.html).
 
 ## Platform Compatibility
 
@@ -212,7 +241,7 @@ Full details (HBuilderX version requirements, vapor mode configuration, platform
 
 The example project [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) provides one page per component exhaustively covering all props / variants / events, deployed as a [live demo](https://mengxi-studio.github.io/unix-ui/playground/) on the documentation site — try it right in your browser.
 
-**Try it on a real Android device**: [download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794590278532-__UNI__F1AA560_1794590268233.apk) — a cloud-packaged Android build showcasing native rendering of all components. The package is rebuilt with each release; use the link in the latest release notes.
+**Try it on a real Android device**: [download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794836242885-__UNI__F1AA560_1794836231235.apk) — a cloud-packaged Android build showcasing native rendering of all components. The package is rebuilt with each release; use the link in the latest release notes.
 
 ## Project Structure
 

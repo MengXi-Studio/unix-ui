@@ -1,0 +1,216 @@
+<template>
+	<view class="page">
+		<demo-navbar title="选择器纯视图" subtitle="PickerView" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-picker-view v-model:value="basicValue" :columns="lineOptions" @change="onBasicChange" />
+				<view class="event-log">
+					<text class="event-text">当前下标：{{ formatIndexes(basicValue) }}</text>
+				</view>
+				<view class="demo-btn-row">
+					<m-button size="small" @click="setLine('包装五线')">定位到「包装五线」</m-button>
+				</view>
+				<text class="caption">纯视图只按索引数组受控渲染，无工具栏、无数值换算；适合嵌在自定义容器内</text>
+			</view>
+
+			<text class="section" id="multi">多列</text>
+			<view class="card">
+				<m-picker-view v-model:value="multiValue" :columns="yearMonthDay" :option-height="40" />
+				<view class="event-log">
+					<text class="event-text">当前下标：{{ formatIndexes(multiValue) }}</text>
+				</view>
+				<view class="demo-btn-row">
+					<m-button size="small" @click="setDate">定位到 2025 / 2 月 / 15 日</m-button>
+					<m-button size="small" custom-style="margin-left: 8px;" @click="clearDate">清空</m-button>
+				</view>
+				<text class="caption">各列下标独立回传；option-height 可调行高，整体高度 = 行高 × 可见个数</text>
+			</view>
+
+			<text class="section" id="slots">自定义选项内容</text>
+			<view class="card">
+				<m-picker-view v-model:value="slotValue" :columns="statusOptions">
+					<!-- #ifdef WEB -->
+					<template #option="{ option }">
+						<view class="demo-option">
+							<view class="demo-option-dot" :style="dotStyle(option)"></view>
+							<text class="demo-option-text">{{ option.label }}</text>
+						</view>
+					</template>
+					<!-- #endif -->
+				</m-picker-view>
+				<view class="event-log">
+					<text class="event-text">当前下标：{{ formatIndexes(slotValue) }}</text>
+				</view>
+				<text class="caption">option 插槽作用域含原始选项（option）与行列下标；小程序端回退内置文本渲染</text>
+			</view>
+
+			<text class="section" id="methods">实例方法</text>
+			<view class="card">
+				<m-picker-view ref="methodView" :columns="yearMonthDay" :value="[1, 1, 1]" />
+				<view class="demo-btn-row">
+					<m-button size="small" @click="callIndexes">getSelectedIndexes</m-button>
+				</view>
+				<view class="event-log">
+					<text class="event-text">最近调用：{{ methodLog }}</text>
+				</view>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '选择器纯视图 PickerView', name: 'picker-view' })
+	import { PickerOption } from '@/uni_modules/m-ui-x/components/m-picker/picker.uts'
+
+	/** 下标数组转展示文本 */
+	function formatIndexes(value: number[] | null): string {
+		if (value == null || value.length == 0) {
+			return '[]'
+		}
+		return '[' + value.join(', ') + ']'
+	}
+
+	const lineOptions: PickerOption[] = [
+		{ label: '机加工一线', value: 'line1' } as PickerOption,
+		{ label: '注塑二线', value: 'line2' } as PickerOption,
+		{ label: '压铸四线', value: 'line4' } as PickerOption,
+		{ label: '包装五线', value: 'line5' } as PickerOption
+	]
+
+	const yearMonthDay: PickerOption[][] = [
+		[
+			{ label: '2024', value: 2024 } as PickerOption,
+			{ label: '2025', value: 2025 } as PickerOption,
+			{ label: '2026', value: 2026 } as PickerOption
+		],
+		[
+			{ label: '1 月', value: 1 } as PickerOption,
+			{ label: '2 月', value: 2 } as PickerOption,
+			{ label: '3 月', value: 3 } as PickerOption
+		],
+		[
+			{ label: '1 日', value: 1 } as PickerOption,
+			{ label: '15 日', value: 15 } as PickerOption,
+			{ label: '28 日', value: 28 } as PickerOption
+		]
+	]
+
+	const statusOptions: PickerOption[] = [
+		{ label: '运行中', value: 'running' } as PickerOption,
+		{ label: '报警', value: 'alarm' } as PickerOption,
+		{ label: '停机', value: 'stopped' } as PickerOption,
+		{ label: '待机', value: 'idle' } as PickerOption
+	]
+
+	// ========== 1 基础用法 ==========
+	const basicValue = ref<number[]>([0])
+
+	/** change 记录 */
+	const onBasicChange = (value: number[]) => {
+		basicValue.value = value
+	}
+
+	/** 定位到指定产线（按 label 反查下标） */
+	const setLine = (label: string) => {
+		for (let i = 0; i < lineOptions.length; i++) {
+			if (lineOptions[i].label == label) {
+				basicValue.value = [i]
+				return
+			}
+		}
+	}
+
+	// ========== 2 多列 ==========
+	const multiValue = ref<number[]>([0, 0, 0])
+
+	/** 定位到 2025 / 2 月 / 15 日（下标 1 / 1 / 1） */
+	const setDate = () => {
+		multiValue.value = [1, 1, 1]
+	}
+
+	/** 清空下标 */
+	const clearDate = () => {
+		multiValue.value = []
+	}
+
+	// ========== 3 自定义选项内容 ==========
+	const slotValue = ref<number[]>([0])
+
+	/** 状态点颜色：按选项值派生 */
+	function dotStyle(option: PickerOption): string {
+		const value = option.value.toString()
+		if (value == 'running') {
+			return 'background-color: #07c160;'
+		}
+		if (value == 'alarm') {
+			return 'background-color: #ee0a24;'
+		}
+		if (value == 'stopped') {
+			return 'background-color: #969799;'
+		}
+		return 'background-color: #ff976a;'
+	}
+
+	// ========== 4 实例方法 ==========
+	const methodView = ref<ComponentPublicInstance | null>(null)
+	const methodLog = ref<string>('（点击按钮调用实例方法）')
+
+	/** getSelectedIndexes：读取各列下标 */
+	const callIndexes = () => {
+		const inst = methodView.value
+		if (inst == null) {
+			methodLog.value = '实例未就绪'
+			return
+		}
+		const r = inst.$callMethod('getSelectedIndexes')
+		if (r == null) {
+			methodLog.value = 'getSelectedIndexes → null'
+			return
+		}
+		methodLog.value = 'getSelectedIndexes → ' + formatIndexes(r as number[])
+	}
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	.demo-btn-row {
+		flex-direction: row;
+		align-items: center;
+		margin-top: 12px;
+	}
+	/* 自定义选项内容 */
+	.demo-option {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+	}
+	.demo-option-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 4px;
+		margin-right: 6px;
+	}
+	.demo-option-text {
+		font-size: 16px;
+		color: #323233;
+	}
+</style>

@@ -50,6 +50,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			'/en/guide/': [
 				{
 					text: 'Getting Started',
+					collapsed: false,
 					items: [
 						{ text: 'Introduction', link: '/en/guide/introduction' },
 						{ text: 'Installation', link: '/en/guide/installation' },
@@ -58,10 +59,12 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Fundamentals',
+					collapsed: false,
 					items: [{ text: 'Theming', link: '/en/guide/theming' }]
 				},
 				{
 					text: 'Advanced',
+					collapsed: false,
 					items: [
 						{ text: 'Compatibility', link: '/en/guide/compatibility' },
 						{ text: 'FAQ', link: '/en/guide/faq' }
@@ -71,6 +74,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			'/en/components/': [
 				{
 					text: 'Basic Components',
+					collapsed: false,
 					items: [
 						{ text: 'Button', link: '/en/components/button' },
 						{ text: 'Icon', link: '/en/components/icon' },
@@ -80,6 +84,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Layout Components',
+					collapsed: false,
 					items: [
 						{ text: 'Compact', link: '/en/components/compact' },
 						{ text: 'Divider', link: '/en/components/divider' },
@@ -93,26 +98,59 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					]
 				},
 				{
-					text: 'Form Components',
+					text: 'Data Entry',
+					collapsed: false,
 					items: [
-						{ text: 'Calendar', link: '/en/components/calendar' },
-						{ text: 'CalendarInput', link: '/en/components/calendar-input' },
-						{ text: 'CalendarPopup', link: '/en/components/calendar-popup' },
-						{ text: 'Cascader', link: '/en/components/cascader' },
-						{ text: 'CascaderInput', link: '/en/components/cascader-input' },
-						{ text: 'CascaderPopup', link: '/en/components/cascader-popup' },
 						{ text: 'Checkbox', link: '/en/components/checkbox' },
 						{ text: 'CheckboxInput', link: '/en/components/checkbox-input' },
 						{ text: 'CheckboxPopup', link: '/en/components/checkbox-popup' },
 						{ text: 'ColorPicker', link: '/en/components/color-picker' },
 						{ text: 'ColorPickerInput', link: '/en/components/color-picker-input' },
 						{ text: 'ColorPickerPopup', link: '/en/components/color-picker-popup' },
-						{ text: 'DateStrip', link: '/en/components/date-strip' },
 						{ text: 'Input', link: '/en/components/input' }
 					]
 				},
 				{
+					text: 'Pickers',
+					collapsed: false,
+					items: [
+						{ text: 'Cascader', link: '/en/components/cascader' },
+						{ text: 'CascaderInput', link: '/en/components/cascader-input' },
+						{ text: 'CascaderPopup', link: '/en/components/cascader-popup' },
+						{ text: 'Picker', link: '/en/components/picker' },
+						{ text: 'PickerInput', link: '/en/components/picker-input' },
+						{ text: 'PickerPopup', link: '/en/components/picker-popup' },
+						{ text: 'PickerView', link: '/en/components/picker-view' }
+					]
+				},
+				{
+					text: 'Date & Time',
+					collapsed: false,
+					items: [
+						{ text: 'Calendar', link: '/en/components/calendar' },
+						{ text: 'CalendarInput', link: '/en/components/calendar-input' },
+						{ text: 'CalendarPopup', link: '/en/components/calendar-popup' },
+						{ text: 'DatePicker', link: '/en/components/date-picker' },
+						{ text: 'DatePickerInput', link: '/en/components/date-picker-input' },
+						{ text: 'DatePickerPopup', link: '/en/components/date-picker-popup' },
+						{ text: 'DateRangePicker', link: '/en/components/date-range-picker' },
+						{ text: 'DateRangePickerInput', link: '/en/components/date-range-picker-input' },
+						{ text: 'DateRangePickerPopup', link: '/en/components/date-range-picker-popup' },
+						{ text: 'DateStrip', link: '/en/components/date-strip' },
+						{ text: 'LunarPicker', link: '/en/components/lunar-picker' },
+						{ text: 'LunarPickerInput', link: '/en/components/lunar-picker-input' },
+						{ text: 'LunarPickerPopup', link: '/en/components/lunar-picker-popup' },
+						{ text: 'TimePicker', link: '/en/components/time-picker' },
+						{ text: 'TimePickerInput', link: '/en/components/time-picker-input' },
+						{ text: 'TimePickerPopup', link: '/en/components/time-picker-popup' },
+						{ text: 'TimeRangePicker', link: '/en/components/time-range-picker' },
+						{ text: 'TimeRangePickerInput', link: '/en/components/time-range-picker-input' },
+						{ text: 'TimeRangePickerPopup', link: '/en/components/time-range-picker-popup' }
+					]
+				},
+				{
 					text: 'Feedback Components',
+					collapsed: false,
 					items: [
 						{ text: 'Fab', link: '/en/components/fab' },
 						{ text: 'Loading', link: '/en/components/loading' },
@@ -123,6 +161,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Data Display',
+					collapsed: false,
 					items: [
 						{ text: 'Badge', link: '/en/components/badge' },
 						{ text: 'Cell', link: '/en/components/cell' }
@@ -130,12 +169,14 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 				},
 				{
 					text: 'Navigation Components',
+					collapsed: false,
 					items: [{ text: 'Tabs', link: '/en/components/tabs' }]
 				}
 			],
 			'/en/tools/': [
 				{
 					text: 'Tools',
+					collapsed: false,
 					items: [{ text: 'Date', link: '/en/tools/date' }]
 				}
 			]

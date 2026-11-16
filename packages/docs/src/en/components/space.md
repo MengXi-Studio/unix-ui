@@ -120,7 +120,7 @@ The `fill` attribute makes the component fill the parent element's width as a bl
 | --- | --- |
 | default | Child element content |
 
-### SpaceItem Props (m-space-item)
+### Props (m-space-item)
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |

@@ -151,7 +151,7 @@ The `name` slot customizes the item label (the `name` prop must still be non-emp
 
 ## API
 
-### FabProps
+### Props
 
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
@@ -173,14 +173,14 @@ The `name` slot customizes the item label (the `name` prop must still be non-emp
 | custom-class | Custom class name on the root node | string.ClassString | - |
 | custom-style | Custom inline style on the root node | string | - |
 
-### FabSlots
+### Slots
 
 | Slot | Description | Scoped props |
 | --- | --- | --- |
 | default | Action button list (put `m-fab-item` here) | - |
 | entry | Custom entry button content | `{ visible: boolean }` |
 
-### FabEvents
+### Events
 
 | Event | Description | Parameters |
 | --- | --- | --- |
@@ -203,14 +203,14 @@ The `name` slot customizes the item label (the `name` prop must still be non-emp
 | color | Icon color (inherits m-fab color when empty) | string | `''` |
 | background | Background color (inherits m-fab background when empty) | string | `''` |
 
-### FabItemSlots
+### Slots（m-fab-item）
 
 | Slot | Description | Scoped props |
 | --- | --- | --- |
 | default | Button content (usually an `m-icon`) | - |
 | name | Custom name content | - |
 
-### FabItemEvents
+### Events（m-fab-item）
 
 | Event | Description | Parameters |
 | --- | --- | --- |

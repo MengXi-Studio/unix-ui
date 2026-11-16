@@ -1,0 +1,570 @@
+<template>
+	<!-- 通用选择器面板：顶部栏 + 多列滚轮（一维自动视为单列 / 含 children 走级联）+ 加载遮罩。
+	     纯平铺形态，弹层组合见 m-picker-popup，输入框触发组合见 m-picker-input，
+	     无工具栏纯视图见 m-picker-view。根节点常驻静态（LESSONS #32） -->
+	<view :class="rootClass" :style="customStyle">
+		<!-- 顶部栏：toolbar 插槽整体替换，未传时按 show-toolbar 渲染取消 / 标题 / 确认三段 -->
+		<slot name="toolbar">
+			<view v-if="showToolbar" class="m-picker__toolbar">
+				<view class="m-picker__action" @click="onCancelClick">
+					<slot name="cancel">
+						<text class="m-picker__cancel-text">{{ cancelButtonText }}</text>
+					</slot>
+				</view>
+				<view class="m-picker__title">
+					<slot name="title">
+						<text class="m-picker__title-text">{{ title }}</text>
+					</slot>
+				</view>
+				<view class="m-picker__action" @click="onConfirmClick">
+					<slot name="confirm">
+						<text class="m-picker__confirm-text">{{ confirmButtonText }}</text>
+					</slot>
+				</view>
+			</view>
+		</slot>
+		<!-- 滚轮上方自定义区 -->
+		<slot name="columns-top"></slot>
+		<view class="m-picker__columns" :style="columnsStyle">
+			<!-- 选中框（两条细线）置于列层之下：uvue 无 pointer-events，覆盖层会拦截滚动手势 -->
+			<view class="m-picker__frame" :style="frameStyle"></view>
+			<view class="m-picker__column-list">
+				<m-date-picker-column
+					v-for="(column, columnIndex) in columnViews"
+					:key="columnIndex"
+					:options="column.texts"
+					:model-value="column.index"
+					:column-index="columnIndex"
+					:option-height="optionHeightValue"
+					:visible-option-num="visibleOptionNumValue"
+					:swipe-duration="swipeDuration"
+					:readonly="readonly"
+					:disabled-options="column.disabledFlags"
+					@change="onColumnChange"
+				>
+					<!-- 插槽条件转发：未传入时不覆盖列内置文本；作用域补充原始选项与行列下标 -->
+					<!-- #ifdef WEB -->
+					<template v-if="$slots['option'] != null" #option="{ option, index }">
+						<slot
+							name="option"
+							:option="optionOf(columnIndex, index)"
+							:index="index"
+							:row-index="index"
+							:column-index="columnIndex"
+						></slot>
+					</template>
+					<!-- #endif -->
+				</m-date-picker-column>
+			</view>
+			<view v-if="loading" class="m-picker__loading">
+				<m-loading />
+			</view>
+		</view>
+		<!-- 滚轮下方自定义区 -->
+		<slot name="columns-bottom"></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-picker 通用选择器面板：任意选项的滚轮列选择。
+	 * 能力：一维 / 二维自动识别（单列 / 多列）、children 级联（切换上层后下层重建并回到首项）、
+	 * 禁用项（灰显 / 滚动跳过 / 点击不选中）、顶部栏与 columns-top / columns-bottom 插槽、只读与加载态。
+	 * 选中值：单列标量、多列（含级联）数组；事件同时回传原始选项与各列下标。
+	 */
+	import {
+		PickerOption,
+		PickerColumns,
+		PickerValue,
+		PICKER_OPTION_HEIGHT,
+		PICKER_VISIBLE_OPTION_NUM,
+		isMultiColumn,
+		isCascadeColumns,
+		toColumnMatrix,
+		valueToTextList,
+		findIndexByValue,
+		nearestEnabledIndex,
+		buildDisabledFlags,
+		clampIndex
+	} from './picker.uts'
+	import { DatePickerOption } from '../m-date-picker/date-picker.uts'
+	import MDatePickerColumn from '../m-date-picker/m-date-picker-column.uvue'
+	import MLoading from '../m-loading/m-loading.uvue'
+
+	/** 面板内部列视图（原始选项 + 列组件文本 + 选中下标 + 禁用标记） */
+	type PickerColumnView = {
+		options: PickerOption[]
+		texts: DatePickerOption[]
+		index: number
+		disabledFlags: boolean[]
+	}
+
+	type Props = {
+		/** 列数据：一维（单列或级联根）/ 二维（多列） */
+		columns?: PickerColumns
+		/** 选中值（v-model:value；单列标量 / 多列数组 / null 未选） */
+		value?: PickerValue
+		/** 顶部栏标题 */
+		title?: string
+		/** 确认按钮文字 */
+		confirmButtonText?: string
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 是否显示顶部栏 */
+		showToolbar?: boolean
+		/** 是否显示加载状态（覆盖滚轮区，阻止交互） */
+		loading?: boolean
+		/** 只读：滚轮回弹到当前值，不响应切换 */
+		readonly?: boolean
+		/** 选项行高 px（0 用默认 44） */
+		optionHeight?: number
+		/** 可见选项个数（0 用默认 6） */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms */
+		swipeDuration?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		columns: null,
+		value: null,
+		title: '请选择',
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		showToolbar: true,
+		loading: false,
+		readonly: false,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 选中值回写（滚轮变化与确认后均触发） */
+		'update:value': [value: PickerValue | null]
+		/** 滚轮切换列（value 为切换后的选中值，并回传原始选项与各列下标） */
+		change: [value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]]
+		/** 点击确认按钮 */
+		confirm: [value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]]
+		/** 点击取消按钮 */
+		cancel: []
+	}>()
+
+	/** 是否多列数据（二维） */
+	const multiColumn = computed<boolean>(() => isMultiColumn(props.columns))
+
+	/** 是否级联模式（一维且存在 children） */
+	const cascade = computed<boolean>(() => isCascadeColumns(props.columns))
+
+	/** 生效行高（0 用默认 44） */
+	const optionHeightValue = computed<number>(() => {
+		return props.optionHeight > 0 ? props.optionHeight : PICKER_OPTION_HEIGHT
+	})
+
+	/** 生效可见选项个数（0 用默认 6） */
+	const visibleOptionNumValue = computed<number>(() => {
+		return props.visibleOptionNum > 0 ? props.visibleOptionNum : PICKER_VISIBLE_OPTION_NUM
+	})
+
+	/**
+	 * 一列原始选项转列组件文本：value 存列内序号（列组件只按文本渲染，回传由宿主按序号取原始值）
+	 */
+	function buildColumnTexts(options: PickerOption[]): DatePickerOption[] {
+		const list: DatePickerOption[] = []
+		for (let i = 0; i < options.length; i++) {
+			list.push({ value: i.toString(), text: options[i].label } as DatePickerOption)
+		}
+		return list
+	}
+
+	/**
+	 * 按上下文还原列结构：级联逐层展开；多列取矩阵各列
+	 * list 为各列下标快照（由调用方传入，避免函数体引用后声明的 ref）
+	 */
+	function resolveColumns(list: number[]): PickerOption[][] {
+		const matrix = toColumnMatrix(props.columns)
+		if (matrix.length == 0) {
+			return matrix
+		}
+		if (!cascade.value) {
+			return matrix
+		}
+		// 级联：逐层按当前下标取 children（越界回退 0）
+		const levels: PickerOption[][] = []
+		let options = matrix[0]
+		let depth = 0
+		while (options.length > 0) {
+			levels.push(options)
+			const index = clampIndex(list.length > depth ? list[depth] : 0, options.length)
+			const children = options[index].children
+			if (children == null || children.length == 0) {
+				break
+			}
+			options = children
+			depth++
+		}
+		return levels
+	}
+
+	/**
+	 * 初始下标：按外部 value 逐列匹配，未命中取首个可用项
+	 */
+	function initialIndexes(): number[] {
+		const levels = toColumnMatrix(props.columns)
+		const result: number[] = []
+		if (levels.length == 0) {
+			return result
+		}
+		const targets = valueToTextList(props.value)
+		if (cascade.value) {
+			let options = levels[0]
+			let depth = 0
+			while (options.length > 0) {
+				const target = depth < targets.length ? targets[depth] : ''
+				const found = findIndexByValue(options, target)
+				const index = nearestEnabledIndex(options, found < 0 ? 0 : found)
+				result.push(index)
+				const children = options[index].children
+				if (children == null || children.length == 0) {
+					break
+				}
+				options = children
+				depth++
+			}
+			return result
+		}
+		for (let i = 0; i < levels.length; i++) {
+			const target = i < targets.length ? targets[i] : ''
+			const found = findIndexByValue(levels[i], target)
+			result.push(nearestEnabledIndex(levels[i], found < 0 ? 0 : found))
+		}
+		return result
+	}
+
+	/** 各列选中下标 */
+	const indexes = ref<number[]>(initialIndexes())
+
+	/**
+	 * 归一化用的列结构：级联按当前下标逐层展开（与 resolveColumns 一致，供非 computed 上下文复用）
+	 */
+	function resolveColumnsForNormalize(): PickerOption[][] {
+		const matrix = toColumnMatrix(props.columns)
+		if (matrix.length == 0 || !cascade.value) {
+			return matrix
+		}
+		const levels: PickerOption[][] = []
+		const currentIndexes: number[] = indexes.value
+		let options = matrix[0]
+		let depth = 0
+		while (options.length > 0) {
+			levels.push(options)
+			const index = clampIndex(depth < currentIndexes.length ? currentIndexes[depth] : 0, options.length)
+			const children = options[index].children
+			if (children == null || children.length == 0) {
+				break
+			}
+			options = children
+			depth++
+		}
+		return levels
+	}
+
+	/**
+	 * 收敛下标：长度对齐列数、越界夹取、禁用项跳到最近可用
+	 */
+	function normalizeIndexes() {
+		const levels = resolveColumnsForNormalize()
+		const currentIndexes: number[] = indexes.value
+		const next: number[] = []
+		for (let i = 0; i < levels.length; i++) {
+			const options = levels[i]
+			const raw = i < currentIndexes.length ? currentIndexes[i] : 0
+			const clamped = clampIndex(raw, options.length)
+			next.push(nearestEnabledIndex(options, clamped))
+		}
+		indexes.value = next
+	}
+
+	/** 列视图：原始选项 / 列组件文本 / 选中下标 / 禁用标记 */
+	const columnViews = computed<PickerColumnView[]>(() => {
+		const levels = resolveColumns(indexes.value)
+		const currentIndexes: number[] = indexes.value
+		const result: PickerColumnView[] = []
+		for (let i = 0; i < levels.length; i++) {
+			const options = levels[i]
+			const index = nearestEnabledIndex(options, clampIndex(
+				i < currentIndexes.length ? currentIndexes[i] : 0, options.length))
+			const view: PickerColumnView = {
+				options: options,
+				texts: buildColumnTexts(options),
+				index: index,
+				disabledFlags: buildDisabledFlags(options)
+			}
+			result.push(view)
+		}
+		return result
+	})
+
+	/** 根类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-picker'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 滚轮区高度：行高 × 可见个数 */
+	const columnsStyle = computed<string>(() => {
+		return 'height: ' + (optionHeightValue.value * visibleOptionNumValue.value).toString() + 'px;'
+	})
+
+	/** 选中框高度与上移量（顶边距视口中线半个行高） */
+	const frameStyle = computed<string>(() => {
+		const height = optionHeightValue.value
+		return 'height: ' + height.toString() + 'px; margin-top: -' + (height / 2).toString() + 'px;'
+	})
+
+	/**
+	 * 选中项原始对象列表（按当前列顺序）
+	 */
+	function currentSelectedOptions(): PickerOption[] {
+		const list: PickerOption[] = []
+		const levels = resolveColumns(indexes.value)
+		for (let i = 0; i < levels.length; i++) {
+			const options = levels[i]
+			const index = nearestEnabledIndex(options, clampIndex(
+				i < indexes.value.length ? indexes.value[i] : 0, options.length))
+			if (options.length > 0) {
+				list.push(options[index])
+			}
+		}
+		return list
+	}
+
+	/**
+	 * 当前选中值：单列标量；多列 / 级联为数组
+	 */
+	function currentValue(): PickerValue | null {
+		const selected = currentSelectedOptions()
+		if (selected.length == 0) {
+			return null
+		}
+		if (!multiColumn.value && !cascade.value) {
+			return selected[0].value
+		}
+		const values: (string | number)[] = []
+		for (let i = 0; i < selected.length; i++) {
+			values.push(selected[i].value)
+		}
+		return values
+	}
+
+	/**
+	 * 插槽取原始选项：columnIndex / rowIndex 越界时返回占位对象
+	 */
+	function optionOf(columnIndex: number, rowIndex: number): PickerOption {
+		const views = columnViews.value
+		if (columnIndex >= 0 && columnIndex < views.length) {
+			const options = views[columnIndex].options
+			if (rowIndex >= 0 && rowIndex < options.length) {
+				return options[rowIndex]
+			}
+		}
+		return { label: '', value: '' } as PickerOption
+	}
+
+	/**
+	 * 列切换：写回下标（级联时后续列归零），归一化后派发 value / change
+	 */
+	function onColumnChange(columnIndex: number, index: number) {
+		if (props.readonly) {
+			return
+		}
+		const currentIndexes: number[] = indexes.value
+		const next: number[] = []
+		for (let i = 0; i < currentIndexes.length; i++) {
+			next.push(currentIndexes[i])
+		}
+		while (next.length <= columnIndex) {
+			next.push(0)
+		}
+		next[columnIndex] = index
+		if (cascade.value) {
+			// 级联：下游列回到首项，随后由归一化补齐长度
+			for (let i = columnIndex + 1; i < next.length; i++) {
+				next[i] = 0
+			}
+		}
+		indexes.value = next
+		normalizeIndexes()
+		const value = currentValue()
+		emit('update:value', value)
+		emit('change', value, currentSelectedOptions(), indexes.value)
+	}
+
+	/**
+	 * 确认：派发 update:value 与 confirm
+	 */
+	function onConfirmClick() {
+		const value = currentValue()
+		emit('update:value', value)
+		emit('confirm', value, currentSelectedOptions(), indexes.value)
+	}
+
+	/**
+	 * 取消：仅派发 cancel（弹层由组合组件关闭）
+	 */
+	function onCancelClick() {
+		emit('cancel')
+	}
+
+	// 外部 value 变化：与内部当前值不同才重置下标（确认回写的同值不重置滚动位置）
+	watch((): PickerValue | null => props.value, (_: PickerValue | null) => {
+		const next = initialIndexes()
+		if (next.length == indexes.value.length) {
+			let same = true
+			for (let i = 0; i < next.length; i++) {
+				if (next[i] != indexes.value[i]) {
+					same = false
+					break
+				}
+			}
+			if (same) {
+				return
+			}
+		}
+		indexes.value = next
+	})
+
+	// 列数据变化：重新按 value 定位并归一化
+	watch((): number => {
+		const columns = props.columns
+		return columns == null ? 0 : columns.length
+	}, (_: number) => {
+		indexes.value = initialIndexes()
+	})
+
+	/**
+	 * 重置选择为外部 value（弹层复开时按需调用）
+	 */
+	function resetSelection() {
+		indexes.value = initialIndexes()
+	}
+
+	/**
+	 * 读取当前选中值
+	 */
+	function getSelectedValue(): PickerValue | null {
+		return currentValue()
+	}
+
+	/**
+	 * 读取各列选中下标
+	 */
+	function getSelectedIndexes(): number[] {
+		return indexes.value
+	}
+
+	/**
+	 * 程序化确认（等价点击确认按钮）
+	 */
+	function confirm() {
+		onConfirmClick()
+	}
+
+	defineExpose({
+		confirm,
+		resetSelection,
+		getSelectedValue,
+		getSelectedIndexes
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根 ========== */
+	.m-picker {
+		background-color: $m-picker-background;
+	}
+
+	/* ========== 顶部栏（取消 / 标题 / 确认） ========== */
+	.m-picker__toolbar {
+		flex-direction: row;
+		align-items: center;
+		height: $m-picker-toolbar-height;
+	}
+	.m-picker__action {
+		padding: $m-picker-action-padding;
+		justify-content: center;
+	}
+	.m-picker__cancel-text {
+		font-size: $m-picker-action-font-size;
+		color: $m-picker-cancel-color;
+	}
+	.m-picker__confirm-text {
+		font-size: $m-picker-action-font-size;
+		color: $m-picker-confirm-color;
+	}
+	.m-picker__title {
+		flex: 1;
+		justify-content: center;
+		align-items: center;
+	}
+	.m-picker__title-text {
+		font-size: $m-picker-title-font-size;
+		color: $m-picker-title-color;
+		font-weight: bold;
+	}
+
+	/* ========== 滚轮区（高度 inline 下发） ========== */
+	.m-picker__columns {
+		position: relative;
+	}
+
+	/* 选中框：置于列层之下，避免拦截滚动手势（uvue 无 pointer-events） */
+	.m-picker__frame {
+		position: absolute;
+		top: 50%;
+		left: 16px;
+		right: 16px;
+		z-index: 0;
+		border-top: $m-border-width solid $m-picker-frame-color;
+		border-bottom: $m-border-width solid $m-picker-frame-color;
+	}
+
+	/* 列层：横向排布，覆盖在选中框之上 */
+	.m-picker__column-list {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+		flex-direction: row;
+	}
+
+	/* ========== 加载遮罩 ========== */
+	.m-picker__loading {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 2;
+		justify-content: center;
+		align-items: center;
+		background-color: $m-picker-loading-background;
+	}
+</style>

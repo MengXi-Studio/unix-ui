@@ -92,6 +92,36 @@ export const routes: RouteConfig[] = [
 		meta: { title: '紧凑布局 Compact' },
 	},
 	{
+		path: 'pages-sub/date-picker-input/date-picker-input',
+		name: 'date-picker-input',
+		meta: { title: '日期输入框 DatePickerInput' },
+	},
+	{
+		path: 'pages-sub/date-picker-popup/date-picker-popup',
+		name: 'date-picker-popup',
+		meta: { title: '日期选择弹出框 DatePickerPopup' },
+	},
+	{
+		path: 'pages-sub/date-picker/date-picker',
+		name: 'date-picker',
+		meta: { title: '日期选择 DatePicker' },
+	},
+	{
+		path: 'pages-sub/date-range-picker-input/date-range-picker-input',
+		name: 'date-range-picker-input',
+		meta: { title: '日期范围输入框 DateRangePickerInput' },
+	},
+	{
+		path: 'pages-sub/date-range-picker-popup/date-range-picker-popup',
+		name: 'date-range-picker-popup',
+		meta: { title: '日期范围弹出框 DateRangePickerPopup' },
+	},
+	{
+		path: 'pages-sub/date-range-picker/date-range-picker',
+		name: 'date-range-picker',
+		meta: { title: '日期范围选择 DateRangePicker' },
+	},
+	{
 		path: 'pages-sub/date-strip/date-strip',
 		name: 'date-strip',
 		meta: { title: '日期横条 Date Strip' },
@@ -142,9 +172,44 @@ export const routes: RouteConfig[] = [
 		meta: { title: '加载 Loading' },
 	},
 	{
+		path: 'pages-sub/lunar-picker-input/lunar-picker-input',
+		name: 'lunar-picker-input',
+		meta: { title: '农历输入框 LunarPickerInput' },
+	},
+	{
+		path: 'pages-sub/lunar-picker-popup/lunar-picker-popup',
+		name: 'lunar-picker-popup',
+		meta: { title: '农历选择弹出框 LunarPickerPopup' },
+	},
+	{
+		path: 'pages-sub/lunar-picker/lunar-picker',
+		name: 'lunar-picker',
+		meta: { title: '农历选择 LunarPicker' },
+	},
+	{
 		path: 'pages-sub/overlay/overlay',
 		name: 'overlay',
 		meta: { title: '遮罩层 Overlay' },
+	},
+	{
+		path: 'pages-sub/picker-input/picker-input',
+		name: 'picker-input',
+		meta: { title: '选择器输入框 PickerInput' },
+	},
+	{
+		path: 'pages-sub/picker-popup/picker-popup',
+		name: 'picker-popup',
+		meta: { title: '选择器弹出框 PickerPopup' },
+	},
+	{
+		path: 'pages-sub/picker-view/picker-view',
+		name: 'picker-view',
+		meta: { title: '选择器纯视图 PickerView' },
+	},
+	{
+		path: 'pages-sub/picker/picker',
+		name: 'picker',
+		meta: { title: '选择器 Picker' },
 	},
 	{
 		path: 'pages-sub/popup/popup',
@@ -175,6 +240,36 @@ export const routes: RouteConfig[] = [
 		path: 'pages-sub/text/text',
 		name: 'text',
 		meta: { title: '文本 Text' },
+	},
+	{
+		path: 'pages-sub/time-picker-input/time-picker-input',
+		name: 'time-picker-input',
+		meta: { title: '时间输入框 TimePickerInput' },
+	},
+	{
+		path: 'pages-sub/time-picker-popup/time-picker-popup',
+		name: 'time-picker-popup',
+		meta: { title: '时间弹出框 TimePickerPopup' },
+	},
+	{
+		path: 'pages-sub/time-picker/time-picker',
+		name: 'time-picker',
+		meta: { title: '时间选择 TimePicker' },
+	},
+	{
+		path: 'pages-sub/time-range-picker-input/time-range-picker-input',
+		name: 'time-range-picker-input',
+		meta: { title: '时间范围输入框 TimeRangePickerInput' },
+	},
+	{
+		path: 'pages-sub/time-range-picker-popup/time-range-picker-popup',
+		name: 'time-range-picker-popup',
+		meta: { title: '时间范围弹出框 TimeRangePickerPopup' },
+	},
+	{
+		path: 'pages-sub/time-range-picker/time-range-picker',
+		name: 'time-range-picker',
+		meta: { title: '时间范围选择 TimeRangePicker' },
 	},
 	{
 		path: 'pages-sub/toast/toast',

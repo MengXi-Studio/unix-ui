@@ -1,0 +1,117 @@
+/**
+ * m-date-picker 共享类型与工具（跨文件共享，独立 .uts）
+ *
+ * 三件套共用：m-date-picker.uvue（滚轮面板）/ m-date-picker-popup.uvue（弹层）/
+ * m-date-picker-input.uvue（输入框）只在此处取类型，避免各组件重复声明导致口径漂移。
+ */
+
+import { getDaysInMonth } from '../../utils/date.uts'
+
+/** 选项列类型：年 / 月 / 日（columns-type 的取值，可任意顺序组合） */
+export type DatePickerColumnType = 'year' | 'month' | 'day'
+
+/** 单个选项（对齐 Vant PickerOption 的 text / value 双字段） */
+export type DatePickerOption = {
+	/** 展示文案（formatter 可改写） */
+	text: string
+	/** 取值字符串（两位数补零；optionValueToNumber 还原为数值） */
+	value: string
+}
+
+/**
+ * 选项过滤函数：type 为当前列类型，options 为待过滤选项，values 为已确定的更靠前列取值
+ * 返回过滤后的新数组（不要原地修改入参）
+ */
+export type DatePickerFilter = (type: string, options: DatePickerOption[], values: string[]) => DatePickerOption[]
+
+/** 选项格式化函数：返回改写后的同一选项对象 */
+export type DatePickerFormatter = (type: string, option: DatePickerOption) => DatePickerOption
+
+/** 单列渲染配置（面板 computed 计算后下发给列子组件） */
+export type DatePickerColumn = {
+	/** 列类型 */
+	type: DatePickerColumnType
+	/** 列选项（已应用 filter / formatter） */
+	options: DatePickerOption[]
+	/** 当前选中项下标（0 起） */
+	index: number
+}
+
+/** 弹出方位（与 m-popup 的 position 取值一致） */
+export type DatePickerPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'
+
+/** 默认列组合（年-月-日） */
+export const DATE_PICKER_DEFAULT_COLUMNS: DatePickerColumnType[] = ['year', 'month', 'day']
+
+/**
+ * 规范化列组合：null / 空数组回退默认年-月-日，否则按入参顺序复制一份
+ * 复制而非直接返回入参，避免外部后续修改数组影响组件内部状态
+ */
+export function normalizeDatePickerColumns(types: DatePickerColumnType[] | null): DatePickerColumnType[] {
+	const result: DatePickerColumnType[] = []
+	if (types == null || types.length == 0) {
+		for (let i = 0; i < DATE_PICKER_DEFAULT_COLUMNS.length; i++) {
+			result.push(DATE_PICKER_DEFAULT_COLUMNS[i])
+		}
+		return result
+	}
+	for (let i = 0; i < types.length; i++) {
+		result.push(types[i])
+	}
+	return result
+}
+
+/**
+ * 数值补零到两位（月 / 日列文案）
+ */
+export function padTwo(value: number): string {
+	return value < 10 ? '0' + value.toString() : value.toString()
+}
+
+/**
+ * 选项 value 字符串还原为数值（仅取前导数字，规避 parseInt 在原生端的 radix 差异）
+ */
+export function optionValueToNumber(value: string): number {
+	let result = 0
+	for (let i = 0; i < value.length; i++) {
+		const code = value.charCodeAt(i)
+		// charCodeAt 可空（Number?）：空串等场景返回 null，需先行空安全短路
+		if (code == null) {
+			break
+		}
+		if (code < 48 || code > 57) {
+			break
+		}
+		result = result * 10 + (code - 48)
+	}
+	return result
+}
+
+/**
+ * 按列组合生成展示格式化模板：year→YYYY / month→MM / day→DD，短横线连接
+ * 例：['year','month'] → 'YYYY-MM'；['month','day'] → 'MM-DD'
+ */
+export function getDatePickerDisplayFormat(types: DatePickerColumnType[] | null): string {
+	const columns = normalizeDatePickerColumns(types)
+	const parts: string[] = []
+	for (let i = 0; i < columns.length; i++) {
+		const type = columns[i]
+		if (type == 'year') {
+			parts.push('YYYY')
+		} else if (type == 'month') {
+			parts.push('MM')
+		} else {
+			parts.push('DD')
+		}
+	}
+	return parts.join('-')
+}
+
+/**
+ * 组合日期（月份 0 起；日超出当月天数时收敛到月末，规避 Date 构造溢出到下月）
+ */
+export function composePickerDate(year: number, month: number, day: number): Date {
+	const maxDay = getDaysInMonth(year, month)
+	const safeDay = day > maxDay ? maxDay : day
+	return new Date(year, month, safeDay)
+}

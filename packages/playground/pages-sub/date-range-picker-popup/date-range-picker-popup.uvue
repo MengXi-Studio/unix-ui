@@ -1,0 +1,276 @@
+<template>
+	<view class="page">
+		<demo-navbar title="日期范围弹出框" subtitle="DateRangePickerPopup" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础弹层</text>
+			<view class="card">
+				<m-button block @click="openBasic">打开日期范围选择</m-button>
+				<m-date-range-picker-popup
+					v-model:show="basicShow"
+					@change="onBasicChange"
+					@confirm="onBasicConfirm"
+					@cancel="onBasicCancel"
+					@open="onBasicOpen"
+					@opened="onBasicOpened"
+					@close="onBasicClose"
+					@closed="onBasicClosed"
+					@click-overlay="onBasicOverlay"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近事件：{{ basicLog }}</text>
+				</view>
+				<text class="caption">默认底部弹出 + 圆角 + 遮罩可关；确认 / 取消后自动关闭并派发 update:show；open / opened / close / closed / click-overlay 全生命周期事件</text>
+			</view>
+
+			<text class="section" id="controlled">受控选中值</text>
+			<view class="card">
+				<m-button block @click="openControlled">打开（受控回显）</m-button>
+				<view class="demo-btn-gap">
+					<m-button block @click="openLastMonth">外部设值为近一月并打开</m-button>
+				</view>
+				<view class="demo-btn-gap">
+					<m-button block @click="clearControlled">清空受控值</m-button>
+				</view>
+				<m-date-range-picker-popup v-model:show="controlledShow" v-model:value="controlledValue" />
+				<view class="event-log">
+					<text class="event-text">受控值：{{ controlledText }}</text>
+				</view>
+				<text class="caption">v-model:value 受控：确认后回写两端值（升序）；外部赋值后打开弹层滚轮选中态跟随</text>
+			</view>
+
+			<text class="section" id="columns">列组合与自定义标题</text>
+			<view class="card">
+				<m-button block @click="openMonth">打开年月范围（限定区间）</m-button>
+				<m-date-range-picker-popup
+					v-model:show="monthShow"
+					:columns-type="yearMonthColumns"
+					:min-date="rangeMin"
+					:max-date="rangeMax"
+					:tabs="monthTabs"
+					@confirm="onMonthConfirm"
+				/>
+				<view class="event-log">
+					<text class="event-text">最近确认：{{ monthLog }}</text>
+				</view>
+				<text class="caption">columns-type=['year','month'] 只选年月；tabs 自定义两段标题；min/max 限定 2026-03 ~ 2026-09</text>
+			</view>
+
+			<text class="section" id="slots">插槽</text>
+			<view class="card">
+				<m-button block @click="openSlots">打开（快捷选项 + 自定义标题）</m-button>
+				<m-date-range-picker-popup v-model:show="slotsShow" v-model:value="slotsValue" :tabs="hotelTabs">
+					<template #header>
+						<view class="demo-shortcuts">
+							<text class="demo-shortcut" @click="setLastWeek">近一周</text>
+							<text class="demo-shortcut" @click="setLastMonth">近一月</text>
+						</view>
+					</template>
+					<template #confirm>
+						<text class="demo-slot-confirm">完成</text>
+					</template>
+				</m-date-range-picker-popup>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValues(slotsValue) }}</text>
+				</view>
+				<text class="caption">header / title / footer / confirm / cancel 插槽透传到内部面板</text>
+			</view>
+
+			<text class="section" id="states">只读与加载态</text>
+			<view class="card">
+				<m-button block @click="openStates">打开（只读 + 加载中）</m-button>
+				<m-date-range-picker-popup v-model:show="statesShow" :tabs="hotelTabs" readonly loading />
+				<text class="caption">readonly 滚轮回弹不切换；loading 覆盖滚轮区阻止交互</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '日期范围弹出框 DateRangePickerPopup', name: 'date-range-picker-popup' })
+	import { DatePickerColumnType } from '@/uni_modules/m-ui-x/components/m-date-picker/date-picker.uts'
+
+	/** 日期转 YYYY-M-D 文本（演示日志用） */
+	function fmtDate(d: Date): string {
+		return d.getFullYear().toString() + '-' + (d.getMonth() + 1).toString() + '-' + d.getDate().toString()
+	}
+
+	/** 两端值转文本 */
+	function formatValues(value: Date[] | null): string {
+		if (value == null || value.length == 0) {
+			return 'null（未选）'
+		}
+		const parts: string[] = []
+		for (let i = 0; i < value.length; i++) {
+			parts.push(fmtDate(value[i]))
+		}
+		return parts.join(' ~ ')
+	}
+
+	// ========== 1 基础弹层 ==========
+	const basicShow = ref<boolean>(false)
+	const basicLog = ref<string>('（等待交互）')
+
+	/** 打开弹层 */
+	const openBasic = () => {
+		basicShow.value = true
+	}
+
+	/** change 记录 */
+	const onBasicChange = (value: Date[], activeIndex: number) => {
+		basicLog.value = 'change → ' + formatValues(value)
+	}
+
+	/** confirm 记录（弹层同步自动关闭） */
+	const onBasicConfirm = (value: Date[]) => {
+		basicLog.value = 'confirm → ' + formatValues(value)
+	}
+
+	/** cancel 记录 */
+	const onBasicCancel = () => {
+		basicLog.value = 'cancel'
+	}
+
+	const onBasicOpen = () => {
+		basicLog.value = 'open'
+	}
+
+	const onBasicOpened = () => {
+		basicLog.value = 'opened'
+	}
+
+	const onBasicClose = () => {
+		// cancel / confirm 后紧跟的 close 不覆盖结果日志，便于验收时保留关闭原因
+		if (basicLog.value == 'cancel' || basicLog.value.indexOf('confirm') == 0) {
+			return
+		}
+		basicLog.value = 'close'
+	}
+
+	const onBasicClosed = () => {
+		if (basicLog.value == 'cancel' || basicLog.value.indexOf('confirm') == 0) {
+			return
+		}
+		basicLog.value = 'closed'
+	}
+
+	const onBasicOverlay = () => {
+		basicLog.value = 'click-overlay（遮罩已关闭）'
+	}
+
+	// ========== 2 受控选中值 ==========
+	const controlledShow = ref<boolean>(false)
+	const controlledValue = ref<Date[] | null>(null)
+	const controlledText = computed<string>(() => formatValues(controlledValue.value))
+
+	/** 打开受控弹层 */
+	const openControlled = () => {
+		controlledShow.value = true
+	}
+
+	/** 外部设值为近一月并打开 */
+	const openLastMonth = () => {
+		const end = new Date()
+		const start = new Date()
+		start.setMonth(start.getMonth() - 1)
+		controlledValue.value = [start, end]
+		controlledShow.value = true
+	}
+
+	/** 清空受控值 */
+	const clearControlled = () => {
+		controlledValue.value = null
+	}
+
+	// ========== 3 列组合与自定义标题 ==========
+	const yearMonthColumns: DatePickerColumnType[] = ['year', 'month']
+	const monthTabs: string[] = ['开始月份', '结束月份']
+	const rangeMin = new Date(2026, 2, 1)
+	const rangeMax = new Date(2026, 8, 30)
+	const monthShow = ref<boolean>(false)
+	const monthLog = ref<string>('（未确认）')
+
+	/** 打开年月弹层 */
+	const openMonth = () => {
+		monthShow.value = true
+	}
+
+	/** 年月 confirm 记录 */
+	const onMonthConfirm = (value: Date[]) => {
+		monthLog.value = formatValues(value)
+	}
+
+	// ========== 4 插槽 ==========
+	const hotelTabs: string[] = ['入住', '离店']
+	const slotsShow = ref<boolean>(false)
+	const slotsValue = ref<Date[] | null>(null)
+
+	/** 打开插槽演示弹层 */
+	const openSlots = () => {
+		slotsShow.value = true
+	}
+
+	/** 近一周快捷设置 */
+	const setLastWeek = () => {
+		const end = new Date()
+		const start = new Date()
+		start.setDate(start.getDate() - 7)
+		slotsValue.value = [start, end]
+	}
+
+	/** 近一月快捷设置 */
+	const setLastMonth = () => {
+		const end = new Date()
+		const start = new Date()
+		start.setMonth(start.getMonth() - 1)
+		slotsValue.value = [start, end]
+	}
+
+	// ========== 5 只读与加载态 ==========
+	const statesShow = ref<boolean>(false)
+
+	/** 打开只读 / 加载弹层 */
+	const openStates = () => {
+		statesShow.value = true
+	}
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	/* 受控演示按钮间距 */
+	.demo-btn-gap {
+		margin-top: 12px;
+	}
+	/* 快捷区演示 */
+	.demo-shortcuts {
+		flex-direction: row;
+		justify-content: center;
+		padding: 6px 0;
+	}
+	.demo-shortcut {
+		font-size: 12px;
+		color: #1989fa;
+		margin: 0 8px;
+	}
+	.demo-slot-confirm {
+		font-size: 14px;
+		color: #ee0a24;
+	}
+</style>

@@ -124,7 +124,7 @@ added: 0.5.0
 
 ## API
 
-### CheckboxGroupProps（m-checkbox-group）
+### Props（m-checkbox-group）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -137,20 +137,20 @@ added: 0.5.0
 | shape | 形状：`round` / `square` | CheckboxShape | `round` |
 | custom-class / custom-style | 根节点样式直达 | - | - |
 
-### CheckboxGroupEvents
+### Events（m-checkbox-group）
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
 | update:value | 选中集合变化 | value: CheckboxValueArray |
 | change | 选中集合变化 | value: CheckboxValueArray |
 
-### CheckboxGroupMethods
+### Methods（m-checkbox-group）
 
 | 方法名 | 说明 | 参数 |
 | --- | --- | --- |
 | toggleAll | 切换全部（true 全选 / false 全不选 / null 取反；受 max 约束） | checked?: boolean \| null |
 
-### CheckboxProps（m-checkbox）
+### Props（m-checkbox）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -166,14 +166,14 @@ added: 0.5.0
 | indeterminate | 是否为不确定状态（横杠视觉） | boolean | `false` |
 | custom-class / custom-style | 根节点样式直达 | - | - |
 
-### CheckboxSlots
+### Slots（m-checkbox）
 
 | 名称 | 说明 | 作用域参数 |
 | --- | --- | --- |
 | default | 自定义文本 | `{ checked, disabled }` |
 | icon | 自定义图标 | `{ checked, disabled }` |
 
-### CheckboxEvents
+### Events（m-checkbox）
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
@@ -181,7 +181,7 @@ added: 0.5.0
 | change | 勾选状态变化（组内与独立均派发） | checked: boolean |
 | click | 点击复选框（含禁用与 max 拒绝时） | event: MouseEvent |
 
-### CheckboxMethods
+### Methods（m-checkbox）
 
 | 方法名 | 说明 | 参数 |
 | --- | --- | --- |

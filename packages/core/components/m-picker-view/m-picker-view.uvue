@@ -1,0 +1,246 @@
+<template>
+	<!-- 选择器纯视图：无工具栏、无数值语义，只按索引数组受控渲染多列滚轮，
+	    适合嵌在自定义容器里（如底部弹层内、设置面板中）。根节点常驻静态（LESSONS #32） -->
+	<view :class="rootClass" :style="customStyle">
+		<view class="m-picker-view__columns" :style="columnsStyle">
+			<!-- 选中框（两条细线）置于列层之下：uvue 无 pointer-events，覆盖层会拦截滚动手势 -->
+			<view class="m-picker-view__frame" :style="frameStyle"></view>
+			<view class="m-picker-view__column-list">
+				<m-picker-view-column
+					v-for="(column, columnIndex) in columns"
+					:key="columnIndex"
+					:options="column"
+					:index="currentIndex(columnIndex)"
+					:column-index="columnIndex"
+					:option-height="optionHeightValue"
+					:visible-option-num="visibleOptionNumValue"
+					:swipe-duration="swipeDuration"
+					:readonly="readonly"
+					@change="onColumnChange"
+				>
+					<!-- 插槽条件转发：未传入时不覆盖列内置文本 -->
+					<!-- #ifdef WEB -->
+					<template v-if="$slots['option'] != null" #option="{ option, index, rowIndex, columnIndex }">
+						<slot
+							name="option"
+							:option="option"
+							:index="index"
+							:row-index="rowIndex"
+							:column-index="columnIndex"
+						></slot>
+					</template>
+					<!-- #endif -->
+				</m-picker-view-column>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-picker-view 选择器纯视图：索引数组（number[]）受控的多列滚轮。
+	 * 与 m-picker 的分工：不提供工具栏、不做单列标量 / 多列数组的值换算、不做级联展开，
+	 * 只上报各列下标；奖励 / 展示逻辑由使用方自行派生。
+	 */
+	import {
+		PickerOption,
+		PickerColumns,
+		PICKER_OPTION_HEIGHT,
+		PICKER_VISIBLE_OPTION_NUM,
+		toColumnMatrix,
+		clampIndex
+	} from '../m-picker/picker.uts'
+	import MPickerViewColumn from './m-picker-view-column.uvue'
+
+	type Props = {
+		/** 列数据：一维（单列）/ 二维（多列）；级联 children 不在本组件展开 */
+		columns?: PickerColumns
+		/** 各列选中下标（v-model:value；空数组表示未选） */
+		value?: number[]
+		/** 选项行高 px（0 用默认 44） */
+		optionHeight?: number
+		/** 可见选项个数（0 用默认 6） */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms */
+		swipeDuration?: number
+		/** 只读 */
+		readonly?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		columns: null,
+		value: null,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		readonly: false,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 各列下标回写 */
+		'update:value': [value: number[]]
+		/** 列切换（value 为全部列下标快照） */
+		change: [value: number[]]
+	}>()
+
+	/** 生效行高 */
+	const optionHeightValue = computed<number>(() => {
+		return props.optionHeight > 0 ? props.optionHeight : PICKER_OPTION_HEIGHT
+	})
+
+	/** 生效可见选项个数 */
+	const visibleOptionNumValue = computed<number>(() => {
+		return props.visibleOptionNum > 0 ? props.visibleOptionNum : PICKER_VISIBLE_OPTION_NUM
+	})
+
+	/** 列数据矩阵 */
+	const columns = computed<PickerOption[][]>(() => toColumnMatrix(props.columns))
+
+	/**
+	 * 按外部 value 生成合法下标：长度对齐列数，越界夹取
+	 */
+	function syncIndexes(): number[] {
+		const matrix = toColumnMatrix(props.columns)
+		const result: number[] = []
+		const source = props.value
+		for (let i = 0; i < matrix.length; i++) {
+			const raw = source != null && i < source.length ? source[i] : 0
+			result.push(clampIndex(raw, matrix[i].length))
+		}
+		return result
+	}
+
+	/** 内部下标（受控于外部 value，点击后先本地更新再回写） */
+	const indexes = ref<number[]>(syncIndexes())
+
+	/**
+	 * 读取某列当前下标（越界回退 0）
+	 */
+	function currentIndex(columnIndex: number): number {
+		if (columnIndex < 0 || columnIndex >= indexes.value.length) {
+			return 0
+		}
+		return indexes.value[columnIndex]
+	}
+
+	/** 根类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-picker-view'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 滚轮区高度：行高 × 可见个数 */
+	const columnsStyle = computed<string>(() => {
+		return 'height: ' + (optionHeightValue.value * visibleOptionNumValue.value).toString() + 'px;'
+	})
+
+	/** 选中框高度与上移量 */
+	const frameStyle = computed<string>(() => {
+		const height = optionHeightValue.value
+		return 'height: ' + height.toString() + 'px; margin-top: -' + (height / 2).toString() + 'px;'
+	})
+
+	/**
+	 * 列切换：更新本地下标快照并回写
+	 */
+	function onColumnChange(columnIndex: number, index: number) {
+		if (props.readonly) {
+			return
+		}
+		const next: number[] = []
+		for (let i = 0; i < indexes.value.length; i++) {
+			next.push(indexes.value[i])
+		}
+		while (next.length <= columnIndex) {
+			next.push(0)
+		}
+		next[columnIndex] = index
+		indexes.value = next
+		emit('update:value', next)
+		emit('change', next)
+	}
+
+	// 外部下标变化：与内部一致时跳过（避免回写回环重置滚动）
+	watch((): number[] | null => props.value, (_: number[] | null) => {
+		const next = syncIndexes()
+		if (next.length == indexes.value.length) {
+			let same = true
+			for (let i = 0; i < next.length; i++) {
+				if (next[i] != indexes.value[i]) {
+					same = false
+					break
+				}
+			}
+			if (same) {
+				return
+			}
+		}
+		indexes.value = next
+	})
+
+	// 列数据变化：按新列长度重新对齐下标
+	watch((): number => columns.value.length, (_: number) => {
+		indexes.value = syncIndexes()
+	})
+
+	/**
+	 * 读取当前各列下标
+	 */
+	function getSelectedIndexes(): number[] {
+		return indexes.value
+	}
+
+	defineExpose({
+		getSelectedIndexes
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根 ========== */
+	.m-picker-view {
+		background-color: $m-picker-view-background;
+	}
+
+	/* ========== 滚轮区（高度 inline 下发） ========== */
+	.m-picker-view__columns {
+		position: relative;
+	}
+
+	/* 选中框：置于列层之下，避免拦截滚动手势（uvue 无 pointer-events） */
+	.m-picker-view__frame {
+		position: absolute;
+		top: 50%;
+		left: 16px;
+		right: 16px;
+		z-index: 0;
+		border-top: $m-border-width solid $m-picker-view-frame-color;
+		border-bottom: $m-border-width solid $m-picker-view-frame-color;
+	}
+
+	/* 列层：横向排布，覆盖在选中框之上 */
+	.m-picker-view__column-list {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+		flex-direction: row;
+	}
+</style>

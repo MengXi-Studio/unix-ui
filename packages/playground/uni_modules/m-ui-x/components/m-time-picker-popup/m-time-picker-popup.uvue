@@ -1,0 +1,247 @@
+<template>
+	<!-- 时间选择弹出框：m-popup + m-time-picker 组合（三组件拆分后的弹层形态组件）。
+	     弹层 props 经 m-popup，时间选择 props / 事件 / 插槽逐项透传给面板；
+	     confirm / cancel 后自动关闭弹层；reset-on-open 打开时复位为 value -->
+	<m-popup
+		:show="show"
+		:position="position"
+		:round="round"
+		:close-on-click-overlay="closeOnClickOverlay"
+		:safe-area-inset-top="safeAreaInsetTop"
+		:safe-area-inset-bottom="safeAreaInsetBottom"
+		:z-index="zIndex"
+		:duration="duration"
+		@update:show="onPopupUpdateShow"
+		@open="onPopupOpen"
+		@opened="onPopupOpened"
+		@close="onPopupClose"
+		@closed="onPopupClosed"
+		@click-overlay="onPopupClickOverlay"
+	>
+		<m-time-picker
+			ref="picker"
+			:value="value"
+			:columns-type="columnsType"
+			:min-time="minTime"
+			:max-time="maxTime"
+			:minute-step="minuteStep"
+			:second-step="secondStep"
+			:hour-cycle="hourCycle"
+			:title="title"
+			:confirm-button-text="confirmButtonText"
+			:cancel-button-text="cancelButtonText"
+			:show-toolbar="showToolbar"
+			:loading="loading"
+			:readonly="readonly"
+			:filter="filter"
+			:formatter="formatter"
+			:option-height="optionHeight"
+			:visible-option-num="visibleOptionNum"
+			:swipe-duration="swipeDuration"
+			:custom-class="customClass"
+			:custom-style="customStyle"
+			@change="onPickerChange"
+			@confirm="onPickerConfirm"
+			@cancel="onPickerCancel"
+			@update:value="onPickerValueChange"
+		>
+			<!-- 插槽条件转发：未传入时不覆盖面板默认渲染 -->
+			<template v-if="$slots['toolbar'] != null" #toolbar>
+				<slot name="toolbar"></slot>
+			</template>
+			<template v-if="$slots['title'] != null" #title>
+				<slot name="title"></slot>
+			</template>
+			<template v-if="$slots['confirm'] != null" #confirm>
+				<slot name="confirm"></slot>
+			</template>
+			<template v-if="$slots['cancel'] != null" #cancel>
+				<slot name="cancel"></slot>
+			</template>
+			<!-- #ifdef WEB -->
+			<!-- 选项插槽仅 Web 转发：App 端面板不接收该插槽，小程序端同名插槽仅首个生效（#17） -->
+			<template v-if="$slots['option'] != null" #option="{ option, index }">
+				<slot name="option" :option="option" :index="index"></slot>
+			</template>
+			<!-- #endif -->
+		</m-time-picker>
+	</m-popup>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-time-picker-popup 时间选择弹出框：m-popup + m-time-picker 组合组件。
+	 * 自身无选择状态与样式：弹层行为归 m-popup，时间选择（列 / 约束 / 步长 / 制式）归面板，
+	 * 本组件仅做组合、转发，并在 confirm / cancel 后关闭弹层。
+	 */
+	import {
+		TimePickerColumnType,
+		TimePickerFilter,
+		TimePickerFormatter,
+		TimePickerOption
+	} from '../m-time-picker/time-picker.uts'
+	import { DatePickerPosition } from '../m-date-picker/date-picker.uts'
+	import MTimePicker from '../m-time-picker/m-time-picker.uvue'
+
+	type Props = {
+		/** 是否显示弹出层（v-model:show） */
+		show?: boolean
+		/** 当前选中时间字符串（v-model:value） */
+		value?: string
+		/** 选项类型组合 */
+		columnsType?: TimePickerColumnType[]
+		/** 可选最小时刻 */
+		minTime?: string
+		/** 可选最大时刻 */
+		maxTime?: string
+		/** 分钟步长 */
+		minuteStep?: number
+		/** 秒步长 */
+		secondStep?: number
+		/** 小时制（24 / 12） */
+		hourCycle?: number
+		/** 顶部栏标题 */
+		title?: string
+		/** 确认按钮文字 */
+		confirmButtonText?: string
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 是否显示顶部栏 */
+		showToolbar?: boolean
+		/** 是否显示加载状态 */
+		loading?: boolean
+		/** 只读 */
+		readonly?: boolean
+		/** 选项过滤函数 */
+		filter?: TimePickerFilter
+		/** 选项格式化函数 */
+		formatter?: TimePickerFormatter
+		/** 选项行高 px（0 用默认 44） */
+		optionHeight?: number
+		/** 可见选项个数（0 用默认 6） */
+		visibleOptionNum?: number
+		/** 滚动停止判定时长 ms */
+		swipeDuration?: number
+		/** 弹出方位（透传 m-popup） */
+		position?: DatePickerPosition
+		/** 弹层圆角 */
+		round?: boolean
+		/** 点击遮罩后是否关闭 */
+		closeOnClickOverlay?: boolean
+		/** 打开时是否复位为 value（默认 false） */
+		resetOnOpen?: boolean
+		/** 顶部安全区 */
+		safeAreaInsetTop?: boolean
+		/** 底部安全区 */
+		safeAreaInsetBottom?: boolean
+		/** z-index 层级 */
+		zIndex?: number
+		/** 动画时长秒 */
+		duration?: number
+		/** 自定义面板根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义面板根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		value: null,
+		columnsType: null,
+		minTime: null,
+		maxTime: null,
+		minuteStep: 1,
+		secondStep: 1,
+		hourCycle: 24,
+		title: '选择时间',
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		showToolbar: true,
+		loading: false,
+		readonly: false,
+		filter: null,
+		formatter: null,
+		optionHeight: 0,
+		visibleOptionNum: 0,
+		swipeDuration: 200,
+		position: 'bottom',
+		round: true,
+		closeOnClickOverlay: true,
+		resetOnOpen: false,
+		safeAreaInsetTop: false,
+		safeAreaInsetBottom: true,
+		zIndex: 1,
+		duration: 0.3,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		'update:show': [value: boolean]
+		/** 确认后回写时间字符串 */
+		'update:value': [value: string]
+		/** 滚轮切换列 */
+		change: [value: string, columnIndex: number]
+		/** 点击确认按钮（随后自动关闭） */
+		confirm: [value: string]
+		/** 点击取消按钮（随后自动关闭） */
+		cancel: []
+		open: []
+		opened: []
+		close: []
+		closed: []
+		'click-overlay': [event: MouseEvent]
+	}>()
+
+	/** 内部面板实例（复开时按需调用 resetSelection） */
+	const picker = ref<ComponentPublicInstance | null>(null)
+
+	const onPopupUpdateShow = (value: boolean) => {
+		emit('update:show', value)
+	}
+
+	/** 弹层打开：派发 open；resetOnOpen 时复位为 value */
+	const onPopupOpen = () => {
+		emit('open')
+		const inst = picker.value
+		if (inst != null && props.resetOnOpen) {
+			inst.$callMethod('resetSelection')
+		}
+	}
+
+	const onPopupOpened = () => {
+		emit('opened')
+	}
+
+	const onPopupClose = () => {
+		emit('close')
+	}
+
+	const onPopupClosed = () => {
+		emit('closed')
+	}
+
+	const onPopupClickOverlay = (e: MouseEvent) => {
+		emit('click-overlay', e)
+	}
+
+	const onPickerChange = (value: string, columnIndex: number) => {
+		emit('change', value, columnIndex)
+	}
+
+	const onPickerValueChange = (value: string) => {
+		emit('update:value', value)
+	}
+
+	/** 确认：派发 confirm 后关闭弹层 */
+	const onPickerConfirm = (value: string) => {
+		emit('confirm', value)
+		emit('update:show', false)
+	}
+
+	/** 取消：派发 cancel 后关闭弹层 */
+	const onPickerCancel = () => {
+		emit('cancel')
+		emit('update:show', false)
+	}
+</script>

@@ -180,6 +180,7 @@ cal.value?.$callMethod('scrollToDate', new Date(2026, 10, 15))
 
 | Event | Description | Arguments |
 | --- | --- | --- |
+| update:value | Writes back the selected value (`v-model:value`; a `Date` for single or `Date[]` for multiple / range, `null` when cleared) | value: Date \| Date[] \| null |
 | select | Fires on every day click (also after deselecting; value shape follows type) | value: Date \| Date[] |
 | confirm | Fires after the confirm button is clicked / auto-confirm | value: Date \| Date[] |
 | unselect | Fires when a multiple-selected day is deselected (before the same select) | date: Date |

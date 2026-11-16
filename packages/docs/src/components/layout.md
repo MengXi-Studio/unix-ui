@@ -89,7 +89,7 @@ added: 0.1.0
 
 ## API
 
-### Row Props
+### Props（m-row）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -100,7 +100,7 @@ added: 0.1.0
 | custom-class | 自定义根节点类名 | string.ClassString | - |
 | custom-style | 自定义根节点内联样式 | string | - |
 
-### Col Props
+### Props（m-col）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |

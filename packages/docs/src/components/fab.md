@@ -151,7 +151,7 @@ added: 0.5.0
 
 ## API
 
-### FabProps
+### Props
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -173,14 +173,14 @@ added: 0.5.0
 | custom-class | 根节点自定义类名 | string.ClassString | - |
 | custom-style | 根节点自定义内联样式 | string | - |
 
-### FabSlots
+### Slots
 
 | 插槽 | 说明 | 作用域参数 |
 | --- | --- | --- |
 | default | 扩展按钮列表（放置 `m-fab-item`） | - |
 | entry | 自定义入口按钮内容 | `{ visible: boolean }` |
 
-### FabEvents
+### Events
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
@@ -195,7 +195,7 @@ added: 0.5.0
 | x | 入口按钮中心点 x 坐标（px，相对视口左边） | number |
 | y | 入口按钮中心点 y 坐标（px，相对视口顶部） | number |
 
-### FabItemProps（m-fab-item）
+### Props（m-fab-item）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -203,14 +203,14 @@ added: 0.5.0
 | color | 图标颜色（空串继承 m-fab 的 color） | string | `''` |
 | background | 背景色（空串继承 m-fab 的 background） | string | `''` |
 
-### FabItemSlots
+### Slots（m-fab-item）
 
 | 插槽 | 说明 | 作用域参数 |
 | --- | --- | --- |
 | default | 按钮内容（通常为 `m-icon`） | - |
 | name | 自定义名称内容 | - |
 
-### FabItemEvents
+### Events（m-fab-item）
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |

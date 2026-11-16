@@ -1,0 +1,311 @@
+<template>
+	<view class="page">
+		<demo-navbar title="选择器" subtitle="Picker" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础用法</text>
+			<view class="card">
+				<m-picker v-model:value="basicValue" :columns="lineOptions" @change="onBasicChange" @confirm="onBasicConfirm" />
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValue(basicValue) }}；最近事件：{{ basicLog }}</text>
+				</view>
+				<text class="caption">一维数组按单列渲染，value 为单列标量；未传 value 时默认首项</text>
+			</view>
+
+			<text class="section" id="multi">多列</text>
+			<view class="card">
+				<m-picker v-model:value="multiValue" :columns="yearMonthDay" @confirm="onMultiConfirm" />
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValue(multiValue) }}</text>
+				</view>
+				<text class="caption">二维数组按多列渲染，value 为各列值数组；各列独立滚动</text>
+			</view>
+
+			<text class="section" id="cascade">级联</text>
+			<view class="card">
+				<m-picker v-model:value="cascadeValue" :columns="regionTree" title="选择地区" @confirm="onCascadeConfirm" />
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValue(cascadeValue) }}</text>
+				</view>
+				<text class="caption">一维数据含 children 时走级联：切换上层后下层重建并回到首项，value 为各层值数组</text>
+			</view>
+
+			<text class="section" id="disabled">禁用项</text>
+			<view class="card">
+				<m-picker v-model:value="disabledValue" :columns="shiftOptions" title="选择班次" @confirm="onDisabledConfirm" />
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValue(disabledValue) }}</text>
+				</view>
+				<text class="caption">disabled 选项灰显；滚动吸附会跳过，点击不选中</text>
+			</view>
+
+			<text class="section" id="slots">插槽</text>
+			<view class="card">
+				<m-picker v-model:value="slotValue" :columns="lineOptions" title="产线">
+					<template #columns-top>
+						<view class="demo-hint"><text class="demo-hint-text">columns-top：滚轮上方</text></view>
+					</template>
+					<template #confirm>
+						<text class="demo-slot-confirm">完成</text>
+					</template>
+					<template #cancel>
+						<text class="demo-slot-cancel">返回</text>
+					</template>
+					<template #columns-bottom>
+						<view class="demo-hint"><text class="demo-hint-text">columns-bottom：滚轮下方</text></view>
+					</template>
+					<!-- #ifdef WEB -->
+					<template #option="{ option }">
+						<text class="demo-slot-option">{{ option.label }}</text>
+					</template>
+					<!-- #endif -->
+				</m-picker>
+				<view class="event-log">
+					<text class="event-text">当前值：{{ formatValue(slotValue) }}</text>
+				</view>
+				<text class="caption">toolbar 整体替换 / title / confirm / cancel / columns-top / columns-bottom / option（作用域含原始选项与行列下标）</text>
+			</view>
+
+			<text class="section" id="states">只读、加载与实例方法</text>
+			<view class="card">
+				<m-picker :columns="lineOptions" :value="'注塑二线'" readonly />
+				<view class="demo-btn-row">
+					<m-button size="small" @click="toggleLoading">{{ loading ? '关闭加载' : '开启加载' }}</m-button>
+				</view>
+				<m-picker :columns="lineOptions" :value="'注塑二线'" :loading="loading" custom-style="margin-top: 12px;" />
+				<view class="demo-btn-row">
+					<m-picker ref="methodPicker" :columns="yearMonthDay" />
+				</view>
+				<view class="demo-btn-row">
+					<m-button size="small" @click="callGet">getSelectedValue</m-button>
+					<m-button size="small" custom-style="margin-left: 8px;" @click="callIndexes">getSelectedIndexes</m-button>
+				</view>
+				<view class="event-log">
+					<text class="event-text">最近调用：{{ methodLog }}</text>
+				</view>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '选择器 Picker', name: 'picker' })
+	import { PickerOption, PickerValue } from '@/uni_modules/m-ui-x/components/m-picker/picker.uts'
+
+	/** 值转展示文本（单列标量 / 多列与级联数组） */
+	function formatValue(value: PickerValue | null): string {
+		if (value == null) {
+			return 'null'
+		}
+		if (Array.isArray(value)) {
+			const list = value as (string | number)[]
+			const parts: string[] = []
+			for (let i = 0; i < list.length; i++) {
+				parts.push(list[i].toString())
+			}
+			return parts.join(' / ')
+		}
+		return (value as string | number).toString()
+	}
+
+	// ========== 单列数据 ==========
+	const lineOptions: PickerOption[] = [
+		{ label: '机加工一线', value: '机加工一线' } as PickerOption,
+		{ label: '注塑二线', value: '注塑二线' } as PickerOption,
+		{ label: '压铸四线', value: '压铸四线' } as PickerOption,
+		{ label: '包装五线', value: '包装五线' } as PickerOption
+	]
+
+	// ========== 多列数据 ==========
+	const yearMonthDay: PickerOption[][] = [
+		[
+			{ label: '2024', value: 2024 } as PickerOption,
+			{ label: '2025', value: 2025 } as PickerOption,
+			{ label: '2026', value: 2026 } as PickerOption
+		],
+		[
+			{ label: '1 月', value: 1 } as PickerOption,
+			{ label: '2 月', value: 2 } as PickerOption,
+			{ label: '3 月', value: 3 } as PickerOption,
+			{ label: '4 月', value: 4 } as PickerOption
+		],
+		[
+			{ label: '1 日', value: 1 } as PickerOption,
+			{ label: '15 日', value: 15 } as PickerOption,
+			{ label: '28 日', value: 28 } as PickerOption
+		]
+	]
+
+	// ========== 级联数据 ==========
+	const regionTree: PickerOption[] = [
+		{
+			label: '华东厂区',
+			value: 1000,
+			children: [
+				{
+					label: '机加车间',
+					value: 1100,
+					children: [
+						{ label: '机加工一线', value: 1110 } as PickerOption,
+						{ label: '机加工二线', value: 1111 } as PickerOption
+					]
+				},
+				{
+					label: '包装车间',
+					value: 1200,
+					children: [
+						{ label: '包装五线', value: 1210 } as PickerOption
+					]
+				}
+			]
+		} as PickerOption,
+		{
+			label: '华南厂区',
+			value: 2000,
+			children: [
+				{
+					label: '注塑车间',
+					value: 2100,
+					children: [
+						{ label: '注塑二线', value: 2110 } as PickerOption,
+						{ label: '注塑三线', value: 2111 } as PickerOption
+					]
+				}
+			]
+		} as PickerOption
+	]
+
+	// ========== 禁用数据 ==========
+	const shiftOptions: PickerOption[] = [
+		{ label: '白班', value: 'day' } as PickerOption,
+		{ label: '中班（已满）', value: 'mid', disabled: true } as PickerOption,
+		{ label: '夜班', value: 'night' } as PickerOption,
+		{ label: '休息', value: 'rest' } as PickerOption
+	]
+
+	// ========== 1 基础用法 ==========
+	const basicValue = ref<PickerValue | null>(null)
+	const basicLog = ref<string>('（滚动或确认试试）')
+
+	/** change 记录 */
+	const onBasicChange = (value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
+		basicLog.value = 'change → ' + formatValue(value) + '（列下标 ' + indexes.join(',') + '）'
+	}
+
+	/** confirm 记录 */
+	const onBasicConfirm = (value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
+		basicLog.value = 'confirm → ' + formatValue(value)
+	}
+
+	// ========== 2 多列 ==========
+	const multiValue = ref<PickerValue | null>(null)
+
+	/** 多列 confirm 记录 */
+	const onMultiConfirm = (value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
+		multiValue.value = value
+	}
+
+	// ========== 3 级联 ==========
+	const cascadeValue = ref<PickerValue | null>(null)
+
+	/** 级联 confirm 记录 */
+	const onCascadeConfirm = (value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
+		cascadeValue.value = value
+	}
+
+	// ========== 4 禁用项 ==========
+	const disabledValue = ref<PickerValue | null>(null)
+
+	/** 禁用项 confirm 记录 */
+	const onDisabledConfirm = (value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
+		disabledValue.value = value
+	}
+
+	// ========== 5 插槽 ==========
+	const slotValue = ref<PickerValue | null>(null)
+
+	// ========== 6 只读、加载与实例方法 ==========
+	const loading = ref<boolean>(false)
+
+	/** 切换加载态 */
+	const toggleLoading = () => {
+		loading.value = !loading.value
+	}
+
+	const methodPicker = ref<ComponentPublicInstance | null>(null)
+	const methodLog = ref<string>('（点击按钮调用实例方法）')
+
+	/** getSelectedValue：读取当前选中值 */
+	const callGet = () => {
+		const inst = methodPicker.value
+		if (inst == null) {
+			methodLog.value = '实例未就绪'
+			return
+		}
+		const r = inst.$callMethod('getSelectedValue')
+		methodLog.value = 'getSelectedValue → ' + (r == null ? 'null' : formatValue(r as PickerValue))
+	}
+
+	/** getSelectedIndexes：读取各列下标 */
+	const callIndexes = () => {
+		const inst = methodPicker.value
+		if (inst == null) {
+			methodLog.value = '实例未就绪'
+			return
+		}
+		const r = inst.$callMethod('getSelectedIndexes')
+		if (r == null) {
+			methodLog.value = 'getSelectedIndexes → null'
+			return
+		}
+		methodLog.value = 'getSelectedIndexes → ' + (r as number[]).join(',')
+	}
+</script>
+
+<style lang="scss">
+	/* 事件日志展示行 */
+	.event-log {
+		margin-top: 12px;
+	}
+	.event-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+	/* 插槽演示 */
+	.demo-hint {
+		padding: 4px 0;
+		justify-content: center;
+		align-items: center;
+	}
+	.demo-hint-text {
+		font-size: 11px;
+		color: #969799;
+	}
+	.demo-slot-confirm {
+		font-size: 14px;
+		color: #ee0a24;
+	}
+	.demo-slot-cancel {
+		font-size: 14px;
+		color: #969799;
+	}
+	.demo-slot-option {
+		font-size: 16px;
+		color: #07c160;
+	}
+	.demo-btn-row {
+		flex-direction: row;
+		align-items: center;
+		margin-top: 12px;
+	}
+</style>

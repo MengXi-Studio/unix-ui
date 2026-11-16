@@ -121,7 +121,7 @@ added: 0.1.0
 | --- | --- |
 | default | 子元素内容 |
 
-### SpaceItem Props（m-space-item）
+### Props（m-space-item）
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |

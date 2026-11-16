@@ -9,19 +9,54 @@ added: 0.5.0
 
 `m-checkbox-popup` 复选弹出框：m-popup（底部弹层）+ m-checkbox-group 组合，选项由 options 数组驱动渲染（不要求写子组件模板），头部标题 + 关闭图标，选中集合 `v-model:value` 受控。基于 m-popup 组合，弹层 props 全透传（对齐 m-cascader-popup 先例）。
 
+## 代码演示
+
+### 基础用法 {#demo-basic}
+
+```vue
+<m-checkbox-popup v-model:show="show" v-model:value="list" :options="options" title="选择标签" />
+```
+
+```ts
+const show = ref<boolean>(false)
+const list = ref<(string | number)[]>([])
+const options = [{ label: '标签 A', value: 'a' }, { label: '标签 B', value: 'b' }]
+```
+
+### 方向与形状 {#demo-shape}
+
 ```vue
 <m-checkbox-popup
 	v-model:show="show"
 	v-model:value="list"
 	:options="options"
-	title="选择标签"
+	direction="horizontal"
+	shape="square"
 />
+```
+
+### 上限与禁用 {#demo-limit}
+
+```vue
+<m-checkbox-popup v-model:show="show" v-model:value="list" :options="options" :max="2" />
+<m-checkbox-popup v-model:show="show" v-model:value="list" :options="options" disabled />
+```
+
+### 底部插槽 {#demo-footer}
+
+`footer` 插槽放确定按钮等底部内容（选中即回写，需「确定才生效」时自行维护本地副本）。
+
+```vue
+<m-checkbox-popup v-model:show="show" v-model:value="list" :options="options">
+	<template #footer>
+		<m-button block @click="show = false">确定</m-button>
+	</template>
+</m-checkbox-popup>
 ```
 
 ## API
 
-### CheckboxPopupProps
-
+### Props
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | show | 是否显示弹层（v-model:show） | boolean | `false` |
@@ -48,8 +83,7 @@ added: 0.5.0
 | duration | 动画时长秒（透传 m-popup） | number | `0.3` |
 | custom-class / custom-style | 根节点样式直达 | - | - |
 
-### CheckboxPopupEvents
-
+### Events
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
 | update:show | 弹层显隐变化（遮罩与关闭图标均经此派发） | value: boolean |
@@ -58,11 +92,14 @@ added: 0.5.0
 | click-item | 点击选项（含禁用态） | index: number |
 | close | 关闭（关闭图标或遮罩触发） | - |
 
-### CheckboxPopupSlots
-
+### Slots
 | 名称 | 说明 |
 | --- | --- |
 | footer | 弹层底部区域（如确定按钮） |
+
+## 主题定制
+
+弹层容器由 `Popup` 提供（`$m-popup-*`）；选项行、图标与文字沿用 `Checkbox` 的 `$m-checkbox-*`。
 
 ## 注意事项
 

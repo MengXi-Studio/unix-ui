@@ -433,6 +433,7 @@
 	const controlClass = computed<string>(() => {
 		let cls = 'm-input__control'
 		if (props.disabled) cls += ' m-input__control--disabled'
+		if (props.inlaid) cls += ' m-input__control--inlaid'
 		if (props.type == 'textarea') {
 			cls += ' m-input__textarea'
 			if (props.autoHeight) cls += ' m-input__textarea--auto'
@@ -458,6 +459,7 @@
 
 	/* ========== 边框容器（视觉主体） ========== */
 	.m-input__body {
+		flex: 1;
 		flex-direction: row;
 		align-items: center;
 		box-sizing: border-box;
@@ -504,6 +506,10 @@
 	}
 	.m-input__control--disabled {
 		color: $m-input-text-color-disabled;
+	}
+	/* inlaid 形态：去掉容器内边距后控件自身需保底高度，否则嵌入 m-cell 时会贴顶且可点击区过小 */
+	.m-input__control--inlaid {
+		min-height: $m-input-inlaid-min-height;
 	}
 	/* 多行固定高度形态：min-height 抬升基准高度（uni-app x 无 rows 属性，高度经此变量控制） */
 	.m-input__textarea {

@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.0] - 2026-11-17
+
+Adds a numeric keypad panel and popup for verification codes, payment passwords, amounts and ID numbers.
+
+### Added
+
+- **m-number-keyboard**: a flat keypad with 1-9, an extra key, 0 and delete. It holds no value and only emits `input(key)` / `delete` / `close`; `type` supports `number` / `digit` / `idcard` / `random` (random shuffles once on mount, then only on `shuffle()`); `theme="custom"` adds a side column with a close key and a two-row delete key; `extra-keys` uses the first item as the bottom-left key (`.` for digit, `X` for idcard by default); `show-delete-key` / `delete-button-text` / `close-button-text` control the action keys; `disabled-key` dims and blocks matching keys; `extra-key` slot customizes the extra key; exposes `shuffle()` (see [NumberKeyboard](/en/components/number-keyboard))
+- **m-number-keyboard-popup**: `m-popup` composed with the panel. The default slot sits above the keys for code cells or amount displays; `title` / `show-toolbar` / `cancel-button-text` / `confirm-button-text` control the toolbar; cancel and confirm close the popup automatically; proxies every panel prop and event, and forwards `shuffle()` (see [NumberKeyboardPopup](/en/components/number-keyboard-popup))
+- New `$m-number-keyboard-*` theme variable block (14 keys covering size, radius, colors, pressed state and toolbar)
+
 ## [0.6.0] - 2026-11-15
 
 Adds the date, date range, time, time range, generic picker and lunar picker series, and completes the internal migration of the date / time panels to `m-picker` (no public API changes).

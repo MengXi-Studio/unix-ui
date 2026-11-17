@@ -187,6 +187,16 @@ export const routes: RouteConfig[] = [
 		meta: { title: '农历选择 LunarPicker' },
 	},
 	{
+		path: 'pages-sub/number-keyboard-popup/number-keyboard-popup',
+		name: 'number-keyboard-popup',
+		meta: { title: '数字键盘弹出框 NumberKeyboardPopup' },
+	},
+	{
+		path: 'pages-sub/number-keyboard/number-keyboard',
+		name: 'number-keyboard',
+		meta: { title: '数字键盘 NumberKeyboard' },
+	},
+	{
 		path: 'pages-sub/overlay/overlay',
 		name: 'overlay',
 		meta: { title: '遮罩层 Overlay' },

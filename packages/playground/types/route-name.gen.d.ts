@@ -78,6 +78,10 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		'lunar-picker-popup': 'pages-sub/lunar-picker-popup/lunar-picker-popup'
 		/** 农历选择 LunarPicker */
 		'lunar-picker': 'pages-sub/lunar-picker/lunar-picker'
+		/** 数字键盘弹出框 NumberKeyboardPopup */
+		'number-keyboard-popup': 'pages-sub/number-keyboard-popup/number-keyboard-popup'
+		/** 数字键盘 NumberKeyboard */
+		'number-keyboard': 'pages-sub/number-keyboard/number-keyboard'
 		/** 遮罩层 Overlay */
 		overlay: 'pages-sub/overlay/overlay'
 		/** 选择器输入框 PickerInput */

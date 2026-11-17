@@ -1,0 +1,56 @@
+/**
+ * 数字键盘共享类型与键位构建。
+ * 面板与弹层共用：类型定义、数字键序生成、乱序算法；不涉及任何平台 API。
+ */
+
+/** 键盘类型：number 纯数字 / digit 含小数点 / idcard 含 X / random 乱序数字 */
+export type NumberKeyboardType = 'number' | 'digit' | 'idcard' | 'random'
+
+/** 键盘主题：default 纯数字区 / custom 带右侧栏（关闭与删除） */
+export type NumberKeyboardTheme = 'default' | 'custom'
+
+/**
+ * 生成 1-9 数字键序。
+ * @param randomOrder 是否打乱顺序
+ * @returns 9 个数字字符
+ */
+export function buildNumberKeys(randomOrder: boolean): string[] {
+	const keys: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+	if (randomOrder) {
+		shuffleKeys(keys)
+	}
+	return keys
+}
+
+/**
+ * 计算左下角额外键文本。
+ * 优先取用户传入的 extraKeys 首项；未传时按类型给内置默认值。
+ * @param type 键盘类型
+ * @param extraKeys 用户自定义额外键
+ * @returns 额外键文本，空串表示留白
+ */
+export function resolveExtraKey(type: NumberKeyboardType, extraKeys: string[]): string {
+	if (extraKeys.length > 0) {
+		return extraKeys[0]
+	}
+	if (type == 'digit') {
+		return '.'
+	}
+	if (type == 'idcard') {
+		return 'X'
+	}
+	return ''
+}
+
+/**
+ * Fisher-Yates 原地乱序。
+ * @param list 待乱序的字符数组
+ */
+export function shuffleKeys(list: string[]): void {
+	for (let i = list.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1))
+		const tmp = list[i]
+		list[i] = list[j]
+		list[j] = tmp
+	}
+}

@@ -1,0 +1,353 @@
+<template>
+	<!-- 数字键盘面板：纯按键区，不持值、不带弹层。
+	     数字键走 v-for（纯文本，不声明具名插槽）；额外键与删除键数量固定，单独渲染，
+	     避免「具名插槽声明在 v-for 内」在 App / 小程序端的既有问题（LESSONS #17） -->
+	<view :class="rootClass" :style="customStyle">
+		<view class="m-number-keyboard__body">
+			<view class="m-number-keyboard__main" :style="mainStyle">
+				<view v-for="(key, index) in numberKeys" :key="key + '-' + index" class="m-number-keyboard__cell">
+					<view
+						:class="keyClass(key)"
+						:hover-class="hoverClass(key)"
+						:hover-stay-time="80"
+						@click="onNumberTap(key)"
+					>
+						<text class="m-number-keyboard__text">{{ key }}</text>
+					</view>
+				</view>
+				<view class="m-number-keyboard__cell">
+					<view
+						:class="keyClass(extraText)"
+						:hover-class="hoverClass(extraText)"
+						:hover-stay-time="80"
+						@click="onExtraTap"
+					>
+						<slot name="extra-key">
+							<text class="m-number-keyboard__text">{{ extraText }}</text>
+						</slot>
+					</view>
+				</view>
+				<view class="m-number-keyboard__cell">
+					<view
+						:class="keyClass('0')"
+						:hover-class="hoverClass('0')"
+						:hover-stay-time="80"
+						@click="onNumberTap('0')"
+					>
+						<text class="m-number-keyboard__text">0</text>
+					</view>
+				</view>
+				<view v-if="!isCustom" class="m-number-keyboard__cell">
+					<view
+						:class="deleteClass"
+						:hover-class="deleteHoverClass"
+						:hover-stay-time="80"
+						@click="onDeleteTap"
+					>
+						<m-icon v-if="deleteButtonText == ''" name="delete" class="m-number-keyboard__delete"></m-icon>
+						<text v-else class="m-number-keyboard__text m-number-keyboard__text--action">{{ deleteButtonText }}</text>
+					</view>
+				</view>
+				<view v-else class="m-number-keyboard__cell"></view>
+			</view>
+			<view v-if="isCustom" class="m-number-keyboard__side">
+				<view v-if="hasClose" class="m-number-keyboard__side-cell">
+					<view
+						:class="sideKeyClass"
+						hover-class="m-number-keyboard__key--active"
+						:hover-stay-time="80"
+						@click="onCloseTap"
+					>
+						<text class="m-number-keyboard__text m-number-keyboard__text--action">{{ closeButtonText }}</text>
+					</view>
+				</view>
+				<view class="m-number-keyboard__side-cell m-number-keyboard__side-cell--delete">
+					<view
+						:class="sideKeyClass"
+						:hover-class="deleteHoverClass"
+						:hover-stay-time="80"
+						@click="onDeleteTap"
+					>
+						<m-icon v-if="deleteButtonText == ''" name="delete" class="m-number-keyboard__delete"></m-icon>
+						<text v-else class="m-number-keyboard__text m-number-keyboard__text--action">{{ deleteButtonText }}</text>
+					</view>
+				</view>
+				<view v-if="hasClose" class="m-number-keyboard__side-cell"></view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-number-keyboard 数字键盘面板：渲染 1-9 + 额外键 + 0 + 删除键的按键区。
+	 * 不持有输入值，只向外派发 input / delete / close；随机类型仅在挂载时打乱一次，
+	 * 之后需显式调用 shuffle() 才重排（避免输入过程中键位跳动）。
+	 */
+	import {
+		buildNumberKeys,
+		resolveExtraKey,
+		NumberKeyboardType,
+		NumberKeyboardTheme
+	} from './keyboard.uts'
+	import MIcon from '../m-icon/m-icon.uvue'
+
+	type Props = {
+		/** 键盘类型 */
+		type?: NumberKeyboardType
+		/** 主题：default 纯数字区 / custom 带右侧栏 */
+		theme?: NumberKeyboardTheme
+		/** 额外键文本（取首项；未传时 digit 默认 . / idcard 默认 X） */
+		extraKeys?: string[]
+		/** 是否显示删除键 */
+		showDeleteKey?: boolean
+		/** 删除键文字（空则显示删除图标） */
+		deleteButtonText?: string
+		/** 右侧栏关闭键文字（仅 custom；空则不渲染关闭键） */
+		closeButtonText?: string
+		/** 按键禁用回调：返回 true 的键灰显且不派发事件 */
+		disabledKey?: ((key: string) => boolean) | null
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		type: 'number',
+		theme: 'default',
+		extraKeys: null,
+		showDeleteKey: true,
+		deleteButtonText: '',
+		closeButtonText: '',
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 点击可输入键 */
+		input: [key: string]
+		/** 点击删除键 */
+		delete: []
+		/** 点击右侧栏关闭键 */
+		close: []
+	}>()
+
+	/** 是否自定义主题（右侧栏） */
+	const isCustom = computed<boolean>(() => props.theme == 'custom')
+
+	/** 是否渲染右侧栏关闭键 */
+	const hasClose = computed<boolean>(() => props.closeButtonText != '')
+
+	/** 1-9 数字键序（random 类型挂载时打乱） */
+	const numberKeys = ref<string[]>(buildNumberKeys(props.type == 'random'))
+
+	/** 额外键列表（null 按空数组处理） */
+	const extraList = computed<string[]>(() => {
+		const list = props.extraKeys
+		if (list != null) {
+			return list
+		}
+		const empty: string[] = []
+		return empty
+	})
+
+	/** 左下角额外键文本 */
+	const extraText = computed<string>(() => resolveExtraKey(props.type, extraList.value))
+
+	/** 根节点类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-number-keyboard'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 主键区伸缩比：custom 主题为 3，给右侧栏留 1 */
+	const mainStyle = computed<string>(() => {
+		return isCustom.value ? 'flex: 3;' : 'flex: 1;'
+	})
+
+	/** 删除键是否可用（受 showDeleteKey 控制） */
+	const deleteHoverClass = computed<string>(() => {
+		return props.showDeleteKey ? 'm-number-keyboard__key--active' : 'none'
+	})
+
+	/** 右侧栏按键类名 */
+	const sideKeyClass = computed<string>(() => 'm-number-keyboard__key m-number-keyboard__key--side')
+
+	/** 删除键类名（不显示时占位留白） */
+	const deleteClass = computed<string>(() => {
+		return props.showDeleteKey ? 'm-number-keyboard__key' : 'm-number-keyboard__key m-number-keyboard__key--blank'
+	})
+
+	/**
+	 * 按键是否被禁用：仅对非空可输入键调用回调
+	 * @param key 按键文本
+	 * @returns 是否禁用
+	 */
+	function isDisabled(key: string): boolean {
+		const fn = props.disabledKey
+		if (fn == null || key == '') {
+			return false
+		}
+		return fn(key)
+	}
+
+	/**
+	 * 可输入键类名（禁用态追加灰显类）
+	 * @param key 按键文本
+	 * @returns 类名
+	 */
+	function keyClass(key: string): string {
+		let cls = 'm-number-keyboard__key'
+		if (isDisabled(key)) {
+			cls += ' m-number-keyboard__key--disabled'
+		}
+		return cls
+	}
+
+	/**
+	 * 可输入键按压类（禁用态不反馈）
+	 * @param key 按键文本
+	 * @returns hover-class 名称
+	 */
+	function hoverClass(key: string): string {
+		return isDisabled(key) ? 'none' : 'm-number-keyboard__key--active'
+	}
+
+	/**
+	 * 数字键点击：禁用态忽略，否则派发 input
+	 * @param key 按键文本
+	 */
+	function onNumberTap(key: string) {
+		if (isDisabled(key)) {
+			return
+		}
+		emit('input', key)
+	}
+
+	/** 额外键点击：留白与禁用态忽略 */
+	function onExtraTap() {
+		const key = extraText.value
+		if (key == '' || isDisabled(key)) {
+			return
+		}
+		emit('input', key)
+	}
+
+	/** 删除键点击 */
+	function onDeleteTap() {
+		if (!props.showDeleteKey) {
+			return
+		}
+		emit('delete')
+	}
+
+	/** 右侧栏关闭键点击 */
+	function onCloseTap() {
+		emit('close')
+	}
+
+	/**
+	 * 重新打乱数字键序（仅 random 类型有意义）
+	 */
+	function shuffle() {
+		numberKeys.value = buildNumberKeys(true)
+	}
+
+	defineExpose({
+		shuffle
+	})
+
+	// 类型变化：非 random 恢复顺序键位，random 重新打乱
+	watch((): string => props.type, (_: string) => {
+		numberKeys.value = buildNumberKeys(props.type == 'random')
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根 ========== */
+	.m-number-keyboard {
+		background-color: $m-number-keyboard-background;
+		padding: $m-number-keyboard-padding;
+	}
+
+	/* ========== 按键区 ========== */
+	.m-number-keyboard__body {
+		flex-direction: row;
+		align-items: stretch;
+	}
+
+	.m-number-keyboard__main {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.m-number-keyboard__cell {
+		width: 33.3333%;
+		padding: $m-number-keyboard-key-gap;
+	}
+
+	.m-number-keyboard__key {
+		height: $m-number-keyboard-key-height;
+		justify-content: center;
+		align-items: center;
+		border-radius: $m-number-keyboard-key-radius;
+		background-color: $m-number-keyboard-key-background;
+	}
+
+	.m-number-keyboard__key--active {
+		background-color: $m-number-keyboard-key-active-background;
+	}
+
+	.m-number-keyboard__key--disabled {
+		opacity: 0.4;
+	}
+
+	.m-number-keyboard__key--blank {
+		background-color: transparent;
+	}
+
+	.m-number-keyboard__key--side {
+		flex: 1;
+		height: 100%;
+	}
+
+	.m-number-keyboard__text {
+		font-size: $m-number-keyboard-key-font-size;
+		color: $m-number-keyboard-key-color;
+	}
+
+	.m-number-keyboard__text--action {
+		font-size: $m-number-keyboard-delete-font-size;
+	}
+
+	.m-number-keyboard__delete {
+		font-size: $m-number-keyboard-delete-font-size;
+		color: $m-number-keyboard-key-color;
+	}
+
+	/* ========== 右侧栏（custom 主题） ========== */
+	.m-number-keyboard__side {
+		flex: 1;
+		flex-direction: column;
+	}
+
+	.m-number-keyboard__side-cell {
+		flex: 1;
+		padding: $m-number-keyboard-key-gap;
+	}
+
+	.m-number-keyboard__side-cell--delete {
+		flex: 2;
+	}
+</style>

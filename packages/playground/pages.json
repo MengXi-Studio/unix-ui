@@ -222,6 +222,18 @@
 					}
 				},
 				{
+					"path": "number-keyboard-popup/number-keyboard-popup",
+					"style": {
+						"navigationBarTitleText": "数字键盘弹出框 NumberKeyboardPopup"
+					}
+				},
+				{
+					"path": "number-keyboard/number-keyboard",
+					"style": {
+						"navigationBarTitleText": "数字键盘 NumberKeyboard"
+					}
+				},
+				{
 					"path": "overlay/overlay",
 					"style": {
 						"navigationBarTitleText": "遮罩层 Overlay"

@@ -1,0 +1,269 @@
+<template>
+	<!-- 数字键盘弹出框：m-popup + m-number-keyboard 组合。
+	     顶部工具条（取消 / 标题 / 完成）→ 输入区插槽 → 按键区；
+	     取消 / 完成派发后自动关闭，点遮罩收起由 m-popup 接管 -->
+	<m-popup
+		:show="show"
+		position="bottom"
+		:round="round"
+		:close-on-click-overlay="closeOnClickOverlay"
+		:safe-area-inset-bottom="safeAreaInsetBottom"
+		:z-index="zIndex"
+		:duration="duration"
+		@update:show="onPopupUpdateShow"
+		@open="onPopupOpen"
+		@opened="onPopupOpened"
+		@close="onPopupClose"
+		@closed="onPopupClosed"
+		@click-overlay="onPopupClickOverlay"
+	>
+		<view class="m-number-keyboard-popup">
+			<view v-if="showToolbar" class="m-number-keyboard-popup__toolbar">
+				<view
+					class="m-number-keyboard-popup__action"
+					hover-class="m-number-keyboard-popup__action--active"
+					:hover-stay-time="80"
+					@click="onCancelTap"
+				>
+					<slot name="cancel">
+						<text class="m-number-keyboard-popup__action-text">{{ cancelButtonText }}</text>
+					</slot>
+				</view>
+				<text class="m-number-keyboard-popup__title">{{ title }}</text>
+				<view
+					class="m-number-keyboard-popup__action m-number-keyboard-popup__action--right"
+					hover-class="m-number-keyboard-popup__action--active"
+					:hover-stay-time="80"
+					@click="onConfirmTap"
+				>
+					<slot name="confirm">
+						<text class="m-number-keyboard-popup__action-text m-number-keyboard-popup__action-text--primary">{{ confirmButtonText }}</text>
+					</slot>
+				</view>
+			</view>
+			<view class="m-number-keyboard-popup__content">
+				<slot></slot>
+			</view>
+			<m-number-keyboard
+				ref="keyboard"
+				:type="type"
+				:theme="theme"
+				:extra-keys="extraKeys"
+				:show-delete-key="showDeleteKey"
+				:delete-button-text="deleteButtonText"
+				:close-button-text="closeButtonText"
+				:disabled-key="disabledKey"
+				@input="onKeyboardInput"
+				@delete="onKeyboardDelete"
+				@close="onKeyboardClose"
+			>
+				<!-- 插槽条件转发：未传入时使用面板内置文本 -->
+				<template v-if="$slots['extra-key'] != null" #extra-key>
+					<slot name="extra-key"></slot>
+				</template>
+			</m-number-keyboard>
+		</view>
+	</m-popup>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-number-keyboard-popup 数字键盘弹出框：m-popup + m-number-keyboard 组合。
+	 * 自身不持输入值：按键事件原样透传，输入区由 default 插槽承载（验证码格、金额展示等）；
+	 * 取消 / 完成派发后自动关闭弹层。
+	 */
+	import { NumberKeyboardType, NumberKeyboardTheme } from '../m-number-keyboard/keyboard.uts'
+	import MNumberKeyboard from '../m-number-keyboard/m-number-keyboard.uvue'
+
+	type Props = {
+		/** 是否显示（v-model:show） */
+		show?: boolean
+		/** 键盘类型 */
+		type?: NumberKeyboardType
+		/** 主题：default / custom */
+		theme?: NumberKeyboardTheme
+		/** 额外键文本（取首项） */
+		extraKeys?: string[]
+		/** 是否显示删除键 */
+		showDeleteKey?: boolean
+		/** 删除键文字（空则显示删除图标） */
+		deleteButtonText?: string
+		/** 右侧栏关闭键文字（仅 custom） */
+		closeButtonText?: string
+		/** 按键禁用回调 */
+		disabledKey?: ((key: string) => boolean) | null
+		/** 工具条标题（空则不显示文字） */
+		title?: string
+		/** 是否显示取消 / 完成工具条 */
+		showToolbar?: boolean
+		/** 取消按钮文字 */
+		cancelButtonText?: string
+		/** 完成按钮文字 */
+		confirmButtonText?: string
+		/** 弹层圆角 */
+		round?: boolean
+		/** 点击遮罩后是否关闭 */
+		closeOnClickOverlay?: boolean
+		/** 底部安全区 */
+		safeAreaInsetBottom?: boolean
+		/** z-index 层级 */
+		zIndex?: number
+		/** 动画时长秒 */
+		duration?: number
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		type: 'number',
+		theme: 'default',
+		extraKeys: null,
+		showDeleteKey: true,
+		deleteButtonText: '',
+		closeButtonText: '',
+		title: '',
+		showToolbar: true,
+		cancelButtonText: '取消',
+		confirmButtonText: '完成',
+		round: true,
+		closeOnClickOverlay: true,
+		safeAreaInsetBottom: true,
+		zIndex: 1,
+		duration: 0.3
+	})
+
+	const emit = defineEmits<{
+		'update:show': [value: boolean]
+		/** 可输入键点击 */
+		input: [key: string]
+		/** 删除键点击 */
+		delete: []
+		/** 右侧栏关闭键点击 */
+		close: []
+		/** 取消（随后关闭） */
+		cancel: []
+		/** 完成（随后关闭） */
+		confirm: []
+		open: []
+		opened: []
+		closed: []
+		'click-overlay': [event: MouseEvent]
+	}>()
+
+	/** 内部面板实例（转发 shuffle） */
+	const keyboard = ref<ComponentPublicInstance | null>(null)
+
+	const onPopupUpdateShow = (value: boolean) => {
+		emit('update:show', value)
+	}
+
+	const onPopupOpen = () => {
+		emit('open')
+	}
+
+	const onPopupOpened = () => {
+		emit('opened')
+	}
+
+	const onPopupClose = () => {
+		emit('close')
+	}
+
+	const onPopupClosed = () => {
+		emit('closed')
+	}
+
+	const onPopupClickOverlay = (e: MouseEvent) => {
+		emit('click-overlay', e)
+	}
+
+	const onKeyboardInput = (key: string) => {
+		emit('input', key)
+	}
+
+	const onKeyboardDelete = () => {
+		emit('delete')
+	}
+
+	const onKeyboardClose = () => {
+		emit('close')
+		emit('update:show', false)
+	}
+
+	/** 取消：派发后关闭 */
+	const onCancelTap = () => {
+		emit('cancel')
+		emit('update:show', false)
+	}
+
+	/** 完成：派发后关闭 */
+	const onConfirmTap = () => {
+		emit('confirm')
+		emit('update:show', false)
+	}
+
+	/**
+	 * 重新打乱数字键序（仅 random 类型）
+	 */
+	function shuffle() {
+		const inst = keyboard.value
+		if (inst != null) {
+			inst.$callMethod('shuffle')
+		}
+	}
+
+	defineExpose({
+		shuffle
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根 ========== */
+	.m-number-keyboard-popup {
+		background-color: $m-number-keyboard-background;
+	}
+
+	/* ========== 工具条 ========== */
+	.m-number-keyboard-popup__toolbar {
+		height: $m-number-keyboard-title-height;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 $m-number-keyboard-padding;
+	}
+
+	.m-number-keyboard-popup__action {
+		padding: 0 4px;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.m-number-keyboard-popup__action--active {
+		opacity: 0.6;
+	}
+
+	.m-number-keyboard-popup__action-text {
+		font-size: $m-number-keyboard-title-font-size;
+		color: $m-number-keyboard-key-color;
+	}
+
+	.m-number-keyboard-popup__action-text--primary {
+		color: $m-number-keyboard-button-color;
+	}
+
+	.m-number-keyboard-popup__title {
+		font-size: $m-number-keyboard-title-font-size;
+		color: $m-number-keyboard-title-color;
+	}
+
+	/* ========== 输入区（default 插槽，无内容时不占高度） ========== */
+	.m-number-keyboard-popup__content {
+		background-color: $m-number-keyboard-key-background;
+	}
+</style>

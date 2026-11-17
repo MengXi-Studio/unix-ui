@@ -1,3 +1,9 @@
+## 0.7.0 (2026-11-17)
+
+- 新增 `m-number-keyboard` 数字键盘面板：1-9 + 额外键 + 0 + 删除键的纯按键区，不持有输入值，只派发 `input(key)` / `delete` / `close`；`type` 支持 `number` / `digit` / `idcard` / `random`（random 挂载时打乱一次，之后仅 `shuffle()` 重排）；`theme="custom"` 在右侧增加关闭键与跨行删除键；`extra-keys` 取首项作为左下角按键（digit 默认 `.`、idcard 默认 `X`）；`show-delete-key` / `delete-button-text` / `close-button-text` 控制动作键；`disabled-key` 回调返回 true 的键灰显且不派发事件；`extra-key` 插槽自定义额外键；expose `shuffle()`
+- 新增 `m-number-keyboard-popup` 数字键盘弹出框：`m-popup` + 面板组合，默认插槽位于键盘上方承载验证码格 / 金额展示；`title` / `show-toolbar` / `cancel-button-text` / `confirm-button-text` 控制工具条，取消 / 完成派发后自动关闭；透传面板全部 props 与事件
+- 新增 `$m-number-keyboard-*` 主题变量段（键高 / 圆角 / 底色 / 按压态 / 工具条等 14 项）
+
 ## 0.6.0 (2026-11-15)
 
 - 新增 `m-date-picker` / `m-date-picker-popup` / `m-date-picker-input` 日期选择三件套（对标 Vant DatePicker）：年 / 月 / 日滚轮列滚动停止后吸附到最近选项，`columns-type` 支持 `year` / `month` / `day` 任意顺序组合（缺失分量按 1 月 1 日归一），`min-date` / `max-date` 默认前后十年并据已选年月收敛月 / 日取值域；`filter` / `formatter` 二次加工列选项；`option-height` / `visible-option-num` / `swipe-duration` 调整滚轮，`readonly` 回弹、`loading` 阻断交互；顶部栏支持 `show-toolbar` 与 `toolbar` / `title` / `confirm` / `cancel` 插槽，另有 `option` / `columns-top` / `columns-bottom` 插槽（`option` 仅 Web 生效，App / 小程序端回退内置文本）；expose `confirm` / `resetSelection` / `getSelectedDate`；弹层确认或取消后自动关闭，输入框展示格式随列组合派生（`YYYY` / `YYYY-MM` / `YYYY-MM-DD` / `MM-DD`）并支持清空；`v-model:value` 绑定 `Date`；新增 `$m-date-picker-option-*` 与 `$m-date-picker-input-*` 主题变量

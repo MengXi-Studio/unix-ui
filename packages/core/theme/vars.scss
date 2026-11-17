@@ -689,3 +689,33 @@ $m-picker-input-clear-color: #c8c9cc !default;
 $m-picker-view-background: $m-white !default;
 /** 选中框细线颜色 */
 $m-picker-view-frame-color: #ebedf0 !default;
+
+/* ========== NumberKeyboard 数字键盘 ========== */
+/** 键盘底色 */
+$m-number-keyboard-background: #f2f3f5 !default;
+/** 四周内边距 */
+$m-number-keyboard-padding: 8px !default;
+/** 键单元格内边距（相邻键的视觉间隙为其两倍） */
+$m-number-keyboard-key-gap: 3px !default;
+/** 单键高度 */
+$m-number-keyboard-key-height: 48px !default;
+/** 键圆角 */
+$m-number-keyboard-key-radius: 6px !default;
+/** 键底色 */
+$m-number-keyboard-key-background: $m-white !default;
+/** 键按压态底色 */
+$m-number-keyboard-key-active-background: #e5e6eb !default;
+/** 键文字色 */
+$m-number-keyboard-key-color: $m-text-color !default;
+/** 键文字字号 */
+$m-number-keyboard-key-font-size: 24px !default;
+/** 删除键 / 动作键文字与图标字号 */
+$m-number-keyboard-delete-font-size: 16px !default;
+/** 工具条高度 */
+$m-number-keyboard-title-height: 44px !default;
+/** 工具条标题色 */
+$m-number-keyboard-title-color: $m-text-color !default;
+/** 工具条文字字号（标题与按钮共用） */
+$m-number-keyboard-title-font-size: 14px !default;
+/** 完成按钮文字色 */
+$m-number-keyboard-button-color: $m-color-primary !default;

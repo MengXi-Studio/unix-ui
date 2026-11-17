@@ -166,6 +166,18 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '输入框',
 				enName: 'Input',
 				desc: '文本输入框，支持六种类型、清除图标、明文切换、格式化与数字精度收敛、字数统计、多行自适应、前后插槽与紧凑布局联动。'
+			},
+			{
+				name: 'number-keyboard',
+				zhName: '数字键盘',
+				enName: 'NumberKeyboard',
+				desc: '虚拟数字键盘，支持数字 / 小数 / 身份证 / 随机类型，custom 主题右侧栏、禁用键回调与手动打乱。'
+			},
+			{
+				name: 'number-keyboard-popup',
+				zhName: '数字键盘弹出框',
+				enName: 'NumberKeyboardPopup',
+				desc: '数字键盘弹层组合，输入区插槽承载验证码格与金额展示，取消 / 完成后自动关闭。'
 			}
 		]
 	},

@@ -1,0 +1,206 @@
+<template>
+	<view class="page">
+		<demo-navbar title="单选框" subtitle="Radio" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-radio-group v-model:value="basicValue" @change="logChange('基础', $event)">
+						<m-radio name="a">单选框 a</m-radio>
+						<m-radio name="b">单选框 b</m-radio>
+					</m-radio-group>
+					<text class="caption">v-model:value 单值绑定（当前：{{ valueText(basicValue) }}）</text>
+				</view>
+
+				<text class="section" id="independent">独立单选框</text>
+				<view class="card">
+					<m-radio :checked="indepValue == 'a'" @click="indepValue = 'a'">独立 a</m-radio>
+					<m-radio :checked="indepValue == 'b'" @click="indepValue = 'b'">独立 b</m-radio>
+					<text class="caption">不在组内时受控 checked prop（当前：{{ valueText(indepValue) }}）；已选中项再点不取消</text>
+				</view>
+
+				<text class="section" id="disabled">禁用与只读</text>
+				<view class="card">
+					<m-radio-group v-model:value="disabledValue">
+						<m-radio name="a">可选</m-radio>
+						<m-radio name="b" disabled>禁用（未选）</m-radio>
+						<m-radio name="c" disabled>禁用（选中）</m-radio>
+						<m-radio name="d" readonly>只读（未选）</m-radio>
+						<m-radio name="e" readonly>只读（选中）</m-radio>
+					</m-radio-group>
+					<text class="caption">disabled 灰底填充不可切换；readonly 视觉正常但不可切换；禁用态 click 事件照常派发</text>
+					<m-radio-group v-model:value="groupDisabledValue" disabled style="margin-top: 8px;">
+						<m-radio name="x">组容器禁用 x</m-radio>
+						<m-radio name="y">组容器禁用 y</m-radio>
+					</m-radio-group>
+					<text class="caption">组容器 disabled / readonly 全局生效（子项与之合并）</text>
+					<m-radio-group v-model:value="groupReadonlyValue" readonly style="margin-top: 8px;">
+						<m-radio name="m">组容器只读 m</m-radio>
+						<m-radio name="n">组容器只读 n</m-radio>
+					</m-radio-group>
+				</view>
+
+				<text class="section" id="shape">自定义形状</text>
+				<view class="card">
+					<m-radio-group v-model:value="shapeValue" shape="square">
+						<m-radio name="a">方形 a</m-radio>
+						<m-radio name="b" shape="round">单项覆盖为圆形 b</m-radio>
+					</m-radio-group>
+					<text class="caption">组容器 shape="square"（方框 + 内点），子项可单独覆盖</text>
+				</view>
+
+				<text class="section" id="color-size">自定义颜色与大小</text>
+				<view class="card">
+					<m-radio-group v-model:value="colorValue" checked-color="#ee0a24" icon-size="24px">
+						<m-radio name="a">红色 24px</m-radio>
+						<m-radio name="b" checked-color="#07c160">单项覆盖绿色</m-radio>
+					</m-radio-group>
+					<text class="caption">组容器 checked-color / icon-size 统一下发，外环与内点同步缩放变色</text>
+				</view>
+
+				<text class="section" id="label">文本位置与禁点</text>
+				<view class="card">
+					<m-radio-group v-model:value="labelValue">
+						<m-radio name="a" label-position="left">文本在左</m-radio>
+						<m-radio name="b" label-disabled>文本不可点（图标可点）</m-radio>
+					</m-radio-group>
+					<text class="caption">label-position="left" 反转排布；label-disabled 仅禁文本点击</text>
+				</view>
+
+				<text class="section" id="direction">排列方向</text>
+				<view class="card">
+					<m-radio-group v-model:value="dirValue" direction="horizontal">
+						<m-radio name="a">横向 a</m-radio>
+						<m-radio name="b">横向 b</m-radio>
+						<m-radio name="c">横向 c</m-radio>
+					</m-radio-group>
+					<text class="caption">direction="horizontal" 横排换行</text>
+				</view>
+
+				<text class="section" id="slots">自定义图标与内容</text>
+				<view class="card">
+					<m-radio-group v-model:value="slotValue">
+						<m-radio name="a">
+							<template #icon="{ checked }">
+								<view :class="checked ? 'custom-icon custom-icon--on' : 'custom-icon'">
+									<text :class="checked ? 'custom-icon__text custom-icon__text--on' : 'custom-icon__text'">{{ checked ? 'A' : '·' }}</text>
+								</view>
+							</template>
+							自定义图标
+						</m-radio>
+						<m-radio name="b">
+							<text class="rich-label">插槽文本（作用域 checked={{ slotValue == 'b' }}）</text>
+						</m-radio>
+					</m-radio-group>
+					<text class="caption">icon 插槽（作用域 { checked, disabled }）与 default 插槽自定义文本</text>
+				</view>
+
+				<text class="section" id="cell">搭配单元格</text>
+				<view class="card">
+					<m-radio-group v-model:value="cellValue">
+						<m-cell-group inset>
+							<m-cell
+								v-for="(item, i) in cellItems"
+								:key="i"
+								:title="item"
+								clickable
+								@click="cellValue = cellItems[i]"
+							>
+								<template #value>
+									<m-radio :name="item" @click.stop></m-radio>
+								</template>
+							</m-cell>
+						</m-cell-group>
+					</m-radio-group>
+					<text class="caption">m-cell 的 value 插槽放置 m-radio，整行点击经集合操作切换（当前：{{ valueText(cellValue) }}）</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '单选框 Radio', name: 'radio' })
+
+	import { RadioValue, radioValueText } from '@/uni_modules/m-ui-x/components/m-radio-group/radio.uts'
+
+	/** 基础用法选中值 */
+	const basicValue = ref<RadioValue | null>('a')
+	/** 独立单选框选中值 */
+	const indepValue = ref<RadioValue | null>('a')
+	/** 禁用演示选中值（c 项预选中验证禁用选中态灰点） */
+	const disabledValue = ref<RadioValue | null>('c')
+	/** 组容器禁用演示选中值 */
+	const groupDisabledValue = ref<RadioValue | null>(null)
+	/** 组容器只读演示选中值 */
+	const groupReadonlyValue = ref<RadioValue | null>('m')
+	/** 形状演示选中值 */
+	const shapeValue = ref<RadioValue | null>('a')
+	/** 颜色演示选中值 */
+	const colorValue = ref<RadioValue | null>('a')
+	/** 文本位置演示选中值 */
+	const labelValue = ref<RadioValue | null>(null)
+	/** 方向演示选中值 */
+	const dirValue = ref<RadioValue | null>(null)
+	/** 插槽演示选中值 */
+	const slotValue = ref<RadioValue | null>(null)
+	/** 单元格演示选中值 */
+	const cellValue = ref<RadioValue | null>(null)
+
+	/** 单元格演示条目 */
+	const cellItems = ref<string[]>(['单元格 a', '单元格 b'])
+
+	/**
+	 * 值的展示文本（null 显示「未选」）
+	 */
+	function valueText(v: RadioValue | null): string {
+		if (v == null) return '未选'
+		return radioValueText(v)
+	}
+
+	/**
+	 * change 事件日志
+	 */
+	function logChange(tag: string, v: RadioValue | null) {
+		console.log('radio ' + tag + ' change: ' + valueText(v))
+	}
+</script>
+
+<style lang="scss">
+	/* 自定义图标（icon 插槽演示） */
+	.custom-icon {
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		border-width: 1px;
+		border-style: solid;
+		border-color: #c8c9cc;
+		justify-content: center;
+		align-items: center;
+	}
+	.custom-icon--on {
+		background-color: #07c160;
+		border-color: #07c160;
+	}
+	.custom-icon__text {
+		font-size: 12px;
+		color: #969799;
+	}
+	.custom-icon__text--on {
+		color: #ffffff;
+	}
+
+	/* 富文本插槽演示 */
+	.rich-label {
+		font-size: 14px;
+		color: #1989fa;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

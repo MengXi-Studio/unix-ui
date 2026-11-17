@@ -6,6 +6,10 @@
 - 新增 `m-password-input` 密码输入格子：纯展示不持值，两种视觉风格 `bordered`（圆角方框）/ `underlined`（仅底部 1px 底线）；`mask` 隐藏为圆点（view + border-radius: 50% 跨平台一致）、`plain-text` 明文显示；`gap` 格子间距（px number 类型，禁用 string 避免 UTS 联合类型 Kotlin 退化）；`focused` 驱动当前位闪烁光标（setInterval 半周期切换响应式 class，全平台一致）与高亮边框；`disabled` 灰显不派发 `focus`、`readonly` 只读；`info` / `error-info` 下方提示文字（error 优先）
 - 新增 `m-password-input-popup` 密码输入弹出框：`m-popup` + 格子 + `m-number-keyboard` 一体化组合；`v-model:value` 双向绑定，输入自动收敛 `maxlength=length`；弹层打开自动 `focused` 显示光标、`keyboard-type="random"` 每次打开重新打乱；内置 `disabledKey` 填满后数字键自动禁用；透传格子全部 props + 弹层主题工具条 + 透明投影等
 - 新增 `$m-password-input-*` 主题变量段（高度 / gap / 圆角 / 边框 / 底线 / 圆点 / 光标 / 提示文字等 20 项）
+- 新增 `m-radio` / `m-radio-group` 单选框两件套（对标 Vant Radio）：`v-model:value` 单值绑定（`RadioValue | null`，null 未选，UTS 无 any）；图标为自绘 view（外环 border + 内实心圆点，跨端渲染一致），禁用态用外环灰底填充 + 灰点表达（弃用透明度方案——未选灰环叠加透明度无可见差异），选中态退灰不再用主题色，`shape` 支持 `round` / `square`（Vant 的 `dot` 形态与本项目默认圆环+圆点视觉相同故不设独立值，`square` 为方框+内圆点，不引入 Vant 白勾以免与 checkbox 混淆）；独立使用为受控 `checked` prop（不持值）；吸收 Sard 的 `readonly`（子项 / 组容器合并）；点已选项不取消（单选刚性）；`label-position` / `label-disabled` / `icon-size` / `checked-color` / `direction` / `icon` / `default` 插槽与 checkbox 系对齐
+- 新增 `m-radio-popup` 单选弹出框：`m-popup` + `m-radio-group` 组合，options 数组驱动渲染（label / value / disabled + field-names 映射，对齐 checkbox-popup 先例）；点选后弹层不自动关闭（受控模型一致，需即选即关可监听 change）；头部标题 + 关闭钮，footer 插槽；透传弹层方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长
+- 新增 `m-radio-input` 单选输入框：`m-input` 只读触发器 + 单选弹层，选中项 label 回显（无匹配回退值文本）；自绘清空按钮回写 `null` 并派发 `clear`（m-input 内置 clearable 位于触发层下会被挡住）；`disabled` / `clearable` / `border` / `inlaid` 可配
+- 新增 `$m-radio-*` 主题变量段（内边距 / 外环 / 内点 / 文本 / 弹层 / 触发层与清空按钮等 27 项）
 
 ## 0.6.0 (2026-11-15)
 

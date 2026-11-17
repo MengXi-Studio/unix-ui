@@ -111,7 +111,10 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'NumberKeyboard', link: '/en/components/number-keyboard' },
 						{ text: 'NumberKeyboardPopup', link: '/en/components/number-keyboard-popup' },
 						{ text: 'PasswordInput', link: '/en/components/password-input' },
-						{ text: 'PasswordInputPopup', link: '/en/components/password-input-popup' }
+						{ text: 'PasswordInputPopup', link: '/en/components/password-input-popup' },
+						{ text: 'Radio', link: '/en/components/radio' },
+						{ text: 'RadioInput', link: '/en/components/radio-input' },
+						{ text: 'RadioPopup', link: '/en/components/radio-popup' }
 					]
 				},
 				{

@@ -190,6 +190,24 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '密码输入弹出框',
 				enName: 'PasswordInputPopup',
 				desc: '密码 / 验证码弹层一体化组件，内置格子与数字键盘，v-model:value 自动收敛 maxlength，支持多种键盘类型。'
+			},
+			{
+				name: 'radio',
+				zhName: '单选框',
+				enName: 'Radio',
+				desc: '在一组备选项中进行单选：组容器 + 单项双形态，自绘圆环圆点图标，支持 round / square 形状、颜色 / 大小定制与只读禁用。'
+			},
+			{
+				name: 'radio-input',
+				zhName: '单选输入框',
+				enName: 'RadioInput',
+				desc: '单选框的表单输入形态：只读触发器 + 弹层单选，选中项 label 回显、自绘清空按钮回写 null。'
+			},
+			{
+				name: 'radio-popup',
+				zhName: '单选弹出框',
+				enName: 'RadioPopup',
+				desc: '单选框的弹层形态：底部弹层单选，options 数组驱动渲染 + field-names 映射 + footer 插槽，点选不自动关闭。'
 			}
 		]
 	},

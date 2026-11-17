@@ -598,3 +598,15 @@
 - **原因**：`UniElement.animate` 只在 App 端实现；web 端 UniElement 的 style 是代理对象，setProperty 不映射到 DOM style attribute
 - **修法**：闪烁类"状态切换动画"统一用 **setInterval 半周期切换响应式 ref + 模板拼 hidden class**——纯 Vue 响应式，零 DOM 操作，全平台一致，无需条件编译
 - **验证**：250ms 采样序列 `true,false,false,true,true,false` 有翻转即闪烁正常
+
+## 2026-11-17 m-radio 单选框四件套（自绘圆环图标，对标 Vant Radio）
+
+### #97 ucss 中 border-width 必须伴随显式 border-style: solid 才渲染
+- **现象**：演示页自定义图标 `.custom-icon` 只写 `border-width: 1px; border-color: #c8c9cc`，圆环边框不渲染（200% 缩放截图确认只有灰点无圈）；补 `border-style: solid` 后边框立即可见
+- **原因**：ucss 的 border-style 默认值为 `none`（与 W3C 一致），只设 width/color 时边框整体不绘制；且 uni-app x web 运行时 `getComputedStyle` 对 border-width 返回误导性 `0px`（即使实际渲染正常，如 `.m-radio__ring` 三件套齐写时边框可见但 computed 仍报 0）——**样式验证一律以截图视觉为准，不信任 web 端 computed 测量**
+- **修法**：任何描边元素三件套齐写：`border-width` + `border-style: solid` + `border-color`
+
+### #98 禁用态视觉禁用「透明度叠加浅色描边」方案
+- **现象**：radio 禁用态首版用 icon 容器 `opacity: 0.5`，但未选外环本就是浅灰（#c8c9cc），叠加后与可选态肉眼无差异（用户验收截图打回）；另一隐藏坑：弹层选项文字走 default 插槽显式色，label 禁用色类挂在外层 view 上根本罩不住
+- **修法**：Vant 同款显式方案——禁用未选 = 外环灰底填充（`$m-radio-icon-disabled-background`），禁用选中 = 环点退灰（`$m-radio-icon-disabled-color`，checkedColor 覆盖在禁用态短路）；插槽文字禁用色须在**文字元素本层**加变体类（`m-radio-popup__label--disabled`），挂父层无效
+- **推论**：默认态描边越浅，禁用态越要用「填充/换色」而非「透明度」表达；凡经插槽显式设置文字色的组件，禁用变体类必须给到 text 本层

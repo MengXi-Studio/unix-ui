@@ -237,6 +237,21 @@ export const routes: RouteConfig[] = [
 		meta: { title: '弹出层 Popup' },
 	},
 	{
+		path: 'pages-sub/radio-input/radio-input',
+		name: 'radio-input',
+		meta: { title: '单选输入框 RadioInput' },
+	},
+	{
+		path: 'pages-sub/radio-popup/radio-popup',
+		name: 'radio-popup',
+		meta: { title: '单选弹出框 RadioPopup' },
+	},
+	{
+		path: 'pages-sub/radio/radio',
+		name: 'radio',
+		meta: { title: '单选框 Radio' },
+	},
+	{
 		path: 'pages-sub/space/space',
 		name: 'space',
 		meta: { title: '间距 Space' },

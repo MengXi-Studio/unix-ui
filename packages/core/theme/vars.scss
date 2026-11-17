@@ -774,3 +774,59 @@ $m-password-input-info-font-size: 12px !default;
 $m-password-input-error-info-color: $m-color-danger !default;
 /** 禁用态透明度 */
 $m-password-input-disabled-opacity: $m-disabled-opacity !default;
+
+/* ========== Radio 单选框 ========== */
+/** 单项内边距 */
+$m-radio-padding: 10px 16px !default;
+/** 图标外环尺寸 */
+$m-radio-icon-size: 20px !default;
+/** 外环线宽 */
+$m-radio-icon-border-width: 1px !default;
+/** 未选外环颜色 */
+$m-radio-icon-border-color: $m-text-color-fourth !default;
+/** 选中外环与内点颜色 */
+$m-radio-icon-color: $m-color-primary !default;
+/** square 形态外环圆角 */
+$m-radio-square-radius: 4px !default;
+/** 内点尺寸（图标尺寸的 50%） */
+$m-radio-dot-size: 10px !default;
+/** 图标与文本间距 */
+$m-radio-label-gap: 8px !default;
+/** 文本字号 */
+$m-radio-label-font-size: 14px !default;
+/** 文本行高 */
+$m-radio-label-line-height: 20px !default;
+/** 文本颜色 */
+$m-radio-label-color: $m-text-color !default;
+/** 文本选中颜色 */
+$m-radio-label-checked-color: $m-text-color !default;
+/** 文本禁用颜色 */
+$m-radio-label-disabled-color: $m-text-color-fourth !default;
+/** 禁用态外环灰底填充色 */
+$m-radio-icon-disabled-background: #ebedf0 !default;
+/** 禁用选中态外环与内点颜色 */
+$m-radio-icon-disabled-color: $m-text-color-fourth !default;
+/** 弹层背景色 */
+$m-radio-popup-background: $m-white !default;
+/** 弹层头部内边距 */
+$m-radio-popup-header-padding: 14px 16px !default;
+/** 弹层标题字号 */
+$m-radio-popup-title-font-size: 16px !default;
+/** 弹层标题颜色 */
+$m-radio-popup-title-color: $m-text-color !default;
+/** 弹层关闭图标字号 */
+$m-radio-popup-close-icon-size: 18px !default;
+/** 弹层关闭图标颜色 */
+$m-radio-popup-close-icon-color: $m-text-color-fourth !default;
+/** 弹层选项区高度 */
+$m-radio-popup-options-height: 278px !default;
+/** 输入框触发层层级 */
+$m-radio-input-trigger-z-index: 1 !default;
+/** 输入框清空按钮层级 */
+$m-radio-input-clear-z-index: 2 !default;
+/** 输入框清空按钮宽度 */
+$m-radio-input-clear-width: 40px !default;
+/** 输入框清空图标字号 */
+$m-radio-input-clear-icon-size: 16px !default;
+/** 输入框清空图标颜色 */
+$m-radio-input-clear-color: $m-text-color-fourth !default;

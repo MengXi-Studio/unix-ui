@@ -1,0 +1,223 @@
+<template>
+	<view class="page">
+		<demo-navbar title="单选弹出框" subtitle="RadioPopup" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="basicShow = true">打开弹层单选</m-button>
+					<text class="caption" style="margin-top: 8px;">options 数组驱动 + 底部弹层 + footer 确定按钮（当前：{{ valueText(basicValue) }}）</text>
+				</view>
+
+				<text class="section" id="field-names">自定义字段名</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="fieldsShow = true">field-names 映射（text / code / off）</m-button>
+					<text class="caption" style="margin-top: 8px;">field-names 自定义 label / value / disabled 字段（当前：{{ valueText(fieldsValue) }}）</text>
+				</view>
+
+				<text class="section" id="disabled">禁用与只读项</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="disabledShow = true">禁用选项 + 只读弹层</m-button>
+					<text class="caption" style="margin-top: 8px;">disabled 项灰显不可选；readonly 弹层整体只读（当前：{{ valueText(disabledValue) }}）</text>
+				</view>
+
+				<text class="section" id="direction">横向排列</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="dirShow = true">direction="horizontal"</m-button>
+					<text class="caption" style="margin-top: 8px;">弹层内选项横排换行（当前：{{ valueText(dirValue) }}）</text>
+				</view>
+
+				<text class="section" id="options-height">自定义选项区高度</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="heightShow = true">options-height=200</m-button>
+					<text class="caption" style="margin-top: 8px;">options-height 覆盖主题变量高度，超出滚动（当前：{{ valueText(heightValue) }}）</text>
+				</view>
+
+				<text class="section" id="events">事件</text>
+				<view class="card">
+					<m-button block plain type="primary" @click="eventShow = true">click-item / close / update:show</m-button>
+					<text class="caption" style="margin-top: 8px;">点选后弹层不自动关闭；最近事件：{{ lastEvent }}</text>
+				</view>
+			</view>
+		</scroll-view>
+
+		<!-- 基础用法 -->
+		<m-radio-popup
+			v-model:show="basicShow"
+			v-model:value="basicValue"
+			:options="basicOptions"
+			title="选择产线"
+			@change="onBasicChange"
+		>
+			<template #footer>
+				<view class="popup-footer">
+					<m-button block type="primary" @click="basicShow = false">确定</m-button>
+				</view>
+			</template>
+		</m-radio-popup>
+
+		<!-- 自定义字段名 -->
+		<m-radio-popup
+			v-model:show="fieldsShow"
+			v-model:value="fieldsValue"
+			:options="fieldOptions"
+			:field-names="customFields"
+			title="选择渠道"
+		/>
+
+		<!-- 禁用与只读 -->
+		<m-radio-popup
+			v-model:show="disabledShow"
+			v-model:value="disabledValue"
+			:options="disabledOptions"
+			title="禁用与只读"
+		/>
+		<m-radio-popup
+			v-model:show="readonlyShow"
+			v-model:value="readonlyValue"
+			:options="basicOptions"
+			title="只读弹层"
+			readonly
+		/>
+
+		<!-- 横向排列 -->
+		<m-radio-popup
+			v-model:show="dirShow"
+			v-model:value="dirValue"
+			:options="basicOptions"
+			title="横向排列"
+			direction="horizontal"
+		/>
+
+		<!-- 自定义高度 -->
+		<m-radio-popup
+			v-model:show="heightShow"
+			v-model:value="heightValue"
+			:options="longOptions"
+			title="自定义高度"
+			:options-height="200"
+		/>
+
+		<!-- 事件 -->
+		<m-radio-popup
+			v-model:show="eventShow"
+			v-model:value="eventValue"
+			:options="basicOptions"
+			title="事件演示"
+			@click-item="onItemClick"
+			@close="onPopupClose"
+		/>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '单选弹出框 RadioPopup', name: 'radio-popup' })
+
+	import { RadioValue, radioValueText } from '@/uni_modules/m-ui-x/components/m-radio-group/radio.uts'
+	import { RadioFieldNames } from '@/uni_modules/m-ui-x/components/m-radio-group/radio.uts'
+
+	/** 各弹层显隐 */
+	const basicShow = ref(false)
+	const fieldsShow = ref(false)
+	const disabledShow = ref(false)
+	const readonlyShow = ref(false)
+	const dirShow = ref(false)
+	const heightShow = ref(false)
+	const eventShow = ref(false)
+
+	/** 各弹层选中值 */
+	const basicValue = ref<RadioValue | null>(null)
+	const fieldsValue = ref<RadioValue | null>(null)
+	const disabledValue = ref<RadioValue | null>(null)
+	const readonlyValue = ref<RadioValue | null>('line-1')
+	const dirValue = ref<RadioValue | null>(null)
+	const heightValue = ref<RadioValue | null>(null)
+	const eventValue = ref<RadioValue | null>(null)
+
+	/** 最近触发的事件文案 */
+	const lastEvent = ref('（无）')
+
+	/** 基础选项数据 */
+	const basicOptions = ref<UTSJSONObject[]>([
+		{ label: '机加工一线', value: 'line-1' },
+		{ label: '注塑二线', value: 'line-2' },
+		{ label: '压铸四线', value: 'line-3' }
+	] as UTSJSONObject[])
+
+	/** 自定义字段名选项数据（text / code / off） */
+	const fieldOptions = ref<UTSJSONObject[]>([
+		{ text: '线上渠道', code: 'online' },
+		{ text: '线下渠道', code: 'offline' },
+		{ text: '合作渠道（禁用）', code: 'partner', off: true }
+	] as UTSJSONObject[])
+
+	/** 自定义字段名映射 */
+	const customFields = ref<RadioFieldNames>({ label: 'text', value: 'code', disabled: 'off' } as RadioFieldNames)
+
+	/** 禁用演示选项（含禁用项） */
+	const disabledOptions = ref<UTSJSONObject[]>([
+		{ label: '选项 a', value: 'a' },
+		{ label: '选项 b（禁用）', value: 'b', disabled: true },
+		{ label: '选项 c', value: 'c' }
+	] as UTSJSONObject[])
+
+	/** 高度演示选项（长列表撑滚动） */
+	const longOptions = ref<UTSJSONObject[]>([]);
+	(() => {
+		const arr = longOptions.value
+		for (let i = 1; i <= 20; i++) {
+			arr.push({ label: '选项 ' + i, value: i } as UTSJSONObject)
+		}
+	})()
+
+	/**
+	 * 值的展示文本（null 显示「未选」）
+	 */
+	function valueText(v: RadioValue | null): string {
+		if (v == null) return '未选'
+		return radioValueText(v)
+	}
+
+	/**
+	 * 选中值变化日志
+	 */
+	function logChange(tag: string, v: RadioValue | null) {
+		console.log('radio-popup ' + tag + ' change: ' + valueText(v))
+	}
+
+	/**
+	 * 基础弹层 change 记录
+	 */
+	function onBasicChange() {
+		logChange('基础弹层', basicValue.value)
+	}
+
+	/**
+	 * click-item 事件记录
+	 */
+	function onItemClick(index: number) {
+		lastEvent.value = 'click-item: ' + index.toString()
+	}
+
+	/**
+	 * close 事件记录
+	 */
+	function onPopupClose() {
+		lastEvent.value = 'close'
+	}
+</script>
+
+<style lang="scss">
+	/* 弹层底部按钮区 */
+	.popup-footer {
+		padding: 12px 16px 24px;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

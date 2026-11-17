@@ -98,6 +98,12 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		picker: 'pages-sub/picker/picker'
 		/** 弹出层 Popup */
 		popup: 'pages-sub/popup/popup'
+		/** 单选输入框 RadioInput */
+		'radio-input': 'pages-sub/radio-input/radio-input'
+		/** 单选弹出框 RadioPopup */
+		'radio-popup': 'pages-sub/radio-popup/radio-popup'
+		/** 单选框 Radio */
+		radio: 'pages-sub/radio/radio'
 		/** 间距 Space */
 		space: 'pages-sub/space/space'
 		/** 状态栏 StatusBar */

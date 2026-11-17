@@ -124,7 +124,10 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'NumberKeyboard 数字键盘', link: '/components/number-keyboard' },
 						{ text: 'NumberKeyboardPopup 数字键盘弹出框', link: '/components/number-keyboard-popup' },
 						{ text: 'PasswordInput 密码输入格子', link: '/components/password-input' },
-						{ text: 'PasswordInputPopup 密码输入弹出框', link: '/components/password-input-popup' }
+						{ text: 'PasswordInputPopup 密码输入弹出框', link: '/components/password-input-popup' },
+						{ text: 'Radio 单选框', link: '/components/radio' },
+						{ text: 'RadioInput 单选输入框', link: '/components/radio-input' },
+						{ text: 'RadioPopup 单选弹出框', link: '/components/radio-popup' }
 					]
 				},
 				{

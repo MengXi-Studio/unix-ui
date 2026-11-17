@@ -282,6 +282,24 @@
 					}
 				},
 				{
+					"path": "radio-input/radio-input",
+					"style": {
+						"navigationBarTitleText": "单选输入框 RadioInput"
+					}
+				},
+				{
+					"path": "radio-popup/radio-popup",
+					"style": {
+						"navigationBarTitleText": "单选弹出框 RadioPopup"
+					}
+				},
+				{
+					"path": "radio/radio",
+					"style": {
+						"navigationBarTitleText": "单选框 Radio"
+					}
+				},
+				{
 					"path": "space/space",
 					"style": {
 						"navigationBarTitleText": "间距 Space"

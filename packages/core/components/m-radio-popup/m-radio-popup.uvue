@@ -1,0 +1,340 @@
+<template>
+	<!-- 单选弹出框：m-popup（底部弹层）+ m-radio-group 组合（弹层单选形态组件）。
+	     选项由 options 数组渲染（field-names 映射），头部标题 + 关闭按钮，
+	     当前选中值 v-model:value 受控（null 未选），点选后弹层不自动关闭。 -->
+	<m-popup
+		:show="show"
+		:position="position"
+		:round="round"
+		:close-on-click-overlay="closeOnClickOverlay"
+		:safe-area-inset-bottom="safeAreaInsetBottom"
+		:z-index="zIndex"
+		:duration="duration"
+		@update:show="onPopupUpdateShow"
+		@close="onPopupClose"
+		@closed="onPopupClosed"
+	>
+		<view :class="rootClass" :style="customStyle">
+			<view v-if="showHeader" class="m-radio-popup__header">
+				<text class="m-radio-popup__title">{{ title }}</text>
+				<view v-if="closeable" class="m-radio-popup__close" @click="onCloseClick">
+					<m-icon :name="closeIcon" custom-class="m-radio-popup__close-icon" />
+				</view>
+			</view>
+			<scroll-view class="m-radio-popup__body" :direction="direction == 'vertical' ? 'vertical' : 'horizontal'" :style="bodyStyle">
+				<m-radio-group
+					:value="value"
+					:disabled="disabled"
+					:readonly="readonly"
+					:direction="direction"
+					:icon-size="iconSize"
+					:checked-color="checkedColor"
+					:shape="shape"
+					@update:value="onGroupValueChange"
+					@change="onGroupChange"
+				>
+					<view :class="listClass">
+						<m-radio
+							v-for="(opt, i) in items"
+							:key="i"
+							:name="opt.value"
+							:disabled="opt.disabled"
+							:label-position="labelPosition"
+							@click="onItemClick(opt, i)"
+						>
+							<text :class="opt.disabled ? 'm-radio-popup__label m-radio-popup__label--disabled' : 'm-radio-popup__label'">{{ opt.label }}</text>
+						</m-radio>
+					</view>
+				</m-radio-group>
+			</scroll-view>
+			<slot name="footer"></slot>
+		</view>
+	</m-popup>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-radio-popup 单选弹出框：m-popup + m-radio-group 组合组件。
+	 * 选项由 options 数组驱动渲染（label / value / disabled + field-names 映射，
+	 * 对齐 checkbox-popup 的 options 驱动先例），不要求使用者写子组件模板；
+	 * 弹层行为归 m-popup，选中值经 m-radio-group 受控并回写；
+	 * 点选后弹层不自动关闭（单选即选即定，关闭走头部关闭钮 / 遮罩）。
+	 */
+	import { RadioValue, RadioShape, RadioDirection, RadioLabelPosition, RadioFieldNames, DEFAULT_RADIO_FIELD_NAMES, radioOptionLabel, radioOptionValue, radioOptionDisabled } from '../m-radio-group/radio.uts'
+	import { IconName } from '../m-icon/icons.uts'
+	import MPopup from '../m-popup/m-popup.uvue'
+	import MIcon from '../m-icon/m-icon.uvue'
+	import MRadioGroup from '../m-radio-group/m-radio-group.uvue'
+	import MRadio from '../m-radio/m-radio.uvue'
+
+	/** 弹出方位（与 m-popup 的 position 取值一致） */
+	type RadioPopupPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'
+
+	/** 渲染项快照（options 解析结果） */
+	type RadioPopupItem = {
+		label: string
+		value: string | number
+		disabled: boolean
+	}
+
+	type Props = {
+		/** 是否显示弹出层（v-model:show） */
+		show?: boolean
+		/** 当前选中项标识（v-model:value；null 未选） */
+		value?: RadioValue | null
+		/** 选项数组（label / value / disabled 字段） */
+		options?: UTSJSONObject[]
+		/** 弹层标题 */
+		title?: string
+		/** 是否显示头部（标题 + 关闭按钮） */
+		showHeader?: boolean
+		/** 是否显示关闭图标 */
+		closeable?: boolean
+		/** 关闭图标名 */
+		closeIcon?: IconName
+		/** 是否禁用全部选项 */
+		disabled?: boolean
+		/** 是否只读全部选项 */
+		readonly?: boolean
+		/** 排列方向 */
+		direction?: RadioDirection
+		/** 形状 */
+		shape?: RadioShape
+		/** 图标尺寸（number 补 px / string 原样） */
+		iconSize?: string | number
+		/** 选中态颜色 */
+		checkedColor?: string
+		/** 文本位置 */
+		labelPosition?: RadioLabelPosition
+		/** 自定义选项字段名（null 用默认 label / value / disabled） */
+		fieldNames?: RadioFieldNames
+		/** 选项区高度 px（0 用主题变量） */
+		optionsHeight?: number
+		/** 弹出方位（透传 m-popup） */
+		position?: RadioPopupPosition
+		/** 弹层圆角（透传 m-popup） */
+		round?: boolean
+		/** 点击遮罩是否关闭（透传 m-popup） */
+		closeOnClickOverlay?: boolean
+		/** 底部安全区适配（透传 m-popup） */
+		safeAreaInsetBottom?: boolean
+		/** 层级（透传 m-popup） */
+		zIndex?: number
+		/** 动画时长秒（透传 m-popup） */
+		duration?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		value: null,
+		options: null,
+		title: '',
+		showHeader: true,
+		closeable: true,
+		closeIcon: 'cross',
+		disabled: false,
+		readonly: false,
+		direction: 'vertical',
+		shape: 'round',
+		iconSize: '',
+		checkedColor: '',
+		labelPosition: 'right',
+		fieldNames: null,
+		optionsHeight: 0,
+		position: 'bottom',
+		round: true,
+		closeOnClickOverlay: true,
+		safeAreaInsetBottom: true,
+		zIndex: 99,
+		duration: 0.3,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 弹层显隐变化（v-model:show；遮罩与关闭图标均经此派发） */
+		'update:show': [value: boolean]
+		/** 选中值变化（v-model:value） */
+		'update:value': [value: RadioValue | null]
+		/** 选中值变化 */
+		change: [value: RadioValue | null]
+		/** 点击选项（含禁用态） */
+		'click-item': [index: number]
+		/** 点击关闭图标 */
+		close: []
+	}>()
+
+	/** 字段名映射（null 兜底默认） */
+	const fields = computed<RadioFieldNames>(() => {
+		const f = props.fieldNames
+		if (f != null) return f
+		return DEFAULT_RADIO_FIELD_NAMES
+	})
+
+	/** 根类名：基础类 + customClass */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-radio-popup'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 选项区样式：optionsHeight 覆盖主题默认高度 */
+	const bodyStyle = computed<string>(() => {
+		if (props.optionsHeight > 0) {
+			return 'height: ' + props.optionsHeight.toString() + 'px;'
+		}
+		return ''
+	})
+
+	/** 列表容器类名：方向变体 */
+	const listClass = computed<string>(() => {
+		let cls = 'm-radio-popup__list'
+		if (props.direction == 'horizontal') cls += ' m-radio-popup__list--horizontal'
+		return cls
+	})
+
+	/** options 解析为渲染项快照（value 为 null 的项跳过，无法参与单选） */
+	const items = computed<RadioPopupItem[]>(() => {
+		const list: RadioPopupItem[] = []
+		const opts = props.options
+		if (opts == null) return list
+		for (let i = 0; i < opts.length; i++) {
+			const opt = opts[i]
+			const v = radioOptionValue(opt, fields.value)
+			if (v == null) continue
+			list.push({
+				label: radioOptionLabel(opt, fields.value),
+				value: v,
+				disabled: props.disabled || radioOptionDisabled(opt, fields.value)
+			})
+		}
+		return list
+	})
+
+	/**
+	 * 弹层显隐回写（m-popup update:show → 本组件 v-model:show）
+	 */
+	const onPopupUpdateShow = (v: boolean) => {
+		emit('update:show', v)
+	}
+
+	/**
+	 * 弹层关闭事件透传
+	 */
+	const onPopupClose = () => {
+		emit('close')
+	}
+
+	/**
+	 * 弹层关闭动画结束事件透传
+	 */
+	const onPopupClosed = () => {}
+
+	/**
+	 * 关闭图标点击：派发 update:show(false) 与 close
+	 */
+	const onCloseClick = () => {
+		emit('update:show', false)
+		emit('close')
+	}
+
+	/**
+	 * 组选中值变化回写外部（m-radio-group 的 update:value / change 透传）
+	 */
+	const onGroupValueChange = (v: RadioValue | null) => {
+		emit('update:value', v)
+	}
+
+	/**
+	 * 组选中值变化透传（change 事件与 update:value 同源）
+	 */
+	const onGroupChange = (v: RadioValue | null) => {
+		emit('change', v)
+	}
+
+	/**
+	 * 选项点击透传（选中值变化经 m-radio-group 内部 watch 回写）
+	 */
+	const onItemClick = (opt: RadioPopupItem, index: number) => {
+		emit('click-item', index)
+	}
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 弹层根 */
+	.m-radio-popup {
+		background-color: $m-radio-popup-background;
+	}
+
+	/* 头部：标题 + 关闭按钮 */
+	.m-radio-popup__header {
+		position: relative;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding: $m-radio-popup-header-padding;
+	}
+
+	/* 标题 */
+	.m-radio-popup__title {
+		font-size: $m-radio-popup-title-font-size;
+		font-weight: 600;
+		color: $m-radio-popup-title-color;
+	}
+
+	/* 关闭按钮（右侧居中） */
+	.m-radio-popup__close {
+		position: absolute;
+		right: 16px;
+		top: 0;
+		bottom: 0;
+		justify-content: center;
+		align-items: center;
+	}
+
+	/* 关闭图标 */
+	.m-radio-popup__close-icon {
+		font-size: $m-radio-popup-close-icon-size;
+		color: $m-radio-popup-close-icon-color;
+	}
+
+	/* 选项滚动区 */
+	.m-radio-popup__body {
+		height: $m-radio-popup-options-height;
+	}
+
+	/* 选项列表：纵向 */
+	.m-radio-popup__list {
+		flex-direction: column;
+		padding-bottom: 8px;
+	}
+
+	/* 选项列表：横向 */
+	.m-radio-popup__list--horizontal {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	/* 选项文字 */
+	.m-radio-popup__label {
+		font-size: $m-radio-label-font-size;
+		color: $m-radio-label-color;
+	}
+
+	/* 选项文字禁用态（插槽内文字色显式设置，须在本层覆盖） */
+	.m-radio-popup__label--disabled {
+		color: $m-radio-label-disabled-color;
+	}
+</style>

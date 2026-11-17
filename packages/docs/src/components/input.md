@@ -157,6 +157,7 @@ label / 必填星号 / 校验与错误提示属表单体系，留待未来 `m-fo
 | disabled | 是否禁用 | boolean | `false` |
 | readonly | 是否只读：外观正常但不可编辑（经原生 disabled 模拟，只读态不可聚焦） | boolean | `false` |
 | confirm-type | 键盘确认键文字，可选值 `done` `search` `send` `go` `next`，仅单行生效 | string | `''` |
+| input-align | 输入文字对齐方式，可选值 `left` `center` `right` | string | `'left'` |
 | auto-height | 多行是否自动增高，仅 `type=textarea` 生效 | boolean | `false` |
 | formatter | 输入内容格式化函数，配合 `format-trigger` 指定生效时机 | (value: string) => string | `null` |
 | format-trigger | formatter 生效时机，可选值 `onChange` `onBlur` | FormatTrigger | `onChange` |
@@ -177,6 +178,7 @@ label / 必填星号 / 校验与错误提示属表单体系，留待未来 `m-fo
 | focus | 获得焦点时触发 | event: UniEvent |
 | blur | 失去焦点时触发 | event: UniEvent |
 | clear | 点击清除图标后触发 | — |
+| confirm | 点击键盘确认键（回车 / 搜索键）时触发 | value: string |
 
 ### Slots
 

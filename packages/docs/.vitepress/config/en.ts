@@ -36,7 +36,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			{ text: 'Guide', link: '/en/guide/introduction' },
 			{ text: 'Components', link: '/en/components/button' },
 			{ text: 'Tools', link: '/en/tools/date' },
-			{ text: 'Changelog v0.6.0', link: '/en/changelog' },
+			{ text: 'Changelog v0.7.0', link: '/en/changelog' },
 			{
 				text: 'Links',
 				items: [
@@ -115,7 +115,8 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Radio', link: '/en/components/radio' },
 						{ text: 'RadioInput', link: '/en/components/radio-input' },
 						{ text: 'RadioPopup', link: '/en/components/radio-popup' },
-						{ text: 'Rate', link: '/en/components/rate' }
+						{ text: 'Rate', link: '/en/components/rate' },
+						{ text: 'Search', link: '/en/components/search' }
 					]
 				},
 				{

@@ -10,6 +10,7 @@
 			<input
 				v-if="props.type != 'textarea'"
 				:class="controlClass"
+				:style="controlStyle"
 				:value="props.modelValue"
 				:type="nativeType"
 				:password="props.type == 'password' && !eyeOpen"
@@ -23,10 +24,12 @@
 				@input="onInput"
 				@focus="onFocusInput"
 				@blur="onBlurInput"
+				@confirm="onConfirmInput"
 			/>
 			<textarea
 				v-else
 				:class="controlClass"
+				:style="controlStyle"
 				:value="props.modelValue"
 				:auto-height="props.autoHeight"
 				:placeholder="props.placeholder"
@@ -37,6 +40,7 @@
 				@input="onInput"
 				@focus="onFocusTextarea"
 				@blur="onBlurTextarea"
+				@confirm="onConfirmInput"
 			/>
 			<!-- 清除图标：clearable 且有值且（always 或聚焦中）且非只读禁用 -->
 			<view v-if="showClear" class="m-input__clear" @click="onClear">
@@ -97,6 +101,8 @@
 		readonly?: boolean
 		/** 键盘右下角按钮文字：done / search / send / go / next，仅单行生效 */
 		confirmType?: string
+		/** 输入文字对齐方式 */
+		inputAlign?: 'left' | 'center' | 'right'
 		/** 多行时是否自动增高，仅 type=textarea 生效 */
 		autoHeight?: boolean
 		/** 输入内容格式化函数；配合 format-trigger 指定生效时机（未传时内部为 null） */
@@ -132,6 +138,7 @@
 		disabled: false,
 		readonly: false,
 		confirmType: '',
+		inputAlign: 'left',
 		autoHeight: false,
 		formatter: null,
 		formatTrigger: 'onChange',
@@ -150,6 +157,8 @@
 		focus: [event: UniEvent]
 		blur: [event: UniEvent]
 		clear: []
+		/** 键盘确认（回车 / 搜索键） */
+		confirm: [value: string]
 	}>()
 
 	const slots = useSlots()
@@ -365,6 +374,15 @@
 	}
 
 	/**
+	 * 键盘确认（回车 / 搜索键）：派发 confirm 事件，值为当前输入内容
+	 *
+	 * @param event 确认事件
+	 */
+	function onConfirmInput(event: UniInputConfirmEvent): void {
+		emit('confirm', event.detail.value)
+	}
+
+	/**
 	 * 明文切换图标点击：切换密文 / 明文（经 :password 属性驱动原生显隐）
 	 */
 	function onToggleEye(): void {
@@ -428,6 +446,12 @@
 		let style = props.customStyle
 		if (style != '' && !style.endsWith(';')) style += ';'
 		return style
+	})
+
+	/** 输入控件内联样式：input-align 非默认时写 text-align */
+	const controlStyle = computed<string>(() => {
+		if (props.inputAlign == 'left') return ''
+		return 'text-align: ' + props.inputAlign + ';'
 	})
 
 	/** 输入控件类名：禁用文本色 / textarea 高度形态（min-height 与 auto-height 互斥） */

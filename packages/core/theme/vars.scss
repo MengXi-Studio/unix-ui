@@ -850,3 +850,47 @@ $m-rate-icon-color: $m-color-danger !default;
 $m-rate-icon-void-color: $m-text-color-fourth !default;
 /** 禁用态图标颜色（选中与未选共用） */
 $m-rate-icon-disabled-color: $m-text-color-fourth !default;
+
+/* ========== Search 搜索 ========== */
+/** 搜索框上下内边距 */
+$m-search-padding-y: 10px !default;
+/** 搜索框左右内边距 */
+$m-search-padding-x: 12px !default;
+/** 搜索框外部背景色 */
+$m-search-background: #f2f2f2 !default;
+/** 输入区高度 */
+$m-search-field-height: 34px !default;
+/** 输入区左右内边距 */
+$m-search-field-padding: 0 8px !default;
+/** 输入区背景色 */
+$m-search-field-background: $m-white !default;
+/** 输入区方形圆角 */
+$m-search-field-radius: $m-radius-md !default;
+/** 输入区圆形圆角 */
+$m-search-field-radius-round: $m-radius-max !default;
+/** 框内左侧文本与图标间距 */
+$m-search-label-gap: 4px !default;
+/** 框内左侧文本颜色 */
+$m-search-label-color: $m-text-color !default;
+/** 框内左侧文本字号 */
+$m-search-label-font-size: 14px !default;
+/** 框内图标颜色 */
+$m-search-icon-color: $m-text-color-fourth !default;
+/** 框内图标字号 */
+$m-search-icon-size: 16px !default;
+/** 框内图标内边距 */
+$m-search-icon-padding: 0 2px !default;
+/** 搜索框外左侧插槽与输入区间距 */
+$m-search-action-gap: 8px !default;
+/** 右侧按钮内边距 */
+$m-search-action-padding: 0 8px !default;
+/** 右侧按钮文字颜色 */
+$m-search-action-color: $m-text-color !default;
+/** 右侧按钮文字字号 */
+$m-search-action-font-size: 14px !default;
+/** 错误提示颜色（兼错误态边框色） */
+$m-search-error-color: $m-color-danger !default;
+/** 错误提示字号 */
+$m-search-error-font-size: 12px !default;
+/** 错误提示内边距 */
+$m-search-error-padding: 0 $m-search-padding-x 8px $m-search-padding-x !default;

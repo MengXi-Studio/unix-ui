@@ -257,6 +257,11 @@ export const routes: RouteConfig[] = [
 		meta: { title: '评分 Rate' },
 	},
 	{
+		path: 'pages-sub/search/search',
+		name: 'search',
+		meta: { title: '搜索 Search' },
+	},
+	{
 		path: 'pages-sub/space/space',
 		name: 'space',
 		meta: { title: '间距 Space' },

@@ -1,0 +1,444 @@
+<template>
+	<!-- 搜索框：外层行容器（left 插槽 + 输入区 + 右侧按钮 + 错误提示）。
+	     输入区视觉（背景 / 圆角 / 边框 / 高度）由 m-search 自绘的 field 承担，
+	     m-input 以 inlaid 形态嵌在其内，仅负责输入与清空。 -->
+	<view :class="rootClass" :style="customStyle" @click="onRootClick">
+		<view :class="rowClass" :style="rowStyle">
+			<view v-if="hasLeftSlot" class="m-search__left">
+				<slot name="left"></slot>
+			</view>
+
+			<view :class="fieldClass" :style="fieldStyle" @click="onClickInput">
+				<m-input
+					ref="inputRef"
+					:model-value="value"
+					:placeholder="placeholder"
+					:maxlength="maxlength"
+					:clearable="clearable"
+					:clear-trigger="clearTrigger"
+					:disabled="disabled"
+					:readonly="readonly"
+					:inlaid="true"
+					:formatter="formatter"
+					:input-align="inputAlign"
+					@update:model-value="onInputValue"
+					@focus="onFocus"
+					@blur="onBlur"
+					@confirm="onConfirm"
+					@clear="onClear"
+				>
+					<template #prepend>
+						<!-- 单行包裹：m-input 的 prepend 容器默认列向排列，多个节点会上下堆叠撑高输入区 -->
+						<view class="m-search__prepend">
+							<slot name="label">
+								<text v-if="label != ''" class="m-search__label">{{ label }}</text>
+							</slot>
+							<view class="m-search__icon" @click.stop="onClickLeftIcon">
+								<slot name="left-icon">
+									<m-icon :name="leftIcon" custom-class="m-search__icon-glyph" />
+								</slot>
+							</view>
+						</view>
+					</template>
+					<template #append>
+						<view v-if="hasRightIcon" class="m-search__icon" @click.stop="onClickRightIcon">
+							<slot name="right-icon">
+								<m-icon :name="rightIconName" custom-class="m-search__icon-glyph" />
+							</slot>
+						</view>
+					</template>
+				</m-input>
+			</view>
+
+			<view v-if="showAction" class="m-search__action" @click="onActionClick">
+				<slot name="action">
+					<text class="m-search__action-text">{{ actionText }}</text>
+				</slot>
+			</view>
+		</view>
+
+		<text v-if="errorMessage != ''" class="m-search__error">{{ errorMessage }}</text>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-search 搜索框。
+	 * 组合 m-input（inlaid 形态）承载输入 / 清空 / 聚焦 / 只读禁用 / 格式化，
+	 * 自身负责搜索框外观（背景 / 圆角 / 高度 / 错误边框）、左侧文本与图标、右侧按钮与错误提示。
+	 * 键盘确认派发 search；右侧按钮按 actionType 派发 cancel 或 search（action 插槽自行处理）。
+	 */
+	import { IconName } from '../m-icon/icons.uts'
+	import MIcon from '../m-icon/m-icon.uvue'
+	import MInput from '../m-input/m-input.uvue'
+
+	/** 右侧按钮语义：cancel 取消（Vant）/ search 搜索（Sard） */
+	type SearchActionType = 'cancel' | 'search'
+	/** 输入框形状 */
+	type SearchShape = 'square' | 'round'
+	/** 输入文字对齐 */
+	type SearchAlign = 'left' | 'center' | 'right'
+	/** 清除图标显示时机 */
+	type SearchClearTrigger = 'focus' | 'always'
+
+	type Props = {
+		/** 输入值（v-model:value） */
+		value?: string
+		/** 框内左侧文本 */
+		label?: string
+		/** 输入框形状 */
+		shape?: SearchShape
+		/** 搜索框外部背景色（空用主题值） */
+		background?: string
+		/** 输入区背景色（空用主题值） */
+		inputBackground?: string
+		/** 占位符 */
+		placeholder?: string
+		/** 最大输入长度，-1 不限制 */
+		maxlength?: number
+		/** 是否启用清除图标 */
+		clearable?: boolean
+		/** 清除图标显示时机 */
+		clearTrigger?: SearchClearTrigger
+		/** 是否挂载即聚焦 */
+		autofocus?: boolean
+		/** 是否显示右侧按钮 */
+		showAction?: boolean
+		/** 右侧按钮文案 */
+		actionText?: string
+		/** 右侧按钮语义 */
+		actionType?: SearchActionType
+		/** 框内左侧图标 */
+		leftIcon?: IconName
+		/** 框内右侧图标（null 不显示） */
+		rightIcon?: IconName | null
+		/** 输入文字对齐方式 */
+		inputAlign?: SearchAlign
+		/** 是否禁用 */
+		disabled?: boolean
+		/** 是否只读 */
+		readonly?: boolean
+		/** 是否错误态（输入区边框标红） */
+		error?: boolean
+		/** 错误提示文案（空不展示） */
+		errorMessage?: string
+		/** 输入内容格式化函数（透传 m-input） */
+		formatter?: ((value: string) => string) | null
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: '',
+		label: '',
+		shape: 'square',
+		background: '',
+		inputBackground: '',
+		placeholder: '请输入搜索关键词',
+		maxlength: -1,
+		clearable: true,
+		clearTrigger: 'focus',
+		autofocus: false,
+		showAction: false,
+		actionText: '取消',
+		actionType: 'cancel',
+		leftIcon: 'search',
+		rightIcon: null,
+		inputAlign: 'left',
+		disabled: false,
+		readonly: false,
+		error: false,
+		errorMessage: '',
+		formatter: null,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 输入值变化（v-model:value） */
+		'update:value': [value: string]
+		/** 输入值变化（值变即派发） */
+		change: [value: string]
+		/** 确定搜索（键盘确认 / actionType='search' 的按钮） */
+		search: [value: string]
+		/** 取消（actionType='cancel' 的按钮） */
+		cancel: []
+		/** 点击清除按钮 */
+		clear: []
+		/** 聚焦 */
+		focus: [event: UniEvent]
+		/** 失焦 */
+		blur: [event: UniEvent]
+		/** 点击输入区域 */
+		'click-input': [event: MouseEvent]
+		/** 点击框内左图标 */
+		'click-left-icon': [event: MouseEvent]
+		/** 点击框内右图标 */
+		'click-right-icon': [event: MouseEvent]
+		/** 点击组件 */
+		click: [event: MouseEvent]
+	}>()
+
+	/** 槽位检测（uvue 需索引访问读取具名插槽） */
+	const slots = useSlots()
+
+	/** m-input 实例（focus / blur 转发） */
+	const inputRef = ref<ComponentPublicInstance | null>(null)
+
+	/** 是否传入搜索框外左侧插槽 */
+	const hasLeftSlot = computed<boolean>(() => slots['left'] != null)
+
+	/** 是否显示框内右图标（prop 或插槽） */
+	const hasRightIcon = computed<boolean>(() => props.rightIcon != null || slots['right-icon'] != null)
+
+	/** 右图标字形名（未传时回落 search，仅占位，实际渲染由 hasRightIcon 控制） */
+	const rightIconName = computed<IconName>(() => {
+		const r = props.rightIcon
+		return r == null ? 'search' : r
+	})
+
+	/** 根节点类名：自定义类名拼接 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-search'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 行容器类名：未自定义外部背景时挂主题背景类 */
+	const rowClass = computed<string>(() => {
+		let cls = 'm-search__row'
+		if (props.background == '') cls += ' m-search__row--bg'
+		return cls
+	})
+
+	/** 行容器内联样式：自定义外部背景色 */
+	const rowStyle = computed<string>(() => {
+		if (props.background == '') return ''
+		return 'background-color: ' + props.background + ';'
+	})
+
+	/** 输入区类名：圆角形态 / 错误态 */
+	const fieldClass = computed<string>(() => {
+		let cls = 'm-search__field'
+		if (props.shape == 'round') cls += ' m-search__field--round'
+		if (props.error) cls += ' m-search__field--error'
+		return cls
+	})
+
+	/** 输入区内联样式：自定义背景色 */
+	const fieldStyle = computed<string>(() => {
+		if (props.inputBackground == '') return ''
+		return 'background-color: ' + props.inputBackground + ';'
+	})
+
+	/**
+	 * 输入变化：同步 v-model 并派发 change（搜索场景为值变即派发）
+	 *
+	 * @param v 最新输入值
+	 */
+	function onInputValue(v: string) {
+		emit('update:value', v)
+		emit('change', v)
+	}
+
+	/**
+	 * 键盘确认（回车 / 搜索键）：派发 search
+	 *
+	 * @param v 当前输入值
+	 */
+	function onConfirm(v: string) {
+		emit('search', v)
+	}
+
+	/**
+	 * 聚焦：转发 m-input 的 focus 事件
+	 */
+	function onFocus(e: UniEvent) {
+		emit('focus', e)
+	}
+
+	/**
+	 * 失焦：转发 m-input 的 blur 事件
+	 */
+	function onBlur(e: UniEvent) {
+		emit('blur', e)
+	}
+
+	/**
+	 * 清除：转发 m-input 的 clear 事件
+	 */
+	function onClear() {
+		emit('clear')
+	}
+
+	/**
+	 * 输入区域点击：派发 click-input
+	 */
+	function onClickInput(e: MouseEvent) {
+		emit('click-input', e)
+	}
+
+	/**
+	 * 框内左图标点击：派发 click-left-icon
+	 */
+	function onClickLeftIcon(e: MouseEvent) {
+		emit('click-left-icon', e)
+	}
+
+	/**
+	 * 框内右图标点击：派发 click-right-icon
+	 */
+	function onClickRightIcon(e: MouseEvent) {
+		emit('click-right-icon', e)
+	}
+
+	/**
+	 * 右侧按钮点击：有 action 插槽时交给外部处理，否则按 actionType 派发 search / cancel
+	 */
+	function onActionClick(e: MouseEvent) {
+		emit('click', e)
+		if (slots['action'] != null) return
+		if (props.actionType == 'search') {
+			emit('search', props.value)
+			return
+		}
+		emit('cancel')
+	}
+
+	/**
+	 * 根节点点击：派发 click
+	 */
+	function onRootClick(e: MouseEvent) {
+		emit('click', e)
+	}
+
+	/**
+	 * 聚焦输入框（转发 m-input 实例方法）
+	 */
+	function focus() {
+		const inst = inputRef.value
+		if (inst != null) inst.$callMethod('focus')
+	}
+
+	/**
+	 * 失焦输入框（转发 m-input 实例方法）
+	 */
+	function blur() {
+		const inst = inputRef.value
+		if (inst != null) inst.$callMethod('blur')
+	}
+
+	defineExpose({
+		focus,
+		blur
+	})
+
+	onMounted(() => {
+		if (props.autofocus) nextTick(() => focus())
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 根节点：纵向容器（输入行 + 错误提示） */
+	.m-search {
+		flex-direction: column;
+	}
+
+	/* 输入行：横向排布（left 插槽 + 输入区 + 右侧按钮） */
+	.m-search__row {
+		flex-direction: row;
+		align-items: center;
+		padding: $m-search-padding-y $m-search-padding-x;
+	}
+
+	/* 默认外部背景 */
+	.m-search__row--bg {
+		background-color: $m-search-background;
+	}
+
+	/* 搜索框外左侧插槽容器 */
+	.m-search__left {
+		margin-right: $m-search-action-gap;
+	}
+
+	/* 输入区：视觉主体（高度 / 圆角 / 背景 / 边框都在此层） */
+	.m-search__field {
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+		height: $m-search-field-height;
+		padding: $m-search-field-padding;
+		border-width: $m-border-width;
+		border-style: solid;
+		border-color: transparent;
+		border-radius: $m-search-field-radius;
+		background-color: $m-search-field-background;
+		overflow: hidden;
+	}
+
+	/* 圆形形态 */
+	.m-search__field--round {
+		border-radius: $m-search-field-radius-round;
+	}
+
+	/* 错误态：边框标红（仅换色，边框已由基础类预留） */
+	.m-search__field--error {
+		border-color: $m-search-error-color;
+	}
+
+	/* 框内左侧区域（label + 图标）：强制单行，避免列向堆叠撑高输入区 */
+	.m-search__prepend {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	/* 框内左侧文本 */
+	.m-search__label {
+		margin-right: $m-search-label-gap;
+		font-size: $m-search-label-font-size;
+		color: $m-search-label-color;
+	}
+
+	/* 框内图标容器 */
+	.m-search__icon {
+		flex-direction: row;
+		align-items: center;
+		padding: $m-search-icon-padding;
+	}
+
+	/* 框内图标字形 */
+	.m-search__icon-glyph {
+		font-size: $m-search-icon-size;
+		color: $m-search-icon-color;
+	}
+
+	/* 右侧按钮 */
+	.m-search__action {
+		flex-direction: row;
+		align-items: center;
+		padding: $m-search-action-padding;
+	}
+
+	/* 右侧按钮文字 */
+	.m-search__action-text {
+		font-size: $m-search-action-font-size;
+		color: $m-search-action-color;
+	}
+
+	/* 错误提示行 */
+	.m-search__error {
+		padding: $m-search-error-padding;
+		font-size: $m-search-error-font-size;
+		color: $m-search-error-color;
+	}
+</style>

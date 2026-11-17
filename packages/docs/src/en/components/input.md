@@ -157,6 +157,7 @@ Note: the `value` area of `m-cell` is right-aligned by default; add `text-align:
 | disabled | Whether disabled | boolean | `false` |
 | readonly | Whether readonly: looks normal but not editable (simulated via native disabled, cannot be focused) | boolean | `false` |
 | confirm-type | Confirm key text, one of `done` `search` `send` `go` `next`, single-line only | string | `''` |
+| input-align | Text alignment, one of `left` `center` `right` | string | `'left'` |
 | auto-height | Auto height for textarea, only for `type=textarea` | boolean | `false` |
 | formatter | Value formatter, applies at the moment set by `format-trigger` | (value: string) => string | `null` |
 | format-trigger | When the formatter applies, one of `onChange` `onBlur` | FormatTrigger | `onChange` |
@@ -177,6 +178,7 @@ Note: the `value` area of `m-cell` is right-aligned by default; add `text-align:
 | focus | Fires when focused | event: UniEvent |
 | blur | Fires when blurred | event: UniEvent |
 | clear | Fires after tapping the clear icon | — |
+| confirm | Fires when the keyboard confirm key (enter / search) is tapped | value: string |
 
 ### Slots
 

@@ -214,6 +214,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '评分',
 				enName: 'Rate',
 				desc: '评分组件，支持半星、滑动评分、自定义图标 / 颜色 / 尺寸 / 数量、可清空、只读小数展示与禁用。'
+			},
+			{
+				name: 'search',
+				zhName: '搜索',
+				enName: 'Search',
+				desc: '搜索场景输入框，支持圆角 / 背景定制、清除、键盘搜索、取消或搜索按钮、左右图标、错误提示与内容对齐。'
 			}
 		]
 	},

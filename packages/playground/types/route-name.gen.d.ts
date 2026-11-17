@@ -106,6 +106,8 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		radio: 'pages-sub/radio/radio'
 		/** 评分 Rate */
 		rate: 'pages-sub/rate/rate'
+		/** 搜索 Search */
+		search: 'pages-sub/search/search'
 		/** 间距 Space */
 		space: 'pages-sub/space/space'
 		/** 状态栏 StatusBar */

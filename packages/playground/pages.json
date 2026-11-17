@@ -306,6 +306,12 @@
 					}
 				},
 				{
+					"path": "search/search",
+					"style": {
+						"navigationBarTitleText": "搜索 Search"
+					}
+				},
+				{
 					"path": "space/space",
 					"style": {
 						"navigationBarTitleText": "间距 Space"

@@ -7,6 +7,7 @@
 		position="bottom"
 		:round="round"
 		:close-on-click-overlay="closeOnClickOverlay"
+		:overlay="!transparent"
 		:safe-area-inset-bottom="safeAreaInsetBottom"
 		:z-index="zIndex"
 		:duration="duration"
@@ -18,8 +19,11 @@
 		@click-overlay="onPopupClickOverlay"
 	>
 		<view class="m-number-keyboard-popup">
+			<!-- 无遮罩时的顶部投影条，用于与页面分隔（transparent + showShadow） -->
+			<view v-if="showShadow" class="m-number-keyboard-popup__shadow"></view>
 			<view v-if="showToolbar" class="m-number-keyboard-popup__toolbar">
 				<view
+					v-if="showCancel"
 					class="m-number-keyboard-popup__action"
 					hover-class="m-number-keyboard-popup__action--active"
 					:hover-stay-time="80"
@@ -29,8 +33,11 @@
 						<text class="m-number-keyboard-popup__action-text">{{ cancelButtonText }}</text>
 					</slot>
 				</view>
-				<text class="m-number-keyboard-popup__title">{{ title }}</text>
+				<view class="m-number-keyboard-popup__title-wrap">
+					<text class="m-number-keyboard-popup__title">{{ title }}</text>
+				</view>
 				<view
+					v-if="showConfirm"
 					class="m-number-keyboard-popup__action m-number-keyboard-popup__action--right"
 					hover-class="m-number-keyboard-popup__action--active"
 					:hover-stay-time="80"
@@ -102,6 +109,14 @@
 		confirmButtonText?: string
 		/** 弹层圆角 */
 		round?: boolean
+		/** 遮罩透明（无黑色蒙层，页面内容仍可见） */
+		transparent?: boolean
+		/** 顶部投影条（无遮罩时将弹层与页面分隔） */
+		showShadow?: boolean
+		/** 是否显示取消按钮 */
+		showCancel?: boolean
+		/** 是否显示完成按钮 */
+		showConfirm?: boolean
 		/** 点击遮罩后是否关闭 */
 		closeOnClickOverlay?: boolean
 		/** 底部安全区 */
@@ -125,6 +140,10 @@
 		cancelButtonText: '取消',
 		confirmButtonText: '完成',
 		round: true,
+		transparent: false,
+		showShadow: false,
+		showCancel: true,
+		showConfirm: true,
 		closeOnClickOverlay: true,
 		safeAreaInsetBottom: true,
 		zIndex: 1,
@@ -235,6 +254,12 @@
 		background-color: $m-number-keyboard-background;
 	}
 
+	/* ========== 顶部投影条（无遮罩分隔） ========== */
+	.m-number-keyboard-popup__shadow {
+		height: 6px;
+		background-color: $m-number-keyboard-shadow-color;
+	}
+
 	/* ========== 工具条（左右按钮各占一半，标题绝对居中） ========== */
 	.m-number-keyboard-popup__toolbar {
 		position: relative;
@@ -246,6 +271,7 @@
 
 	.m-number-keyboard-popup__action {
 		flex: 1;
+		flex-direction: row;
 		padding: 0 4px;
 		justify-content: flex-start;
 		align-items: center;
@@ -260,7 +286,7 @@
 	}
 
 	.m-number-keyboard-popup__action-text {
-		font-size: $m-number-keyboard-title-font-size;
+		font-size: $m-number-keyboard-action-font-size;
 		color: $m-number-keyboard-key-color;
 	}
 
@@ -268,14 +294,20 @@
 		color: $m-number-keyboard-button-color;
 	}
 
-	.m-number-keyboard-popup__title {
+	.m-number-keyboard-popup__title-wrap {
 		position: absolute;
 		top: 0;
 		right: 0;
 		bottom: 0;
 		left: 0;
-		text-align: center;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.m-number-keyboard-popup__title {
 		font-size: $m-number-keyboard-title-font-size;
+		font-weight: $m-number-keyboard-title-font-weight;
 		color: $m-number-keyboard-title-color;
 	}
 

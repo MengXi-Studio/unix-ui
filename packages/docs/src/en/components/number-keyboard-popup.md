@@ -85,6 +85,10 @@ With `show-toolbar` off, the `cancel` / `confirm` slots or the side-column close
 | cancelButtonText | Cancel button text | `string` | `'Cancel'` |
 | confirmButtonText | Confirm button text | `string` | `'Done'` |
 | round | Rounded popup corners | `boolean` | `true` |
+| transparent | Transparent overlay (no dark mask, page stays visible) | `boolean` | `false` |
+| showShadow | Top divider strip separating the popup from the page | `boolean` | `false` |
+| showCancel | Whether to show the cancel button | `boolean` | `true` |
+| showConfirm | Whether to show the confirm button | `boolean` | `true` |
 | closeOnClickOverlay | Close when the overlay is tapped | `boolean` | `true` |
 | safeAreaInsetBottom | Bottom safe area | `boolean` | `true` |
 | zIndex | Stacking level | `number` | `1` |

@@ -153,7 +153,9 @@ keyboardRef.value?.$callMethod('shuffle')
 | `$m-number-keyboard-title-height` | `44px` | 弹层工具条高度 |
 | `$m-number-keyboard-title-padding` | `0 16px` | 工具条水平内边距 |
 | `$m-number-keyboard-title-color` | `#323233` | 工具条标题色 |
-| `$m-number-keyboard-title-font-size` | `14px` | 工具条文字字号 |
+| `$m-number-keyboard-title-font-size` | `16px` | 工具条文字字号 |
+| `$m-number-keyboard-title-font-weight` | `600` | 工具条标题字重 |
+| `$m-number-keyboard-action-font-size` | `14px` | 工具条左右按钮字号 |
 | `$m-number-keyboard-button-color` | `#1989fa` | 完成按钮文字色 |
 
 ## 注意事项

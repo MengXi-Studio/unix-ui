@@ -86,6 +86,10 @@ const codeLimit = (key: string): boolean => value.value.length >= 6
 | cancelButtonText | 取消按钮文字 | `string` | `'取消'` |
 | confirmButtonText | 完成按钮文字 | `string` | `'完成'` |
 | round | 弹层圆角 | `boolean` | `true` |
+| transparent | 遮罩透明（无黑色蒙层，页面内容仍可见） | `boolean` | `false` |
+| showShadow | 顶部投影条（无遮罩时与页面分隔） | `boolean` | `false` |
+| showCancel | 是否显示取消按钮 | `boolean` | `true` |
+| showConfirm | 是否显示完成按钮 | `boolean` | `true` |
 | closeOnClickOverlay | 点击遮罩后是否关闭 | `boolean` | `true` |
 | safeAreaInsetBottom | 底部安全区 | `boolean` | `true` |
 | zIndex | 层级 | `number` | `1` |

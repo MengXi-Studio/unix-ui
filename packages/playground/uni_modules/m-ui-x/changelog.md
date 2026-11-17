@@ -1,8 +1,8 @@
 ## 0.7.0 (2026-11-17)
 
-- 新增 `m-number-keyboard` 数字键盘面板：1-9 + 额外键 + 0 + 删除键的纯按键区，不持有输入值，只派发 `input(key)` / `delete` / `close`；`type` 支持 `number` / `digit` / `idcard` / `random`（random 挂载时打乱一次，之后仅 `shuffle()` 重排）；`theme="custom"` 在右侧增加关闭键与跨行删除键；`extra-keys` 取首项作为左下角按键（digit 默认 `.`、idcard 默认 `X`）；`show-delete-key` / `delete-button-text` / `close-button-text` 控制动作键；`disabled-key` 回调返回 true 的键灰显且不派发事件；`extra-key` 插槽自定义额外键；expose `shuffle()`
-- 新增 `m-number-keyboard-popup` 数字键盘弹出框：`m-popup` + 面板组合，默认插槽位于键盘上方承载验证码格 / 金额展示；`title` / `show-toolbar` / `cancel-button-text` / `confirm-button-text` 控制工具条，取消 / 完成派发后自动关闭；透传面板全部 props 与事件
-- 新增 `$m-number-keyboard-*` 主题变量段（键高 / 圆角 / 底色 / 按压态 / 工具条等 14 项）
+- 新增 `m-number-keyboard` 数字键盘面板：1-9 + 0 + 删除键的纯按键区，不持有输入值，只派发 `input(key)` / `delete` / `close`；`type` 支持 `number` / `digit` / `idcard` / `random`（挂载与 `type` 切换时重排，也可调用 `shuffle()` 手动重排）；无额外键时 `0` 加宽占两格填满末行，`digit` / `idcard` 或自定义 `extra-keys` 时额外键位于末行左侧（digit 默认 `.`、idcard 默认 `X`）；`theme="custom"` 用右侧栏替代末行删除键，删除键与关闭键上下平分高度；`show-delete-key` / `delete-button-text` / `close-button-text` 控制动作键；`disabled-key` 回调返回 true 的键灰显且不派发事件；`extra-key` 插槽自定义额外键；expose `shuffle()`
+- 新增 `m-number-keyboard-popup` 数字键盘弹出框：`m-popup` + 面板组合，默认插槽位于键盘上方承载验证码格 / 金额展示（未传插槽时不渲染内容区）；`title` / `show-toolbar` / `show-cancel` / `show-confirm` / `cancel-button-text` / `confirm-button-text` 控制工具条，取消 / 完成派发后自动关闭；`transparent` 去掉黑色蒙层、`show-shadow` 用顶部投影条分隔页面；面板 `close` 在弹层拆为 `close-key`，`close` 仅表示弹层生命周期；`type="random"` 每次打开重新打乱
+- 新增 `$m-number-keyboard-*` 主题变量段（键高 / 圆角 / 底色 / 按压态 / 工具条 / 投影条等 20 项）
 
 ## 0.6.0 (2026-11-15)
 

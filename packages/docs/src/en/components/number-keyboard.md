@@ -152,7 +152,9 @@ The component exposes the following SCSS variables. Override them by defining th
 | `$m-number-keyboard-title-height` | `44px` | Popup toolbar height |
 | `$m-number-keyboard-title-padding` | `0 16px` | Toolbar horizontal padding |
 | `$m-number-keyboard-title-color` | `#323233` | Toolbar title color |
-| `$m-number-keyboard-title-font-size` | `14px` | Toolbar text size |
+| `$m-number-keyboard-title-font-size` | `16px` | Toolbar text size |
+| `$m-number-keyboard-title-font-weight` | `600` | Toolbar title weight |
+| `$m-number-keyboard-action-font-size` | `14px` | Toolbar action button size |
 | `$m-number-keyboard-button-color` | `#1989fa` | Confirm button text color |
 
 ## Notes

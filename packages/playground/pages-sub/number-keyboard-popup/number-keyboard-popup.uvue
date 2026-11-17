@@ -23,6 +23,24 @@
 				<text class="caption">最近事件：{{ basicLog }}</text>
 			</view>
 
+			<text class="section" id="transparent">无遮罩 + 投影条</text>
+			<view class="card">
+				<m-button block @click="openTransparent">打开轻量键盘</m-button>
+				<m-number-keyboard-popup
+					v-model:show="transparentShow"
+					title="无遮罩键盘"
+					transparent
+					show-shadow
+					@input="onTransparentInput"
+					@delete="onTransparentDelete"
+				>
+					<view class="display">
+						<text class="display-text">{{ transparentValue == '' ? '页面内容保持可见' : transparentValue }}</text>
+					</view>
+				</m-number-keyboard-popup>
+				<text class="caption">transparent 去掉黑色蒙层，show-shadow 用顶部投影分隔页面</text>
+			</view>
+
 			<text class="section" id="code">验证码输入</text>
 			<view class="card">
 				<m-button block @click="openCode">输入 6 位验证码</m-button>
@@ -110,6 +128,8 @@
 	const basicShow = ref(false)
 	const basicValue = ref('')
 	const basicLog = ref('无')
+	const transparentShow = ref(false)
+	const transparentValue = ref('')
 	const codeShow = ref(false)
 	const codeValue = ref('')
 	const amountShow = ref(false)
@@ -152,6 +172,10 @@
 	const onBasicDelete = () => { basicValue.value = removeLast(basicValue.value) }
 	const onBasicConfirm = () => { basicLog.value = '确认：' + basicValue.value }
 	const onBasicCancel = () => { basicLog.value = '取消' }
+
+	const openTransparent = () => { transparentShow.value = true }
+	const onTransparentInput = (key: string) => { transparentValue.value = append(transparentValue.value, key) }
+	const onTransparentDelete = () => { transparentValue.value = removeLast(transparentValue.value) }
 
 	const openCode = () => { codeShow.value = true }
 	const onCodeInput = (key: string) => { codeValue.value = append(codeValue.value, key) }

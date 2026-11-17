@@ -716,12 +716,19 @@ $m-number-keyboard-close-background: $m-color-primary !default;
 /** 右侧栏关闭键文字色 */
 $m-number-keyboard-close-color: $m-white !default;
 /** 工具条高度 */
-$m-number-keyboard-title-height: 44px !default;
+$m-number-keyboard-title-height: 48px !default;
 /** 工具条水平内边距 */
 $m-number-keyboard-title-padding: 0 16px !default;
 /** 工具条标题色 */
 $m-number-keyboard-title-color: $m-text-color !default;
 /** 工具条文字字号（标题与按钮共用） */
-$m-number-keyboard-title-font-size: 14px !default;
+/** 工具条标题字号（与其他弹层工具条一致） */
+$m-number-keyboard-title-font-size: 16px !default;
+/** 工具条标题字重 */
+$m-number-keyboard-title-font-weight: 600 !default;
+/** 工具条左右按钮字号（小于标题，形成层级） */
+$m-number-keyboard-action-font-size: 14px !default;
 /** 完成按钮文字色 */
 $m-number-keyboard-button-color: $m-color-primary !default;
+/** 弹层顶部阴影条颜色（transparent + showShadow 时用于分隔页面） */
+$m-number-keyboard-shadow-color: rgba(0, 0, 0, 0.05) !default;

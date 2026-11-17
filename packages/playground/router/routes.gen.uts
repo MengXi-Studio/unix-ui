@@ -202,6 +202,16 @@ export const routes: RouteConfig[] = [
 		meta: { title: '遮罩层 Overlay' },
 	},
 	{
+		path: 'pages-sub/password-input-popup/password-input-popup',
+		name: 'password-input-popup',
+		meta: { title: '密码输入弹出框 PasswordInputPopup' },
+	},
+	{
+		path: 'pages-sub/password-input/password-input',
+		name: 'password-input',
+		meta: { title: '密码输入格子 PasswordInput' },
+	},
+	{
 		path: 'pages-sub/picker-input/picker-input',
 		name: 'picker-input',
 		meta: { title: '选择器输入框 PickerInput' },

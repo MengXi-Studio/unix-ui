@@ -178,6 +178,18 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '数字键盘弹出框',
 				enName: 'NumberKeyboardPopup',
 				desc: '数字键盘弹层组合，输入区插槽承载验证码格与金额展示，取消 / 完成后自动关闭。'
+			},
+			{
+				name: 'password-input',
+				zhName: '密码输入格子',
+				enName: 'PasswordInput',
+				desc: '密码 / 验证码格子面板，支持方框与下划线两种风格、mask 圆点隐藏、聚焦光标闪烁、明文、禁用只读与错误提示。'
+			},
+			{
+				name: 'password-input-popup',
+				zhName: '密码输入弹出框',
+				enName: 'PasswordInputPopup',
+				desc: '密码 / 验证码弹层一体化组件，内置格子与数字键盘，v-model:value 自动收敛 maxlength，支持多种键盘类型。'
 			}
 		]
 	},

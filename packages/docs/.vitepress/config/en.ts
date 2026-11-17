@@ -109,7 +109,9 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'ColorPickerPopup', link: '/en/components/color-picker-popup' },
 						{ text: 'Input', link: '/en/components/input' },
 						{ text: 'NumberKeyboard', link: '/en/components/number-keyboard' },
-						{ text: 'NumberKeyboardPopup', link: '/en/components/number-keyboard-popup' }
+						{ text: 'NumberKeyboardPopup', link: '/en/components/number-keyboard-popup' },
+						{ text: 'PasswordInput', link: '/en/components/password-input' },
+						{ text: 'PasswordInputPopup', link: '/en/components/password-input-popup' }
 					]
 				},
 				{

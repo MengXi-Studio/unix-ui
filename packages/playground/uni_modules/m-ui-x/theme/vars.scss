@@ -732,3 +732,45 @@ $m-number-keyboard-action-font-size: 14px !default;
 $m-number-keyboard-button-color: $m-color-primary !default;
 /** 弹层顶部阴影条颜色（transparent + showShadow 时用于分隔页面） */
 $m-number-keyboard-shadow-color: rgba(0, 0, 0, 0.05) !default;
+
+/* ========== PasswordInput 密码输入格子 ========== */
+/** 格子容器高度（bordered 含边框） */
+$m-password-input-height: 50px !default;
+/** 格子间距（px，number 类型） */
+$m-password-input-gap: 8px !default;
+/** bordered 风格格子圆角 */
+$m-password-input-border-radius: 6px !default;
+/** bordered 常态边框色 */
+$m-password-input-border-color: #ebedf0 !default;
+/** bordered 聚焦态边框色（当前位高亮） */
+$m-password-input-border-color-focus: $m-color-primary !default;
+/** bordered 格子底色 */
+$m-password-input-background: $m-white !default;
+/** underlined 风格底线常态色 */
+$m-password-input-underline-color: #ebedf0 !default;
+/** underlined 聚焦底线色 */
+$m-password-input-underline-color-focus: $m-color-primary !default;
+/** 明文展示字号 */
+$m-password-input-font-size: 20px !default;
+/** 明文 / 圆点文字色 */
+$m-password-input-text-color: $m-text-color !default;
+/** mask 圆点尺寸（view 渲染，非字符） */
+$m-password-input-dot-size: 10px !default;
+/** mask 圆点颜色 */
+$m-password-input-dot-color: $m-text-color !default;
+/** 光标颜色 */
+$m-password-input-cursor-color: $m-text-color !default;
+/** 光标宽度 */
+$m-password-input-cursor-width: 2px !default;
+/** 光标高度（相对格子高度的百分比） */
+$m-password-input-cursor-height: 60% !default;
+/** 光标动画时长（毫秒） */
+$m-password-input-cursor-duration: 1000 !default;
+/** info 提示文字颜色 */
+$m-password-input-info-color: $m-text-color-secondary !default;
+/** info 提示字号 */
+$m-password-input-info-font-size: 12px !default;
+/** errorInfo 错误提示颜色 */
+$m-password-input-error-info-color: $m-color-danger !default;
+/** 禁用态透明度 */
+$m-password-input-disabled-opacity: $m-disabled-opacity !default;

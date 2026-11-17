@@ -84,6 +84,10 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		'number-keyboard': 'pages-sub/number-keyboard/number-keyboard'
 		/** 遮罩层 Overlay */
 		overlay: 'pages-sub/overlay/overlay'
+		/** 密码输入弹出框 PasswordInputPopup */
+		'password-input-popup': 'pages-sub/password-input-popup/password-input-popup'
+		/** 密码输入格子 PasswordInput */
+		'password-input': 'pages-sub/password-input/password-input'
 		/** 选择器输入框 PickerInput */
 		'picker-input': 'pages-sub/picker-input/picker-input'
 		/** 选择器弹出框 PickerPopup */

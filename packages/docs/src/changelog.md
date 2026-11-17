@@ -9,6 +9,9 @@
 - **m-number-keyboard 数字键盘面板**：1-9 + 0 + 删除键的纯按键区，不持有输入值，只派发 `input(key)` / `delete` / `close`；`type` 支持 `number` / `digit` / `idcard` / `random`（挂载与 `type` 切换时重排，也可调用 `shuffle()` 手动重排）；无额外键时 `0` 加宽占两格填满末行，`digit` / `idcard` 或自定义 `extra-keys` 时额外键位于末行左侧（digit 默认 `.`、idcard 默认 `X`）；`theme="custom"` 用右侧栏替代末行删除键，删除键与关闭键上下平分高度；`show-delete-key` / `delete-button-text` / `close-button-text` 控制动作键；`disabled-key` 回调返回 true 的键灰显且不派发事件；`extra-key` 插槽自定义额外键；expose `shuffle()`（详见 [NumberKeyboard](/components/number-keyboard)）
 - **m-number-keyboard-popup 数字键盘弹出框**：`m-popup` + 面板组合，默认插槽位于键盘上方承载验证码格 / 金额展示（未传插槽时不渲染内容区）；`title` / `show-toolbar` / `show-cancel` / `show-confirm` / `cancel-button-text` / `confirm-button-text` 控制工具条（标题 16px / 600、按钮 14px），取消 / 完成派发后自动关闭；`transparent` 去掉黑色蒙层、`show-shadow` 用顶部投影条分隔页面；面板 `close` 在弹层拆为 `close-key`，`close` 仅表示弹层生命周期；`type="random"` 每次打开重新打乱；`shuffle()` 经实例转发（详见 [NumberKeyboardPopup](/components/number-keyboard-popup)）
 - 新增 `$m-number-keyboard-*` 主题变量段（键高 / 圆角 / 底色 / 按压态 / 工具条 / 投影条等 20 项）
+- **m-password-input 密码输入格子**：纯展示不持值，两种视觉风格 `bordered`（圆角方框）/ `underlined`（仅底部 1px 底线）；`mask` 隐藏为圆点、`plain-text` 明文显示；`gap` 格子间距（px number 类型）；`focused` 驱动当前位闪烁光标（setInterval 半周期切换响应式 class，全平台一致）与高亮边框；`disabled` 灰显不派发 `focus`、`readonly` 只读；`info` / `error-info` 下方提示文字（error 优先）（详见 [PasswordInput](/components/password-input)）
+- **m-password-input-popup 密码输入弹出框**：`m-popup` + 格子 + `m-number-keyboard` 一体化组合；`v-model:value` 双向绑定，输入自动收敛 `maxlength=length`；弹层打开自动 `focused` 显示光标、`keyboard-type="random"` 每次打开重新打乱；内置 `disabledKey` 填满后数字键自动禁用；透传格子全部 props + 弹层主题工具条 + 透明投影等（详见 [PasswordInputPopup](/components/password-input-popup)）
+- 新增 `$m-password-input-*` 主题变量段（高度 / gap / 圆角 / 边框 / 底线 / 圆点 / 光标 / 提示文字等 20 项）
 
 ## [0.6.0] - 2026-11-15
 

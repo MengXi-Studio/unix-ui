@@ -574,3 +574,27 @@
 - **写字形顺序**：先 `font.setGlyphOrder(order + [name])`，再 `font["glyf"][name] = glyph`、`font["hmtx"][name] = (adv, lsb)`；反序会触发 `maxp.recalc` 的 `len(glyphOrder) == len(glyphs)` 断言
 - **cmap 只写 format 4 / 12**：format 0 子表仅容纳 0-255，写 PUA 码点会在保存时抛 `assert set(cmap.keys()).issubset(range(256))`
 - **字体验证要硬刷新**：`/static/m-icon.ttf` 无内容哈希，浏览器强缓存旧文件；改字体后必须 Ctrl+Shift+R 才能看到效果
+
+## 2026-11-17 m-password-input 密码输入格子（密码/验证码场景，与 keyboard 配合）
+
+### #93 UTS 禁止函数形式 ref 绑定
+- **现象**：写 `:ref="(el, k) => { if (k === 0) cursorRef = el }"` 编译器报错或 runtime 不生效
+- **原因**：UTS（Kotlin 编译目标）不支持函数形式 ref 绑定；项目里所有组件的 ref 绑定都是普通字符串形式 `ref="spinnerRef"` + `const spinnerRef = ref<UniElement | null>(null)`
+- **修法**：改成 `ref="cursorRef"` 模板绑定 + `const cursorRef = ref<UniElement | null>(null)`。同一时刻只渲染一个光标 view（v-else-if 条件渲染），普通 ref 足够。watch 里用 `flush: 'post'` + `setTimeout` 确保 DOM 渲染后 ref 就绪
+
+### #94 uni-app x 全局类型无需 import
+- **现象**：`import type { UniAnimationKeyframe } from '@dcloudio/uni-app'` 编译器警告 "unused import" 或 runtime 找不到类型
+- **原因**：`UniElement`、`UniAnimationKeyframe`、`UniAnimation` 等是 uni-app x 全局类型（类似全局 JS 类型），直接使用即可，无需 import
+- **修法**：删除 import 语句，模板和 script 里直接用类型名（m-loading、m-color-picker 等项目内组件都是这么写的）
+
+### #95 SCSS 变量写进 script 是 undefined（样式全体失效 + setup 抛错）
+- **现象**：password-input 首版在 `<script>` 里拼内联样式引用 `$m-password-input-cursor-width` 等 SCSS 变量，web 编译日志出现几十条 `Cannot find name '$m-...'` 错误；页面渲染降级——格子不等分、圆点/光标不可见、明文字符错位
+- **原因**：SCSS 变量只在 `<style>` 块的编译期存在，UTS script 里的 `$m-...` 是未定义标识符；运行时取值 undefined → 拼出的内联 style 全部非法被丢弃
+- **修法**：静态样式（圆点/光标/文字/提示）全部移到 `<style>` 扁平 class；script 里只允许 props 驱动的 number 值拼接（如 gap margin）
+- **推论**：聚焦高亮等复合选择器 `.a.b` 拆成运行时拼接的扁平类（`--bordered-active`），ucss 无复合选择器对账
+
+### #96 el.animate 在 web 端不存在；el.style.setProperty 在 web 端 UniElement 代理上无效
+- **现象**：web 端控制台 `Uncaught TypeError: el.animate is not a function`（m-loading 同样写法，web 端动画实际没跑起来）；改用 `el.style.setProperty('opacity', ...)` 降级后 style attribute 仍为空（采样两次 opacity 恒为默认值）
+- **原因**：`UniElement.animate` 只在 App 端实现；web 端 UniElement 的 style 是代理对象，setProperty 不映射到 DOM style attribute
+- **修法**：闪烁类"状态切换动画"统一用 **setInterval 半周期切换响应式 ref + 模板拼 hidden class**——纯 Vue 响应式，零 DOM 操作，全平台一致，无需条件编译
+- **验证**：250ms 采样序列 `true,false,false,true,true,false` 有翻转即闪烁正常

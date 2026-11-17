@@ -122,7 +122,9 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'ColorPickerPopup 颜色选择器弹出框', link: '/components/color-picker-popup' },
 						{ text: 'Input 输入框', link: '/components/input' },
 						{ text: 'NumberKeyboard 数字键盘', link: '/components/number-keyboard' },
-						{ text: 'NumberKeyboardPopup 数字键盘弹出框', link: '/components/number-keyboard-popup' }
+						{ text: 'NumberKeyboardPopup 数字键盘弹出框', link: '/components/number-keyboard-popup' },
+						{ text: 'PasswordInput 密码输入格子', link: '/components/password-input' },
+						{ text: 'PasswordInputPopup 密码输入弹出框', link: '/components/password-input-popup' }
 					]
 				},
 				{

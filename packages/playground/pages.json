@@ -240,6 +240,18 @@
 					}
 				},
 				{
+					"path": "password-input-popup/password-input-popup",
+					"style": {
+						"navigationBarTitleText": "密码输入弹出框 PasswordInputPopup"
+					}
+				},
+				{
+					"path": "password-input/password-input",
+					"style": {
+						"navigationBarTitleText": "密码输入格子 PasswordInput"
+					}
+				},
+				{
 					"path": "picker-input/picker-input",
 					"style": {
 						"navigationBarTitleText": "选择器输入框 PickerInput"

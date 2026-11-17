@@ -194,8 +194,12 @@ Customize with the following SCSS variables (define them in the project root `un
 | Variable | Description | Default |
 | --- | --- | --- |
 | $m-checkbox-padding | Item padding | 10px 16px |
-| $m-checkbox-icon-size | Icon size | 20px |
-| $m-checkbox-icon-color | Unchecked icon color | #1989fa |
+| $m-checkbox-icon-size | Check icon size | 20px |
+| $m-checkbox-icon-color | Checked fill color | #1989fa |
+| $m-checkbox-box-border-color | Unchecked box border color | #c8c9cc |
+| $m-checkbox-box-border-width | Box border width | 1px |
+| $m-checkbox-box-radius | Square box radius | 4px |
+| $m-checkbox-check-icon-size | Checked white check font size | 12px |
 | $m-checkbox-label-gap | Icon-label gap | 8px |
 | $m-checkbox-label-font-size | Label font size | 14px |
 | $m-checkbox-label-color | Label color | #323233 |

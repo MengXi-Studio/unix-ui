@@ -610,3 +610,15 @@
 - **现象**：radio 禁用态首版用 icon 容器 `opacity: 0.5`，但未选外环本就是浅灰（#c8c9cc），叠加后与可选态肉眼无差异（用户验收截图打回）；另一隐藏坑：弹层选项文字走 default 插槽显式色，label 禁用色类挂在外层 view 上根本罩不住
 - **修法**：Vant 同款显式方案——禁用未选 = 外环灰底填充（`$m-radio-icon-disabled-background`），禁用选中 = 环点退灰（`$m-radio-icon-disabled-color`，checkedColor 覆盖在禁用态短路）；插槽文字禁用色须在**文字元素本层**加变体类（`m-radio-popup__label--disabled`），挂父层无效
 - **推论**：默认态描边越浅，禁用态越要用「填充/换色」而非「透明度」表达；凡经插槽显式设置文字色的组件，禁用变体类必须给到 text 本层
+
+### #99 m-checkbox 未选态实色勾的隐匿成因：字形缺失期视觉「碰巧正确」
+- **现象**：checkbox 上线以来未选态一直「显示为空框」，0.7.0 重新生成 m-icon 字体（#92）后用户截图暴露未选项渲染蓝色实色勾
+- **根因**：m-checkbox 未选与选中渲染的是同一个 `m-icon 'success'` 字形，无任何分支区分——早期字体里 success 字形缺失（#92 之前字体生成有缺陷），未选/选中一起不可见，未选态「碰巧」看着像空框才通过验收；字体修好后勾形显形，错误才浮现
+- **修法**：未选 = 描边空框（round 圆环 / square 圆角方框 view），选中 = 实心填充 + 白勾（v-else-if 只在选中渲染 success），indeterminate = 实心底 + 白横杠（60% 宽白杠，替换原 inline calc 方案）
+- **教训**：依赖字体图标的「条件视觉」必须在字形可见的真实状态下验收；组件状态分支不能共用同一字形而无样式区分，验收截图要覆盖全部状态组合（尤其「未选」这种默认态）
+
+### #100 inlaid 嵌入 flex 行容器的拉伸必须加在组件根节点，且只用 grow 不动 basis
+- **现象**：m-input inlaid 嵌入 m-cell__value 后，值区剩余宽度（标题与输入框之间的空隙，实测 503px 值区 vs 151px 控件）点击无反应——0.6.0 的修复只给控件层加了 min-height（高度塌陷），宽度塌陷漏修；演示页用 `custom-style="flex: 1"` 补偿也无效
+- **根因**：m-input 模板是「根（.m-input，无宽高约束）→ body（flex:1）」两层，custom-style 落在 body 层——body 的 flex:1 只在根收缩出的 151px 内部分配，等于没生效；**使用者侧 custom-style 够不到组件根节点**
+- **修法**：inlaid 时根节点加 `m-input--inlaid-root { flex-grow: 1; flex-shrink: 1; flex-basis: auto; }`——只用 grow 不用 `flex: 1` 简写（basis 0% 会在 column + auto 高度容器中塌陷高度，uni-app x 所有 view 默认 flex column，* -input 组合组件内嵌 m-input 时正是这种容器）；basis auto 下 grow 只吃剩余空间，cell 内兄弟节点（箭头等）不被挤压
+- **教训**：两层容器组件（根 + 视觉主体）的拉伸属性必须加在「父级 flex 容器的直接子项」即根上；`flex: 1` 简写 ≠ `flex-grow: 1`，在不确定父级主轴方向时显式展开并保留 basis auto 最稳

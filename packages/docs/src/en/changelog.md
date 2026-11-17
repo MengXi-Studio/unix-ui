@@ -13,6 +13,11 @@ Adds a numeric keypad panel and popup for verification codes, payment passwords,
 - **m-password-input-popup**: `m-popup` + grid + `m-number-keyboard` all-in-one combo; `v-model:value` two-way binding with automatic `maxlength=length` enforcement; the grid auto-focuses on popup open, and `keyboard-type="random"` reshuffles on every open; an internal `disabledKey` automatically blocks keys once `length` is reached; inherits all grid props plus the popup toolbar, transparent overlay, shadow strip and keyboard configuration (see [PasswordInputPopup](/en/components/password-input-popup))
 - New `$m-password-input-*` theme variable block (20 keys covering height, gap, radius, border, underline, dot, cursor and hint text)
 
+### Fixed
+
+- **m-checkbox rendered a solid check mark in the unchecked state**: the unchecked and checked states shared the same `m-icon` 'success' glyph, which became visible once the m-icon font was fixed. The unchecked state now renders as a standard outlined empty box (`round` ring / `square` rounded square), the checked state is a solid fill (`$m-checkbox-icon-color` / `checked-color`) with a white check, and `indeterminate` is a solid fill with a white dash; added the `$m-checkbox-box-border-color` / `$m-checkbox-box-border-width` / `$m-checkbox-box-radius` / `$m-checkbox-check-icon-size` theme variables
+- **`m-input` with `inlaid` did not stretch to the value area width when embedded in `m-cell`**: the 0.6.0 control-level `min-height` only fixed the height collapse — the inlaid root node did not participate in flex stretching, so tapping the gap between the title and the input (the remaining value-area width) did nothing. The inlaid root node now uses `flex-grow: 1` (`flex-basis` kept as `auto`, so the column-container height does not collapse and sibling nodes in the cell are not squeezed), letting the body / control fill the value area; the demo page removed the user-side `custom-style="flex: 1"` compensation (now built into the component)
+
 ## [0.6.0] - 2026-11-15
 
 Adds the date, date range, time, time range, generic picker and lunar picker series, and completes the internal migration of the date / time panels to `m-picker` (no public API changes).

@@ -195,7 +195,11 @@ added: 0.5.0
 | --- | --- | --- |
 | $m-checkbox-padding | 单项内边距 | 10px 16px |
 | $m-checkbox-icon-size | 勾选图标尺寸 | 20px |
-| $m-checkbox-icon-color | 未选中图标颜色 | #1989fa |
+| $m-checkbox-icon-color | 选中态填充颜色 | #1989fa |
+| $m-checkbox-box-border-color | 未选空框描边色 | #c8c9cc |
+| $m-checkbox-box-border-width | 空框描边宽度 | 1px |
+| $m-checkbox-box-radius | 方形框圆角 | 4px |
+| $m-checkbox-check-icon-size | 选中态白勾字号 | 12px |
 | $m-checkbox-label-gap | 图标与文本间距 | 8px |
 | $m-checkbox-label-font-size | 文本字号 | 14px |
 | $m-checkbox-label-color | 文本颜色 | #323233 |

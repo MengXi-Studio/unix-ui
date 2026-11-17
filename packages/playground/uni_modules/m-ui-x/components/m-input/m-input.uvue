@@ -393,12 +393,13 @@
 		blur
 	})
 
-	/** 根节点类名：纵向容器 + compact 块级撑满（flex:1 / stretch 必须作用于 m-compact 的直接子项，即根节点） */
+	/** 根节点类名：纵向容器 + compact 块级撑满（flex:1 / stretch 必须作用于 m-compact 的直接子项，即根节点）+ inlaid 拉伸 */
 	const rootClass = computed<string>(() => {
 		let cls = 'm-input'
 		if (compact != null && compact.block) {
 			cls += ' m-input--compact-' + (compact.direction == 'vertical' ? 'vblock' : 'hblock')
 		}
+		if (props.inlaid) cls += ' m-input--inlaid-root'
 		if (props.customClass != '') cls += ' ' + props.customClass
 		return cls
 	})
@@ -455,6 +456,15 @@
 	/* ========== 根节点（纵向容器：边框容器 + 字数统计行） ========== */
 	.m-input {
 		flex-direction: column;
+	}
+
+	/* inlaid 嵌入形态：根节点在父级 flex 行容器（如 m-cell__value）中拉伸填满剩余空间——
+	   只加 grow 不改 basis（auto），column 容器中高度不塌陷、cell 内兄弟节点（箭头等）不被挤压；
+	   之前仅在控件层加 min-height，值区剩余宽度点击无反应的问题由此修复 */
+	.m-input--inlaid-root {
+		flex-grow: 1;
+		flex-shrink: 1;
+		flex-basis: auto;
 	}
 
 	/* ========== 边框容器（视觉主体） ========== */

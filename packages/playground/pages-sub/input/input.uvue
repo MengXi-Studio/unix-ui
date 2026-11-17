@@ -109,16 +109,16 @@
 				<m-cell-group inset>
 					<m-cell title="收货人" required>
 						<template #value>
-							<m-input v-model="cellNameValue" :inlaid="true" placeholder="请输入姓名" custom-style="flex: 1; text-align: left;" />
+							<m-input v-model="cellNameValue" :inlaid="true" placeholder="请输入姓名" custom-style="text-align: left;" />
 						</template>
 					</m-cell>
 					<m-cell title="联系电话">
 						<template #value>
-							<m-input v-model="cellPhoneValue" type="tel" :inlaid="true" placeholder="请输入手机号" custom-style="flex: 1; text-align: left;" />
+							<m-input v-model="cellPhoneValue" type="tel" :inlaid="true" placeholder="请输入手机号" custom-style="text-align: left;" />
 						</template>
 					</m-cell>
 				</m-cell-group>
-				<text class="caption">inlaid 清除边框与内边距后嵌入 m-cell；value 区默认右对齐，custom-style 补 text-align: left 让输入文本左对齐（label 与校验留待未来 m-form-item）</text>
+				<text class="caption">inlaid 嵌入 m-cell：根节点自动拉伸填满 value 区（点击值区任意位置均可聚焦输入），custom-style 的 text-align: left 让输入文本左对齐（label 与校验留待未来 m-form-item）</text>
 			</view>
 
 		</view>

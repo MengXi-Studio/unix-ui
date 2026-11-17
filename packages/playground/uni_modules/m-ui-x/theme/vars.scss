@@ -351,6 +351,14 @@ $m-checkbox-padding: 10px 16px !default;
 $m-checkbox-icon-size: 20px !default;
 /** 未选中图标颜色（描边） */
 $m-checkbox-icon-color: $m-color-primary !default;
+/** 未选空框描边色 */
+$m-checkbox-box-border-color: $m-text-color-fourth !default;
+/** 空框描边宽度 */
+$m-checkbox-box-border-width: 1px !default;
+/** 方形框圆角 */
+$m-checkbox-box-radius: 4px !default;
+/** 选中态白勾字号 */
+$m-checkbox-check-icon-size: 12px !default;
 /** 图标与文本间距 */
 $m-checkbox-label-gap: 8px !default;
 /** 文本字号 */

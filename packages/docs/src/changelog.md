@@ -13,6 +13,11 @@
 - **m-password-input-popup 密码输入弹出框**：`m-popup` + 格子 + `m-number-keyboard` 一体化组合；`v-model:value` 双向绑定，输入自动收敛 `maxlength=length`；弹层打开自动 `focused` 显示光标、`keyboard-type="random"` 每次打开重新打乱；内置 `disabledKey` 填满后数字键自动禁用；透传格子全部 props + 弹层主题工具条 + 透明投影等（详见 [PasswordInputPopup](/components/password-input-popup)）
 - 新增 `$m-password-input-*` 主题变量段（高度 / gap / 圆角 / 边框 / 底线 / 圆点 / 光标 / 提示文字等 20 项）
 
+### 修复
+
+- **m-checkbox 未选中态误渲染为实色勾**：未选与选中渲染同一个 `m-icon` 'success' 字形，m-icon 字体修复后勾形显形暴露。未选态改为标准描边空框（`round` 圆环 / `square` 圆角方框），选中态实心填充（`$m-checkbox-icon-color` / `checked-color`）+ 白勾，indeterminate 实心底 + 白横杠；新增 `$m-checkbox-box-border-color` / `$m-checkbox-box-border-width` / `$m-checkbox-box-radius` / `$m-checkbox-check-icon-size` 主题变量
+- **m-input `inlaid` 嵌入 m-cell 时值区宽度不拉伸、点击区缺失**：0.6.0 的控件层 `min-height` 只解决了高度塌陷，inlaid 根节点未参与 flex 拉伸，标题与输入框之间的值区空隙点击无反应。inlaid 根节点新增 `flex-grow: 1`（`flex-basis` 保持 auto，column 容器高度不塌陷、cell 内兄弟节点不被挤压），body / 控件随之填满 value 区；演示页移除用户侧补偿的 `custom-style="flex: 1"`（组件层已内建）
+
 ## [0.6.0] - 2026-11-15
 
 新增日期、日期范围、时间、时间范围、通用选择器与农历选择等系列组件，并完成日期 / 时间面板向 `m-picker` 的内部迁移（对外契约不变）。

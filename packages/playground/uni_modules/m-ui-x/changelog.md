@@ -12,6 +12,8 @@
 - 新增 `m-radio-popup` 单选弹出框：`m-popup` + `m-radio-group` 组合，options 数组驱动渲染（label / value / disabled + field-names 映射，对齐 checkbox-popup 先例）；点选后弹层不自动关闭（受控模型一致，需即选即关可监听 change）；头部标题 + 关闭钮，footer 插槽；透传弹层方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长
 - 新增 `m-radio-input` 单选输入框：`m-input` 只读触发器 + 单选弹层，选中项 label 回显（无匹配回退值文本）；自绘清空按钮回写 `null` 并派发 `clear`（m-input 内置 clearable 位于触发层下会被挡住）；`disabled` / `clearable` / `border` / `inlaid` 可配
 - 新增 `$m-radio-*` 主题变量段（内边距 / 外环 / 内点 / 文本 / 弹层 / 触发层与清空按钮等 27 项）
+- 新增 `m-rate` 评分组件：`v-model:value` 绑定 `number`（0 = 未评分），交互分值吸附 0.5 网格；单颗星由「未选字形 + 宽度百分比裁切层」叠成，`allow-half` 时裁切 50% 实现半星；`readonly` + `allow-half` 按小数位裁切，可展示 3.3 这类任意小数；`icon` / `void-icon` 接 m-icon 字形名（默认 `star` / `star-o`）并提供同名插槽（作用域 `{ index, active }`）；`count` / `size` / `gap` / `color` / `void-color` / `disabled-color` 定制；`clearable` 再次点击当前分值清零；`touchable` 默认开启，按住横向拖动连续选分（Web 桌面 click 与触摸共用同一套坐标换算）；`disabled` 灰显、`readonly` 视觉正常，均不响应交互但照常派发 `click`；MP 端 `v-for` 内不声明同名插槽，回退内置字形
+- 新增 `$m-rate-*` 主题变量段（图标尺寸 / 间距 / 选中色 / 未选色 / 禁用色 5 项）
 
 ## 0.6.0 (2026-11-15)
 

@@ -838,3 +838,15 @@ $m-radio-input-clear-width: 40px !default;
 $m-radio-input-clear-icon-size: 16px !default;
 /** 输入框清空图标颜色 */
 $m-radio-input-clear-color: $m-text-color-fourth !default;
+
+/* ========== Rate 评分 ========== */
+/** 图标默认尺寸 */
+$m-rate-icon-size: 20px !default;
+/** 图标默认间距 */
+$m-rate-gap: 4px !default;
+/** 选中态图标颜色 */
+$m-rate-icon-color: $m-color-danger !default;
+/** 未选中态图标颜色 */
+$m-rate-icon-void-color: $m-text-color-fourth !default;
+/** 禁用态图标颜色（选中与未选共用） */
+$m-rate-icon-disabled-color: $m-text-color-fourth !default;

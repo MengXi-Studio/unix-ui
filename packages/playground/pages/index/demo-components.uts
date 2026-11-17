@@ -208,6 +208,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '单选弹出框',
 				enName: 'RadioPopup',
 				desc: '单选框的弹层形态：底部弹层单选，options 数组驱动渲染 + field-names 映射 + footer 插槽，点选不自动关闭。'
+			},
+			{
+				name: 'rate',
+				zhName: '评分',
+				enName: 'Rate',
+				desc: '评分组件，支持半星、滑动评分、自定义图标 / 颜色 / 尺寸 / 数量、可清空、只读小数展示与禁用。'
 			}
 		]
 	},

@@ -104,6 +104,8 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		'radio-popup': 'pages-sub/radio-popup/radio-popup'
 		/** 单选框 Radio */
 		radio: 'pages-sub/radio/radio'
+		/** 评分 Rate */
+		rate: 'pages-sub/rate/rate'
 		/** 间距 Space */
 		space: 'pages-sub/space/space'
 		/** 状态栏 StatusBar */

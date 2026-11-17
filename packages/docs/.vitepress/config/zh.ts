@@ -127,7 +127,8 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'PasswordInputPopup 密码输入弹出框', link: '/components/password-input-popup' },
 						{ text: 'Radio 单选框', link: '/components/radio' },
 						{ text: 'RadioInput 单选输入框', link: '/components/radio-input' },
-						{ text: 'RadioPopup 单选弹出框', link: '/components/radio-popup' }
+						{ text: 'RadioPopup 单选弹出框', link: '/components/radio-popup' },
+						{ text: 'Rate 评分', link: '/components/rate' }
 					]
 				},
 				{

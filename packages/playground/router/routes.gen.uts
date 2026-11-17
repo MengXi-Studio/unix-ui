@@ -252,6 +252,11 @@ export const routes: RouteConfig[] = [
 		meta: { title: '单选框 Radio' },
 	},
 	{
+		path: 'pages-sub/rate/rate',
+		name: 'rate',
+		meta: { title: '评分 Rate' },
+	},
+	{
 		path: 'pages-sub/space/space',
 		name: 'space',
 		meta: { title: '间距 Space' },

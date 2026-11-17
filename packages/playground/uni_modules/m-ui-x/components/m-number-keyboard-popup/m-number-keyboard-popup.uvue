@@ -41,7 +41,7 @@
 					</slot>
 				</view>
 			</view>
-			<view class="m-number-keyboard-popup__content">
+			<view class="m-number-keyboard-popup__content" v-if="$slots.default != null">
 				<slot></slot>
 			</view>
 			<m-number-keyboard
@@ -137,20 +137,32 @@
 		input: [key: string]
 		/** 删除键点击 */
 		delete: []
-		/** 右侧栏关闭键点击 */
-		close: []
+		/** 右侧栏关闭键点击（随后关闭弹层） */
+		'close-key': []
 		/** 取消（随后关闭） */
 		cancel: []
 		/** 完成（随后关闭） */
 		confirm: []
 		open: []
 		opened: []
+		/** 弹层开始关闭（生命周期，非关闭键点击） */
+		close: []
 		closed: []
 		'click-overlay': [event: MouseEvent]
 	}>()
 
 	/** 内部面板实例（转发 shuffle） */
 	const keyboard = ref<ComponentPublicInstance | null>(null)
+
+	/**
+	 * 重新打乱数字键序（仅 random 类型）
+	 */
+	function shuffle() {
+		const inst = keyboard.value
+		if (inst != null) {
+			inst.$callMethod('shuffle')
+		}
+	}
 
 	const onPopupUpdateShow = (value: boolean) => {
 		emit('update:show', value)
@@ -162,6 +174,10 @@
 
 	const onPopupOpened = () => {
 		emit('opened')
+		// 乱序键盘每次打开都重新打乱（与 Vant random-key-order 行为一致）
+		if (props.type == 'random') {
+			shuffle()
+		}
 	}
 
 	const onPopupClose = () => {
@@ -185,7 +201,7 @@
 	}
 
 	const onKeyboardClose = () => {
-		emit('close')
+		emit('close-key')
 		emit('update:show', false)
 	}
 
@@ -199,16 +215,6 @@
 	const onConfirmTap = () => {
 		emit('confirm')
 		emit('update:show', false)
-	}
-
-	/**
-	 * 重新打乱数字键序（仅 random 类型）
-	 */
-	function shuffle() {
-		const inst = keyboard.value
-		if (inst != null) {
-			inst.$callMethod('shuffle')
-		}
 	}
 
 	defineExpose({
@@ -229,19 +235,24 @@
 		background-color: $m-number-keyboard-background;
 	}
 
-	/* ========== 工具条 ========== */
+	/* ========== 工具条（左右按钮各占一半，标题绝对居中） ========== */
 	.m-number-keyboard-popup__toolbar {
+		position: relative;
 		height: $m-number-keyboard-title-height;
 		flex-direction: row;
 		align-items: center;
-		justify-content: space-between;
-		padding: 0 $m-number-keyboard-padding;
+		padding: $m-number-keyboard-title-padding;
 	}
 
 	.m-number-keyboard-popup__action {
+		flex: 1;
 		padding: 0 4px;
-		justify-content: center;
+		justify-content: flex-start;
 		align-items: center;
+	}
+
+	.m-number-keyboard-popup__action--right {
+		justify-content: flex-end;
 	}
 
 	.m-number-keyboard-popup__action--active {
@@ -258,6 +269,12 @@
 	}
 
 	.m-number-keyboard-popup__title {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		text-align: center;
 		font-size: $m-number-keyboard-title-font-size;
 		color: $m-number-keyboard-title-color;
 	}

@@ -138,8 +138,8 @@ The component exposes the following SCSS variables. Override them by defining th
 | Variable | Default | Description |
 | --- | --- | --- |
 | `$m-number-keyboard-background` | `#f2f3f5` | Keyboard background |
-| `$m-number-keyboard-padding` | `8px` | Outer padding |
-| `$m-number-keyboard-key-gap` | `3px` | Cell padding; visual gap between keys is twice this value |
+| `$m-number-keyboard-padding` | `6px` | Outer padding |
+| `$m-number-keyboard-key-gap` | `3px` | Per-side key gap; the gap between keys is twice this value |
 | `$m-number-keyboard-key-height` | `48px` | Key height |
 | `$m-number-keyboard-key-radius` | `6px` | Key corner radius |
 | `$m-number-keyboard-key-background` | `#ffffff` | Key background |
@@ -147,7 +147,10 @@ The component exposes the following SCSS variables. Override them by defining th
 | `$m-number-keyboard-key-color` | `#323233` | Key text color |
 | `$m-number-keyboard-key-font-size` | `24px` | Key font size |
 | `$m-number-keyboard-delete-font-size` | `16px` | Delete / action key font size |
+| `$m-number-keyboard-close-background` | `#1989fa` | Side-column close background |
+| `$m-number-keyboard-close-color` | `#ffffff` | Side-column close text color |
 | `$m-number-keyboard-title-height` | `44px` | Popup toolbar height |
+| `$m-number-keyboard-title-padding` | `0 16px` | Toolbar horizontal padding |
 | `$m-number-keyboard-title-color` | `#323233` | Toolbar title color |
 | `$m-number-keyboard-title-font-size` | `14px` | Toolbar text size |
 | `$m-number-keyboard-button-color` | `#1989fa` | Confirm button text color |

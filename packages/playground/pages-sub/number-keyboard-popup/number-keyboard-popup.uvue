@@ -72,13 +72,30 @@
 					close-button-text="完成"
 					@input="onCustomInput"
 					@delete="onCustomDelete"
-					@close="onCustomClose"
+					@close-key="onCustomClose"
 				>
 					<view class="display">
 						<text class="display-text">{{ customValue == '' ? '请输入' : customValue }}</text>
 					</view>
 				</m-number-keyboard-popup>
 				<text class="caption">show-toolbar=false 时由键盘自身右侧栏完成关闭</text>
+			</view>
+
+			<text class="section" id="random">乱序键盘</text>
+			<view class="card">
+				<m-button block @click="openRandom">乱序键盘（每次打开重排）</m-button>
+				<m-number-keyboard-popup
+					v-model:show="randomShow"
+					type="random"
+					title="乱序数字"
+					@input="onRandomInput"
+					@delete="onRandomDelete"
+				>
+					<view class="display">
+						<text class="display-text">{{ randomValue == '' ? '每次打开都会重排' : randomValue }}</text>
+					</view>
+				</m-number-keyboard-popup>
+				<text class="caption">type=random 时每次弹层打开都会重新打乱键位</text>
 			</view>
 
 		</view>
@@ -99,6 +116,8 @@
 	const amountValue = ref('')
 	const customShow = ref(false)
 	const customValue = ref('')
+	const randomShow = ref(false)
+	const randomValue = ref('')
 
 	/** 末位追加 */
 	const append = (text: string, key: string): string => text + key
@@ -148,6 +167,10 @@
 	const onCustomInput = (key: string) => { customValue.value = append(customValue.value, key) }
 	const onCustomDelete = () => { customValue.value = removeLast(customValue.value) }
 	const onCustomClose = () => { customShow.value = false }
+
+	const openRandom = () => { randomShow.value = true }
+	const onRandomInput = (key: string) => { randomValue.value = append(randomValue.value, key) }
+	const onRandomDelete = () => { randomValue.value = removeLast(randomValue.value) }
 </script>
 
 <style>

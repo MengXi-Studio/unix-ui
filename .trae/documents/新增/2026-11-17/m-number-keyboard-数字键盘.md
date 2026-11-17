@@ -290,6 +290,9 @@ function onKeyTap(key: NumberKeyboardKey) {
 | `$m-number-keyboard-key-gap` 默认 6px | 3px（单元格内边距） | 相邻两格各留 3px，视觉间隙即 6px；避免在样式里做除法运算 |
 | 主题变量 14 项 | 14 项（含 `title-height` / `title-color` / `title-font-size` / `button-color`） | 与方案一致，无增减 |
 | `disabledKey` 默认 `null` | withDefaults 中不声明该项 | 声明 null 会让 VDOM 生成 `type: [Function, null]`，触发 TS2769 告警 |
+| 视觉：圆角卡片 + 6px 间隙 | 对齐 Vant：无缝直角宫格 + 1px 分隔线；custom 关闭键 primary 底白字、删除键跨 3 行 | 首版混血了「卡片宫格」与 Vant 结构，与参考实现的观感不一致；无缝布局去掉了内边距与间隙 |
+| `$m-number-keyboard-padding` / `-key-gap` | 删除；新增 `-key-border-color` / `-close-background` / `-close-color` / `-title-padding` | 无缝布局不再需要间隙与内边距变量，改用分隔线与关闭键配色 |
+| 最终视觉基准 | **Sard**：白色圆角键块（radius 6px）+ 6px 间距 + 灰底；删除键用**图标字体的 `backspace` 字形**（取自 Vant 的 delete path，新增码点 `\ue754`）；**最后一行不留空位**——无额外键时 0 键占两格（custom 主题占满三格），有额外键时三格均分 | 用户指定；字体图标集原本无退格字形（`delete` 是垃圾桶样式），故追加字形而非 CSS 绘制。中间曾用 CSS 拼方框+叉号，用户要求改用字体后替换。字形写入的两个坑见 LESSONS #92。Sard 源码依据：`numberKeys` 无空串占位、`__key-wrapper` 为 `flex: 1 / flex-basis: 33.3333%`，故 0 与删除键自动填满末行 |
 
 ### 变更文件清单
 

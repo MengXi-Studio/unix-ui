@@ -98,7 +98,7 @@ const codeLimit = (key: string): boolean => value.value.length >= 6
 | update:show | 显隐回写 | `value: boolean` |
 | input | 点击可输入键 | `key: string` |
 | delete | 点击删除键 | — |
-| close | 点击右侧栏关闭键（随后关闭） | — |
+| close-key | 点击右侧栏关闭键（随后关闭） | — |
 | cancel | 点击取消（随后关闭） | — |
 | confirm | 点击完成（随后关闭） | — |
 | open / opened / close / closed | 弹层生命周期 | — |
@@ -127,3 +127,5 @@ const codeLimit = (key: string): boolean => value.value.length >= 6
 - 弹层固定从底部弹出，不支持切换方位。
 - 点遮罩关闭由 `m-popup` 的 `close-on-click-overlay` 接管，不依赖外部点击判定。
 - 与 [PickerPopup](/components/picker-popup) 的交互惯性一致：确认 / 取消后自动派发 `update:show=false`。
+- `theme="custom"` 时右侧栏已有「关闭」键与「取消」按钮职责重叠，建议搭配 `show-toolbar="false"` 使用。
+- `type="random"` 每次弹层打开都会重新打乱键位（与 Vant `random-key-order` 一致），需要稳定键位时用 `type="number"`。

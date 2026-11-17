@@ -139,8 +139,8 @@ keyboardRef.value?.$callMethod('shuffle')
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
 | `$m-number-keyboard-background` | `#f2f3f5` | 键盘底色 |
-| `$m-number-keyboard-padding` | `8px` | 四周内边距 |
-| `$m-number-keyboard-key-gap` | `3px` | 单元格内边距，相邻键视觉间隙为其两倍 |
+| `$m-number-keyboard-padding` | `6px` | 四周内边距 |
+| `$m-number-keyboard-key-gap` | `3px` | 单侧键缝宽度，相邻键之间为两倍 |
 | `$m-number-keyboard-key-height` | `48px` | 单键高度 |
 | `$m-number-keyboard-key-radius` | `6px` | 键圆角 |
 | `$m-number-keyboard-key-background` | `#ffffff` | 键底色 |
@@ -148,7 +148,10 @@ keyboardRef.value?.$callMethod('shuffle')
 | `$m-number-keyboard-key-color` | `#323233` | 键文字色 |
 | `$m-number-keyboard-key-font-size` | `24px` | 键文字字号 |
 | `$m-number-keyboard-delete-font-size` | `16px` | 删除键与动作键字号 |
+| `$m-number-keyboard-close-background` | `#1989fa` | 右侧栏关闭键底色 |
+| `$m-number-keyboard-close-color` | `#ffffff` | 右侧栏关闭键文字色 |
 | `$m-number-keyboard-title-height` | `44px` | 弹层工具条高度 |
+| `$m-number-keyboard-title-padding` | `0 16px` | 工具条水平内边距 |
 | `$m-number-keyboard-title-color` | `#323233` | 工具条标题色 |
 | `$m-number-keyboard-title-font-size` | `14px` | 工具条文字字号 |
 | `$m-number-keyboard-button-color` | `#1989fa` | 完成按钮文字色 |

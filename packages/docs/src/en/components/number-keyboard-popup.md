@@ -97,7 +97,7 @@ With `show-toolbar` off, the `cancel` / `confirm` slots or the side-column close
 | update:show | Visibility update | `value: boolean` |
 | input | An input key was tapped | `key: string` |
 | delete | The delete key was tapped | — |
-| close | The side-column close key was tapped (then closes) | — |
+| close-key | The side-column close key was tapped (then closes) | — |
 | cancel | Cancel tapped (then closes) | — |
 | confirm | Confirm tapped (then closes) | — |
 | open / opened / close / closed | Popup lifecycle | — |
@@ -126,3 +126,5 @@ Keyboard visuals reuse `$m-number-keyboard-*` and the popup reuses `$m-popup-*`;
 - The popup always rises from the bottom; the position cannot be changed.
 - Overlay dismissal is handled by `m-popup`'s `close-on-click-overlay`.
 - Interaction matches [PickerPopup](/en/components/picker-popup): confirm and cancel emit `update:show=false` automatically.
+- With `theme="custom"` the side-column close key overlaps with the toolbar cancel button; pair it with `show-toolbar="false"`.
+- With `type="random"` the keys are reshuffled every time the popup opens (same as Vant `random-key-order`); use `type="number"` for a stable layout.

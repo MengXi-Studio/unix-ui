@@ -565,3 +565,12 @@
 - **排查方法**：对每个 `.uvue` 的 `<script` 之后区域，按 `^\s*function (\w+)` 收集定义行，再扫描其前的调用行；模板中的事件引用不计入
 - **日志中的 `DatePickerOption` / `TimePickerOption` / `LunarPickerOption` unresolved 属跨界 type 依赖问题**：popup / input / range 三件套只导入了 `XxxFormatter` / `XxxFilter` 这些**引用 Option 的 type 别名**，UTS 生成 Kotlin 时把别名展开却不为被引用的 Option 生成 import，导致 `Unresolved reference`。修法是在这些文件的 import 列表里**显式加入 Option 类型**（即使源码不直接使用），让编译器生成对应 Kotlin import；`PickerOption` 能正常解析正是因为它被各组件显式 import
 - **`Any?` 与泛型推断错误多来自跨文件类型别名与 `ref` 元素访问**：`Cannot infer type argument for 'E'` 出现在未标注参数类型的 `map` / `filter` 回调；`Unresolved reference 'length'` 往往意味着上游表达式被推断为 `Any?`（先查该变量/返回值是否缺少显式类型标注）
+
+### 92. 向 m-icon 字体新增字形的两个致命坑（2026-11-17 数字键盘退格图标）
+- **字体源文件是 `packages/core/static/m-icon.ttf`**，`components/m-icon/m-icon-font.uts` 只是它的 base64 产物（小程序 `loadFontFace` 用）。改字形后必须两者同时更新并 `pnpm sync:uni-modules`
+- **坑 1：TTGlyphPen 只接受整数坐标**。SVG path 经 `TransformPen` 缩放后是小数，直接写入会产出畸形 glyf；浏览器表现极具迷惑性——HTTP 200、`fontTools` 能正常读取、控制台无报错，但 `document.fonts` 状态为 `error`、`FontFace` 报 "A network error occurred"、所有图标一起变空白。修法：`TransformPen → RoundingPen → TTGlyphPen`
+- **坑 2：TrueType 只支持二次贝塞尔**。SVG path 的三次曲线（`a` 圆弧也会转成三次）若直接进 `TTGlyphPen`，fontTools 会写 `flagCubic(0x80)`，浏览器 OTS 判定「Bad glyph flag, reserved bit 7 must be set to zero」并拒绝整个字体。修法：`Cu2QuPen(RoundingPen(TTGlyphPen), max_err=1.0, all_quadratic=True)`
+- **本地先用 OTS 校验，别靠浏览器试错**：`pip install --user opentype-sanitizer` 后调用 `~/Library/Python/3.9/lib/python/site-packages/ots/ots-sanitize in.ttf out.ttf`，失败会打印具体表与字形号
+- **写字形顺序**：先 `font.setGlyphOrder(order + [name])`，再 `font["glyf"][name] = glyph`、`font["hmtx"][name] = (adv, lsb)`；反序会触发 `maxp.recalc` 的 `len(glyphOrder) == len(glyphs)` 断言
+- **cmap 只写 format 4 / 12**：format 0 子表仅容纳 0-255，写 PUA 码点会在保存时抛 `assert set(cmap.keys()).issubset(range(256))`
+- **字体验证要硬刷新**：`/static/m-icon.ttf` 无内容哈希，浏览器强缓存旧文件；改字体后必须 Ctrl+Shift+R 才能看到效果

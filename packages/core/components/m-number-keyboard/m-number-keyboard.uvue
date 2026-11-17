@@ -5,7 +5,7 @@
 	<view :class="rootClass" :style="customStyle">
 		<view class="m-number-keyboard__body">
 			<view class="m-number-keyboard__main" :style="mainStyle">
-				<view v-for="(key, index) in numberKeys" :key="key + '-' + index" class="m-number-keyboard__cell">
+				<view v-for="(key, index) in numberKeys" :key="key + '-' + index" :class="numberCellClass(index)">
 					<view
 						:class="keyClass(key)"
 						:hover-class="hoverClass(key)"
@@ -15,7 +15,7 @@
 						<text class="m-number-keyboard__text">{{ key }}</text>
 					</view>
 				</view>
-				<view class="m-number-keyboard__cell">
+				<view v-if="extraText != ''" class="m-number-keyboard__cell">
 					<view
 						:class="keyClass(extraText)"
 						:hover-class="hoverClass(extraText)"
@@ -27,7 +27,7 @@
 						</slot>
 					</view>
 				</view>
-				<view class="m-number-keyboard__cell">
+				<view v-if="!isRandom" :class="zeroCellClass()">
 					<view
 						:class="keyClass('0')"
 						:hover-class="hoverClass('0')"
@@ -44,35 +44,33 @@
 						:hover-stay-time="80"
 						@click="onDeleteTap"
 					>
-						<m-icon v-if="deleteButtonText == ''" name="delete" class="m-number-keyboard__delete"></m-icon>
+						<m-icon v-if="deleteButtonText == ''" name="backspace" class="m-number-keyboard__delete"></m-icon>
 						<text v-else class="m-number-keyboard__text m-number-keyboard__text--action">{{ deleteButtonText }}</text>
 					</view>
 				</view>
-				<view v-else class="m-number-keyboard__cell"></view>
 			</view>
 			<view v-if="isCustom" class="m-number-keyboard__side">
-				<view v-if="hasClose" class="m-number-keyboard__side-cell">
-					<view
-						:class="sideKeyClass"
-						hover-class="m-number-keyboard__key--active"
-						:hover-stay-time="80"
-						@click="onCloseTap"
-					>
-						<text class="m-number-keyboard__text m-number-keyboard__text--action">{{ closeButtonText }}</text>
-					</view>
-				</view>
-				<view class="m-number-keyboard__side-cell m-number-keyboard__side-cell--delete">
+				<view class="m-number-keyboard__side-cell">
 					<view
 						:class="sideKeyClass"
 						:hover-class="deleteHoverClass"
 						:hover-stay-time="80"
 						@click="onDeleteTap"
 					>
-						<m-icon v-if="deleteButtonText == ''" name="delete" class="m-number-keyboard__delete"></m-icon>
+						<m-icon v-if="deleteButtonText == ''" name="backspace" class="m-number-keyboard__delete"></m-icon>
 						<text v-else class="m-number-keyboard__text m-number-keyboard__text--action">{{ deleteButtonText }}</text>
 					</view>
 				</view>
-				<view v-if="hasClose" class="m-number-keyboard__side-cell"></view>
+				<view v-if="hasClose" class="m-number-keyboard__side-cell m-number-keyboard__side-cell--close">
+					<view
+						class="m-number-keyboard__close"
+						hover-class="m-number-keyboard__close--active"
+						:hover-stay-time="80"
+						@click="onCloseTap"
+					>
+						<text class="m-number-keyboard__close-text">{{ closeButtonText }}</text>
+					</view>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -136,6 +134,9 @@
 	/** 是否自定义主题（右侧栏） */
 	const isCustom = computed<boolean>(() => props.theme == 'custom')
 
+	/** 是否乱序键盘（0 参与打乱，末键占两格） */
+	const isRandom = computed<boolean>(() => props.type == 'random')
+
 	/** 是否渲染右侧栏关闭键 */
 	const hasClose = computed<boolean>(() => props.closeButtonText != '')
 
@@ -154,6 +155,34 @@
 
 	/** 左下角额外键文本 */
 	const extraText = computed<string>(() => resolveExtraKey(props.type, extraList.value))
+
+	/**
+	 * 0 键单元格类名：无额外键时 0 占两格（custom 主题占满主区三格），
+	 * 让最后一行由 0 与删除键填满，与参考实现一致（不留灰色空位）
+	 */
+	function zeroCellClass(): string {
+		let cls = 'm-number-keyboard__cell'
+		if (extraText.value == '') {
+			cls += isCustom.value ? ' m-number-keyboard__cell--wide-3' : ' m-number-keyboard__cell--wide-2'
+		} else if (isCustom.value) {
+			cls += ' m-number-keyboard__cell--wide-2'
+		}
+		return cls
+	}
+
+	/**
+	 * 数字键单元格类名：乱序键盘的最后一项（可能是任意数字含 0）加宽，
+	 * 与删除键填满末行（参考实现中 0 参与打乱，末键由 flex-grow 拉伸）
+	 * @param index 键在乱序数组中的下标
+	 */
+	function numberCellClass(index: number): string {
+		if (isRandom.value && index == numberKeys.value.length - 1) {
+			return isCustom.value
+				? 'm-number-keyboard__cell m-number-keyboard__cell--wide-3'
+				: 'm-number-keyboard__cell m-number-keyboard__cell--wide-2'
+		}
+		return 'm-number-keyboard__cell'
+	}
 
 	/** 根节点类名 */
 	const rootClass = computed<string>(() => {
@@ -201,6 +230,9 @@
 	 * @returns 类名
 	 */
 	function keyClass(key: string): string {
+		if (key == '') {
+			return 'm-number-keyboard__key m-number-keyboard__key--blank'
+		}
 		let cls = 'm-number-keyboard__key'
 		if (isDisabled(key)) {
 			cls += ' m-number-keyboard__key--disabled'
@@ -281,7 +313,7 @@
 		padding: $m-number-keyboard-padding;
 	}
 
-	/* ========== 按键区 ========== */
+	/* ========== 按键区（Vant 风格：无缝直角宫格 + 1px 分隔线） ========== */
 	.m-number-keyboard__body {
 		flex-direction: row;
 		align-items: stretch;
@@ -294,11 +326,22 @@
 
 	.m-number-keyboard__cell {
 		width: 33.3333%;
+		height: $m-number-keyboard-key-height;
 		padding: $m-number-keyboard-key-gap;
 	}
 
+	/* 最后一行：无额外键时 0 键加宽，填满剩余格位 */
+	.m-number-keyboard__cell--wide-2 {
+		width: 66.6667%;
+	}
+
+	.m-number-keyboard__cell--wide-3 {
+		width: 100%;
+	}
+
 	.m-number-keyboard__key {
-		height: $m-number-keyboard-key-height;
+		width: 100%;
+		height: 100%;
 		justify-content: center;
 		align-items: center;
 		border-radius: $m-number-keyboard-key-radius;
@@ -331,12 +374,13 @@
 		font-size: $m-number-keyboard-delete-font-size;
 	}
 
+	/* ========== 退格图标（字体字形 backspace，尺寸随字号） ========== */
 	.m-number-keyboard__delete {
-		font-size: $m-number-keyboard-delete-font-size;
+		font-size: $m-number-keyboard-key-font-size;
 		color: $m-number-keyboard-key-color;
 	}
 
-	/* ========== 右侧栏（custom 主题） ========== */
+	/* ========== 右侧栏（custom 主题）：关闭键 primary 底 + 删除键跨三行 ========== */
 	.m-number-keyboard__side {
 		flex: 1;
 		flex-direction: column;
@@ -347,7 +391,26 @@
 		padding: $m-number-keyboard-key-gap;
 	}
 
-	.m-number-keyboard__side-cell--delete {
-		flex: 2;
+	/* 右栏两键平分高度（Vant：删除与完成各占一半） */
+	.m-number-keyboard__side-cell--close {
+		flex: 1;
+	}
+
+	.m-number-keyboard__close {
+		width: 100%;
+		height: 100%;
+		justify-content: center;
+		align-items: center;
+		border-radius: $m-number-keyboard-key-radius;
+		background-color: $m-number-keyboard-close-background;
+	}
+
+	.m-number-keyboard__close--active {
+		opacity: 0.8;
+	}
+
+	.m-number-keyboard__close-text {
+		font-size: $m-number-keyboard-title-font-size;
+		color: $m-number-keyboard-close-color;
 	}
 </style>

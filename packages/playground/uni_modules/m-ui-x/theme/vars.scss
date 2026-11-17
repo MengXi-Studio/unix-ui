@@ -694,8 +694,8 @@ $m-picker-view-frame-color: #ebedf0 !default;
 /** 键盘底色 */
 $m-number-keyboard-background: #f2f3f5 !default;
 /** 四周内边距 */
-$m-number-keyboard-padding: 8px !default;
-/** 键单元格内边距（相邻键的视觉间隙为其两倍） */
+$m-number-keyboard-padding: 6px !default;
+/** 单侧键缝宽度（相邻键之间为两倍） */
 $m-number-keyboard-key-gap: 3px !default;
 /** 单键高度 */
 $m-number-keyboard-key-height: 48px !default;
@@ -709,10 +709,16 @@ $m-number-keyboard-key-active-background: #e5e6eb !default;
 $m-number-keyboard-key-color: $m-text-color !default;
 /** 键文字字号 */
 $m-number-keyboard-key-font-size: 24px !default;
-/** 删除键 / 动作键文字与图标字号 */
+/** 删除键 / 动作键文字字号 */
 $m-number-keyboard-delete-font-size: 16px !default;
+/** 右侧栏关闭键底色 */
+$m-number-keyboard-close-background: $m-color-primary !default;
+/** 右侧栏关闭键文字色 */
+$m-number-keyboard-close-color: $m-white !default;
 /** 工具条高度 */
 $m-number-keyboard-title-height: 44px !default;
+/** 工具条水平内边距 */
+$m-number-keyboard-title-padding: 0 16px !default;
 /** 工具条标题色 */
 $m-number-keyboard-title-color: $m-text-color !default;
 /** 工具条文字字号（标题与按钮共用） */

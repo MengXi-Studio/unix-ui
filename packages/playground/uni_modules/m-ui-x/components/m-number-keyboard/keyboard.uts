@@ -10,15 +10,18 @@ export type NumberKeyboardType = 'number' | 'digit' | 'idcard' | 'random'
 export type NumberKeyboardTheme = 'default' | 'custom'
 
 /**
- * 生成 1-9 数字键序。
+ * 生成数字键序。
+ * 乱序（random）时 0 也参与打乱，共 10 个键；其余类型固定 1-9，0 由面板单独渲染。
  * @param randomOrder 是否打乱顺序
- * @returns 9 个数字字符
+ * @returns 乱序返回 10 个（含 0），否则返回 1-9 共 9 个
  */
 export function buildNumberKeys(randomOrder: boolean): string[] {
-	const keys: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 	if (randomOrder) {
+		const keys: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 		shuffleKeys(keys)
+		return keys
 	}
+	const keys: string[] = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 	return keys
 }
 

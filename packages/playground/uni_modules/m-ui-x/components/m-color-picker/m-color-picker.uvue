@@ -416,6 +416,17 @@
 		pushRecent(currentText.value)
 	}
 
+	// #ifdef MP
+	/**
+	 * 组件实例（createSelectorQuery 的 in 作用域参数；setup 期一次性获取）
+	 *
+	 * 不能在 measureNode 内调用 getCurrentInstance()：refresh 经父组件 `$callMethod('refresh')`
+	 * 调用时已脱离 setup 上下文，getCurrentInstance() 返回 null，访问 .proxy 会抛
+	 * `Cannot read properties of null (reading 'proxy')`（见 issue #20）。
+	 */
+	const mpInstance = getCurrentInstance()
+	// #endif
+
 	/**
 	 * 测量单个节点矩形（三分支：Web 同步 / 小程序 id 查询 / App 异步）
 	 *
@@ -428,8 +439,7 @@
 		if (el != null) apply(el.getBoundingClientRect())
 		// #endif
 		// #ifdef MP
-		const instance = getCurrentInstance()
-		uni.createSelectorQuery().in(instance!.proxy!)
+		uni.createSelectorQuery().in(mpInstance!.proxy!)
 			.select('#' + id)
 			.boundingClientRect()
 			.exec((ret: Array<any>) => {

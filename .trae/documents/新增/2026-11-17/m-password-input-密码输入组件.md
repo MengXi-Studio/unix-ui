@@ -416,3 +416,15 @@ popup 链路同步验证：弹层打开 → 输入 123 → 3 圆点 → 删除 �
 
 - **UTS 禁止函数形式 ref 绑定**：`:ref="(el, k) => { ... }"` 在 UTS 中不支持，必须用普通 `ref="xxx"` 模板绑定 + `const xxx = ref<UniElement | null>(null)` 声明。这是 0.7.0 首次踩坑。
 - **全局类型无需 import**：`UniAnimationKeyframe`、`UniElement`、`UniAnimation` 是 uni-app x 全局类型，直接使用即可，`import type { ... } from '@dcloudio/uni-app'` 会让编译器警告"未使用导入"。
+
+### 修复记录（2026-11-18）：云打包 Kotlin 编译失败
+
+- **现象**：云打包 `:app:kaptGenerateStubsReleaseKotlin` 失败，`m-password-input.kt` 156/162/169 行报 `Type expected` / `Expecting an element` / `Unexpected tokens`；Web 端运行完全正常
+- **根因**：合并监听 focused / activeIndex 的 tuple getter `(): [boolean, number] => [props.focused, activeIndex.value]` 被翻译成 Kotlin 的 `fun(): [Boolean, Number]`（Kotlin 无此类型语法），handler 参数与元组字面量一并解析失败
+- **修复**：拆成两个单值 watch（`(): boolean` / `(): number`），共用 `syncCursorAnimation()`；两处均保留 `immediate: true` + `flush: 'post'` 的原有语义
+- **验证**：
+  - 本地执行 `cli publish app-android --type appResource --project <playground 绝对路径>`，检查生成的 `unpackage/resources/app-android/uniappx/app-android/src/uni_modules/m-ui-x/components/m-password-input/m-password-input.kt`：原报错位置已变为合法的 `fun(): Boolean` / `fun(): Number` 结构，全库扫描无 `: [` 非法类型残留
+  - Web 实测：点击聚焦、输入填充、光标闪烁（间隔 600ms 快照 class 由可见切为 `--hidden`）、删除回退、失焦隐藏光标、无组件级控制台错误
+  - `pnpm sync:uni-modules:check` 一致
+- **经验**：watch getter 只返回单值；Android 侧验收需「本地生成 app-android 资源 + 检查生成 Kotlin」，仅过 Web 编译不构成依据（LESSONS #102）
+- **待办**：请重新触发云打包确认通过（本地无 Android/Kotlin 工具链，未跑 gradle 终验）

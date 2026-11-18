@@ -305,3 +305,10 @@ Q1-Q10 全部按推荐执行（单体 / `v-model:value` + 0 未评分 / `gap` / 
 
 **经验**：本轮一次编译通过，无新增 LESSONS（评分组件不涉及动画 / hairline / 语法糖边界）。
 
+
+## 修复记录（2026-11-18）：同类隐患 `getCurrentInstance` 调用时取值
+
+- **问题**：`measureRate` 在触摸 / 点击处理器内调用 `getCurrentInstance()`，处理器执行时已脱离 setup 上下文，小程序端会拿到 null，访问 `.proxy` 抛 `TypeError`（与 issue #20 同源，尚未在真机触发）
+- **修复**：改为 setup 期一次性捕获 `const mpInstance = getCurrentInstance()`（`#ifdef MP`），`measureRate` 只用引用
+- **验证**：`cli launch mp-weixin --compile true` 编译成功；编译产物中 `mpInstance` 位于 setup 作用域；Web 端滑动评分行为未变（代码路径为 `#ifdef WEB`）
+- **遗留**：小程序端滑动评分需真机补测一次

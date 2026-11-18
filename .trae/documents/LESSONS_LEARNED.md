@@ -629,3 +629,17 @@
 - **验证方式**：在列表 `.uni-scroll-view` 上派发「1 触点 touchstart + 空 touches touchmove」，稳定 100% 复现（同一机制同理可验证修复）
 - **修法**：在组件内（m-select）于 Web 端 `window` **捕获阶段**监听 touchmove，`touches.length == 0` 时 `stopPropagation()`，事件在进入框架处理器前被拦截；`#ifdef WEB` 隔离，组件卸载时移除监听
 - **教训**：uni-h5 内置组件对触摸事件的容错不可假设；凡是「嵌套 scroll-view + 触摸交互」的组件，验收必须包含空触点/中断手势的合成事件测试，不能只测点击流程
+
+### #102 watch 的元组 getter 会让云打包 Kotlin 编译失败（Web 完全不报错）
+- **现象**：云打包 `:app:kaptGenerateStubsReleaseKotlin` 失败，报 `m-password-input.kt:156 Type expected / Expecting an element / Unexpected tokens`，Web 端运行一切正常
+- **根因**：`watch((): [boolean, number] => [props.focused, activeIndex.value], ...)` 被 uts 编译器翻译成 Kotlin 的 `fun(): [Boolean, Number]`——Kotlin 没有 `[T]` 这种类型语法（合法写法是 `Array<Any>`），连带后续 `fun(_: [Boolean, Number])`、元组字面量一起解析失败
+- **定位方式**：`cli publish app-android --type appResource --project <playground 绝对路径>` 可**本地生成** Kotlin 源码到 `packages/playground/unpackage/resources/app-android/uniappx/app-android/src/...`，直接打开对应 `.kt` 即可看到非法代码，无需等云端打包
+- **修法**：拆成两个单值 watch（`(): boolean`、`(): number`）共用一个 `syncCursorAnimation()`；或在注释中标注该约束
+- **教训**：watch getter 只返回单值；凡是改动 watcher / 多值派生逻辑，验收必须包含「本地生成 app-android 资源 + 检查生成 Kotlin 无 `: [` 等非法类型语法」，仅过 Web 编译不能作为 Android 通过的依据
+
+### #103 getCurrentInstance() 只能在 setup/生命周期内取，$callMethod 与事件处理器路径都会拿到 null
+- **现象**：微信小程序端 `m-color-picker-popup` 打开弹层必崩：`TypeError: Cannot read properties of null (reading 'proxy')`（issue #20）；Web 完全正常
+- **根因**：`measureNode` 内**调用时**执行 `getCurrentInstance()`。父组件 `$callMethod('refresh')` 与触摸/点击处理器都属于 setup 之后的执行上下文，返回 null
+- **修法**：`#ifdef MP` 在 setup 顶层一次性 `const mpInstance = getCurrentInstance()`，后续只用引用（与 m-fab / m-tabs 一致）
+- **自查结论**：`m-color-picker`、`m-rate` 各有一处调用时取值，均已改为 setup 捕获；库内其余 `getCurrentInstance` 均已在 setup 作用域
+- **教训**：凡是可能被 `$callMethod` 调用或事件处理器调用的函数，禁止内部再取 `getCurrentInstance()`；小程序端验收须覆盖「父组件调用子组件方法」这条路径，Web 无法暴露该问题

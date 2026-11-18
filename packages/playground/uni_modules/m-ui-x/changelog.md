@@ -25,6 +25,7 @@
 - 新增 `$m-select-*` 主题变量段（面板 / 筛选 / 标题 / 选项 / 勾选 / 分组 / 空态 / 输入框清除等 24 项）
 - 三件套支持多选：`multiple` / `multiple-limit`（0 不限）/ `show-toolbar`（已选数量 + 清空）；多选时 `value` 为数组，点击已选项取消，达到上限后其余项点击无效；多选弹层选中不自动关闭（`confirmOnSelect` 仅对单选生效）；输入框新增 `max-labels`（默认 10，-1 不限），标签按「、」拼接并折叠为「等 N 项」
 - 新增 `$m-select-toolbar-*` 主题变量段（内边距 / 字号 / 文字色 / 清空色 4 项）
+- 修复微信小程序端打开 `m-color-picker-popup` 抛 `TypeError: Cannot read properties of null (reading 'proxy')`（issue #20）：`m-color-picker` 的 `measureNode` 在调用时取 `getCurrentInstance()`，经父组件 `$callMethod('refresh')` 调用时已脱离 setup 上下文返回 null；改为 setup 期一次性捕获实例（`#ifdef MP`，与 `m-fab` / `m-tabs` 写法一致）；`m-rate` 同类调用时取值一并修正
 
 ## 0.6.0 (2026-11-15)
 

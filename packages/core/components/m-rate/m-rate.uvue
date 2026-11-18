@@ -318,6 +318,16 @@
 		emit('change', next)
 	}
 
+	// #ifdef MP
+	/**
+	 * 组件实例（createSelectorQuery 的 in 作用域参数；setup 期一次性获取）
+	 *
+	 * 不能在 measureRate 内调用 getCurrentInstance()：该方法由触摸 / 点击处理器触发，
+	 * 已脱离 setup 上下文会返回 null，访问 .proxy 直接抛错（同 issue #20）。
+	 */
+	const mpInstance = getCurrentInstance()
+	// #endif
+
 	/**
 	 * 测量根节点矩形（Web 同步 / 小程序选择器查询 / App 异步）
 	 */
@@ -326,8 +336,7 @@
 		if (rateRef.value != null) rateRect.value = rateRef.value!.getBoundingClientRect()
 		// #endif
 		// #ifdef MP
-		const instance = getCurrentInstance()
-		uni.createSelectorQuery().in(instance!.proxy!)
+		uni.createSelectorQuery().in(mpInstance!.proxy!)
 			.select('.m-rate')
 			.boundingClientRect()
 			.exec((ret: Array<any>) => {

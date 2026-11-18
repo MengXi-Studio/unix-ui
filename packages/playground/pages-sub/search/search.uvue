@@ -62,7 +62,7 @@
 
 				<text class="section" id="right-icon">右侧图标</text>
 				<view class="card">
-					<m-search v-model:value="rightIconValue" right-icon="camera" @click-right-icon="logRightIcon" />
+					<m-search v-model:value="rightIconValue" right-icon="setting" @click-right-icon="logRightIcon" />
 					<text class="caption">right-icon 渲染框内右图标，点击派发 click-right-icon（次数：{{ rightIconTimes }}）</text>
 				</view>
 

@@ -1,0 +1,203 @@
+<template>
+	<view class="page">
+		<demo-navbar title="分段控制器" subtitle="Segmented" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-segmented v-model:value="basicValue" :options="shiftOptions" @change="logChange('基础', $event)" />
+					<text class="caption">options 驱动 + v-model:value（当前：{{ basicValue }}）</text>
+				</view>
+
+				<text class="section" id="size">尺寸</text>
+				<view class="card">
+					<m-segmented v-model:value="sizeValue" :options="sizeOptions" size="small" />
+					<m-segmented v-model:value="sizeValue" :options="sizeOptions" style="margin-top: 8px;" />
+					<m-segmented v-model:value="sizeValue" :options="sizeOptions" size="large" style="margin-top: 8px;" />
+					<text class="caption">size 依次为 small / medium / large（当前：{{ sizeValue }}）</text>
+				</view>
+
+				<text class="section" id="shape">胶囊形状</text>
+				<view class="card">
+					<m-segmented v-model:value="shapeValue" :options="shiftOptions" shape="round" />
+					<text class="caption">shape="round" 容器与滑块均为胶囊圆角（当前：{{ shapeValue }}）</text>
+				</view>
+
+				<text class="section" id="vertical">纵向方向</text>
+				<view class="card">
+					<m-segmented v-model:value="verticalValue" :options="shiftOptions" direction="vertical" />
+					<text class="caption">direction="vertical" 选项纵向等分，滑块沿 Y 轴平移（当前：{{ verticalValue }}）</text>
+				</view>
+
+				<text class="section" id="custom">自定义内容</text>
+				<view class="card">
+					<m-segmented v-model:value="customValue" :options="iconOptions" size="large">
+						<template #item="{ option, active }">
+							<view class="custom-item">
+								<m-icon :name="iconOf(option)" :custom-class="active ? 'custom-item__icon custom-item__icon--active' : 'custom-item__icon'" />
+								<text :class="active ? 'custom-item__text custom-item__text--active' : 'custom-item__text'">{{ option.getString('label') }}</text>
+							</view>
+						</template>
+					</m-segmented>
+					<text class="caption">item 插槽自定义「图标 + 文本」排列（作用域 option / index / active / disabled）</text>
+				</view>
+
+				<text class="section" id="icon-only">仅图标</text>
+				<view class="card">
+					<m-segmented v-model:value="customValue" :options="iconOptions" size="large">
+						<template #item="{ option, active }">
+							<m-icon :name="iconOf(option)" :custom-class="active ? 'custom-item__icon custom-item__icon--active' : 'custom-item__icon'" />
+						</template>
+					</m-segmented>
+					<text class="caption">插槽只放图标时单项仍等分居中</text>
+				</view>
+
+				<text class="section" id="ellipsis">溢出省略</text>
+				<view class="card">
+					<m-segmented v-model:value="ellipsisValue" :options="longOptions" />
+					<text class="caption">ellipsis 默认开启，长文本单行省略</text>
+					<m-segmented v-model:value="ellipsisValue" :options="longOptions" :ellipsis="false" style="margin-top: 8px;" />
+					<text class="caption">ellipsis=false 允许换行撑高</text>
+				</view>
+
+				<text class="section" id="disabled">禁用与只读</text>
+				<view class="card">
+					<text class="label">整体禁用</text>
+					<m-segmented v-model:value="disabledValue" :options="shiftOptions" disabled />
+					<text class="label">单项禁用</text>
+					<m-segmented v-model:value="disabledValue" :options="partialOptions" style="margin-top: 8px;" />
+					<text class="label">只读</text>
+					<m-segmented v-model:value="disabledValue" :options="shiftOptions" readonly style="margin-top: 8px;" />
+					<text class="caption">整体禁用全部灰显；单项禁用仅该项不可选；只读展示选中态但不可切换</text>
+				</view>
+
+				<text class="section" id="field-names">自定义字段名</text>
+				<view class="card">
+					<m-segmented v-model:value="fieldValue" :options="fieldOptions" :field-names="customFields" />
+					<text class="caption">fieldNames 映射 text / code / off（当前：{{ fieldValue }}）</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '分段控制器 Segmented', name: 'segmented' })
+
+	/** 班次选项 */
+	const shiftOptions = ref<UTSJSONObject[]>([
+		{ label: '早班', value: '早班' },
+		{ label: '中班', value: '中班' },
+		{ label: '晚班', value: '晚班' }
+	] as UTSJSONObject[])
+
+	/** 尺寸档位选项 */
+	const sizeOptions = ref<UTSJSONObject[]>([
+		{ label: 'Small', value: 'small' },
+		{ label: 'Medium', value: 'medium' },
+		{ label: 'Large', value: 'large' }
+	] as UTSJSONObject[])
+
+	/** 带图标选项（自定义内容演示） */
+	const iconOptions = ref<UTSJSONObject[]>([
+		{ label: '设备', value: 'device', icon: 'setting' },
+		{ label: '位置', value: 'location', icon: 'location' },
+		{ label: '收藏', value: 'favorite', icon: 'star' }
+	] as UTSJSONObject[])
+
+	/** 长文本选项（省略演示） */
+	const longOptions = ref<UTSJSONObject[]>([
+		{ label: '机加工一线生产数据', value: 'line-1' },
+		{ label: '注塑二线生产数据', value: 'line-2' },
+		{ label: '压铸四线生产数据', value: 'line-3' }
+	] as UTSJSONObject[])
+
+	/** 单项禁用选项 */
+	const partialOptions = ref<UTSJSONObject[]>([
+		{ label: '早班', value: '早班' },
+		{ label: '中班', value: '中班', disabled: true },
+		{ label: '晚班', value: '晚班' }
+	] as UTSJSONObject[])
+
+	/** 自定义字段名选项 */
+	const fieldOptions = ref<UTSJSONObject[]>([
+		{ text: '线上渠道', code: 'online' },
+		{ text: '线下渠道', code: 'offline' },
+		{ text: '合作渠道', code: 'partner' }
+	] as UTSJSONObject[])
+
+	/** 自定义字段名映射 */
+	const customFields = ref<UTSJSONObject>({ label: 'text', value: 'code', disabled: 'off' })
+
+	/** 基础用法选中值 */
+	const basicValue = ref<string | number>('早班')
+	/** 尺寸演示选中值 */
+	const sizeValue = ref<string | number>('medium')
+	/** 形状演示选中值 */
+	const shapeValue = ref<string | number>('早班')
+	/** 纵向演示选中值 */
+	const verticalValue = ref<string | number>('早班')
+	/** 自定义内容选中值 */
+	const customValue = ref<string | number>('device')
+	/** 省略演示选中值 */
+	const ellipsisValue = ref<string | number>('line-1')
+	/** 禁用 / 只读演示选中值 */
+	const disabledValue = ref<string | number>('早班')
+	/** 字段名演示选中值 */
+	const fieldValue = ref<string | number>('online')
+
+	/**
+	 * 取选项图标名（插槽作用域 option 为 UTSJSONObject）
+	 */
+	function iconOf(option: UTSJSONObject): string {
+		const name = option.getString('icon')
+		return name == null ? 'star' : name
+	}
+
+	/**
+	 * change 事件日志
+	 */
+	function logChange(tag: string, v: string | number) {
+		console.log('segmented ' + tag + ' change: ' + v.toString())
+	}
+</script>
+
+<style lang="scss">
+	.label {
+		font-size: 13px;
+		color: #969799;
+		margin-top: 8px;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+
+	.custom-item {
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.custom-item__icon {
+		font-size: 18px;
+		color: #969799;
+	}
+
+	.custom-item__icon--active {
+		color: #1989fa;
+	}
+
+	.custom-item__text {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 2px;
+	}
+
+	.custom-item__text--active {
+		color: #1989fa;
+	}
+</style>

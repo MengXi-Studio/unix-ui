@@ -312,6 +312,12 @@
 					}
 				},
 				{
+					"path": "segmented/segmented",
+					"style": {
+						"navigationBarTitleText": "分段控制器 Segmented"
+					}
+				},
+				{
 					"path": "space/space",
 					"style": {
 						"navigationBarTitleText": "间距 Space"

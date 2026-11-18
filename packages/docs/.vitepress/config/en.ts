@@ -116,7 +116,8 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'RadioInput', link: '/en/components/radio-input' },
 						{ text: 'RadioPopup', link: '/en/components/radio-popup' },
 						{ text: 'Rate', link: '/en/components/rate' },
-						{ text: 'Search', link: '/en/components/search' }
+						{ text: 'Search', link: '/en/components/search' },
+						{ text: 'Segmented', link: '/en/components/segmented' }
 					]
 				},
 				{

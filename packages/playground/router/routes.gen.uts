@@ -262,6 +262,11 @@ export const routes: RouteConfig[] = [
 		meta: { title: '搜索 Search' },
 	},
 	{
+		path: 'pages-sub/segmented/segmented',
+		name: 'segmented',
+		meta: { title: '分段控制器 Segmented' },
+	},
+	{
 		path: 'pages-sub/space/space',
 		name: 'space',
 		meta: { title: '间距 Space' },

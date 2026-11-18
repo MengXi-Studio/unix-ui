@@ -108,6 +108,8 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		rate: 'pages-sub/rate/rate'
 		/** 搜索 Search */
 		search: 'pages-sub/search/search'
+		/** 分段控制器 Segmented */
+		segmented: 'pages-sub/segmented/segmented'
 		/** 间距 Space */
 		space: 'pages-sub/space/space'
 		/** 状态栏 StatusBar */

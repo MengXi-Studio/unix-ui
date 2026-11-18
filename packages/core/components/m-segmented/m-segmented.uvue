@@ -1,0 +1,404 @@
+<template>
+	<!-- 分段控制器：容器（背景 / 圆角 / 内边距）+ 轨道（等分）+ 选中滑块（绝对定位百分比平移）+ 选项 -->
+	<view :class="rootClass" :style="customStyle">
+		<view :class="trackClass">
+			<!-- 选中滑块：DOM 位于选项之前，选项自带相对定位后绘制在其上 -->
+			<view ref="thumbRef" :class="thumbClass" :style="thumbStyle"></view>
+
+			<view
+				v-for="(item, index) in items"
+				:key="index"
+				:class="itemClass(index)"
+				@click="onItemClick(item)"
+			>
+				<slot name="item" :option="item.raw" :index="index" :active="index == activeIndex" :disabled="props.disabled || item.disabled">
+					<text :class="labelClass(item, index)" :max-lines="props.ellipsis ? 1 : 0">{{ item.label }}</text>
+				</slot>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-segmented 分段控制器：等分选项 + 单选。
+	 * 值受控（v-model:value），点击已选项不派发；组件级 disabled 优先于选项级；
+	 * 选中滑块用百分比宽度 + translate 平移，切换时走 UniElement.animate（MP 端直接落位）。
+	 */
+	import {
+		RadioFieldNames,
+		RadioValue,
+		DEFAULT_RADIO_FIELD_NAMES,
+		radioOptionLabel,
+		radioOptionValue,
+		radioOptionDisabled,
+		valuesEqual
+	} from '../m-radio-group/radio.uts'
+
+	/** 尺寸档位 */
+	type SegmentedSize = 'small' | 'medium' | 'large'
+	/** 形状：方形 / 胶囊 */
+	type SegmentedShape = 'square' | 'round'
+	/** 排列方向 */
+	type SegmentedDirection = 'horizontal' | 'vertical'
+
+	/** 渲染项快照（options 解析结果 + 原始选项供插槽透出） */
+	type SegmentedItem = {
+		/** 展示文本 */
+		label: string
+		/** 绑定值 */
+		value: RadioValue
+		/** 是否禁用该项 */
+		disabled: boolean
+		/** 原始选项对象（item 插槽作用域透出，便于取自定义字段） */
+		raw: UTSJSONObject
+	}
+
+	type Props = {
+		/** 当前选中值（v-model:value） */
+		value?: RadioValue
+		/** 选项数组 */
+		options?: UTSJSONObject[]
+		/** 选项字段名映射（label / value / disabled，缺省键按同名兜底） */
+		fieldNames?: UTSJSONObject | null
+		/** 尺寸档位 */
+		size?: SegmentedSize
+		/** 形状 */
+		shape?: SegmentedShape
+		/** 排列方向 */
+		direction?: SegmentedDirection
+		/** 是否禁用全部选项 */
+		disabled?: boolean
+		/** 是否只读（可展示选中态，不可切换） */
+		readonly?: boolean
+		/** 文本溢出是否单行省略 */
+		ellipsis?: boolean
+		/** 滑块动画时长（秒），0 关闭 */
+		duration?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: '',
+		options: () => [] as UTSJSONObject[],
+		fieldNames: null,
+		size: 'medium',
+		shape: 'square',
+		direction: 'horizontal',
+		disabled: false,
+		readonly: false,
+		ellipsis: true,
+		duration: 0.2,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 选中值变化（v-model:value） */
+		'update:value': [value: RadioValue]
+		/** 选中值变化 */
+		change: [value: RadioValue]
+	}>()
+
+	/** 选中滑块节点（平移动画载体） */
+	const thumbRef = ref<UniElement | null>(null)
+	/** 首帧标记：首次落位不做动画 */
+	let firstSet: boolean = true
+
+	/** 字段名映射：用户传入字段优先，缺失回退默认同名键 */
+	const fields = computed<RadioFieldNames>(() => {
+		const f = props.fieldNames
+		if (f == null) return DEFAULT_RADIO_FIELD_NAMES
+		const l = f.getString('label')
+		const v = f.getString('value')
+		const d = f.getString('disabled')
+		return {
+			label: l == null ? DEFAULT_RADIO_FIELD_NAMES.label : l,
+			value: v == null ? DEFAULT_RADIO_FIELD_NAMES.value : v,
+			disabled: d == null ? DEFAULT_RADIO_FIELD_NAMES.disabled : d
+		}
+	})
+
+	/** 解析后的渲染项（缺 value 的选项跳过） */
+	const items = computed<SegmentedItem[]>(() => {
+		const list: SegmentedItem[] = []
+		const f = fields.value
+		const opts = props.options
+		for (let i = 0; i < opts.length; i++) {
+			const opt = opts[i]
+			const v = radioOptionValue(opt, f)
+			if (v == null) continue
+			list.push({
+				label: radioOptionLabel(opt, f),
+				value: v,
+				disabled: radioOptionDisabled(opt, f),
+				raw: opt
+			})
+		}
+		return list
+	})
+
+	/** 选中下标（无匹配返回 -1） */
+	const activeIndex = computed<number>(() => {
+		const list = items.value
+		for (let i = 0; i < list.length; i++) {
+			if (valuesEqual(list[i].value, props.value)) return i
+		}
+		return -1
+	})
+
+	/** 根节点类名：尺寸 / 形状 / 方向 / 禁用 + 自定义类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-segmented'
+		if (props.size == 'small') cls += ' m-segmented--sm'
+		if (props.size == 'large') cls += ' m-segmented--lg'
+		if (props.shape == 'round') cls += ' m-segmented--round'
+		if (props.direction == 'vertical') cls += ' m-segmented--vertical'
+		if (props.disabled) cls += ' m-segmented--disabled'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 轨道类名 */
+	const trackClass = computed<string>(() => {
+		return props.direction == 'vertical' ? 'm-segmented__track m-segmented__track--vertical' : 'm-segmented__track'
+	})
+
+	/** 滑块类名：方向决定铺满的轴向，形状决定圆角 */
+	const thumbClass = computed<string>(() => {
+		let cls = 'm-segmented__thumb'
+		if (props.direction == 'vertical') cls += ' m-segmented__thumb--vertical'
+		if (props.shape == 'round') cls += ' m-segmented__thumb--round'
+		return cls
+	})
+
+	/** 滑块内联样式：等分尺寸 + 百分比位移（相对自身尺寸，无需测量容器） */
+	const thumbStyle = computed<string>(() => {
+		const total = items.value.length
+		const index = activeIndex.value
+		if (total <= 0 || index < 0) return 'opacity: 0;'
+		const size = (100 / total).toString() + '%'
+		const offset = (index * 100).toString() + '%'
+		if (props.direction == 'vertical') {
+			return 'height: ' + size + '; transform: translateY(' + offset + ');'
+		}
+		return 'width: ' + size + '; transform: translateX(' + offset + ');'
+	})
+
+	/**
+	 * 单项类名：横向按尺寸给左右内边距；纵向改为上下内边距（高度由内容撑开）
+	 *
+	 * @param index 下标
+	 * @returns 类名
+	 */
+	function itemClass(index: number): string {
+		if (props.direction == 'vertical') {
+			let cls = 'm-segmented__item m-segmented__item--vertical'
+			if (props.size == 'small') cls += ' m-segmented__item--vertical-sm'
+			if (props.size == 'large') cls += ' m-segmented__item--vertical-lg'
+			return cls
+		}
+		let cls = 'm-segmented__item'
+		if (props.size == 'small') cls += ' m-segmented__item--sm'
+		if (props.size == 'large') cls += ' m-segmented__item--lg'
+		return cls
+	}
+
+	/**
+	 * 文本类名：尺寸字号 + 选中 / 禁用配色
+	 *
+	 * @param item 渲染项
+	 * @param index 下标
+	 * @returns 类名
+	 */
+	function labelClass(item: SegmentedItem, index: number): string {
+		let cls = 'm-segmented__label'
+		if (props.size == 'small') cls += ' m-segmented__label--sm'
+		if (props.size == 'large') cls += ' m-segmented__label--lg'
+		if (props.disabled || item.disabled) {
+			cls += ' m-segmented__label--disabled'
+		} else if (index == activeIndex.value) {
+			cls += ' m-segmented__label--active'
+		}
+		return cls
+	}
+
+	/**
+	 * 点击选项：组件 / 选项禁用、只读、同值均不响应
+	 *
+	 * @param item 渲染项
+	 */
+	function onItemClick(item: SegmentedItem) {
+		if (props.disabled || props.readonly || item.disabled) return
+		if (valuesEqual(item.value, props.value)) return
+		emit('update:value', item.value)
+		emit('change', item.value)
+	}
+
+	watch(activeIndex, (nv: number, ov: number) => {
+		const el = thumbRef.value
+		if (el == null) return
+		if (firstSet || props.duration <= 0 || ov < 0 || nv < 0) {
+			firstSet = false
+			return
+		}
+		// #ifndef MP
+		// 小程序端 UniElement.animate 的 transform keyframes 支持未证实（同 m-tabs），直接落位降级
+		const from = (ov * 100).toString() + '%'
+		const to = (nv * 100).toString() + '%'
+		let keyframes: UniAnimationKeyframe[] = []
+		if (props.direction == 'vertical') {
+			keyframes = [
+				{ transform: 'translateY(' + from + ')', offset: 0 },
+				{ transform: 'translateY(' + to + ')', offset: 1 }
+			]
+		} else {
+			keyframes = [
+				{ transform: 'translateX(' + from + ')', offset: 0 },
+				{ transform: 'translateX(' + to + ')', offset: 1 }
+			]
+		}
+		el.animate(keyframes, { duration: Math.round(props.duration * 1000), easing: 'ease' })
+		// #endif
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 根容器：内边距 + 背景 + 圆角（列向，轨道撑满剩余高度） */
+	.m-segmented {
+		flex-direction: column;
+		height: $m-segmented-height;
+		padding: $m-segmented-padding;
+		background-color: $m-segmented-bg;
+		border-radius: $m-segmented-radius;
+		box-sizing: border-box;
+	}
+
+	/* small 档高度 */
+	.m-segmented--sm {
+		height: $m-segmented-height-sm;
+	}
+
+	/* large 档高度 */
+	.m-segmented--lg {
+		height: $m-segmented-height-lg;
+	}
+
+	/* 胶囊形状 */
+	.m-segmented--round {
+		border-radius: $m-segmented-radius-round;
+	}
+
+	/* 纵向模式：高度由选项内容撑开，不套用横向固定高度 */
+	.m-segmented--vertical {
+		height: auto;
+	}
+
+	/* 轨道：等分容器（相对定位，滑块定位基准） */
+	.m-segmented__track {
+		position: relative;
+		flex: 1;
+		flex-direction: row;
+	}
+
+	/* 纵向轨道：选项上下等分 */
+	.m-segmented__track--vertical {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	/* 选中滑块：横向铺满高度，宽度由内联样式按等分给出 */
+	.m-segmented__thumb {
+		position: absolute;
+		left: 0;
+		top: 0;
+		height: 100%;
+		background-color: $m-segmented-thumb-bg;
+		border-radius: $m-segmented-thumb-radius;
+		box-shadow: $m-segmented-thumb-shadow;
+	}
+
+	/* 纵向滑块：铺满宽度，高度由内联样式按等分给出 */
+	.m-segmented__thumb--vertical {
+		width: 100%;
+		height: auto;
+	}
+
+	/* 胶囊形状滑块：与容器圆角一致 */
+	.m-segmented__thumb--round {
+		border-radius: $m-segmented-thumb-radius-round;
+	}
+
+	/* 单项：等分 + 居中（相对定位绘制在滑块之上） */
+	.m-segmented__item {
+		position: relative;
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding: $m-segmented-item-padding;
+		box-sizing: border-box;
+	}
+
+	/* small 档单项内边距 */
+	.m-segmented__item--sm {
+		padding: $m-segmented-item-padding-sm;
+	}
+
+	/* large 档单项内边距 */
+	.m-segmented__item--lg {
+		padding: $m-segmented-item-padding-lg;
+	}
+
+	/* 纵向单项：上下内边距，高度随内容 */
+	.m-segmented__item--vertical {
+		padding: $m-segmented-item-padding-vertical;
+	}
+
+	/* 纵向 small 档单项 */
+	.m-segmented__item--vertical-sm {
+		padding: $m-segmented-item-padding-vertical-sm;
+	}
+
+	/* 纵向 large 档单项 */
+	.m-segmented__item--vertical-lg {
+		padding: $m-segmented-item-padding-vertical-lg;
+	}
+
+	/* 选项文字 */
+	.m-segmented__label {
+		font-size: $m-segmented-font-size;
+		color: $m-segmented-item-color;
+	}
+
+	/* small 档字号 */
+	.m-segmented__label--sm {
+		font-size: $m-segmented-font-size-sm;
+	}
+
+	/* large 档字号 */
+	.m-segmented__label--lg {
+		font-size: $m-segmented-font-size-lg;
+	}
+
+	/* 选中文字 */
+	.m-segmented__label--active {
+		color: $m-segmented-item-color-active;
+	}
+
+	/* 禁用文字 */
+	.m-segmented__label--disabled {
+		color: $m-segmented-item-color-disabled;
+	}
+</style>

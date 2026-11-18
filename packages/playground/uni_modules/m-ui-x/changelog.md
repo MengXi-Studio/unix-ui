@@ -17,6 +17,8 @@
 - 新增 `m-search` 搜索组件：组合 `m-input`（inlaid 形态）承载输入 / 清空 / 聚焦 / 只读禁用 / 格式化，自身负责搜索框外观与附加区域；`v-model:value` 绑定输入值，`change` 值变即派发；`shape`（round）+ `background` / `input-background` 定制外观；`label` / `left-icon`（默认 search）/ `right-icon` + 同名插槽承载框内元素；`show-action` + `action-text` + `action-type`（cancel / search）统一右侧按钮语义，`action` 插槽自定义后不再自动派发；键盘确认键派发 `search`；`error` / `error-message` 渲染红框与提示行；`left` / `action` 外部插槽；`focus()` / `blur()` 实例方法
 - `m-input` 增强（新增能力，默认行为不变）：新增 `confirm` 事件（键盘确认键，回传当前值）与 `input-align` 属性（`left` / `center` / `right` 输入文字对齐）
 - 新增 `$m-search-*` 主题变量段（内边距 / 外部与输入区背景 / 高度 / 圆角 / 左侧文本 / 图标 / 右侧按钮 / 错误提示等 20 项）
+- 新增 `m-segmented` 分段控制器：`options` + `fieldNames` 驱动的等分单选，`v-model:value` 受控；`size`（三档）/ `shape`（胶囊）/ `direction`（纵向）全量支持；选中滑块按等分百分比定位，切换时走 `UniElement.animate` 平移（小程序端直接落位），`duration` 可关闭；`item` 作用域插槽（`{ option, index, active, disabled }`）支持图标 + 文本 / 仅图标等自定义内容；`ellipsis` 默认单行省略；组件级 `disabled` / 选项级 `disabled` / `readonly` 三态语义明确；同值点击不派发事件
+- 新增 `$m-segmented-*` 主题变量段（内边距 / 背景 / 圆角 / 滑块 / 三档高度与字号与内边距 / 三态文字色等 20 项）
 
 ## 0.6.0 (2026-11-15)
 

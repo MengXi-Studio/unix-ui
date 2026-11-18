@@ -220,6 +220,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '搜索',
 				enName: 'Search',
 				desc: '搜索场景输入框，支持圆角 / 背景定制、清除、键盘搜索、取消或搜索按钮、左右图标、错误提示与内容对齐。'
+			},
+			{
+				name: 'segmented',
+				zhName: '分段控制器',
+				enName: 'Segmented',
+				desc: '等分选项的单选控件，支持三档尺寸、胶囊形状、纵向排列、滑块动画、自定义内容插槽、溢出省略与禁用只读。'
 			}
 		]
 	},

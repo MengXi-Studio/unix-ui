@@ -894,3 +894,51 @@ $m-search-error-color: $m-color-danger !default;
 $m-search-error-font-size: 12px !default;
 /** 错误提示内边距 */
 $m-search-error-padding: 0 $m-search-padding-x 8px $m-search-padding-x !default;
+
+/* ========== Segmented 分段控制器 ========== */
+/** 容器内边距（滑块与容器边缘间距） */
+$m-segmented-padding: 2px !default;
+/** 容器背景色 */
+$m-segmented-bg: #f2f3f5 !default;
+/** 方形圆角 */
+$m-segmented-radius: $m-radius-md !default;
+/** 胶囊圆角 */
+$m-segmented-radius-round: $m-radius-max !default;
+/** 选中滑块背景色 */
+$m-segmented-thumb-bg: $m-white !default;
+/** 选中滑块圆角 */
+$m-segmented-thumb-radius: 4px !default;
+/** 胶囊形状下的滑块圆角 */
+$m-segmented-thumb-radius-round: $m-radius-max !default;
+/** 选中滑块阴影 */
+$m-segmented-thumb-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !default;
+/** small 档高度 */
+$m-segmented-height-sm: 28px !default;
+/** medium 档高度 */
+$m-segmented-height: 32px !default;
+/** large 档高度 */
+$m-segmented-height-lg: 40px !default;
+/** medium 档字号 */
+$m-segmented-font-size: 14px !default;
+/** small 档字号 */
+$m-segmented-font-size-sm: 12px !default;
+/** large 档字号 */
+$m-segmented-font-size-lg: 16px !default;
+/** medium 档单项内边距 */
+$m-segmented-item-padding: 0 12px !default;
+/** small 档单项内边距 */
+$m-segmented-item-padding-sm: 0 8px !default;
+/** large 档单项内边距 */
+$m-segmented-item-padding-lg: 0 16px !default;
+/** 纵向模式单项内边距 */
+$m-segmented-item-padding-vertical: 8px 12px !default;
+/** 纵向模式 small 档单项内边距 */
+$m-segmented-item-padding-vertical-sm: 6px 8px !default;
+/** 纵向模式 large 档单项内边距 */
+$m-segmented-item-padding-vertical-lg: 10px 16px !default;
+/** 未选中文字色 */
+$m-segmented-item-color: $m-text-color-tertiary !default;
+/** 选中文字色 */
+$m-segmented-item-color-active: $m-text-color !default;
+/** 禁用文字色 */
+$m-segmented-item-color-disabled: $m-text-color-fourth !default;

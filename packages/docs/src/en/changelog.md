@@ -19,6 +19,10 @@ Adds a numeric keypad panel and popup for verification codes, payment passwords,
 - New `$m-search-*` theme variable block (padding / outer and input backgrounds / height / radius / label / icons / right button / error hint — 20 keys)
 - **m-segmented**: equal-split single selection driven by `options` + `fieldNames`, controlled through `v-model:value`; `size` (3 steps), `shape` (pill) and `direction` (vertical) all supported; the active thumb is positioned by equal fractions and slides with `UniElement.animate` on change (direct placement on mini programs), and `duration` can disable the animation; the `item` scoped slot (`{ option, index, active, disabled }`) supports icon + text or icon-only content; `ellipsis` truncates labels to one line by default; component-level `disabled`, option-level `disabled` and `readonly` have clear semantics; clicking the active option emits nothing (see [Segmented](/en/components/segmented))
 - New `$m-segmented-*` theme variable block (padding / background / radius / thumb / three size sets / three text colors — 20 keys)
+- **m-select**: option-driven single selection (`children` renders as a group header), controlled via `v-model:value`; local and remote filtering, whole/option-level disabled, empty state, check-icon selected state, `option` scoped slot, `bottom` slot and `scrollTop()` (see [Select](/en/components/select))
+- **m-select-popup**: `m-popup` + `m-select` composition with `title`, `v-model:show` and `confirm-on-select` (closes after selection) (see [SelectPopup](/en/components/select-popup))
+- **m-select-input**: readonly trigger + popup; the label resolves via `options` → `map-label` → raw value; self-drawn clear button; supports readonly / disabled and controlled visibility (see [SelectInput](/en/components/select-input))
+- New `$m-select-*` theme variable block (panel / filter / header / option / check / group / empty / input clear — 24 keys)
 
 ### Fixed
 

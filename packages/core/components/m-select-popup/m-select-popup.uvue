@@ -1,0 +1,252 @@
+<template>
+	<!-- 列表选择弹层：m-popup + m-select 组合（三件套的弹层形态） -->
+	<m-popup
+		:show="props.show"
+		:position="props.position"
+		:round="props.round"
+		:close-on-click-overlay="props.closeOnClickOverlay"
+		:safe-area-inset-top="props.safeAreaInsetTop"
+		:safe-area-inset-bottom="props.safeAreaInsetBottom"
+		:z-index="props.zIndex"
+		:duration="props.duration"
+		custom-class="m-select-popup__panel"
+		@update:show="onPopupUpdateShow"
+		@open="onPopupOpen"
+		@opened="onPopupOpened"
+		@close="onPopupClose"
+		@closed="onPopupClosed"
+		@click-overlay="onPopupClickOverlay"
+	>
+		<view class="m-select-popup">
+			<view v-if="props.title != ''" class="m-select-popup__header">
+				<text class="m-select-popup__title">{{ props.title }}</text>
+			</view>
+			<m-select
+				ref="selectRef"
+				:value="props.value"
+				:options="props.options"
+				:field-names="props.fieldNames"
+				:filterable="props.filterable"
+				:filter-placeholder="props.filterPlaceholder"
+				:filter-value="props.filterValue"
+				:filter-method="props.filterMethod"
+				:disabled="props.disabled"
+				:empty-text="props.emptyText"
+				:custom-class="props.customClass"
+				:custom-style="props.customStyle"
+				@update:value="onSelectValueChange"
+				@change="onSelectChange"
+				@select="onSelect"
+				@update:filter-value="onFilterValueChange"
+			>
+				<template #option="{ option, index, selected, disabled }">
+					<slot name="option" :option="option" :index="index" :selected="selected" :disabled="disabled"></slot>
+				</template>
+				<template #bottom>
+					<slot name="bottom"></slot>
+				</template>
+			</m-select>
+		</view>
+	</m-popup>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-select-popup 列表选择弹层：m-popup + m-select 组合。
+	 * 弹层 props 经 m-popup，列表 props / 事件 / 插槽逐项透传；
+	 * 选中后按 confirmOnSelect（默认 true）自动关闭。
+	 */
+	import { RadioValue } from '../m-radio-group/radio.uts'
+	import MPopup from '../m-popup/m-popup.uvue'
+	import MSelect from '../m-select/m-select.uvue'
+
+	/** 弹层方位 */
+	type SelectPopupPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'
+
+	type Props = {
+		/** 是否显示弹层（v-model:show） */
+		show?: boolean
+		/** 顶部标题（空不展示） */
+		title?: string
+		/** 当前选中值（v-model:value） */
+		value?: RadioValue
+		/** 选项数组 */
+		options?: UTSJSONObject[]
+		/** 字段名映射 */
+		fieldNames?: UTSJSONObject | null
+		/** 是否显示筛选框 */
+		filterable?: boolean
+		/** 筛选框占位文案 */
+		filterPlaceholder?: string
+		/** 筛选值（v-model:filter-value） */
+		filterValue?: string
+		/** 远程筛选回调 */
+		filterMethod?: ((query: string) => void) | null
+		/** 是否禁用列表 */
+		disabled?: boolean
+		/** 空列表文案 */
+		emptyText?: string
+		/** 选中后是否自动关闭弹层 */
+		confirmOnSelect?: boolean
+		/** 弹出方位 */
+		position?: SelectPopupPosition
+		/** 弹层圆角 */
+		round?: boolean
+		/** 点击遮罩是否关闭 */
+		closeOnClickOverlay?: boolean
+		/** 顶部安全区 */
+		safeAreaInsetTop?: boolean
+		/** 底部安全区 */
+		safeAreaInsetBottom?: boolean
+		/** 层级 */
+		zIndex?: number
+		/** 动画时长（秒） */
+		duration?: number
+		/** 自定义类名（作用于列表） */
+		customClass?: string.ClassString
+		/** 自定义内联样式（作用于列表） */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		show: false,
+		title: '',
+		value: '',
+		options: () => [] as UTSJSONObject[],
+		fieldNames: null,
+		filterable: false,
+		filterPlaceholder: '请输入关键词',
+		filterValue: '',
+		filterMethod: null,
+		disabled: false,
+		emptyText: '暂无选项',
+		confirmOnSelect: true,
+		position: 'bottom',
+		round: true,
+		closeOnClickOverlay: true,
+		safeAreaInsetTop: false,
+		safeAreaInsetBottom: true,
+		zIndex: 100,
+		duration: 0.3,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 弹层显隐（v-model:show） */
+		'update:show': [show: boolean]
+		/** 选中值变化（v-model:value） */
+		'update:value': [value: RadioValue]
+		/** 选中值变化 */
+		change: [value: RadioValue]
+		/** 选中项（原始对象） */
+		select: [option: UTSJSONObject]
+		/** 筛选值变化 */
+		'update:filterValue': [query: string]
+		/** 弹层打开中 */
+		open: []
+		/** 弹层打开完成 */
+		opened: []
+		/** 弹层关闭中 */
+		close: []
+		/** 弹层关闭完成 */
+		closed: []
+		/** 点击遮罩 */
+		'click-overlay': []
+	}>()
+
+	/** 列表实例（scrollTop 转发） */
+	const selectRef = ref<ComponentPublicInstance | null>(null)
+
+	/**
+	 * 弹层显隐变化：向外同步
+	 */
+	function onPopupUpdateShow(show: boolean) {
+		emit('update:show', show)
+	}
+
+	/**
+	 * 列表值变化：同步并派发 change / select
+	 */
+	function onSelectValueChange(v: RadioValue) {
+		emit('update:value', v)
+	}
+
+	/**
+	 * 列表 change：选中后按配置关闭弹层
+	 */
+	function onSelectChange(v: RadioValue) {
+		emit('change', v)
+		if (props.confirmOnSelect) emit('update:show', false)
+	}
+
+	/**
+	 * 列表选中项透传
+	 */
+	function onSelect(option: UTSJSONObject) {
+		emit('select', option)
+	}
+
+	/**
+	 * 筛选值变化透传
+	 */
+	function onFilterValueChange(query: string) {
+		emit('update:filterValue', query)
+	}
+
+	/**
+	 * 列表回到顶部（转发 m-select）
+	 */
+	function scrollTop() {
+		const inst = selectRef.value
+		if (inst != null) inst.$callMethod('scrollTop')
+	}
+
+	defineExpose({
+		scrollTop
+	})
+
+	function onPopupOpen() {
+		emit('open')
+	}
+	function onPopupOpened() {
+		emit('opened')
+	}
+	function onPopupClose() {
+		emit('close')
+	}
+	function onPopupClosed() {
+		emit('closed')
+	}
+	function onPopupClickOverlay() {
+		emit('click-overlay')
+	}
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 弹层内容：纵向（标题 + 列表） */
+	.m-select-popup {
+		flex-direction: column;
+		background-color: $m-select-bg;
+	}
+
+	/* 标题栏 */
+	.m-select-popup__header {
+		padding: $m-select-header-padding;
+		align-items: center;
+		justify-content: center;
+	}
+
+	/* 标题文字 */
+	.m-select-popup__title {
+		font-size: $m-select-header-font-size;
+		color: $m-select-header-color;
+	}
+</style>

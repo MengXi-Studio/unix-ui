@@ -143,7 +143,10 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Picker 选择器', link: '/components/picker' },
 						{ text: 'PickerInput 选择器输入框', link: '/components/picker-input' },
 						{ text: 'PickerPopup 选择器弹出框', link: '/components/picker-popup' },
-						{ text: 'PickerView 选择器纯视图', link: '/components/picker-view' }
+						{ text: 'PickerView 选择器纯视图', link: '/components/picker-view' },
+						{ text: 'Select 列表选择', link: '/components/select' },
+						{ text: 'SelectInput 列表选择输入框', link: '/components/select-input' },
+						{ text: 'SelectPopup 列表选择弹层', link: '/components/select-popup' }
 					]
 				},
 				{

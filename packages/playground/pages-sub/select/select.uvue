@@ -1,0 +1,199 @@
+<template>
+	<view class="page">
+		<demo-navbar title="列表选择" subtitle="Select" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-select v-model:value="basicValue" :options="lineOptions" @change="logChange('基础', $event)" />
+					<text class="caption">点击选项切换选中值（当前：{{ basicValue }}）</text>
+				</view>
+
+				<text class="section" id="group">选项分组</text>
+				<view class="card">
+					<m-select v-model:value="groupValue" :options="groupOptions" />
+					<text class="caption">options 中含 children 的项渲染为分组标题（当前：{{ groupValue }}）</text>
+				</view>
+
+				<text class="section" id="disabled">禁用</text>
+				<view class="card">
+					<text class="label">整体禁用</text>
+					<m-select v-model:value="disabledValue" :options="lineOptions" disabled />
+					<text class="label">单项禁用</text>
+					<m-select v-model:value="disabledValue" :options="partialOptions" style="margin-top: 8px;" />
+					<text class="caption">整体禁用灰显全部；单项禁用仅该项不可选中</text>
+				</view>
+
+				<text class="section" id="filter">筛选</text>
+				<view class="card">
+					<m-select v-model:value="filterValue" :options="lineOptions" filterable filter-placeholder="输入产线名称筛选" />
+					<text class="caption">本地筛选按 label 包含匹配，无命中的分组自动隐藏（当前：{{ filterValue }}）</text>
+				</view>
+
+				<text class="section" id="slot">自定义选项</text>
+				<view class="card">
+					<m-select v-model:value="colorValue" :options="colorOptions">
+						<template #option="{ option, selected }">
+							<view class="color-item">
+								<view class="color-item__block" :style="'background-color: ' + option.getString('value')! + ';'"></view>
+								<text :class="selected ? 'color-item__text color-item__text--selected' : 'color-item__text'">{{ option.getString('label') }}</text>
+							</view>
+						</template>
+					</m-select>
+					<text class="caption">option 插槽自定义整项内容（作用域 option / index / selected / disabled）</text>
+				</view>
+
+				<text class="section" id="empty">空数据</text>
+				<view class="card">
+					<m-select :options="emptyOptions" empty-text="暂无可选产线" />
+					<text class="caption">options 为空时展示 empty-text</text>
+				</view>
+
+				<text class="section" id="scroll">长列表与回到顶部</text>
+				<view class="card">
+					<m-select ref="scrollSelect" v-model:value="scrollValue" :options="longOptions" />
+					<view class="btn" @click="backToTop"><text class="btn__text">回到顶部</text></view>
+					<text class="caption">列表超出 320px 后内部滚动，scrollTop() 回到顶部</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '列表选择 Select', name: 'select' })
+
+	/** 产线选项 */
+	const lineOptions = ref<UTSJSONObject[]>([
+		{ label: '机加工一线', value: 'line-1' },
+		{ label: '注塑二线', value: 'line-2' },
+		{ label: '压铸四线', value: 'line-4' },
+		{ label: '包装五线', value: 'line-5' }
+	] as UTSJSONObject[])
+
+	/** 分组选项（children 即分组子项） */
+	const groupOptions = ref<UTSJSONObject[]>([
+		{
+			label: '华东厂区',
+			children: [
+				{ label: '机加工一线', value: 'e-1' },
+				{ label: '注塑二线', value: 'e-2' }
+			] as UTSJSONObject[]
+		},
+		{
+			label: '华南厂区',
+			children: [
+				{ label: '压铸四线', value: 's-4' },
+				{ label: '包装五线', value: 's-5' }
+			] as UTSJSONObject[]
+		}
+	] as UTSJSONObject[])
+
+	/** 单项禁用选项 */
+	const partialOptions = ref<UTSJSONObject[]>([
+		{ label: '机加工一线', value: 'line-1' },
+		{ label: '注塑二线', value: 'line-2', disabled: true },
+		{ label: '压铸四线', value: 'line-4' }
+	] as UTSJSONObject[])
+
+	/** 颜色选项（自定义插槽演示） */
+	const colorOptions = ref<UTSJSONObject[]>([
+		{ label: '红色', value: '#e63415' },
+		{ label: '橙色', value: '#ff6600' },
+		{ label: '绿色', value: '#1ec79d' },
+		{ label: '蓝色', value: '#4167f0' }
+	] as UTSJSONObject[])
+
+	/** 空选项 */
+	const emptyOptions = ref<UTSJSONObject[]>([] as UTSJSONObject[])
+
+	/** 长列表选项（滚动演示） */
+	const longOptions = ref<UTSJSONObject[]>([] as UTSJSONObject[])
+	for (let i = 1; i <= 20; i++) {
+		longOptions.value.push({ label: '产线 ' + i.toString(), value: 'l-' + i.toString() })
+	}
+
+	/** 基础选中值 */
+	const basicValue = ref<string | number>('line-2')
+	/** 分组选中值 */
+	const groupValue = ref<string | number>('e-1')
+	/** 禁用演示选中值 */
+	const disabledValue = ref<string | number>('line-1')
+	/** 筛选演示选中值 */
+	const filterValue = ref<string | number>('')
+	/** 颜色演示选中值 */
+	const colorValue = ref<string | number>('#ff6600')
+	/** 长列表选中值 */
+	const scrollValue = ref<string | number>('l-1')
+
+	/** m-select 实例（scrollTop 演示） */
+	const scrollSelect = ref<ComponentPublicInstance | null>(null)
+
+	/**
+	 * change 事件日志
+	 */
+	function logChange(tag: string, v: string | number) {
+		console.log('select ' + tag + ' change: ' + v.toString())
+	}
+
+	/**
+	 * 列表回到顶部
+	 */
+	function backToTop() {
+		const inst = scrollSelect.value
+		if (inst != null) inst.$callMethod('scrollTop')
+	}
+</script>
+
+<style lang="scss">
+	.label {
+		font-size: 13px;
+		color: #969799;
+		margin-bottom: 4px;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+
+	.color-item {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.color-item__block {
+		width: 20px;
+		height: 20px;
+		border-radius: 4px;
+		margin-right: 8px;
+	}
+
+	.color-item__text {
+		font-size: 14px;
+		color: #323233;
+	}
+
+	.color-item__text--selected {
+		color: #1989fa;
+	}
+
+	.btn {
+		height: 32px;
+		margin-top: 8px;
+		border-radius: 16px;
+		border-width: 1px;
+		border-style: solid;
+		border-color: #1989fa;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.btn__text {
+		font-size: 13px;
+		color: #1989fa;
+	}
+</style>

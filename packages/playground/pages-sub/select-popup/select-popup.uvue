@@ -1,0 +1,171 @@
+<template>
+	<view class="page">
+		<demo-navbar title="列表选择弹层" subtitle="Select Popup" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-select-popup v-model:show="basicShow" v-model:value="basicValue" :options="lineOptions" title="选择产线" @change="logChange('基础', $event)" />
+					<view class="btn" @click="basicShow = true"><text class="btn__text">打开选择</text></view>
+					<text class="caption">当前值：{{ basicValue }}；选中后自动关闭（confirm-on-select 默认 true）</text>
+				</view>
+
+				<text class="section" id="filter">标题与筛选</text>
+				<view class="card">
+					<m-select-popup v-model:show="filterShow" v-model:value="filterValue" :options="groupOptions" title="选择产线" filterable filter-placeholder="输入关键字" />
+					<view class="btn" @click="filterShow = true"><text class="btn__text">打开带筛选的弹层</text></view>
+					<text class="caption">title 渲染顶部标题，filterable 显示筛选框（当前：{{ filterValue }}）</text>
+				</view>
+
+				<text class="section" id="custom">自定义选项</text>
+				<view class="card">
+					<m-select-popup v-model:show="customShow" v-model:value="customValue" :options="colorOptions" title="选择颜色">
+						<template #option="{ option, selected }">
+							<view class="color-item">
+								<view class="color-item__block" :style="'background-color: ' + option.getString('value')! + ';'"></view>
+								<text :class="selected ? 'color-item__text color-item__text--selected' : 'color-item__text'">{{ option.getString('label') }}</text>
+							</view>
+						</template>
+					</m-select-popup>
+					<view class="btn" @click="customShow = true"><text class="btn__text">打开自定义选项弹层</text></view>
+					<text class="caption">option 插槽作用域透传 selected / disabled</text>
+				</view>
+
+				<text class="section" id="keep-open">选中不关闭</text>
+				<view class="card">
+					<m-select-popup v-model:show="keepShow" v-model:value="keepValue" :options="lineOptions" title="连续选择" :confirm-on-select="false" />
+					<view class="btn" @click="keepShow = true"><text class="btn__text">打开并连续点击</text></view>
+					<text class="caption">confirm-on-select=false 时选中后弹层保持打开（当前：{{ keepValue }}）</text>
+				</view>
+
+				<text class="section" id="bottom-slot">底部插槽</text>
+				<view class="card">
+					<m-select-popup v-model:show="bottomShow" v-model:value="bottomValue" :options="lineOptions" title="带底部操作">
+						<template #bottom>
+							<view class="bottom-tip"><text class="bottom-tip__text">底部插槽：可放加载更多 / 说明文案</text></view>
+						</template>
+					</m-select-popup>
+					<view class="btn" @click="bottomShow = true"><text class="btn__text">打开带底部插槽的弹层</text></view>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '列表选择弹层 Select Popup', name: 'select-popup' })
+
+	/** 产线选项 */
+	const lineOptions = ref<UTSJSONObject[]>([
+		{ label: '机加工一线', value: 'line-1' },
+		{ label: '注塑二线', value: 'line-2' },
+		{ label: '压铸四线', value: 'line-4' },
+		{ label: '包装五线', value: 'line-5' }
+	] as UTSJSONObject[])
+
+	/** 分组选项 */
+	const groupOptions = ref<UTSJSONObject[]>([
+		{
+			label: '华东厂区',
+			children: [
+				{ label: '机加工一线', value: 'e-1' },
+				{ label: '注塑二线', value: 'e-2' }
+			] as UTSJSONObject[]
+		},
+		{
+			label: '华南厂区',
+			children: [
+				{ label: '压铸四线', value: 's-4' },
+				{ label: '包装五线', value: 's-5' }
+			] as UTSJSONObject[]
+		}
+	] as UTSJSONObject[])
+
+	/** 颜色选项 */
+	const colorOptions = ref<UTSJSONObject[]>([
+		{ label: '红色', value: '#e63415' },
+		{ label: '橙色', value: '#ff6600' },
+		{ label: '绿色', value: '#1ec79d' },
+		{ label: '蓝色', value: '#4167f0' }
+	] as UTSJSONObject[])
+
+	/** 基础弹层显隐与值 */
+	const basicShow = ref<boolean>(false)
+	const basicValue = ref<string | number>('line-1')
+	/** 筛选弹层 */
+	const filterShow = ref<boolean>(false)
+	const filterValue = ref<string | number>('')
+	/** 自定义选项弹层 */
+	const customShow = ref<boolean>(false)
+	const customValue = ref<string | number>('#1ec79d')
+	/** 连续选择弹层 */
+	const keepShow = ref<boolean>(false)
+	const keepValue = ref<string | number>('')
+	/** 底部插槽弹层 */
+	const bottomShow = ref<boolean>(false)
+	const bottomValue = ref<string | number>('')
+
+	/**
+	 * change 事件日志
+	 */
+	function logChange(tag: string, v: string | number) {
+		console.log('select-popup ' + tag + ' change: ' + v.toString())
+	}
+</script>
+
+<style lang="scss">
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+
+	.btn {
+		height: 32px;
+		margin-top: 8px;
+		border-radius: 16px;
+		border-width: 1px;
+		border-style: solid;
+		border-color: #1989fa;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.btn__text {
+		font-size: 13px;
+		color: #1989fa;
+	}
+
+	.color-item {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.color-item__block {
+		width: 20px;
+		height: 20px;
+		border-radius: 4px;
+		margin-right: 8px;
+	}
+
+	.color-item__text {
+		font-size: 14px;
+		color: #323233;
+	}
+
+	.color-item__text--selected {
+		color: #1989fa;
+	}
+
+	.bottom-tip {
+		padding: 12px;
+		align-items: center;
+	}
+
+	.bottom-tip__text {
+		font-size: 12px;
+		color: #969799;
+	}
+</style>

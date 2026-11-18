@@ -267,6 +267,21 @@ export const routes: RouteConfig[] = [
 		meta: { title: '分段控制器 Segmented' },
 	},
 	{
+		path: 'pages-sub/select-input/select-input',
+		name: 'select-input',
+		meta: { title: '列表选择输入框 Select Input' },
+	},
+	{
+		path: 'pages-sub/select-popup/select-popup',
+		name: 'select-popup',
+		meta: { title: '列表选择弹层 Select Popup' },
+	},
+	{
+		path: 'pages-sub/select/select',
+		name: 'select',
+		meta: { title: '列表选择 Select' },
+	},
+	{
 		path: 'pages-sub/space/space',
 		name: 'space',
 		meta: { title: '间距 Space' },

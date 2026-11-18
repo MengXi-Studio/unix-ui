@@ -130,7 +130,10 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Picker', link: '/en/components/picker' },
 						{ text: 'PickerInput', link: '/en/components/picker-input' },
 						{ text: 'PickerPopup', link: '/en/components/picker-popup' },
-						{ text: 'PickerView', link: '/en/components/picker-view' }
+						{ text: 'PickerView', link: '/en/components/picker-view' },
+						{ text: 'Select', link: '/en/components/select' },
+						{ text: 'SelectInput', link: '/en/components/select-input' },
+						{ text: 'SelectPopup', link: '/en/components/select-popup' }
 					]
 				},
 				{

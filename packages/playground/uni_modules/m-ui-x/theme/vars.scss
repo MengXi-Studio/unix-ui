@@ -942,3 +942,51 @@ $m-segmented-item-color: $m-text-color-tertiary !default;
 $m-segmented-item-color-active: $m-text-color !default;
 /** 禁用文字色 */
 $m-segmented-item-color-disabled: $m-text-color-fourth !default;
+
+/* ========== Select 列表选择 ========== */
+/** 面板最大高度 */
+$m-select-max-height: 320px !default;
+/** 面板背景色 */
+$m-select-bg: $m-white !default;
+/** 筛选区内边距 */
+$m-select-filter-padding: 8px 12px !default;
+/** 弹层标题内边距 */
+$m-select-header-padding: 14px 12px 8px 12px !default;
+/** 弹层标题字号 */
+$m-select-header-font-size: 16px !default;
+/** 弹层标题颜色 */
+$m-select-header-color: $m-text-color !default;
+/** 选项最小高度 */
+$m-select-option-min-height: 44px !default;
+/** 选项内边距 */
+$m-select-option-padding: 0 12px !default;
+/** 选项文字色 */
+$m-select-option-color: $m-text-color !default;
+/** 选项选中文字色 */
+$m-select-option-color-selected: $m-color-primary !default;
+/** 选项禁用文字色 */
+$m-select-option-color-disabled: $m-text-color-fourth !default;
+/** 选项文字字号 */
+$m-select-option-font-size: 14px !default;
+/** 勾选图标颜色 */
+$m-select-check-color: $m-color-primary !default;
+/** 勾选图标字号 */
+$m-select-check-size: 16px !default;
+/** 分组标题内边距 */
+$m-select-group-label-padding: 8px 12px !default;
+/** 分组标题字号 */
+$m-select-group-label-font-size: 12px !default;
+/** 分组标题颜色 */
+$m-select-group-label-color: $m-text-color-tertiary !default;
+/** 分组标题背景色 */
+$m-select-group-label-bg: #f2f3f5 !default;
+/** 空态内边距 */
+$m-select-empty-padding: 32px 0 !default;
+/** 空态文字色 */
+$m-select-empty-color: $m-text-color-fourth !default;
+/** 输入框清除按钮右侧偏移 */
+$m-select-input-clear-right: 12px !default;
+/** 输入框清除图标字号 */
+$m-select-input-clear-size: 16px !default;
+/** 输入框清除图标颜色 */
+$m-select-input-clear-color: $m-text-color-fourth !default;

@@ -1,0 +1,167 @@
+<template>
+	<view class="page">
+		<demo-navbar title="列表选择输入框" subtitle="Select Input" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-select-input v-model:value="basicValue" :options="lineOptions" title="选择产线" placeholder="请选择产线" @change="logChange('基础', $event)" />
+					<text class="caption">点击输入框打开弹层，选中后回显标签并可一键清空（当前：{{ basicValue }}）</text>
+				</view>
+
+				<text class="section" id="filter">带筛选</text>
+				<view class="card">
+					<m-select-input v-model:value="filterValue" :options="groupOptions" title="选择产线" placeholder="请选择产线" filterable filter-placeholder="输入关键字" />
+					<text class="caption">filterable 在弹层内展示筛选框（当前：{{ filterValue }}）</text>
+				</view>
+
+				<text class="section" id="map-label">标签映射</text>
+				<view class="card">
+					<m-select-input v-model:value="mapValue" :options="lineOptions" :map-label="mapLabel" title="选择产线" />
+					<text class="caption">值 line-9 不在 options 中，通过 map-label 显示「外协九线」（当前：{{ mapValue }}）</text>
+				</view>
+
+				<text class="section" id="custom">自定义选项</text>
+				<view class="card">
+					<m-select-input v-model:value="colorValue" :options="colorOptions" title="选择颜色">
+						<template #option="{ option, selected }">
+							<view class="color-item">
+								<view class="color-item__block" :style="'background-color: ' + option.getString('value')! + ';'"></view>
+								<text :class="selected ? 'color-item__text color-item__text--selected' : 'color-item__text'">{{ option.getString('label') }}</text>
+							</view>
+						</template>
+					</m-select-input>
+					<text class="caption">option 插槽透传到弹层列表</text>
+				</view>
+
+				<text class="section" id="readonly">只读与禁用</text>
+				<view class="card">
+					<text class="label">只读（可查看不可改）</text>
+					<m-select-input v-model:value="basicValue" :options="lineOptions" readonly />
+					<text class="label">禁用</text>
+					<m-select-input v-model:value="basicValue" :options="lineOptions" disabled placeholder="无选择权限" style="margin-top: 8px;" />
+				</view>
+
+				<text class="section" id="methods">受控显隐</text>
+				<view class="card">
+					<m-select-input v-model:show="showState" v-model:value="showValue" :options="lineOptions" title="受控弹层" placeholder="点击下方按钮打开" />
+					<view class="btn" @click="showState = true"><text class="btn__text">外部打开弹层</text></view>
+					<text class="caption">v-model:show 可从外部控制弹层显隐（当前：{{ showValue }}）</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '列表选择输入框 Select Input', name: 'select-input' })
+
+	/** 产线选项 */
+	const lineOptions = ref<UTSJSONObject[]>([
+		{ label: '机加工一线', value: 'line-1' },
+		{ label: '注塑二线', value: 'line-2' },
+		{ label: '压铸四线', value: 'line-4' },
+		{ label: '包装五线', value: 'line-5' }
+	] as UTSJSONObject[])
+
+	/** 分组选项 */
+	const groupOptions = ref<UTSJSONObject[]>([
+		{
+			label: '华东厂区',
+			children: [
+				{ label: '机加工一线', value: 'e-1' },
+				{ label: '注塑二线', value: 'e-2' }
+			] as UTSJSONObject[]
+		},
+		{
+			label: '华南厂区',
+			children: [
+				{ label: '压铸四线', value: 's-4' },
+				{ label: '包装五线', value: 's-5' }
+			] as UTSJSONObject[]
+		}
+	] as UTSJSONObject[])
+
+	/** 颜色选项 */
+	const colorOptions = ref<UTSJSONObject[]>([
+		{ label: '红色', value: '#e63415' },
+		{ label: '橙色', value: '#ff6600' },
+		{ label: '绿色', value: '#1ec79d' },
+		{ label: '蓝色', value: '#4167f0' }
+	] as UTSJSONObject[])
+
+	/** 远程场景标签映射 */
+	const mapLabel = ref<UTSJSONObject>({ 'line-9': '外协九线' })
+
+	/** 基础演示值 */
+	const basicValue = ref<string | number>('line-1')
+	/** 筛选演示值 */
+	const filterValue = ref<string | number>('')
+	/** 标签映射演示值（不在 options 中） */
+	const mapValue = ref<string | number>('line-9')
+	/** 自定义选项演示值 */
+	const colorValue = ref<string | number>('#4167f0')
+	/** 受控显隐演示值 */
+	const showValue = ref<string | number>('')
+	const showState = ref<boolean>(false)
+
+	/**
+	 * change 事件日志
+	 */
+	function logChange(tag: string, v: string | number) {
+		console.log('select-input ' + tag + ' change: ' + v.toString())
+	}
+</script>
+
+<style lang="scss">
+	.label {
+		font-size: 13px;
+		color: #969799;
+		margin-bottom: 4px;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+
+	.btn {
+		height: 32px;
+		margin-top: 8px;
+		border-radius: 16px;
+		border-width: 1px;
+		border-style: solid;
+		border-color: #1989fa;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.btn__text {
+		font-size: 13px;
+		color: #1989fa;
+	}
+
+	.color-item {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.color-item__block {
+		width: 20px;
+		height: 20px;
+		border-radius: 4px;
+		margin-right: 8px;
+	}
+
+	.color-item__text {
+		font-size: 14px;
+		color: #323233;
+	}
+
+	.color-item__text--selected {
+		color: #1989fa;
+	}
+</style>

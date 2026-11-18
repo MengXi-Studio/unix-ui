@@ -19,6 +19,10 @@
 - 新增 `$m-search-*` 主题变量段（内边距 / 外部与输入区背景 / 高度 / 圆角 / 左侧文本 / 图标 / 右侧按钮 / 错误提示等 20 项）
 - 新增 `m-segmented` 分段控制器：`options` + `fieldNames` 驱动的等分单选，`v-model:value` 受控；`size`（三档）/ `shape`（胶囊）/ `direction`（纵向）全量支持；选中滑块按等分百分比定位，切换时走 `UniElement.animate` 平移（小程序端直接落位），`duration` 可关闭；`item` 作用域插槽（`{ option, index, active, disabled }`）支持图标 + 文本 / 仅图标等自定义内容；`ellipsis` 默认单行省略；组件级 `disabled` / 选项级 `disabled` / `readonly` 三态语义明确；同值点击不派发事件
 - 新增 `$m-segmented-*` 主题变量段（内边距 / 背景 / 圆角 / 滑块 / 三档高度与字号与内边距 / 三态文字色等 20 项）
+- 新增 `m-select` 列表选择面板：`options` 驱动单选（含 `children` 的项渲染为分组标题，子项可选），`v-model:value` 受控；`filterable` 本地包含匹配筛选 + `filterMethod` 远程受控筛选（`v-model:filter-value`）；整体 / 单项禁用、空态文案、选中态勾选图标、`option` 作用域插槽、`bottom` 插槽、`scrollTop()` 回顶
+- 新增 `m-select-popup` 列表选择弹层：`m-popup` + `m-select` 组合，支持 `title`、`v-model:show`、`confirmOnSelect`（选中后自动关闭，默认开启）
+- 新增 `m-select-input` 列表选择输入框：只读输入框触发器 + 弹层，展示标签按 `options` → `map-label` → 值字符串解析，自绘清除按钮，支持只读 / 禁用 / `v-model:show` 受控显隐
+- 新增 `$m-select-*` 主题变量段（面板 / 筛选 / 标题 / 选项 / 勾选 / 分组 / 空态 / 输入框清除等 24 项）
 
 ## 0.6.0 (2026-11-15)
 

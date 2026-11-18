@@ -273,6 +273,24 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '选择器纯视图',
 				enName: 'PickerView',
 				desc: '无工具栏的索引受控多列滚轮，配合 m-picker-view-column 与 option 插槽，可嵌入自定义容器。'
+			},
+			{
+				name: 'select',
+				zhName: '列表选择',
+				enName: 'Select',
+				desc: '列表选择面板，支持分组、禁用、本地 / 远程筛选、自定义选项插槽、空态与回到顶部。'
+			},
+			{
+				name: 'select-input',
+				zhName: '列表选择输入框',
+				enName: 'SelectInput',
+				desc: '只读输入框触发器 + 列表选择弹层，回显标签、支持清空、标签映射与只读禁用。'
+			},
+			{
+				name: 'select-popup',
+				zhName: '列表选择弹层',
+				enName: 'SelectPopup',
+				desc: '弹层形态的列表选择，支持标题、筛选、自定义选项与选中不自动关闭。'
 			}
 		]
 	},

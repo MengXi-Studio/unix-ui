@@ -1,0 +1,397 @@
+<template>
+	<!-- 列表选择面板：可选筛选框 + 选项列表（支持分组标题）+ 空态 + 底部插槽 -->
+	<view :class="rootClass" :style="customStyle">
+		<view v-if="props.filterable" class="m-select__filter">
+			<m-search
+				:value="innerFilter"
+				:placeholder="props.filterPlaceholder"
+				shape="round"
+				input-background="#ffffff"
+				@update:value="onFilterInput"
+			/>
+		</view>
+
+		<scroll-view class="m-select__body" :scroll-y="true" :scroll-top="scrollTopValue">
+			<view v-for="(block, bi) in visibleBlocks" :key="bi" class="m-select__block">
+				<view v-if="block.label != ''" class="m-select__group-label">
+					<text class="m-select__group-text">{{ block.label }}</text>
+				</view>
+				<view
+					v-for="(item, ii) in block.items"
+					:key="ii"
+					:class="itemClass(item)"
+					@click="onItemClick(item)"
+				>
+					<slot name="option" :option="item.raw" :index="ii" :selected="isSelected(item)" :disabled="props.disabled || item.disabled">
+						<text :class="labelClass(item)">{{ item.label }}</text>
+					</slot>
+					<m-icon v-if="isSelected(item)" name="success" custom-class="m-select__check" />
+				</view>
+			</view>
+
+			<view v-if="isEmpty" class="m-select__empty">
+				<text class="m-select__empty-text">{{ props.emptyText }}</text>
+			</view>
+
+			<slot name="bottom"></slot>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-select 列表选择面板（单选）。
+	 * options 驱动：含 children 的项渲染为分组标题，子项可选；值受控（v-model:value），同值点击不派发；
+	 * 筛选支持本地包含匹配与远程受控（传 filterMethod 时只回传查询值）。
+	 */
+	import {
+		RadioFieldNames,
+		RadioValue,
+		DEFAULT_RADIO_FIELD_NAMES,
+		radioOptionLabel,
+		radioOptionValue,
+		radioOptionDisabled,
+		valuesEqual
+	} from '../m-radio-group/radio.uts'
+	import MIcon from '../m-icon/m-icon.uvue'
+	import MSearch from '../m-search/m-search.uvue'
+
+	/** 解析后的选项 */
+	type SelectItem = {
+		/** 展示文本 */
+		label: string
+		/** 绑定值 */
+		value: RadioValue
+		/** 是否禁用 */
+		disabled: boolean
+		/** 原始选项对象（option 插槽透出） */
+		raw: UTSJSONObject
+	}
+
+	/** 渲染块：label 非空即分组标题块 */
+	type SelectBlock = {
+		/** 分组标题（空串表示无标题的普通块） */
+		label: string
+		/** 子项 */
+		items: SelectItem[]
+	}
+
+	type Props = {
+		/** 当前选中值（v-model:value） */
+		value?: RadioValue
+		/** 选项数组（含 children 的项视为分组） */
+		options?: UTSJSONObject[]
+		/** 字段名映射（label / value / disabled / children） */
+		fieldNames?: UTSJSONObject | null
+		/** 是否显示筛选框 */
+		filterable?: boolean
+		/** 筛选框占位文案 */
+		filterPlaceholder?: string
+		/** 筛选值（v-model:filter-value） */
+		filterValue?: string
+		/** 远程筛选回调；存在时不做本地过滤 */
+		filterMethod?: ((query: string) => void) | null
+		/** 是否禁用面板 */
+		disabled?: boolean
+		/** 空列表文案 */
+		emptyText?: string
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: '',
+		options: () => [] as UTSJSONObject[],
+		fieldNames: null,
+		filterable: false,
+		filterPlaceholder: '请输入关键词',
+		filterValue: '',
+		filterMethod: null,
+		disabled: false,
+		emptyText: '暂无选项',
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 选中值变化（v-model:value） */
+		'update:value': [value: RadioValue]
+		/** 选中值变化 */
+		change: [value: RadioValue]
+		/** 选中项（回传原始对象） */
+		select: [option: UTSJSONObject]
+		/** 筛选值变化（v-model:filter-value） */
+		'update:filterValue': [query: string]
+	}>()
+
+	/** 内部筛选值（与受控 filterValue 同步） */
+	const innerFilter = ref<string>(props.filterValue)
+	/** 列表滚动位置（scrollTop() 与远程筛选复位用） */
+	const scrollTopValue = ref<number>(0)
+
+	watch(
+		() => props.filterValue,
+		(v: string) => {
+			innerFilter.value = v
+		}
+	)
+
+	/** 字段名映射（四键，缺省按同名兜底） */
+	const fields = computed<RadioFieldNames>(() => {
+		const f = props.fieldNames
+		if (f == null) return DEFAULT_RADIO_FIELD_NAMES
+		const l = f.getString('label')
+		const v = f.getString('value')
+		const d = f.getString('disabled')
+		return {
+			label: l == null ? DEFAULT_RADIO_FIELD_NAMES.label : l,
+			value: v == null ? DEFAULT_RADIO_FIELD_NAMES.value : v,
+			disabled: d == null ? DEFAULT_RADIO_FIELD_NAMES.disabled : d
+		}
+	})
+
+	/** children 字段名 */
+	const childrenKey = computed<string>(() => {
+		const f = props.fieldNames
+		if (f == null) return 'children'
+		const c = f.getString('children')
+		return c == null ? 'children' : c
+	})
+
+	/** 原始渲染块（未筛选） */
+	const blocks = computed<SelectBlock[]>(() => {
+		const list: SelectBlock[] = []
+		const f = fields.value
+		const ck = childrenKey.value
+		const opts = props.options
+		for (let i = 0; i < opts.length; i++) {
+			const opt = opts[i]
+			const children = opt.getArray<UTSJSONObject>(ck)
+			if (children != null && children.length > 0) {
+				const items: SelectItem[] = []
+				for (let j = 0; j < children.length; j++) {
+					const child = children[j]
+					const cv = radioOptionValue(child, f)
+					if (cv == null) continue
+					items.push({
+						label: radioOptionLabel(child, f),
+						value: cv,
+						disabled: radioOptionDisabled(child, f),
+						raw: child
+					})
+				}
+				list.push({ label: radioOptionLabel(opt, f), items: items })
+				continue
+			}
+			const v = radioOptionValue(opt, f)
+			if (v == null) continue
+			const item: SelectItem = {
+				label: radioOptionLabel(opt, f),
+				value: v,
+				disabled: radioOptionDisabled(opt, f),
+				raw: opt
+			}
+			// 连续普通选项归入同一个无标题块
+			let last: SelectBlock | null = list.length > 0 ? list[list.length - 1] : null
+			if (last != null && last.label == '') {
+				last.items.push(item)
+			} else {
+				list.push({ label: '', items: [item] })
+			}
+		}
+		return list
+	})
+
+	/** 筛选后的渲染块（远程模式下不过滤） */
+	const visibleBlocks = computed<SelectBlock[]>(() => {
+		const query = innerFilter.value.trim().toLowerCase()
+		if (!props.filterable || props.filterMethod != null || query == '') return blocks.value
+		const result: SelectBlock[] = []
+		for (let i = 0; i < blocks.value.length; i++) {
+			const block = blocks.value[i]
+			const hits: SelectItem[] = []
+			for (let j = 0; j < block.items.length; j++) {
+				const item = block.items[j]
+				if (item.label.toLowerCase().indexOf(query) >= 0) hits.push(item)
+			}
+			if (hits.length > 0) result.push({ label: block.label, items: hits })
+		}
+		return result
+	})
+
+	/** 是否空列表 */
+	const isEmpty = computed<boolean>(() => {
+		for (let i = 0; i < visibleBlocks.value.length; i++) {
+			if (visibleBlocks.value[i].items.length > 0) return false
+		}
+		return true
+	})
+
+	/** 根节点类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-select'
+		if (props.disabled) cls += ' m-select--disabled'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/**
+	 * 选项类名
+	 *
+	 * @param item 选项
+	 * @returns 类名
+	 */
+	function itemClass(item: SelectItem): string {
+		let cls = 'm-select__item'
+		if (isSelected(item)) cls += ' m-select__item--selected'
+		return cls
+	}
+
+	/**
+	 * 选项文本类名
+	 *
+	 * @param item 选项
+	 * @returns 类名
+	 */
+	function labelClass(item: SelectItem): string {
+		if (props.disabled || item.disabled) return 'm-select__label m-select__label--disabled'
+		if (isSelected(item)) return 'm-select__label m-select__label--selected'
+		return 'm-select__label'
+	}
+
+	/**
+	 * 是否为当前选中项
+	 *
+	 * @param item 选项
+	 * @returns 是否选中
+	 */
+	function isSelected(item: SelectItem): boolean {
+		return valuesEqual(item.value, props.value)
+	}
+
+	/**
+	 * 筛选输入：同步内部值并派发（远程模式交给外部处理）
+	 *
+	 * @param query 查询内容
+	 */
+	function onFilterInput(query: string) {
+		innerFilter.value = query
+		emit('update:filterValue', query)
+		const method = props.filterMethod
+		if (method != null) method(query)
+	}
+
+	/**
+	 * 点击选项：面板 / 选项禁用、同值均不响应
+	 *
+	 * @param item 选项
+	 */
+	function onItemClick(item: SelectItem) {
+		if (props.disabled || item.disabled) return
+		if (isSelected(item)) return
+		emit('update:value', item.value)
+		emit('change', item.value)
+		emit('select', item.raw)
+	}
+
+	/**
+	 * 列表回到顶部
+	 */
+	function scrollTop() {
+		scrollTopValue.value = 0
+	}
+
+	defineExpose({
+		scrollTop
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 面板：纵向布局，背景与圆角由承载方决定（弹层内直接铺满） */
+	.m-select {
+		flex-direction: column;
+		background-color: $m-select-bg;
+	}
+
+	/* 筛选区 */
+	.m-select__filter {
+		padding: $m-select-filter-padding;
+	}
+
+	/* 列表滚动区：超出最大高度滚动 */
+	.m-select__body {
+		max-height: $m-select-max-height;
+	}
+
+	/* 渲染块 */
+	.m-select__block {
+		flex-direction: column;
+	}
+
+	/* 分组标题 */
+	.m-select__group-label {
+		padding: $m-select-group-label-padding;
+		background-color: $m-select-group-label-bg;
+	}
+
+	/* 分组标题文字 */
+	.m-select__group-text {
+		font-size: $m-select-group-label-font-size;
+		color: $m-select-group-label-color;
+	}
+
+	/* 选项行 */
+	.m-select__item {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		min-height: $m-select-option-min-height;
+		padding: $m-select-option-padding;
+		box-sizing: border-box;
+	}
+
+	/* 选项文字 */
+	.m-select__label {
+		flex: 1;
+		font-size: $m-select-option-font-size;
+		color: $m-select-option-color;
+	}
+
+	/* 选中文字 */
+	.m-select__label--selected {
+		color: $m-select-option-color-selected;
+	}
+
+	/* 禁用文字 */
+	.m-select__label--disabled {
+		color: $m-select-option-color-disabled;
+	}
+
+	/* 勾选图标 */
+	.m-select__check {
+		font-size: $m-select-check-size;
+		color: $m-select-check-color;
+	}
+
+	/* 空态 */
+	.m-select__empty {
+		padding: $m-select-empty-padding;
+		align-items: center;
+	}
+
+	/* 空态文字 */
+	.m-select__empty-text {
+		font-size: $m-select-option-font-size;
+		color: $m-select-empty-color;
+	}
+</style>

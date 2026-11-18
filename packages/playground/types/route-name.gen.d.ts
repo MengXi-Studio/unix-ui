@@ -110,6 +110,12 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		search: 'pages-sub/search/search'
 		/** 分段控制器 Segmented */
 		segmented: 'pages-sub/segmented/segmented'
+		/** 列表选择输入框 Select Input */
+		'select-input': 'pages-sub/select-input/select-input'
+		/** 列表选择弹层 Select Popup */
+		'select-popup': 'pages-sub/select-popup/select-popup'
+		/** 列表选择 Select */
+		select: 'pages-sub/select/select'
 		/** 间距 Space */
 		space: 'pages-sub/space/space'
 		/** 状态栏 StatusBar */

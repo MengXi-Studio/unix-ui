@@ -318,6 +318,24 @@
 					}
 				},
 				{
+					"path": "select-input/select-input",
+					"style": {
+						"navigationBarTitleText": "列表选择输入框 Select Input"
+					}
+				},
+				{
+					"path": "select-popup/select-popup",
+					"style": {
+						"navigationBarTitleText": "列表选择弹层 Select Popup"
+					}
+				},
+				{
+					"path": "select/select",
+					"style": {
+						"navigationBarTitleText": "列表选择 Select"
+					}
+				},
+				{
 					"path": "space/space",
 					"style": {
 						"navigationBarTitleText": "间距 Space"

@@ -30,6 +30,18 @@ const options = ref<UTSJSONObject[]>([
 ] as UTSJSONObject[])
 ```
 
+### Multiple {#demo-multiple}
+
+Set `multiple` for multi-select and `show-toolbar` to show the toolbar (selected count + clear). The value becomes an array; clicking a selected option deselects it, and clicks do nothing once `multiple-limit` is reached:
+
+```vue
+<m-select v-model:value="value" :options="options" multiple show-toolbar :multiple-limit="2" />
+```
+
+```uts
+const value = ref<string | number | string[] | number[]>([] as string[])
+```
+
 ### Groups {#demo-group}
 
 An option containing `children` is treated as a group: its `label` is rendered as a group title and its children are selectable; the group title itself is not selectable:
@@ -144,7 +156,10 @@ const backToTop = () => {
 
 | Name | Description | Type | Default |
 | --- | --- | --- | --- |
-| value | Active value (`v-model:value`) | string \| number | `''` |
+| value | Active value (`v-model:value`; an array when `multiple`) | string \| number \| string[] \| number[] | `''` |
+| multiple | Enable multi-select | boolean | `false` |
+| multiple-limit | Max selections in multiple mode (`0` = unlimited) | number | `0` |
+| show-toolbar | Show the toolbar (selected count + clear) in multiple mode | boolean | `false` |
 | options | Option list; an item with `children` is treated as a group | UTSJSONObject[] | `[]` |
 | field-names | Field mapping (label / value / disabled / children) | UTSJSONObject \| null | `null` |
 | filterable | Whether to show the filter box | boolean | `false` |
@@ -159,9 +174,9 @@ const backToTop = () => {
 
 | Event | Description | Parameters |
 | --- | --- | --- |
-| update:value | Active value changed (`v-model:value`) | value: string \| number |
-| change | Active value changed | value: string \| number |
-| select | Active item changed (raw option object) | option: UTSJSONObject |
+| update:value | Active value changed (`v-model:value`; an array in multiple mode) | value: string \| number \| string[] \| number[] |
+| change | Active value changed (an array in multiple mode) | value: string \| number \| string[] \| number[] |
+| select | Emitted on option click (raw option object) | option: UTSJSONObject |
 | update:filterValue | Filter value changed (`v-model:filter-value`) | query: string |
 
 ### Methods
@@ -186,6 +201,10 @@ Define the following variables directly in the project root `uni.scss` to overri
 | $m-select-max-height | Panel max height | 320px |
 | $m-select-bg | Panel background | $m-white |
 | $m-select-filter-padding | Filter area padding | 8px 12px |
+| $m-select-toolbar-padding | Toolbar padding | 8px 12px |
+| $m-select-toolbar-font-size | Toolbar font size | 12px |
+| $m-select-toolbar-text-color | Toolbar text color | $m-text-color-tertiary |
+| $m-select-toolbar-clear-color | Toolbar clear button color | $m-color-primary |
 | $m-select-option-min-height | Option min height | 44px |
 | $m-select-option-padding | Option padding | 0 12px |
 | $m-select-option-color | Option text color | $m-text-color |
@@ -206,14 +225,15 @@ See [Theming](/en/guide/theming) for the full variable list and override guide.
 ## Differences from Sard
 
 - **Binding**: Sard uses `v-model`; this project uses `v-model:value`
-- **Selection mode**: single selection only for now; multi-select (`multiple` / `multiple-limit` / toolbar) is planned
+- **Selection mode**: single and multiple selection are supported (`multiple` + `multiple-limit`); the multiple toolbar is the fixed selected-count + clear, unlike Sard's configurable toolbar
 - **Options**: Sard uses `SelectOption` / `SelectOptionGroup` child components; this project uses object arrays where an item with `children` is a group
 - **Custom content**: an `option` scoped slot replaces Sard's two-level `SelectOption` default and `label` slots
-- **Value type**: only `string | number`, no `any`
+- **Value type**: items are only `string | number` (an array of them in multiple mode), no `any`
 
 ## Notes
 
-- The component is controlled and holds no internal value; clicking the active option emits nothing and cannot deselect
+- The component is controlled and holds no internal value; in single mode clicking the active option emits nothing, while in multiple mode it deselects and emits a new array
+- Once `multiple-limit` is reached, clicking unselected options does nothing; `0` means unlimited
 - When `filter-method` is passed, no local filtering happens: only `update:filter-value` is emitted and the callback is invoked — write remote data back to `options` yourself
 - Group titles (items with `children`) are not selectable; filtering keeps only groups with matching children
 - Component-level `disabled` takes precedence over option-level `disabled`; both block click events

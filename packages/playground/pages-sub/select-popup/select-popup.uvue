@@ -39,6 +39,17 @@
 					<text class="caption">confirm-on-select=false 时选中后弹层保持打开（当前：{{ keepValue }}）</text>
 				</view>
 
+				<text class="section" id="multiple">多选</text>
+				<view class="card">
+					<m-select-popup v-model:show="multiShow" v-model:value="multiValue" :options="lineOptions" title="多选产线" multiple show-toolbar>
+						<template #bottom>
+							<view class="bottom-confirm" @click="multiShow = false"><text class="bottom-confirm__text">完成</text></view>
+						</template>
+					</m-select-popup>
+					<view class="btn" @click="multiShow = true"><text class="btn__text">打开多选弹层</text></view>
+					<text class="caption">多选时选中不自动关闭，工具栏显示已选数量并可清空（当前：{{ multiText }}）</text>
+				</view>
+
 				<text class="section" id="bottom-slot">底部插槽</text>
 				<view class="card">
 					<m-select-popup v-model:show="bottomShow" v-model:value="bottomValue" :options="lineOptions" title="带底部操作">
@@ -106,6 +117,28 @@
 	/** 底部插槽弹层 */
 	const bottomShow = ref<boolean>(false)
 	const bottomValue = ref<string | number>('')
+	/** 多选弹层 */
+	const multiShow = ref<boolean>(false)
+	const multiValue = ref<string | number | string[] | number[]>([] as string[])
+
+	/** 多选值展示文本 */
+	const multiText = computed<string>(() => valuesText(multiValue.value))
+
+	/**
+	 * 多选值转展示文本（数组按「、」拼接）
+	 */
+	function valuesText(v: string | number | string[] | number[]): string {
+		const t = typeof v
+		if (t == 'string' || t == 'number') return v.toString()
+		const list = v as (string | number)[]
+		if (list.length == 0) return '未选择'
+		let text = ''
+		for (let i = 0; i < list.length; i++) {
+			if (i > 0) text += '、'
+			text += list[i].toString()
+		}
+		return text
+	}
 
 	/**
 	 * change 事件日志
@@ -167,5 +200,19 @@
 	.bottom-tip__text {
 		font-size: 12px;
 		color: #969799;
+	}
+
+	.bottom-confirm {
+		margin: 8px 12px 12px 12px;
+		height: 40px;
+		border-radius: 20px;
+		background-color: #1989fa;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.bottom-confirm__text {
+		font-size: 15px;
+		color: #ffffff;
 	}
 </style>

@@ -24,6 +24,9 @@
 			<m-select
 				ref="selectRef"
 				:value="props.value"
+				:multiple="props.multiple"
+				:multiple-limit="props.multipleLimit"
+				:show-toolbar="props.showToolbar"
 				:options="props.options"
 				:field-names="props.fieldNames"
 				:filterable="props.filterable"
@@ -68,8 +71,14 @@
 		show?: boolean
 		/** 顶部标题（空不展示） */
 		title?: string
-		/** 当前选中值（v-model:value） */
-		value?: RadioValue
+		/** 当前选中值（v-model:value；multiple 时为数组） */
+		value?: RadioValue | RadioValue[]
+		/** 是否多选 */
+		multiple?: boolean
+		/** 多选最大可选个数，0 不限制 */
+		multipleLimit?: number
+		/** 多选时是否显示工具栏 */
+		showToolbar?: boolean
 		/** 选项数组 */
 		options?: UTSJSONObject[]
 		/** 字段名映射 */
@@ -112,6 +121,9 @@
 		show: false,
 		title: '',
 		value: '',
+		multiple: false,
+		multipleLimit: 0,
+		showToolbar: false,
 		options: () => [] as UTSJSONObject[],
 		fieldNames: null,
 		filterable: false,
@@ -135,10 +147,10 @@
 	const emit = defineEmits<{
 		/** 弹层显隐（v-model:show） */
 		'update:show': [show: boolean]
-		/** 选中值变化（v-model:value） */
-		'update:value': [value: RadioValue]
-		/** 选中值变化 */
-		change: [value: RadioValue]
+		/** 选中值变化（v-model:value；multiple 时为数组） */
+		'update:value': [value: RadioValue | RadioValue[]]
+		/** 选中值变化（multiple 时为数组） */
+		change: [value: RadioValue | RadioValue[]]
 		/** 选中项（原始对象） */
 		select: [option: UTSJSONObject]
 		/** 筛选值变化 */
@@ -168,16 +180,16 @@
 	/**
 	 * 列表值变化：同步并派发 change / select
 	 */
-	function onSelectValueChange(v: RadioValue) {
+	function onSelectValueChange(v: RadioValue | RadioValue[]) {
 		emit('update:value', v)
 	}
 
 	/**
-	 * 列表 change：选中后按配置关闭弹层
+	 * 列表 change：单选且 confirmOnSelect 时选中后关闭弹层（多选保持打开以便连续勾选）
 	 */
-	function onSelectChange(v: RadioValue) {
+	function onSelectChange(v: RadioValue | RadioValue[]) {
 		emit('change', v)
-		if (props.confirmOnSelect) emit('update:show', false)
+		if (!props.multiple && props.confirmOnSelect) emit('update:show', false)
 	}
 
 	/**

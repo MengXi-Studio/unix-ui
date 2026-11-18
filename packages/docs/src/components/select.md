@@ -30,6 +30,18 @@ const options = ref<UTSJSONObject[]>([
 ] as UTSJSONObject[])
 ```
 
+### 多选 {#demo-multiple}
+
+设置 `multiple` 开启多选，`show-toolbar` 显示工具栏（已选 N 项 + 清空）；开启后 `value` 为数组，点击已选项取消选中，达到 `multiple-limit` 上限后点击不再生效：
+
+```vue
+<m-select v-model:value="value" :options="options" multiple show-toolbar :multiple-limit="2" />
+```
+
+```uts
+const value = ref<string | number | string[] | number[]>([] as string[])
+```
+
 ### 选项分组 {#demo-group}
 
 `options` 中含 `children` 的项视为分组：该项的 `label` 渲染为分组标题，`children` 中的子项可选；分组标题本身不参与选中：
@@ -144,7 +156,10 @@ const backToTop = () => {
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| value | 当前选中值（`v-model:value`） | string \| number | `''` |
+| value | 当前选中值（`v-model:value`；`multiple` 时为数组） | string \| number \| string[] \| number[] | `''` |
+| multiple | 是否多选 | boolean | `false` |
+| multiple-limit | 多选最大可选个数（`0` 不限） | number | `0` |
+| show-toolbar | 多选时是否显示工具栏（已选数量 + 清空） | boolean | `false` |
 | options | 选项数组；含 `children` 的项视为分组 | UTSJSONObject[] | `[]` |
 | field-names | 字段映射（label / value / disabled / children） | UTSJSONObject \| null | `null` |
 | filterable | 是否显示筛选框 | boolean | `false` |
@@ -159,9 +174,9 @@ const backToTop = () => {
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
-| update:value | 选中值变化（`v-model:value`） | value: string \| number |
-| change | 选中值变化 | value: string \| number |
-| select | 选中项变化（回传原始选项对象） | option: UTSJSONObject |
+| update:value | 选中值变化（`v-model:value`；多选时为数组） | value: string \| number \| string[] \| number[] |
+| change | 选中值变化（多选时为数组） | value: string \| number \| string[] \| number[] |
+| select | 点击选项时触发（回传原始选项对象） | option: UTSJSONObject |
 | update:filterValue | 筛选值变化（`v-model:filter-value`） | query: string |
 
 ### Methods
@@ -186,6 +201,10 @@ const backToTop = () => {
 | $m-select-max-height | 面板最大高度 | 320px |
 | $m-select-bg | 面板背景色 | $m-white |
 | $m-select-filter-padding | 筛选区内边距 | 8px 12px |
+| $m-select-toolbar-padding | 多选工具栏内边距 | 8px 12px |
+| $m-select-toolbar-font-size | 多选工具栏字号 | 12px |
+| $m-select-toolbar-text-color | 多选工具栏文字色 | $m-text-color-tertiary |
+| $m-select-toolbar-clear-color | 多选工具栏清空按钮色 | $m-color-primary |
 | $m-select-option-min-height | 选项最小高度 | 44px |
 | $m-select-option-padding | 选项内边距 | 0 12px |
 | $m-select-option-color | 选项文字色 | $m-text-color |
@@ -206,14 +225,15 @@ const backToTop = () => {
 ## 与 Sard 的差异
 
 - **绑定语法**：Sard 为 `v-model`；本项目统一 `v-model:value`
-- **选择模式**：首版仅支持单选，多选（`multiple` / `multiple-limit` / 工具栏）列入后续规划
+- **选择模式**：支持单选与多选（`multiple` + `multiple-limit`）；多选工具栏为固定的「已选 N 项 + 清空」，不提供 Sard 的可配置工具栏
 - **选项声明**：Sard 用 `SelectOption` / `SelectOptionGroup` 子组件；本项目为对象数组，含 `children` 的项即分组
 - **自定义内容**：用 `option` 作用域插槽替代 Sard 的 `SelectOption` 默认插槽与 `label` 插槽两级定制
-- **值类型**：仅支持 `string | number`，不提供 `any`
+- **值类型**：元素仅支持 `string | number`，多选时为对应数组，不提供 `any`
 
 ## 注意事项
 
-- 组件为受控组件，不持内部值；点击当前已选项不派发任何事件，也不支持取消选中
+- 组件为受控组件，不持内部值；单选点击当前已选项不派发任何事件，多选点击已选项会取消选中并派发新数组
+- 多选达到 `multiple-limit` 后点击未选项不再生效；`multiple-limit` 为 0 表示不限
 - 传入 `filter-method` 时不执行本地过滤，仅派发 `update:filter-value` 并调用该回调，远程数据请自行写回 `options`
 - 分组标题（含 `children` 的项）不可选中；筛选时仅保留有命中子项的分组
 - 组件级 `disabled` 优先于选项级 `disabled`，两者均阻止点击派发

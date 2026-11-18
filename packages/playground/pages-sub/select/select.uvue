@@ -10,6 +10,18 @@
 					<text class="caption">点击选项切换选中值（当前：{{ basicValue }}）</text>
 				</view>
 
+				<text class="section" id="multiple">多选</text>
+				<view class="card">
+					<m-select v-model:value="multiValue" :options="lineOptions" multiple show-toolbar @change="logMulti" />
+					<text class="caption">multiple + show-toolbar：点击切换选中，工具栏可一键清空（当前：{{ multiText }}）</text>
+				</view>
+
+				<text class="section" id="limit">多选上限</text>
+				<view class="card">
+					<m-select v-model:value="limitValue" :options="lineOptions" multiple :multiple-limit="2" show-toolbar />
+					<text class="caption">multiple-limit=2，选满 2 项后其余项点击无效（当前：{{ limitText }}）</text>
+				</view>
+
 				<text class="section" id="group">选项分组</text>
 				<view class="card">
 					<m-select v-model:value="groupValue" :options="groupOptions" />
@@ -117,6 +129,10 @@
 
 	/** 基础选中值 */
 	const basicValue = ref<string | number>('line-2')
+	/** 多选值 */
+	const multiValue = ref<string | number | string[] | number[]>(['line-1'] as string[])
+	/** 多选上限演示值 */
+	const limitValue = ref<string | number | string[] | number[]>([] as string[])
 	/** 分组选中值 */
 	const groupValue = ref<string | number>('e-1')
 	/** 禁用演示选中值 */
@@ -130,6 +146,34 @@
 
 	/** m-select 实例（scrollTop 演示） */
 	const scrollSelect = ref<ComponentPublicInstance | null>(null)
+
+	/**
+	 * 多选值转展示文本（数组按「、」拼接）
+	 */
+	function valuesText(v: string | number | string[] | number[]): string {
+		const t = typeof v
+		if (t == 'string' || t == 'number') return v.toString()
+		const list = v as (string | number)[]
+		if (list.length == 0) return '未选择'
+		let text = ''
+		for (let i = 0; i < list.length; i++) {
+			if (i > 0) text += '、'
+			text += list[i].toString()
+		}
+		return text
+	}
+
+	/** 多选值展示 */
+	const multiText = computed<string>(() => valuesText(multiValue.value))
+	/** 上限演示值展示 */
+	const limitText = computed<string>(() => valuesText(limitValue.value))
+
+	/**
+	 * 多选 change 日志
+	 */
+	function logMulti(v: string | number | string[] | number[]): void {
+		console.log('select 多选 change: ' + valuesText(v))
+	}
 
 	/**
 	 * change 事件日志

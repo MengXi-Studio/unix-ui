@@ -23,6 +23,8 @@ Adds a numeric keypad panel and popup for verification codes, payment passwords,
 - **m-select-popup**: `m-popup` + `m-select` composition with `title`, `v-model:show` and `confirm-on-select` (closes after selection) (see [SelectPopup](/en/components/select-popup))
 - **m-select-input**: readonly trigger + popup; the label resolves via `options` → `map-label` → raw value; self-drawn clear button; supports readonly / disabled and controlled visibility (see [SelectInput](/en/components/select-input))
 - New `$m-select-*` theme variable block (panel / filter / header / option / check / group / empty / input clear — 24 keys)
+- **Multi-select for the Select trio**: `multiple` / `multiple-limit` / `show-toolbar`; `value` becomes an array, clicking a selected option deselects it, and no further selection is allowed at the limit; the popup never auto-closes in multiple mode; the input gains `max-labels` label collapsing (see [Select](/en/components/select))
+- New `$m-select-toolbar-*` theme variable block (padding / font size / text color / clear color — 4 keys)
 
 ### Fixed
 

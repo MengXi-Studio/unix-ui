@@ -29,6 +29,23 @@ const options = ref<UTSJSONObject[]>([
 ] as UTSJSONObject[])
 ```
 
+### Multiple {#demo-multiple}
+
+Set `multiple` for multi-select and `show-toolbar` to show the toolbar. In multiple mode the popup never auto-closes; close it by clicking the overlay or a button in the `bottom` slot:
+
+```vue
+<m-select-popup v-model:show="show" v-model:value="value" :options="options" title="Select lines" multiple show-toolbar>
+	<template #bottom>
+		<view class="footer-btn" @click="show = false"><text>Done</text></view>
+	</template>
+</m-select-popup>
+```
+
+```uts
+const show = ref<boolean>(false)
+const value = ref<string | number | string[] | number[]>([] as string[])
+```
+
 ### Title and filtering {#demo-filter}
 
 `filterable` shows a filter box inside the popup; filtering behaves the same as [Select](/en/components/select):
@@ -108,7 +125,10 @@ The `bottom` slot sits at the bottom of the list and can hold load-more or hint 
 | --- | --- | --- | --- |
 | show | Whether to show the popup (`v-model:show`) | boolean | `false` |
 | title | Top title (hidden when empty) | string | `''` |
-| value | Active value (`v-model:value`) | string \| number | `''` |
+| value | Active value (`v-model:value`; an array when `multiple`) | string \| number \| string[] \| number[] | `''` |
+| multiple | Enable multi-select | boolean | `false` |
+| multiple-limit | Max selections in multiple mode (`0` = unlimited) | number | `0` |
+| show-toolbar | Show the toolbar (selected count + clear) in multiple mode | boolean | `false` |
 | options | Option list; an item with `children` is treated as a group | UTSJSONObject[] | `[]` |
 | field-names | Field mapping (label / value / disabled / children) | UTSJSONObject \| null | `null` |
 | filterable | Whether to show the filter box | boolean | `false` |
@@ -132,9 +152,9 @@ The `bottom` slot sits at the bottom of the list and can hold load-more or hint 
 | Event | Description | Parameters |
 | --- | --- | --- |
 | update:show | Visibility changed (`v-model:show`) | show: boolean |
-| update:value | Active value changed (`v-model:value`) | value: string \| number |
-| change | Active value changed (popup then closes per `confirm-on-select`) | value: string \| number |
-| select | Active item changed (raw option object) | option: UTSJSONObject |
+| update:value | Active value changed (`v-model:value`; an array in multiple mode) | value: string \| number \| string[] \| number[] |
+| change | Active value changed (an array in multiple mode; single mode closes per `confirm-on-select`) | value: string \| number \| string[] \| number[] |
+| select | Emitted on option click (raw option object) | option: UTSJSONObject |
 | update:filterValue | Filter value changed (`v-model:filter-value`) | query: string |
 | open / opened | Popup opening / opened | - |
 | close / closed | Popup closing / closed | - |
@@ -163,6 +183,10 @@ Overlay, corner radius and animation are controlled by [Popup](/en/components/po
 | $m-select-header-font-size | Title font size | 16px |
 | $m-select-header-color | Title color | $m-text-color |
 | $m-select-bg | Popup content background | $m-white |
+| $m-select-toolbar-padding | Toolbar padding | 8px 12px |
+| $m-select-toolbar-font-size | Toolbar font size | 12px |
+| $m-select-toolbar-text-color | Toolbar text color | $m-text-color-tertiary |
+| $m-select-toolbar-clear-color | Toolbar clear button color | $m-color-primary |
 
 See [Theming](/en/guide/theming) for the full variable list and override guide.
 
@@ -170,14 +194,15 @@ See [Theming](/en/guide/theming) for the full variable list and override guide.
 
 - **Visibility binding**: Sard uses `v-model:visible`; this project uses `v-model:show`
 - **Value binding**: Sard uses `v-model`; this project uses `v-model:value`
-- **Selection mode**: single selection only for now; multi-select is planned
+- **Selection mode**: single and multiple selection are supported (`multiple` + `multiple-limit`); the multiple toolbar is the fixed selected-count + clear, unlike Sard's configurable toolbar
 - **Options**: Sard uses `SelectOption` / `SelectOptionGroup` child components; this project uses object arrays where an item with `children` is a group
 - **Custom content**: an `option` scoped slot replaces Sard's `SelectOption` default and `label` slots
-- **Value type**: only `string | number`, no `any`
+- **Value type**: items are only `string | number` (an array of them in multiple mode), no `any`
 
 ## Notes
 
-- The popup closes automatically after selection (`confirm-on-select: true`); clicking the active option emits no `change`, so the popup will not close either
+- In single mode the popup closes automatically after selection (`confirm-on-select: true`); in multiple mode it never auto-closes regardless of `confirm-on-select` — add a Done button in the `bottom` slot or rely on the overlay
+- In single mode clicking the active option emits no `change`; in multiple mode it deselects and emits a new array
 - When `filter-method` is passed, no local filtering happens: only the query is emitted — write remote data back to `options` yourself
 - `custom-class` / `custom-style` apply to the inner list root, not the popup container; tune the popup with props such as `position` / `round`
 - The popup stacking level defaults to `100`; adjust `z-index` to coordinate with other floating layers

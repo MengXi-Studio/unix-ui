@@ -23,6 +23,8 @@
 - 新增 `m-select-popup` 列表选择弹层：`m-popup` + `m-select` 组合，支持 `title`、`v-model:show`、`confirmOnSelect`（选中后自动关闭，默认开启）
 - 新增 `m-select-input` 列表选择输入框：只读输入框触发器 + 弹层，展示标签按 `options` → `map-label` → 值字符串解析，自绘清除按钮，支持只读 / 禁用 / `v-model:show` 受控显隐
 - 新增 `$m-select-*` 主题变量段（面板 / 筛选 / 标题 / 选项 / 勾选 / 分组 / 空态 / 输入框清除等 24 项）
+- 三件套支持多选：`multiple` / `multiple-limit`（0 不限）/ `show-toolbar`（已选数量 + 清空）；多选时 `value` 为数组，点击已选项取消，达到上限后其余项点击无效；多选弹层选中不自动关闭（`confirmOnSelect` 仅对单选生效）；输入框新增 `max-labels`（默认 10，-1 不限），标签按「、」拼接并折叠为「等 N 项」
+- 新增 `$m-select-toolbar-*` 主题变量段（内边距 / 字号 / 文字色 / 清空色 4 项）
 
 ## 0.6.0 (2026-11-15)
 

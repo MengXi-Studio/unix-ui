@@ -18,6 +18,9 @@
 			v-model:show="popupShow"
 			:title="props.title"
 			:value="props.value"
+			:multiple="props.multiple"
+			:multiple-limit="props.multipleLimit"
+			:show-toolbar="props.showToolbar"
 			:options="props.options"
 			:field-names="props.fieldNames"
 			:filterable="props.filterable"
@@ -76,8 +79,16 @@
 	type SelectInputAlign = 'left' | 'center' | 'right'
 
 	type Props = {
-		/** 当前值（v-model:value） */
-		value?: RadioValue
+		/** 当前值（v-model:value；multiple 时为数组） */
+		value?: RadioValue | RadioValue[]
+		/** 是否多选 */
+		multiple?: boolean
+		/** 多选最大可选个数，0 不限制 */
+		multipleLimit?: number
+		/** 多选时是否显示工具栏 */
+		showToolbar?: boolean
+		/** 多选时输入框最多展示的标签个数，-1 不限制 */
+		maxLabels?: number
 		/** 选项数组 */
 		options?: UTSJSONObject[]
 		/** 字段名映射 */
@@ -130,6 +141,10 @@
 
 	const props = withDefaults(defineProps<Props>(), {
 		value: '',
+		multiple: false,
+		multipleLimit: 0,
+		showToolbar: false,
+		maxLabels: 10,
 		options: () => [] as UTSJSONObject[],
 		fieldNames: null,
 		placeholder: '请选择',
@@ -157,10 +172,10 @@
 	})
 
 	const emit = defineEmits<{
-		/** 值变化（v-model:value） */
-		'update:value': [value: RadioValue]
-		/** 值变化 */
-		change: [value: RadioValue]
+		/** 值变化（v-model:value；multiple 时为数组） */
+		'update:value': [value: RadioValue | RadioValue[]]
+		/** 值变化（multiple 时为数组） */
+		change: [value: RadioValue | RadioValue[]]
 		/** 选中项（原始对象） */
 		select: [option: UTSJSONObject]
 		/** 筛选值变化 */
@@ -219,10 +234,45 @@
 		return null
 	}
 
-	/** 展示文本：options → mapLabel → 值字符串 */
+	/** 展示文本：多选按「、」拼接并受 maxLabels 约束；单选走 options → mapLabel → 值字符串 */
 	const displayLabel = computed<string>(() => {
-		const v = props.value
-		if (v.toString() == '') return ''
+		const raw = props.value
+		const t = typeof raw
+		if (t == 'string' || t == 'number') {
+			const single = raw as RadioValue
+			if (single.toString() == '') return ''
+			return labelOf(single)
+		}
+		// 多选：逐个解析标签后拼接
+		const list = raw as RadioValue[]
+		if (list.length == 0) return ''
+		const limit = props.maxLabels
+		const count = limit >= 0 && list.length > limit ? limit : list.length
+		let text = ''
+		for (let i = 0; i < count; i++) {
+			if (i > 0) text += '、'
+			text += labelOf(list[i])
+		}
+		if (count < list.length) text += ' 等 ' + list.length.toString() + ' 项'
+		return text
+	})
+
+	/** 清除按钮可见性 */
+	const showClear = computed<boolean>(() => {
+		if (!props.clearable || props.disabled || props.readonly) return false
+		const raw = props.value
+		const t = typeof raw
+		if (t == 'string' || t == 'number') return (raw as RadioValue).toString() != ''
+		return (raw as RadioValue[]).length > 0
+	})
+
+	/**
+	 * 单个值的展示标签：options 递归查找 → mapLabel → 值字符串
+	 *
+	 * @param v 目标值
+	 * @returns 展示标签
+	 */
+	function labelOf(v: RadioValue): string {
 		const f = fields.value
 		const map = props.mapLabel
 		const ck = props.fieldNames == null ? 'children' : (props.fieldNames!.getString('children') ?? 'children')
@@ -233,13 +283,7 @@
 			if (mapped != null) return mapped
 		}
 		return v.toString()
-	})
-
-	/** 清除按钮可见性 */
-	const showClear = computed<boolean>(() => {
-		if (!props.clearable || props.disabled || props.readonly) return false
-		return props.value.toString() != ''
-	})
+	}
 
 	/** 根节点类名 */
 	const rootClass = computed<string>(() => {
@@ -259,10 +303,16 @@
 	}
 
 	/**
-	 * 清除按钮：置空并派发
+	 * 清除按钮：单选置空串，多选置空数组
 	 */
 	function onClearClick() {
 		if (props.disabled || props.readonly) return
+		if (props.multiple) {
+			const empty: RadioValue[] = []
+			emit('update:value', empty)
+			emit('change', empty)
+			return
+		}
 		emit('update:value', '')
 		emit('change', '')
 	}
@@ -278,14 +328,14 @@
 	/**
 	 * 选中值变化透传
 	 */
-	function onSelectValueChange(v: RadioValue) {
+	function onSelectValueChange(v: RadioValue | RadioValue[]) {
 		emit('update:value', v)
 	}
 
 	/**
 	 * change 透传
 	 */
-	function onSelectChange(v: RadioValue) {
+	function onSelectChange(v: RadioValue | RadioValue[]) {
 		emit('change', v)
 	}
 

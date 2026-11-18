@@ -10,6 +10,14 @@
 					<text class="caption">点击输入框打开弹层，选中后回显标签并可一键清空（当前：{{ basicValue }}）</text>
 				</view>
 
+				<text class="section" id="multiple">多选</text>
+				<view class="card">
+					<m-select-input v-model:value="multiValue" :options="lineOptions" title="多选产线" placeholder="请选择产线（可多选）" multiple show-toolbar />
+					<text class="caption">多选时输入框按「、」拼接标签，选中不自动关闭（当前：{{ multiText }}）</text>
+					<m-select-input v-model:value="limitValue" :options="lineOptions" title="最多 2 项" placeholder="请选择产线" multiple :multiple-limit="2" :max-labels="2" style="margin-top: 8px;" />
+					<text class="caption">max-labels=2 时超出部分折叠为「等 N 项」</text>
+				</view>
+
 				<text class="section" id="filter">带筛选</text>
 				<view class="card">
 					<m-select-input v-model:value="filterValue" :options="groupOptions" title="选择产线" placeholder="请选择产线" filterable filter-placeholder="输入关键字" />
@@ -106,6 +114,29 @@
 	/** 受控显隐演示值 */
 	const showValue = ref<string | number>('')
 	const showState = ref<boolean>(false)
+	/** 多选演示值 */
+	const multiValue = ref<string | number | string[] | number[]>(['line-1', 'line-2'] as string[])
+	/** 多选标签折叠演示值 */
+	const limitValue = ref<string | number | string[] | number[]>(['line-1', 'line-2', 'line-4'] as string[])
+
+	/** 多选值展示文本 */
+	const multiText = computed<string>(() => valuesText(multiValue.value))
+
+	/**
+	 * 多选值转展示文本（数组按「、」拼接）
+	 */
+	function valuesText(v: string | number | string[] | number[]): string {
+		const t = typeof v
+		if (t == 'string' || t == 'number') return v.toString()
+		const list = v as (string | number)[]
+		if (list.length == 0) return '未选择'
+		let text = ''
+		for (let i = 0; i < list.length; i++) {
+			if (i > 0) text += '、'
+			text += list[i].toString()
+		}
+		return text
+	}
 
 	/**
 	 * change 事件日志

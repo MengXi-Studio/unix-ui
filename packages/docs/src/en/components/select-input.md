@@ -26,9 +26,21 @@ const options = ref<UTSJSONObject[]>([
 ] as UTSJSONObject[])
 ```
 
+### Multiple {#demo-multiple}
+
+Set `multiple` for multi-select and `show-toolbar` to show the toolbar. Labels are joined with `、`; beyond `max-labels` (default `10`, `-1` = unlimited) only the first N are shown and "等 N 项" is appended:
+
+```vue
+<m-select-input v-model:value="value" :options="options" title="Select lines" multiple show-toolbar :max-labels="2" />
+```
+
+```uts
+const value = ref<string | number | string[] | number[]>([] as string[])
+```
+
 ### Clearable {#demo-clearable}
 
-`clearable` defaults to `true`: a clear button appears when a value exists, and clicking it writes back an empty string and emits `change`; set it to `false` to hide the button:
+`clearable` defaults to `true`: a clear button appears when a value exists, and clicking it writes back an empty string (an empty array in multiple mode) and emits `change`; set it to `false` to hide the button:
 
 ```vue
 <m-select-input v-model:value="value" :options="options" />
@@ -103,7 +115,11 @@ The `option` / `bottom` slots are forwarded to the inner panel:
 
 | Name | Description | Type | Default |
 | --- | --- | --- | --- |
-| value | Current value (`v-model:value`) | string \| number | `''` |
+| value | Current value (`v-model:value`; an array when `multiple`) | string \| number \| string[] \| number[] | `''` |
+| multiple | Enable multi-select | boolean | `false` |
+| multiple-limit | Max selections in multiple mode (`0` = unlimited) | number | `0` |
+| show-toolbar | Show the toolbar (selected count + clear) in multiple mode | boolean | `false` |
+| max-labels | Max labels shown in multiple mode (`-1` = unlimited) | number | `10` |
 | options | Option list; an item with `children` is treated as a group | UTSJSONObject[] | `[]` |
 | field-names | Field mapping (label / value / disabled / children) | UTSJSONObject \| null | `null` |
 | placeholder | Placeholder text | string | `请选择` |
@@ -132,9 +148,9 @@ The `option` / `bottom` slots are forwarded to the inner panel:
 
 | Event | Description | Parameters |
 | --- | --- | --- |
-| update:value | Value changed (`v-model:value`; empty string on clear) | value: string \| number |
-| change | Value changed (also emitted on clear) | value: string \| number |
-| select | Active item changed (raw option object) | option: UTSJSONObject |
+| update:value | Value changed (`v-model:value`; an array in multiple mode, empty array on clear) | value: string \| number \| string[] \| number[] |
+| change | Value changed (an array in multiple mode; also emitted on clear) | value: string \| number \| string[] \| number[] |
+| select | Emitted on option click (raw option object) | option: UTSJSONObject |
 | update:filterValue | Filter value changed (`v-model:filter-value`) | query: string |
 | update:show | Popup visibility changed (`v-model:show`) | show: boolean |
 
@@ -154,24 +170,30 @@ Input appearance is controlled by [Input](/en/components/input) theme variables;
 | $m-select-input-clear-right | Clear button right offset | 12px |
 | $m-select-input-clear-size | Clear icon size | 16px |
 | $m-select-input-clear-color | Clear icon color | $m-text-color-fourth |
+| $m-select-toolbar-padding | Toolbar padding | 8px 12px |
+| $m-select-toolbar-font-size | Toolbar font size | 12px |
+| $m-select-toolbar-text-color | Toolbar text color | $m-text-color-tertiary |
+| $m-select-toolbar-clear-color | Toolbar clear button color | $m-color-primary |
 
 See [Theming](/en/guide/theming) for the full variable list and override guide.
 
 ## Differences from Sard
 
 - **Binding**: Sard uses `v-model`; this project uses `v-model:value`
-- **Selection mode**: single selection only for now; multi-select and multi-label display are planned
+- **Selection mode**: single and multiple selection are supported (`multiple` + `multiple-limit`); multiple labels are plain text joined with `、` and limited by `max-labels`, not Sard-style tag chips
 - **Options**: Sard uses option child components; this project uses object arrays where an item with `children` is a group
 - **Custom content**: an `option` scoped slot replaces Sard's `SelectOption` default and `label` slots
-- **Value type**: only `string | number`, no `any`
+- **Value type**: items are only `string | number` (an array of them in multiple mode), no `any`
 - **Clear button**: a self-drawn button (the `m-input` clear icon is unavailable in readonly mode), unlike Sard's built-in `clearable`
 
 ## Notes
 
-- Clicking the active option emits nothing, so the popup will not close automatically (there is no `change` to trigger it)
+- In single mode clicking the active option emits nothing; in multiple mode it deselects and emits a new array; neither closes the popup
+- In multiple mode the popup never auto-closes — add a Done button in the `bottom` slot or click the overlay
+- Multiple labels are joined with `、`; beyond `max-labels` (default `10`, `-1` = unlimited) only the first N are shown and "等 N 项" is appended
 - When `filter-method` is passed, no local filtering happens: only the query is emitted — write remote data back to `options` yourself
 - The displayed label comes from a matching item in `options` (including one level of `children`), then `map-label` keyed by `value.toString()`, and finally falls back to the raw value string
-- The clear button is self-drawn and hidden when `readonly` / `disabled` or when no value exists; in `readonly` mode clicking the area does not open the popup either
+- The clear button is self-drawn and hidden when `readonly` / `disabled` or when no value exists; in multiple mode clearing emits an empty array; in `readonly` mode clicking the area does not open the popup either
 - The inner popup stacking level is fixed at `3` (it must cover the trigger layer and clear button above the input); no `z-index` prop is provided
 
 See [Select](/en/components/select) and [SelectPopup](/en/components/select-popup) for more examples.

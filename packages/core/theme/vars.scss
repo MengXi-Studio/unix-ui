@@ -950,6 +950,14 @@ $m-select-max-height: 320px !default;
 $m-select-bg: $m-white !default;
 /** 筛选区内边距 */
 $m-select-filter-padding: 8px 12px !default;
+/** 多选工具栏内边距 */
+$m-select-toolbar-padding: 8px 12px !default;
+/** 多选工具栏字号 */
+$m-select-toolbar-font-size: 12px !default;
+/** 多选工具栏文字色 */
+$m-select-toolbar-text-color: $m-text-color-tertiary !default;
+/** 多选工具栏清空按钮色 */
+$m-select-toolbar-clear-color: $m-color-primary !default;
 /** 弹层标题内边距 */
 $m-select-header-padding: 14px 12px 8px 12px !default;
 /** 弹层标题字号 */

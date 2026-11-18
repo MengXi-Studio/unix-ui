@@ -622,3 +622,10 @@
 - **根因**：m-input 模板是「根（.m-input，无宽高约束）→ body（flex:1）」两层，custom-style 落在 body 层——body 的 flex:1 只在根收缩出的 151px 内部分配，等于没生效；**使用者侧 custom-style 够不到组件根节点**
 - **修法**：inlaid 时根节点加 `m-input--inlaid-root { flex-grow: 1; flex-shrink: 1; flex-basis: auto; }`——只用 grow 不用 `flex: 1` 简写（basis 0% 会在 column + auto 高度容器中塌陷高度，uni-app x 所有 view 默认 flex column，* -input 组合组件内嵌 m-input 时正是这种容器）；basis auto 下 grow 只吃剩余空间，cell 内兄弟节点（箭头等）不被挤压
 - **教训**：两层容器组件（根 + 视觉主体）的拉伸属性必须加在「父级 flex 容器的直接子项」即根上；`flex: 1` 简写 ≠ `flex-grow: 1`，在不确定父级主轴方向时显式展开并保留 basis auto 最稳
+
+### #101 uni-h5 scroll-view 的空触点 touchmove 会抛 pageX TypeError（嵌套滚动必踩）
+- **现象**：m-select-input 演示页偶发 `Uncaught TypeError: Cannot read properties of undefined (reading 'pageX')`，来源 `uni-h5.es.js`；人工点击流程无法稳定复现
+- **根因**：uni-h5 的 scroll-view `touchmove` 处理器直接读 `event.touches[0].pageX`，没有 `touches.length` 判断；嵌套滚动（弹层内列表 + 页面 scroll-view）在快速甩动或手势被浏览器接管时会派发 `touches` 为空的 touchmove，于是 `undefined.pageX`
+- **验证方式**：在列表 `.uni-scroll-view` 上派发「1 触点 touchstart + 空 touches touchmove」，稳定 100% 复现（同一机制同理可验证修复）
+- **修法**：在组件内（m-select）于 Web 端 `window` **捕获阶段**监听 touchmove，`touches.length == 0` 时 `stopPropagation()`，事件在进入框架处理器前被拦截；`#ifdef WEB` 隔离，组件卸载时移除监听
+- **教训**：uni-h5 内置组件对触摸事件的容错不可假设；凡是「嵌套 scroll-view + 触摸交互」的组件，验收必须包含空触点/中断手势的合成事件测试，不能只测点击流程

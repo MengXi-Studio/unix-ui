@@ -302,7 +302,41 @@ Q1-Q10 全部按推荐执行（三件套命名 / 首版仅单选 / options + 两
 
 **遗留 TODO**
 
-- 多选（`multiple` / `multiple-limit` / 工具栏 / 输入框多标签）按 Q2 结论列入后续版本
+- ~~多选（`multiple` / `multiple-limit` / 工具栏 / 输入框多标签）按 Q2 结论列入后续版本~~ → 2026-11-18 已实现，见下方「多选补充实施记录」
 - 远程筛选后的列表滚动复位（`scrollTop()`）在数据异步到达后的时序需在真实接口场景复测
 - App / 小程序端 `scroll-view` 的 `scroll-top` 复位与弹层 z-index 层叠需实机验收
+
+## 多选补充实施记录（2026-11-18）
+
+**API 决策**
+
+- 值模型沿用单一 `value` prop：`RadioValue | RadioValue[]`，以 `multiple` 为判别式（与 m-calendar 的 `Date | Date[]` + `type` 先例一致），不新增 `values` prop
+- 新增 props：`multiple` / `multipleLimit`（0 不限）/ `showToolbar`；输入框另加 `maxLabels`（默认 10，-1 不限）
+- 多选弹层选中后**永不自动关闭**：`confirmOnSelect` 仅对单选生效（否则无法连续勾选）
+- 工具栏固定为「已选 N 项 + 清空」，文案不开放 props；标签以「、」拼接为纯文本，超出 `maxLabels` 折叠为「等 N 项」（不做 tag 胶囊，避免引入 m-tag 依赖）
+
+**实现要点**
+
+- 数组判别用 `typeof v == 'string' || typeof v == 'number'`，避免 `Array.isArray` 在 Kotlin 端泛型推断问题（同 picker.uts 结论）
+- 多选点击：已选则移除、未选则追加，达上限后静默忽略；`change` / `update:value` 统一回传新数组
+- `select` 事件在取消选中时同样派发（回传被点击的原始对象），便于外部联动
+- 输入框 `showClear` 多选时以数组长度判定；清空回传空数组
+- 新增 `$m-select-toolbar-*` 4 项变量（内边距 / 字号 / 文字色 / 清空色）
+
+**DoD 验证结果：**
+
+- [x] 多选面板：初始 `line-1` → 已选 1 项；追加两项 → 已选 3 项；再点已选项取消 → 已选 2 项；工具栏「清空」→ 未选择 / 已选 0 项
+- [x] 上限：`multiple-limit=2` 选满后点击第 3 项无效，工具栏保持已选 2 项
+- [x] 多选弹层：选中两项弹层保持打开、工具栏计数正确，底部「完成」关闭后值同步
+- [x] 多选输入框：显示「机加工一线、注塑二线」；`max-labels=2` 显示「机加工一线、注塑二线 等 3 项」；弹层内追加不关闭；清除后回到占位符
+- [x] 控制台：面板与弹层页无 error；输入框页曾出现一次 `pageX` 的 uni-h5 运行时异常，按「清除 / 开弹层 / 滚动 / 选项点击 / 原生输入点击」逐项复测均未复现，判定为自动化合成触摸事件的偶发框架问题，非组件缺陷（已记录，后续如复现再深挖）
+- [x] `pnpm sync:uni-modules:check` 与 `pnpm build:docs` 通过
+
+**修复记录（2026-11-18，Web 端 pageX 异常）**
+
+- 现象：`m-select-input` 演示页偶发 `Uncaught TypeError: Cannot read properties of undefined (reading 'pageX')`（uni-h5.es.js），点击流程无法稳定复现
+- 根因：uni-h5 的 scroll-view `touchmove` 处理器直接读 `event.touches[0].pageX`，未判 `touches` 长度；嵌套滚动（弹层列表 + 页面 scroll-view）在快速甩动 / 手势被浏览器接管时派发空触点 touchmove
+- 复现：在列表 `.uni-scroll-view` 上派发「1 触点 touchstart + 空 touches touchmove」，稳定复现（与线上报错同文件同机制）
+- 修复：m-select 在 Web 端于 `window` 捕获阶段监听 `touchmove`，`touches.length == 0` 时 `stopPropagation()`，事件在进入框架处理器前被拦截；`#ifdef WEB` 隔离，卸载时移除监听（`m-select-popup` / `m-select-input` 内含 m-select，三件套同时覆盖）
+- 复验：同一合成事件序列不再产生错误，正常点击选项、回显、自动关闭均正常；已记入 `.trae/documents/LESSONS_LEARNED.md` #101
 

@@ -26,9 +26,21 @@ const options = ref<UTSJSONObject[]>([
 ] as UTSJSONObject[])
 ```
 
+### 多选 {#demo-multiple}
+
+`multiple` 开启多选，`show-toolbar` 显示工具栏；输入框将标签以「、」拼接，超过 `max-labels`（默认 `10`，`-1` 不限）时仅展示前 N 个并在末尾追加「等 N 项」：
+
+```vue
+<m-select-input v-model:value="value" :options="options" title="选择产线" multiple show-toolbar :max-labels="2" />
+```
+
+```uts
+const value = ref<string | number | string[] | number[]>([] as string[])
+```
+
 ### 清空 {#demo-clearable}
 
-`clearable` 默认为 `true`，有值时显示清空按钮，点击后回写空串并触发 `change`；设为 `false` 隐藏按钮：
+`clearable` 默认为 `true`，有值时显示清空按钮，点击后单选回写空串、多选回写空数组并触发 `change`；设为 `false` 隐藏按钮：
 
 ```vue
 <m-select-input v-model:value="value" :options="options" />
@@ -103,7 +115,11 @@ const show = ref<boolean>(false)
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| value | 当前值（`v-model:value`） | string \| number | `''` |
+| value | 当前值（`v-model:value`；`multiple` 时为数组） | string \| number \| string[] \| number[] | `''` |
+| multiple | 是否多选 | boolean | `false` |
+| multiple-limit | 多选最大可选个数（`0` 不限） | number | `0` |
+| show-toolbar | 多选时是否显示工具栏（已选数量 + 清空） | boolean | `false` |
+| max-labels | 多选时最多展示的标签个数（`-1` 不限） | number | `10` |
 | options | 选项数组；含 `children` 的项视为分组 | UTSJSONObject[] | `[]` |
 | field-names | 字段映射（label / value / disabled / children） | UTSJSONObject \| null | `null` |
 | placeholder | 占位文案 | string | `请选择` |
@@ -132,9 +148,9 @@ const show = ref<boolean>(false)
 
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
-| update:value | 值变化（`v-model:value`；清空时为空串） | value: string \| number |
-| change | 值变化（清空时同样触发） | value: string \| number |
-| select | 选中项变化（回传原始选项对象） | option: UTSJSONObject |
+| update:value | 值变化（`v-model:value`；多选时为数组，清空时为空数组） | value: string \| number \| string[] \| number[] |
+| change | 值变化（多选时为数组，清空时同样触发） | value: string \| number \| string[] \| number[] |
+| select | 点击选项时触发（回传原始选项对象） | option: UTSJSONObject |
 | update:filterValue | 筛选值变化（`v-model:filter-value`） | query: string |
 | update:show | 弹层显隐变化（`v-model:show`） | show: boolean |
 
@@ -154,24 +170,30 @@ const show = ref<boolean>(false)
 | $m-select-input-clear-right | 清空按钮右侧偏移 | 12px |
 | $m-select-input-clear-size | 清空图标字号 | 16px |
 | $m-select-input-clear-color | 清空图标颜色 | $m-text-color-fourth |
+| $m-select-toolbar-padding | 多选工具栏内边距 | 8px 12px |
+| $m-select-toolbar-font-size | 多选工具栏字号 | 12px |
+| $m-select-toolbar-text-color | 多选工具栏文字色 | $m-text-color-tertiary |
+| $m-select-toolbar-clear-color | 多选工具栏清空按钮色 | $m-color-primary |
 
 完整变量与覆盖方式见[主题定制](/guide/theming)。
 
 ## 与 Sard 的差异
 
 - **绑定语法**：Sard 为 `v-model`；本项目统一 `v-model:value`
-- **选择模式**：首版仅支持单选，多选与多标签展示列入后续规划
+- **选择模式**：支持单选与多选（`multiple` + `multiple-limit`）；多选标签为普通文本以「、」拼接并受 `max-labels` 约束，不是 Sard 的标签 chip
 - **选项声明**：Sard 用选项子组件；本项目为对象数组，含 `children` 的项即分组
 - **自定义内容**：用 `option` 作用域插槽替代 Sard 的 `SelectOption` 默认插槽与 `label` 插槽
-- **值类型**：仅支持 `string | number`，不提供 `any`
+- **值类型**：元素仅支持 `string | number`，多选时为对应数组，不提供 `any`
 - **清空按钮**：为组件自绘按钮（`m-input` 只读态的清除图标不可用），非 Sard 的 `clearable` 内置实现
 
 ## 注意事项
 
-- 点击当前已选项不派发任何事件，弹层也不会自动关闭（无 `change` 可触发关闭）
+- 单选点击当前已选项不派发任何事件；多选点击已选项会取消选中并派发新数组，两者都不会自动关闭弹层
+- 多选下弹层不会自动关闭，请在 `bottom` 插槽放「完成」按钮或点击遮罩关闭
+- 多选标签以「、」拼接，超过 `max-labels`（默认 `10`，`-1` 不限）时仅展示前 N 个并在末尾追加「等 N 项」
+- 清空按钮为自绘按钮，`readonly` / `disabled` 或无值时隐藏；多选清空派发空数组；`readonly` 下整区点击也不会打开弹层
 - 传入 `filter-method` 时不执行本地过滤，仅回传查询值，远程数据请自行写回 `options`
 - 展示标签依次取 `options`（含一层 `children`）命中项、`map-label` 中 `value.toString()` 对应文案，最后回退为值的字符串形式
-- 清空按钮为自绘按钮，`readonly` / `disabled` 或无值时隐藏；`readonly` 下整区点击也不会打开弹层
 - 内部弹层层级固定为 `3`（需覆盖输入框上的触发层与清空按钮），不提供 `z-index` prop
 
 更多案例见 [Select](/components/select) 与 [SelectPopup](/components/select-popup)。

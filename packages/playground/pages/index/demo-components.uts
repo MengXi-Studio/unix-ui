@@ -32,6 +32,14 @@ export type DemoGroup = {
  * 新增组件时在对应分组的 components 中登记一条即可，
  * 首页分组列表与搜索过滤自动生效；演示页路由无需手工登记——
  * 在页面 defineUniPage 宏声明 name / title，pages.json 与路由表由 routeGen 插件生成。
+ *
+ * 分类判据（新增组件按此判定归属，避免反复讨论）：
+ * - 数据录入：产出值的表单原子控件及其形态变体（含 options 枚举的单选 / 多选、搜索、评分、分段控制器）；
+ * - 选择器：从结构化数据源（options 分组 / 层级 children / 远程加载）取值，并同时提供面板 / 弹层 / 输入框形态；
+ * - 日期时间：值域为日期或时刻的控件单独成组（color-picker 仍归数据录入——按数据类型而非交互形态分组）。
+ *
+ * 组体量阈值：单组条目超过 24 项时拆组（如日期时间拆为「日期」「时间」），
+ * 拆分须同步本表、docs 侧栏 zh.ts / en.ts 与工程规范第 6.1 节，保持三处一致。
  */
 export const demoGroups: DemoGroup[] = [
 	{
@@ -92,9 +100,9 @@ export const demoGroups: DemoGroup[] = [
 			},
 			{
 				name: 'layout',
-				zhName: '布局',
-				enName: 'Layout',
-				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
+				zhName: '栅格布局',
+				enName: 'Row',
+				desc: '24 栅格布局（Row + Col 组合页），Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
 			},
 			{
 				name: 'space',

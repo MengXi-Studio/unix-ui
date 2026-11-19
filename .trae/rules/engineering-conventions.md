@@ -83,6 +83,8 @@ packages/docs（VitePress 双语文档站，手工维护）
 - **组内按组件名字母序升序**：`playground/pages/index/demo-components.uts` 各分组的 `components` 数组、文档侧栏 `docs/.vitepress/config/zh.ts` 与 `en.ts` 各分组的 `items`，一律按组件名（kebab-case 小写标识，对应 `name`）字母升序排列；分组之间的先后顺序固定为「基础 → 布局 → 数据录入 → 选择器 → 日期时间 → 反馈 → 数据展示 → 导航」，禁止按新增时间追加到组末。
 - **三处同序**：同一分组的组件顺序在 `demo-components.uts`、`zh.ts`、`en.ts` 中必须完全一致（中英文侧栏的英文项目名也同序），新增组件须插入到正确位置而非追加。
 - 示例（数据录入组）：`checkbox → checkbox-input → checkbox-popup → color-picker → color-picker-input → color-picker-popup → input`；示例（选择器组）：`cascader → cascader-input → cascader-popup → picker → picker-input → picker-popup → picker-view`。
+- **分类判据**：数据录入 = 产出值的表单原子控件及其形态变体（含 options 枚举的单选 / 多选、搜索、评分、分段控制器）；选择器 = 从结构化数据源（options 分组 / 层级 children / 远程加载）取值且同时提供面板 / 弹层 / 输入框形态；日期时间按值域单独成组（`color-picker` 归数据录入，按数据类型而非交互形态分组）。
+- **组体量阈值**：单组条目超过 24 项时拆组（如日期时间拆为「日期」「时间」），拆分须同步 `demo-components.uts`、`zh.ts` / `en.ts` 侧栏与本规范，保持三处一致。
 
 ## 7. 验证（core-protocol DoD 的项目级补充）
 

@@ -126,7 +126,7 @@ $m-button-normal-height: 48px;
 
 ## 组件清单
 
-共 65 个组件（含子组件与组合形态），按 8 类组织，与文档站侧栏分组一一对应；表中列出组件标签与核心能力，完整 API 见[组件参考](https://mengxi-studio.github.io/unix-ui/components/button.html)。
+共 79 个组件（含子组件与组合形态），按 8 类组织，与文档站侧栏分组一一对应，组内按组件名字母序排列；表中列出组件标签与核心能力，完整 API 见[组件参考](https://mengxi-studio.github.io/unix-ui/components/button.html)。
 
 ### 基础组件
 
@@ -156,48 +156,61 @@ $m-button-normal-height: 48px;
 | 组件 | 说明 |
 | --- | --- |
 | `m-checkbox` / `m-checkbox-group` | 复选框：组容器 + 单项双形态、形状 / 颜色 / 大小定制、max 限制、indeterminate 全选 |
-| `m-checkbox-popup` | 复选弹出框：底部弹层多选，options 数组驱动 + field-names 映射 + footer 插槽 |
 | `m-checkbox-input` | 复选输入框：只读触发器 + 弹层多选、「、」连接回显、超 2 项截断、自绘清空 |
+| `m-checkbox-popup` | 复选弹出框：底部弹层多选，options 数组驱动 + field-names 映射 + footer 插槽 |
 | `m-color-picker` | 颜色选择器：饱和度-明度面板 + 色相 / 透明度滑块，hex / rgb / hsl 输出、预设色、最近色、Web 端吸管取色 |
-| `m-color-picker-popup` | 颜色选择器弹出框：取消 / 标题 / 确定头部，确定后回写、取消与遮罩关闭丢弃 |
 | `m-color-picker-input` | 颜色选择器输入框：只读触发器 + 左侧色块预览 + 弹层选色、可选字段标签与清空 |
-| `m-input` | 输入框：六种类型、clearable 两时机、formatter / precision / min-max 收敛、明文切换、字数统计、多行自适应、前后插槽 |
+| `m-color-picker-popup` | 颜色选择器弹出框：取消 / 标题 / 确定头部，确定后回写、取消与遮罩关闭丢弃 |
+| `m-input` | 输入框：六种类型、clearable 两时机、formatter / precision / min-max 收敛、明文切换、字数统计、多行自适应、前后插槽、confirm 事件与 input-align 对齐 |
+| `m-number-keyboard` | 数字键盘：1-9 + 0 + 删除键的纯按键区，number / digit / idcard / random 四种类型、custom 主题右侧栏、禁用键回调、extra-key 插槽 |
+| `m-number-keyboard-popup` | 数字键盘弹层：m-popup + 面板组合，默认插槽承载验证码格 / 金额展示，取消 / 完成派发后自动关闭 |
+| `m-password-input` | 密码输入格子：bordered / underlined 两种风格、mask 圆点、聚焦光标闪烁、明文显示、禁用只读与错误提示 |
+| `m-password-input-popup` | 密码输入弹层：弹层 + 格子 + 数字键盘一体化，v-model:value 自动收敛长度、打开自动聚焦、随机键盘 |
+| `m-radio` / `m-radio-group` | 单选框：组容器 + 单项双形态、自绘圆环圆点图标、round / square 形状、颜色与大小定制、只读禁用 |
+| `m-radio-input` | 单选输入框：只读触发器 + 弹层单选、选中项 label 回显、自绘清空按钮回写 null |
+| `m-radio-popup` | 单选弹出框：底部弹层单选，options 数组驱动 + field-names 映射 + footer 插槽，点选不自动关闭 |
+| `m-rate` | 评分：0.5 网格吸附、半星裁切、滑动评分、自定义图标 / 颜色 / 尺寸 / 数量、可清空、只读小数展示 |
+| `m-search` | 搜索：组合 m-input 承载输入，圆角 / 背景定制、清除、键盘搜索、取消或搜索按钮、左右图标、错误提示与内容对齐 |
+| `m-segmented` | 分段控制器：等分单选、三档尺寸、胶囊 / 纵向、滑块平移动画、item 作用域插槽、溢出省略、禁用只读 |
 
 ### 选择器
 
 | 组件 | 说明 |
 | --- | --- |
 | `m-cascader` | 级联选择：多级联动、层级 tab 与手势滑动、field-names 字段映射、异步加载、四插槽 |
-| `m-cascader-popup` | 级联弹出框：m-popup + m-cascader，选完最后一级自动关闭 |
 | `m-cascader-input` | 级联输入框：只读触发器 + 弹层选择、选中路径文字回填、清空与禁用 |
+| `m-cascader-popup` | 级联弹出框：m-popup + m-cascader，选完最后一级自动关闭 |
 | `m-picker` | 通用滚轮选择器：一维 / 二维列数据自动识别、children 级联、禁用项、对象选项、columns-top / columns-bottom 插槽 |
-| `m-picker-popup` | 选择器弹出框：m-popup + m-picker，v-model 控制显隐与选中值，确认 / 取消后自动关闭 |
 | `m-picker-input` | 选择器输入框：只读触发器 + 弹层选择、各列选中项文本回显、清空与禁用 |
+| `m-picker-popup` | 选择器弹出框：m-popup + m-picker，v-model 控制显隐与选中值，确认 / 取消后自动关闭 |
 | `m-picker-view` | 选择器纯视图：无工具栏的索引受控多列滚轮，配合 m-picker-view-column 与 option 插槽嵌入自定义容器 |
+| `m-select` | 列表选择：options 驱动、children 分组、整体 / 单项禁用、本地与远程筛选、多选与上限、option 作用域插槽、scrollTop 回顶 |
+| `m-select-input` | 列表选择输入框：只读触发器 + 弹层选择、标签按 options → map-label → 值字符串解析、max-labels 折叠、清空与只读禁用 |
+| `m-select-popup` | 列表选择弹层：m-popup + 选择面板，标题与筛选、选中后自动关闭（多选保持打开） |
 
 ### 日期时间
 
 | 组件 | 说明 |
 | --- | --- |
 | `m-calendar` | 日历面板：单选 / 多选 / 范围选择、年月切换导航、formatter 定制、超限提示 |
-| `m-calendar-popup` | 日历弹出框：m-popup + m-calendar，确认后自动关闭，支持方位、圆角、面板高度与安全区配置 |
 | `m-calendar-input` | 日历输入框：只读触发器 + 弹层选日期、选中值格式化回填、清空与禁用 |
+| `m-calendar-popup` | 日历弹出框：m-popup + m-calendar，确认后自动关闭，支持方位、圆角、面板高度与安全区配置 |
 | `m-date-picker` | 日期选择：年 / 月 / 日滚轮、列组合、min / max 区间、filter / formatter、顶部栏与只读加载态 |
-| `m-date-picker-popup` | 日期选择弹出框：m-popup + 日期面板，确认 / 取消后自动关闭，支持方位、圆角与安全区配置 |
 | `m-date-picker-input` | 日期输入框：只读触发器 + 弹层选择、按列组合格式化回填、清空与禁用 |
+| `m-date-picker-popup` | 日期选择弹出框：m-popup + 日期面板，确认 / 取消后自动关闭，支持方位、圆角与安全区配置 |
 | `m-date-range-picker` | 日期范围选择：开始 / 结束两段标题复用一个日期滚轮，确认时自动升序，支持区间、过滤格式化与快捷选项插槽 |
-| `m-date-range-picker-popup` | 日期范围弹出框：m-popup + 日期范围面板，确认 / 取消后自动关闭 |
 | `m-date-range-picker-input` | 日期范围输入框：只读触发器 + 弹层选择、按 outlet-format 回填「起 - 止」 |
+| `m-date-range-picker-popup` | 日期范围弹出框：m-popup + 日期范围面板，确认 / 取消后自动关闭 |
 | `m-date-strip` | 日期横条：横向连续日期、单选 / 多选 / 范围、value-format 字符串绑定、农历文案、过滤禁用、插槽定制 |
 | `m-lunar-picker` | 农历选择：农历年 / 月（含闰月）/ 日滚轮、干支生肖年列、列组合、min / max 反向映射，对外值为公历 Date |
-| `m-lunar-picker-popup` | 农历选择弹出框：m-popup + 农历面板，确认 / 取消后自动关闭 |
 | `m-lunar-picker-input` | 农历输入框：只读触发器 + 农历弹层，回填农历文案（如 2026年六月十五） |
+| `m-lunar-picker-popup` | 农历选择弹出框：m-popup + 农历面板，确认 / 取消后自动关闭 |
 | `m-time-picker` | 时间选择：时 / 分 / 秒滚轮、列组合、分钟与秒步长、min / max 时刻、12/24 小时制（12 制附上午下午列） |
-| `m-time-picker-popup` | 时间弹出框：m-popup + 时间面板，确认 / 取消后自动关闭 |
 | `m-time-picker-input` | 时间输入框：只读触发器 + 弹层选择，回填 HH:mm（含秒为 HH:mm:ss） |
+| `m-time-picker-popup` | 时间弹出框：m-popup + 时间面板，确认 / 取消后自动关闭 |
 | `m-time-range-picker` | 时间范围选择：开始 / 结束两段标题复用一个时间滚轮，确认时自动升序，支持步长、时刻区间、12 小时制与快捷选项插槽 |
-| `m-time-range-picker-popup` | 时间范围弹出框：m-popup + 时间范围面板，确认 / 取消后自动关闭 |
 | `m-time-range-picker-input` | 时间范围输入框：只读触发器 + 弹层选择，以「起 - 止」回填 |
+| `m-time-range-picker-popup` | 时间范围弹出框：m-popup + 时间范围面板，确认 / 取消后自动关闭 |
 
 ### 反馈组件
 
@@ -229,10 +242,10 @@ $m-button-normal-height: 48px;
 | 平台 | 状态 | 说明 |
 | --- | --- | --- |
 | Web | ✅ 已实测 | HBuilderX 编译运行，渲染 / 事件 / 主题覆盖矩阵与逐组件场景浏览器实测通过 |
-| App-Android | ✅ 云打包验证 | 蒸汽与 VDOM 双模式云打包编译通过，真机演示 App 随版本发布 |
+| App-Android | ✅ 云打包验证 | 蒸汽与 VDOM 双模式云打包编译通过；0.7.0 修复两轮 Kotlin 编译错误后重新出包，真机演示 App 随版本发布 |
 | App-iOS | 🔧 已适配 | 代码条件编译适配，待真机实测（需 macOS 环境） |
 | App-HarmonyOS | 🔧 已适配 | 代码条件编译适配，待实测（需 DevEco Studio） |
-| 微信小程序 | 🔧 基线已实测 | 遮罩显隐 / 弹层 / 字体加载等基线问题已实测修复，新组件随版本陆续实测 |
+| 微信小程序 | 🔧 基线已实测 | 遮罩显隐 / 弹层 / 字体加载等基线问题已实测修复，0.7.0 修复弹层组件 `getCurrentInstance` 空实例崩溃（issue #20），新组件随版本陆续实测 |
 | 其他小程序 | 🔧 已适配 | 代码条件编译适配，待开发者工具实测 |
 
 完整说明（HBuilderX 版本要求、蒸汽模式配置、平台差异处理）见[平台兼容性](https://mengxi-studio.github.io/unix-ui/guide/compatibility.html)。
@@ -241,7 +254,7 @@ $m-button-normal-height: 48px;
 
 示例工程 [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) 为每个组件提供一页穷举全部 props / 变体 / 事件的可运行验证矩阵，部署于文档站的[在线演示](https://mengxi-studio.github.io/unix-ui/playground/)，浏览器可直接体验。
 
-**Android 真机体验**：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794836242885-__UNI__F1AA560_1794836231235.apk)——云打包产物，覆盖全部组件的真实原生渲染效果；安装包随版本更新重新打包，链接以最新发版说明为准。
+**Android 真机体验**：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1795095433761-__UNI__F1AA560_1795095406297.apk)——云打包产物，覆盖全部组件的真实原生渲染效果；安装包随版本更新重新打包，链接以最新发版说明为准。
 
 ## 项目结构
 

@@ -88,6 +88,10 @@ Yes — see [Compatibility · Vapor mode](/en/guide/compatibility#vapor-mode).
 
 Since 0.6.0, `m-date-picker` / `m-time-picker` compose `m-picker` internally. **Public props / events / slots / value types are unchanged**; visuals are owned by `$m-picker-*` and the old panel-level variables no longer apply. See the [changelog](/en/changelog).
 
+### Do I need to change code when upgrading from 0.6.0 to 0.7.0?
+
+No. 0.7.0 is purely additive (14 new components: number keyboard, password input, radio, rate, search, segmented and select families) with no breaking changes. Two things worth noting: `m-input` gains a `confirm` event and an `input-align` prop (default behavior unchanged); `m-checkbox` now renders an outlined empty box when unchecked (it previously looked empty only because the icon glyph was missing — you can remove any workaround styling you added for the old look).
+
 ### How do I see what changed in a release?
 
 The [changelog](/en/changelog) lists additions, fixes and changes per version; the plugin marketplace and npm package ship the same content.

@@ -2,7 +2,7 @@
 
 **unix-ui** (`@meng-xi/unix-ui`) is a UI component library for [uni-app x](https://doc.dcloud.net.cn/uni-app-x/), written in UTS + uvue. One codebase is compiled by the uni-app x toolchain into Web (JS), Android (Kotlin), iOS (Swift) and mini-program code; components rely only on built-in components and runtime capabilities — no custom rendering stack.
 
-It currently ships **65 components** (including sub-components, popup and input variants) organized into **8 categories**: basic, layout, data entry, pickers, date & time, feedback, data display and navigation — plus a pure-function date toolset covering 1900–2100.
+It currently ships **79 components** (including sub-components, popup and input variants) organized into **8 categories**: basic, layout, data entry, pickers, date & time, feedback, data display and navigation — plus a pure-function date toolset covering 1900–2100.
 
 ## Why unix-ui
 
@@ -40,8 +40,8 @@ Components stay within the capabilities of uni-app x and follow these convention
 | --- | --- |
 | Basic | Button, Icon, Image, Text |
 | Layout | Compact, Divider, Flex, Grid, Layout, Space, StatusBar, Sticky, Waterfall |
-| Data entry | Checkbox, ColorPicker, Input; Checkbox and ColorPicker also provide popup and input variants |
-| Pickers | Picker, Cascader; both provide popup and input variants, and Picker also provides a toolbar-less view |
+| Data entry | Checkbox, ColorPicker, Input, NumberKeyboard, PasswordInput, Radio, Rate, Search, Segmented; Checkbox / ColorPicker / NumberKeyboard / PasswordInput / Radio also provide popup and input variants |
+| Pickers | Picker, Cascader, Select; all three provide popup and input variants, and Picker also provides a toolbar-less view |
 | Date & time | Calendar, DatePicker, DateRangePicker, DateStrip, TimePicker, TimeRangePicker, LunarPicker; the date / time / lunar series also provide popup and input variants |
 | Feedback | Fab, Loading, Overlay, Popup, Toast |
 | Data display | Badge, Cell and CellGroup |

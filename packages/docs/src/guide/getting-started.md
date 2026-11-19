@@ -60,10 +60,12 @@ const maxDate = new Date(2030, 11, 31)
 
 | 组件类型 | 值类型 | 示例 |
 | --- | --- | --- |
-| 文本 / 选择器 | `string` | `m-input`、`m-picker` |
+| 文本 | `string` | `m-input`、`m-search` |
+| 选择器 | `string` / `number`（可空用 `null`） | `m-picker`、`m-radio-group`、`m-select`、`m-segmented` |
+| 数值 | `number` | `m-rate` |
 | 日期 | `Date \| null` | `m-date-picker`、`m-calendar` |
 | 时间 | `'HH:mm'` / `'HH:mm:ss'` | `m-time-picker` |
-| 多选 | 数组 | `m-checkbox-group` |
+| 多选 | 数组 | `m-checkbox-group`、`m-select`（`multiple`） |
 
 ## 4. 弹出框与输入框组合
 

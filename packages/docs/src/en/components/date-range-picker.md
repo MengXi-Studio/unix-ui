@@ -1,7 +1,7 @@
 ---
 title: DateRangePicker
 subtitle: DateRangePicker
-demo: pages-sub/date-range-picker/date-range-picker
+demo: pages-sub/datetime/date-range-picker/date-range-picker
 added: 0.6.0
 ---
 

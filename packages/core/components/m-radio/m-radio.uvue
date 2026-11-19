@@ -1,0 +1,375 @@
+<template>
+	<!-- 单选框：图标 + 文本。组内（有 name 且 bind-group）经上下文参与单选；
+	     独立使用为受控 checked 形态（不持值）。图标为自绘圆环 / 方框 + 内实心圆点，
+	     禁用态降透明度，icon 插槽自定义。 -->
+	<view :class="rootClass" :style="customStyle" @click="onClick">
+		<view :class="iconWrapClass" :style="iconWrapStyle" @click="onIconClick">
+			<slot name="icon" :checked="isChecked" :disabled="isDisabled">
+				<view :class="ringClass" :style="ringStyle">
+					<view v-if="isChecked" :class="dotClass" :style="dotStyle"></view>
+				</view>
+			</slot>
+		</view>
+		<view v-if="showLabel" class="m-radio__label" :class="labelClass" :style="labelStyle" @click="onLabelClick">
+			<slot name="default" :checked="isChecked" :disabled="isDisabled">
+				<text :class="labelClass">{{ labelText }}</text>
+			</slot>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-radio 单选框。
+	 * 双形态：组内（name + bind-group，经 m-radio-group 上下文参与单选）与
+	 * 独立（受控 checked prop，change 只派发不持值）。支持 round / square 形状、
+	 * 禁用 / 只读（整体 / 合并容器）、label-position 左右互换、icon-size / checked-color、
+	 * icon / default 插槽自定义。
+	 */
+	import {
+		RADIO_KEY,
+		RadioGroupContext,
+		RadioValue,
+		RadioShape,
+		RadioLabelPosition,
+		valueEqualsName,
+		radioValueText
+	} from '../m-radio-group/radio.uts'
+
+	type Props = {
+		/** 标识符（组内必填，独立使用可空） */
+		name?: RadioValue
+		/** 是否为选中状态（独立使用受控；组内由上下文驱动） */
+		checked?: boolean
+		/** 形状（组内未设置时继承组容器） */
+		shape?: RadioShape
+		/** 是否禁用单选框 */
+		disabled?: boolean
+		/** 是否只读（视觉正常但不可切换） */
+		readonly?: boolean
+		/** 是否禁用文本点击（图标仍可点击切换） */
+		labelDisabled?: boolean
+		/** 文本位置 */
+		labelPosition?: RadioLabelPosition
+		/** 图标尺寸（number 补 px / string 原样） */
+		iconSize?: string | number
+		/** 选中态颜色（组内未设置时继承组容器） */
+		checkedColor?: string
+		/** 是否与单选框组绑定（false 时即使有 name 也独立受控） */
+		bindGroup?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		name: null,
+		checked: false,
+		shape: null,
+		disabled: false,
+		readonly: false,
+		labelDisabled: false,
+		labelPosition: 'right',
+		iconSize: '',
+		checkedColor: '',
+		bindGroup: true,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 选中态变化（组内与独立均派发，checked 为本项最新状态） */
+		change: [checked: boolean]
+		/** 点击单选框（含禁用态与只读拒绝时） */
+		click: [event: MouseEvent]
+	}>()
+
+	/** 槽位检测（uvue 需索引访问读取具名插槽） */
+	const slots = useSlots()
+
+	/** 组上下文（不在组内时为 null） */
+	const ctx = inject<RadioGroupContext | null>(RADIO_KEY, null)
+
+	/** 是否处于组内（有上下文、有 name 且未关闭 bind-group） */
+	const inGroup = computed<boolean>(() => {
+		return ctx != null && props.name != null && props.bindGroup
+	})
+
+	/** 是否选中（组内读上下文当前值比对，独立读受控 checked） */
+	const isChecked = computed<boolean>(() => {
+		if (inGroup.value && ctx != null && props.name != null) {
+			return valueEqualsName(ctx.value.value, props.name)
+		}
+		return props.checked
+	})
+
+	/** 是否禁用（组内合并组容器禁用） */
+	const isDisabled = computed<boolean>(() => {
+		if (inGroup.value && ctx != null) {
+			return props.disabled || ctx.disabled.value
+		}
+		return props.disabled
+	})
+
+	/** 是否只读（组内合并组容器只读） */
+	const isReadonly = computed<boolean>(() => {
+		if (inGroup.value && ctx != null) {
+			return props.readonly || ctx.readonly.value
+		}
+		return props.readonly
+	})
+
+	/** 有效形状（组内继承容器） */
+	const effectiveShape = computed<RadioShape>(() => {
+		if (props.shape != null) return props.shape
+		if (inGroup.value && ctx != null) return ctx.shape.value
+		return 'round'
+	})
+
+	/** 有效图标尺寸（number 补 px，组内继承容器） */
+	const effectiveIconSize = computed<string>(() => {
+		if (props.iconSize == '' && inGroup.value && ctx != null) {
+			return ctx.iconSize.value
+		}
+		if (props.iconSize == '') return ''
+		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
+		const raw = '' + props.iconSize
+		return pattern.test(raw) ? raw + 'px' : raw
+	})
+
+	/** 有效选中色（组内继承容器） */
+	const effectiveCheckedColor = computed<string>(() => {
+		if (props.checkedColor != '') return props.checkedColor
+		if (inGroup.value && ctx != null) return ctx.checkedColor.value
+		return ''
+	})
+
+	/** 根节点类名：文本位置 / 禁用变体 + customClass */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-radio'
+		if (props.labelPosition == 'left') cls += ' m-radio--label-left'
+		if (isDisabled.value) cls += ' m-radio--disabled'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 图标容器类名（禁用视觉由外环灰底承担，容器不再降透明度——未选灰环叠透明度无可见差异） */
+	const iconWrapClass = computed<string>(() => {
+		return 'm-radio__icon-wrap'
+	})
+
+	/** 图标容器内联样式：icon-size 直达容器宽高（默认走主题类） */
+	const iconWrapStyle = computed<string>(() => {
+		const size = effectiveIconSize.value
+		if (size != '') {
+			return 'width: ' + size + '; height: ' + size + ';'
+		}
+		return ''
+	})
+
+	/** 外环类名：形状 / 选中 / 禁用变体（禁用未选灰底填充，禁用选中灰环灰点，视觉与可选态明确区分） */
+	const ringClass = computed<string>(() => {
+		let cls = 'm-radio__ring'
+		if (effectiveShape.value == 'square') cls += ' m-radio__ring--square'
+		if (isChecked.value && !isDisabled.value) cls += ' m-radio__ring--checked'
+		if (isChecked.value && isDisabled.value) cls += ' m-radio__ring--checked-disabled'
+		if (isDisabled.value) cls += ' m-radio__ring--disabled'
+		return cls
+	})
+
+	/** 外环内联样式：选中且未禁用时用 checkedColor 覆盖主题环色 */
+	const ringStyle = computed<string>(() => {
+		if (isChecked.value && !isDisabled.value && effectiveCheckedColor.value != '') {
+			return 'border-color: ' + effectiveCheckedColor.value + ';'
+		}
+		return ''
+	})
+
+	/** 内点类名：禁用选中时灰点（checkedColor 覆盖不生效于禁用态） */
+	const dotClass = computed<string>(() => {
+		return isDisabled.value ? 'm-radio__dot m-radio__dot--disabled' : 'm-radio__dot'
+	})
+
+	/** 内点内联样式：icon-size 自定义时按 50% 比例换算内点尺寸，选中且未禁用时同步覆盖颜色 */
+	const dotStyle = computed<string>(() => {
+		let style = ''
+		const size = effectiveIconSize.value
+		if (size != '') {
+			const numStr = size.endsWith('px') ? size.slice(0, size.length - 2) : size
+			const n = parseFloat(numStr)
+			if (!isNaN(n)) {
+				const dot = n * 0.5
+				style += 'width: ' + dot.toString() + 'px; height: ' + dot.toString() + 'px;'
+			}
+		}
+		if (isChecked.value && !isDisabled.value && effectiveCheckedColor.value != '') {
+			style += ' background-color: ' + effectiveCheckedColor.value + ';'
+		}
+		return style
+	})
+
+	/** 是否显示文本区（default 插槽优先；无插槽且组内有 name 时显示 name 文本） */
+	const showLabel = computed<boolean>(() => {
+		if (slots['default'] != null) return true
+		return inGroup.value && props.name != null
+	})
+
+	/** fallback 文本（组内显示 name；无 name 为空串） */
+	const labelText = computed<string>(() => {
+		if (props.name == null) return ''
+		return radioValueText(props.name)
+	})
+
+	/** 文本区类名：禁用 / 选中变体 */
+	const labelClass = computed<string>(() => {
+		let cls = ''
+		if (isDisabled.value) cls += 'm-radio__label--disabled '
+		if (isChecked.value) cls += 'm-radio__label--checked'
+		return cls.trim()
+	})
+
+	/** 文本区内联样式（label-position 为 left 时右对齐补间距） */
+	const labelStyle = computed<string>(() => {
+		if (props.labelPosition == 'left') {
+			return 'margin-left: 8px; margin-right: 0;'
+		}
+		return ''
+	})
+
+	/**
+	 * 选中本项：禁用 / 只读 / 已选不响应；组内经上下文 select 回写，独立只派发不持值；
+	 * 单选刚性——已选中项再点不取消、不重复派发 change
+	 */
+	function doSelect() {
+		if (isDisabled.value || isReadonly.value) return
+		if (isChecked.value) return
+		if (inGroup.value && ctx != null && props.name != null) {
+			ctx.select(props.name)
+			emit('change', true)
+			return
+		}
+		emit('change', true)
+	}
+
+	/**
+	 * 图标点击：禁用 / 只读不响应，其余选中；事件继续冒泡到根统一派发 click
+	 */
+	const onIconClick = (_: MouseEvent) => {
+		doSelect()
+	}
+
+	/**
+	 * 文本点击：label-disabled 或禁用 / 只读不响应，其余选中
+	 */
+	const onLabelClick = (_: MouseEvent) => {
+		if (props.labelDisabled) return
+		doSelect()
+	}
+
+	/**
+	 * 根节点点击：透传 click 事件（选中逻辑在 icon-wrap / label 层处理）
+	 */
+	const onClick = (e: MouseEvent) => {
+		emit('click', e)
+	}
+
+	// 图标区的选中经容器透传：根 click 只派发事件，选中逻辑在 icon-wrap / label 层
+	defineExpose({
+		/** 选中本项（搭配单元格组件场景外部调用） */
+		select: doSelect
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 单项：横向排布（图标 + 文本），纵向内边距与组间距一致 */
+	.m-radio {
+		flex-direction: row;
+		align-items: center;
+		padding: $m-radio-padding;
+	}
+
+	/* 文本在左侧时反向排布 */
+	.m-radio--label-left {
+		flex-direction: row-reverse;
+	}
+
+	/* 图标容器：外环 / 内点 / 自定义图标的定位包含块 */
+	.m-radio__icon-wrap {
+		width: $m-radio-icon-size;
+		height: $m-radio-icon-size;
+		justify-content: center;
+		align-items: center;
+	}
+
+	/* 外环：常态灰环圆形，选中变主题色 */
+	.m-radio__ring {
+		width: $m-radio-icon-size;
+		height: $m-radio-icon-size;
+		border-width: $m-radio-icon-border-width;
+		border-style: solid;
+		border-color: $m-radio-icon-border-color;
+		border-radius: 50%;
+		justify-content: center;
+		align-items: center;
+	}
+
+	/* 外环选中态颜色 */
+	.m-radio__ring--checked {
+		border-color: $m-radio-icon-color;
+	}
+
+	/* square 形态：方框（内点仍为圆形，保留点选心智） */
+	.m-radio__ring--square {
+		border-radius: $m-radio-square-radius;
+	}
+
+	/* 禁用态：外环灰底填充（未选即可与可选态明确区分，Vant 同款方案） */
+	.m-radio__ring--disabled {
+		background-color: $m-radio-icon-disabled-background;
+	}
+
+	/* 禁用选中态：环与点退灰（不再用主题色） */
+	.m-radio__ring--checked-disabled {
+		border-color: $m-radio-icon-disabled-color;
+	}
+
+	/* 内点：选中时显示的主题色实心圆 */
+	.m-radio__dot {
+		width: $m-radio-dot-size;
+		height: $m-radio-dot-size;
+		border-radius: 50%;
+		background-color: $m-radio-icon-color;
+	}
+
+	/* 内点禁用态颜色 */
+	.m-radio__dot--disabled {
+		background-color: $m-radio-icon-disabled-color;
+	}
+
+	/* 文本区 */
+	.m-radio__label {
+		margin-left: $m-radio-label-gap;
+		font-size: $m-radio-label-font-size;
+		line-height: $m-radio-label-line-height;
+		color: $m-radio-label-color;
+	}
+
+	/* 文本选中态颜色 */
+	.m-radio__label--checked {
+		color: $m-radio-label-checked-color;
+	}
+
+	/* 文本禁用态颜色 */
+	.m-radio__label--disabled {
+		color: $m-radio-label-disabled-color;
+	}
+</style>

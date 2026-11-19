@@ -1,7 +1,7 @@
 ---
 title: Space
 subtitle: 间距
-demo: pages-sub/space/space
+demo: pages-sub/layouts/space/space
 added: 0.1.0
 ---
 

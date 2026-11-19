@@ -1,0 +1,150 @@
+/**
+ * m-radio 系列的容器上下文与共享类型（跨组件共享，独立 .uts）
+ *
+ * m-radio-group provide 本上下文，m-radio inject 后按 name 参与单选；
+ * 独立使用（不在组内）的 m-radio 为受控 checked 形态，不经上下文。
+ * class 实现：非蒸汽（Kotlin/Swift）端不支持「含方法的对象字面量 type」。
+ */
+import { ref, type Ref } from 'vue'
+
+/** provide / inject 配对 key */
+export const RADIO_KEY: string = '__mxi_radio_group__'
+
+/** 单个选项标识（UTS 无 any，收窄为字符串 / 数字） */
+export type RadioValue = string | number
+
+/** 单选框形状：圆形（圆环 + 内点）/ 方形（方框 + 内点） */
+export type RadioShape = 'round' | 'square'
+
+/** 单选组排列方向：纵向 / 横向 */
+export type RadioDirection = 'vertical' | 'horizontal'
+
+/** 文本相对图标的位置：右侧 / 左侧 */
+export type RadioLabelPosition = 'right' | 'left'
+
+/** options 数组的字段名映射（m-radio-popup / m-radio-input 用） */
+export type RadioFieldNames = {
+	/** 选项文字字段名 */
+	label: string
+	/** 选项值字段名 */
+	value: string
+	/** 选项禁用字段名（固定 disabled，此映射仅作扩展） */
+	disabled: string
+}
+
+/** 字段名默认值 */
+export const DEFAULT_RADIO_FIELD_NAMES: RadioFieldNames = {
+	label: 'label',
+	value: 'value',
+	disabled: 'disabled'
+}
+
+/** 单选组注入上下文：维护选中值与统一视觉规格 */
+export class RadioGroupContext {
+	/** 当前选中项（null 未选；组容器写入，子项据此判定选中态） */
+	value: Ref<RadioValue | null> = ref<RadioValue | null>(null)
+	/** 是否禁用全部单选框 */
+	disabled: Ref<boolean> = ref<boolean>(false)
+	/** 是否只读全部单选框 */
+	readonly: Ref<boolean> = ref<boolean>(false)
+	/** 形状 */
+	shape: Ref<RadioShape> = ref<RadioShape>('round')
+	/** 图标尺寸（number 补 px / string 原样） */
+	iconSize: Ref<string> = ref<string>('')
+	/** 选中态颜色 */
+	checkedColor: Ref<string> = ref<string>('')
+	/** 排列方向 */
+	direction: Ref<RadioDirection> = ref<RadioDirection>('vertical')
+
+	/**
+	 * 选中 name（单选刚性：直接收敛为该值；禁用 / 只读 / 已选拦截在子项点击层）
+	 *
+	 * @param name 选项标识
+	 */
+	select(name: RadioValue): void {
+		this.value.value = name
+	}
+}
+
+/**
+ * 值相等判定（字符串化比较：string 与 number 的同字面量视为同一项，'1' 与 1 等价——
+ * 宽松标识语义；不用 instanceof 判型，UTS 原始 string/number
+ * 在 Web 端运行时不是包装对象，instanceof 恒 false）
+ *
+ * @param a 值 A
+ * @param b 值 B
+ * @returns 是否相等
+ */
+export function valuesEqual(a: RadioValue, b: RadioValue): boolean {
+	return a.toString() == b.toString()
+}
+
+/**
+ * 判定当前选中值是否等于某 name（null 未选恒 false）
+ *
+ * @param value 当前选中值（可空）
+ * @param name 目标标识
+ * @returns 是否选中
+ */
+export function valueEqualsName(value: RadioValue | null, name: RadioValue): boolean {
+	if (value == null) {
+		return false
+	}
+	return valuesEqual(value, name)
+}
+
+/**
+ * 读取选项文字（label 字段经 field-names 映射，缺失回退空串）
+ *
+ * @param opt 选项对象
+ * @param fields 字段名映射
+ * @returns 选项文字
+ */
+export function radioOptionLabel(opt: UTSJSONObject, fields: RadioFieldNames): string {
+	const s = opt.getString(fields.label)
+	if (s != null) {
+		return s
+	}
+	return ''
+}
+
+/**
+ * 读取选项值（value 字段经 field-names 映射，字符串优先、数字次之，均缺失回退 null）
+ *
+ * @param opt 选项对象
+ * @param fields 字段名映射
+ * @returns 选项值（null 表示未配置）
+ */
+export function radioOptionValue(opt: UTSJSONObject, fields: RadioFieldNames): RadioValue | null {
+	const n = opt.getNumber(fields.value)
+	if (n != null) {
+		return n
+	}
+	const s = opt.getString(fields.value)
+	if (s != null) {
+		return s
+	}
+	return null
+}
+
+/**
+ * 读取选项禁用态（disabled 字段经 field-names 映射）
+ *
+ * @param opt 选项对象
+ * @param fields 字段名映射
+ * @returns 是否禁用
+ */
+export function radioOptionDisabled(opt: UTSJSONObject, fields: RadioFieldNames): boolean {
+	const b = opt.getBoolean(fields.disabled)
+	return b == true
+}
+
+/**
+ * 值的展示文本（string / number 统一 toString）
+ *
+ * @param v 值
+ * @returns 展示文本
+ */
+export function radioValueText(v: RadioValue): string {
+	return v.toString()
+}

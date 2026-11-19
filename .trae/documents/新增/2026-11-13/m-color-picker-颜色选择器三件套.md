@@ -195,3 +195,15 @@ Sard `presets` 无内置默认。
 
 - App / 鸿蒙 / 小程序端未真机实测（渐变分层与触摸换算已按官方文档约束实现，建议发布前 appResource 导出核对）
 - 吸管取色仅能在 Chromium 真机交互验证（headless 无法完成屏幕取色）
+
+## 修复记录（2026-11-18，issue #20）：微信小程序端打开弹层抛 `reading 'proxy'`
+
+- **现象**：mp-weixin 打开 `m-color-picker-popup` 时，open 动画结束触发 `onPopupOpened` → `picker.$callMethod('refresh')` → `measureAll` → `measureNode`，抛 `TypeError: Cannot read properties of null (reading 'proxy')`，面板不可用
+- **根因**：`measureNode` 在小程序分支内**调用时**取 `getCurrentInstance()`；经父组件 `$callMethod` 调用已脱离 setup 上下文，返回 null，随后访问 `.proxy` 崩溃。Web 走 `getBoundingClientRect` 分支、`onMounted` 首次测量在上下文内，故只有该路径必现
+- **修复**：改为 setup 期一次性捕获 `const mpInstance = getCurrentInstance()`（`#ifdef MP`），`measureNode` 只用引用——与 `m-fab.queryRectById` / `m-tabs` 既有写法一致
+- **验证**：
+  - `cli launch mp-weixin --compile true` 编译成功（68 页，无报错）
+  - 检查编译产物 `dist/dev/mp-weixin/.../m-color-picker.js`：`const mpInstance = common_vendor.getCurrentInstance();` 位于 setup 作用域，`measureNode` 内已无 getCurrentInstance
+  - 微信开发者工具运行时（复制产物到 /tmp 并换测试 appid，源码零改动）：进入 `pages-sub/color-picker-popup/color-picker-popup` 打开弹层，控制台无 proxy 相关 TypeError，渐变面板 / 色相条 / thumb 正常渲染
+  - `pnpm sync:uni-modules:check` 一致
+- **遗留**：取色区拖拽的坐标级触摸未在自动化中验证（工具无坐标触摸能力），需真机/手动补测一次

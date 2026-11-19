@@ -1,7 +1,7 @@
 ---
 title: LunarPicker
 subtitle: LunarPicker
-demo: pages-sub/lunar-picker/lunar-picker
+demo: pages-sub/datetime/lunar-picker/lunar-picker
 added: 0.6.0
 ---
 

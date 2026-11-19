@@ -1,7 +1,7 @@
 ---
 title: DateRangePickerPopup
 subtitle: 日期范围弹出框
-demo: pages-sub/date-range-picker-popup/date-range-picker-popup
+demo: pages-sub/datetime/date-range-picker-popup/date-range-picker-popup
 added: 0.6.0
 ---
 

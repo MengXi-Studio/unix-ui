@@ -1,0 +1,151 @@
+<template>
+	<view class="page">
+		<demo-navbar title="评分" subtitle="Rate" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-rate v-model:value="basicValue" @change="logChange('基础', $event)" />
+					<text class="caption">v-model:value 绑定分值（当前：{{ basicValue }}），点击或滑动选择</text>
+				</view>
+
+				<text class="section" id="half">半星</text>
+				<view class="card">
+					<m-rate v-model:value="halfValue" allow-half @change="logChange('半星', $event)" />
+					<text class="caption">allow-half 点击左半为半星（当前：{{ halfValue }}）</text>
+				</view>
+
+				<text class="section" id="icon">自定义图标</text>
+				<view class="card">
+					<m-rate v-model:value="iconValue" icon="like" void-icon="like-o" />
+					<text class="caption">icon / void-icon 接 m-icon 字形名（当前：{{ iconValue }}）</text>
+				</view>
+
+				<text class="section" id="style">自定义颜色 / 尺寸 / 间距</text>
+				<view class="card">
+					<m-rate v-model:value="styleValue" color="#ffd21e" void-color="#eeeeee" :size="28" :gap="10" />
+					<text class="caption">color / void-color / size / gap（当前：{{ styleValue }}）</text>
+				</view>
+
+				<text class="section" id="count">自定义数量</text>
+				<view class="card">
+					<m-rate v-model:value="countValue" :count="7" allow-half />
+					<text class="caption">count=7 渲染 7 颗（当前：{{ countValue }}）</text>
+				</view>
+
+				<text class="section" id="clearable">可清空</text>
+				<view class="card">
+					<m-rate v-model:value="clearValue" clearable @change="logChange('可清空', $event)" />
+					<text class="caption">clearable 再次点击当前分值清零（当前：{{ clearValue }}）</text>
+				</view>
+
+				<text class="section" id="readonly">只读与禁用</text>
+				<view class="card">
+					<text class="label">只读</text>
+					<m-rate :value="3" readonly />
+					<text class="label">禁用</text>
+					<m-rate :value="3" disabled />
+					<text class="caption">readonly 视觉正常不可交互；disabled 灰显不可交互</text>
+				</view>
+
+				<text class="section" id="decimal">只读小数</text>
+				<view class="card">
+					<m-rate :value="3.3" allow-half readonly />
+					<text class="caption">readonly + allow-half 可展示任意小数（3.3 分，第 4 颗填充 30%）</text>
+				</view>
+
+				<text class="section" id="touchable">滑动评分</text>
+				<view class="card">
+					<m-rate v-model:value="touchValue" allow-half @change="logChange('滑动', $event)" />
+					<text class="caption">touchable 默认开启，按住横向拖动连续选分（当前：{{ touchValue }}）</text>
+					<m-rate v-model:value="staticValue" :touchable="false" allow-half style="margin-top: 12px;" />
+					<text class="caption">touchable=false 时仅点击生效（当前：{{ staticValue }}）</text>
+				</view>
+
+				<text class="section" id="slot">自定义图标插槽</text>
+				<view class="card">
+					<m-rate v-model:value="slotValue" allow-half>
+						<template #void-icon="{ index }">
+							<text class="slot-icon">第{{ slotIndexNext(index) }}格</text>
+						</template>
+						<template #icon="{ index }">
+							<text class="slot-icon slot-icon--on">{{ slotIndexNext(index) }}</text>
+						</template>
+					</m-rate>
+					<text class="caption">icon / void-icon 插槽（作用域 { index, active }），插槽内容同样被半星裁切（当前：{{ slotValue }}）</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '评分 Rate', name: 'rate' })
+
+	/** 基础用法分值 */
+	const basicValue = ref<number>(3)
+	/** 半星演示分值 */
+	const halfValue = ref<number>(2.5)
+	/** 自定义图标演示分值 */
+	const iconValue = ref<number>(3)
+	/** 自定义样式演示分值 */
+	const styleValue = ref<number>(3)
+	/** 自定义数量演示分值 */
+	const countValue = ref<number>(4)
+	/** 可清空演示分值 */
+	const clearValue = ref<number>(3)
+	/** 滑动评分演示分值 */
+	const touchValue = ref<number>(2.5)
+	/** 关闭滑动演示分值 */
+	const staticValue = ref<number>(2)
+	/** 插槽演示分值 */
+	const slotValue = ref<number>(2.5)
+
+	/**
+	 * 插槽序号 +1（作用域变量在 Kotlin 端为 Any?，算术运算必须先 cast 为 number）
+	 *
+	 * @param index 插槽作用域 index
+	 * @returns 序号 + 1
+	 */
+	function slotIndexNext(index: any | null): number {
+		return (index as number) + 1
+	}
+
+	/**
+	 * change 事件日志
+	 * 形参用 any | null：codegen 对组件事件处理器参数一律生成 Any，
+	 * 具体类型形参会报 type mismatch（参照 checkbox 页已验证写法）
+	 *
+	 * @param tag 日志标签
+	 * @param v change 回传分值
+	 */
+	function logChange(tag: string, v: any | null) {
+		const n: number = v == null ? 0 : (v as number)
+		console.log('rate ' + tag + ' change: ' + n.toString())
+	}
+</script>
+
+<style lang="scss">
+	.label {
+		font-size: 13px;
+		color: #969799;
+		margin-top: 8px;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+
+	.slot-icon {
+		font-size: 12px;
+		color: #c8c9cc;
+	}
+
+	.slot-icon--on {
+		color: #ee0a24;
+	}
+</style>

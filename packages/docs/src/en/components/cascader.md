@@ -1,7 +1,7 @@
 ---
 title: Cascader
 subtitle: Cascader
-demo: pages-sub/cascader/cascader
+demo: pages-sub/pickers/cascader/cascader
 added: 0.3.0
 ---
 

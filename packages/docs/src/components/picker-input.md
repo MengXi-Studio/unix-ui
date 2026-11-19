@@ -1,7 +1,7 @@
 ---
 title: PickerInput
 subtitle: 选择器输入框
-demo: pages-sub/picker-input/picker-input
+demo: pages-sub/pickers/picker-input/picker-input
 added: 0.6.0
 ---
 

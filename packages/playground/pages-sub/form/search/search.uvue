@@ -1,0 +1,263 @@
+<template>
+	<view class="page">
+		<demo-navbar title="搜索" subtitle="Search" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-search v-model:value="basicValue" @change="logChange('基础', $event)" />
+					<text class="caption">v-model:value 绑定输入值（当前：{{ basicValue }}）</text>
+				</view>
+
+				<text class="section" id="search">键盘搜索</text>
+				<view class="card">
+					<m-search v-model:value="searchValue" confirm-type="search" @search="logSearch('键盘', $event)" />
+					<text class="caption">输入后按键盘搜索键 / 回车派发 search（最近：{{ lastSearch }}）</text>
+				</view>
+
+				<text class="section" id="cancel">取消按钮</text>
+				<view class="card">
+					<m-search v-model:value="cancelValue" show-action @cancel="logCancel" />
+					<text class="caption">show-action 显示右侧按钮（默认「取消」），点击派发 cancel，输入值不变</text>
+				</view>
+
+				<text class="section" id="action-search">搜索按钮</text>
+				<view class="card">
+					<m-search v-model:value="actionValue" show-action action-text="搜索" action-type="search" @search="logSearch('按钮', $event)" />
+					<text class="caption">action-type="search" 时右侧按钮派发 search（最近：{{ lastSearch }}）</text>
+				</view>
+
+				<text class="section" id="action-slot">自定义按钮</text>
+				<view class="card">
+					<m-search v-model:value="slotActionValue" show-action>
+						<template #action>
+							<view class="custom-action" @click="logCustomAction">
+								<text class="custom-action__text">查询</text>
+							</view>
+						</template>
+					</m-search>
+					<text class="caption">action 插槽自定义右侧内容，组件不再自动派发 cancel / search</text>
+				</view>
+
+				<text class="section" id="shape">形状与背景</text>
+				<view class="card">
+					<m-search v-model:value="shapeValue" shape="round" background="#4fc08d" input-background="#ffffff" />
+					<text class="caption">shape="round" 圆形输入区，background / input-background 分别设置外部与输入区背景</text>
+				</view>
+
+				<text class="section" id="align">内容对齐</text>
+				<view class="card">
+					<m-search v-model:value="alignValue" input-align="center" />
+					<text class="caption">input-align="center" 输入内容与占位符居中</text>
+					<m-search v-model:value="alignRightValue" input-align="right" style="margin-top: 8px;" />
+					<text class="caption">input-align="right" 右对齐</text>
+				</view>
+
+				<text class="section" id="label">左侧文本与图标</text>
+				<view class="card">
+					<m-search v-model:value="labelValue" label="地址" left-icon="location" />
+					<text class="caption">label 文本 + left-icon 自定义框内图标（默认 search）</text>
+				</view>
+
+				<text class="section" id="right-icon">右侧图标</text>
+				<view class="card">
+					<m-search v-model:value="rightIconValue" right-icon="setting" @click-right-icon="logRightIcon" />
+					<text class="caption">right-icon 渲染框内右图标，点击派发 click-right-icon（次数：{{ rightIconTimes }}）</text>
+				</view>
+
+				<text class="section" id="disabled">只读与禁用</text>
+				<view class="card">
+					<text class="label">只读</text>
+					<m-search value="机加工一线" readonly placeholder="筛选条件已锁定" />
+					<text class="label">禁用</text>
+					<m-search value="机加工一线" disabled placeholder="无检索权限" />
+					<text class="caption">readonly 不可编辑但外观正常；disabled 灰显</text>
+				</view>
+
+				<text class="section" id="error">错误提示</text>
+				<view class="card">
+					<m-search v-model:value="errorValue" error error-message="请输入 2-20 个字符的关键词" />
+					<text class="caption">error 输入区边框标红，error-message 在下方显示提示</text>
+				</view>
+
+				<text class="section" id="outer-slot">外部插槽</text>
+				<view class="card">
+					<m-search v-model:value="outerValue" show-action>
+						<template #left>
+							<m-icon name="arrow-left" custom-class="outer-icon" />
+						</template>
+					</m-search>
+					<text class="caption">left 插槽位于搜索框外左侧，action 插槽位于右侧</text>
+				</view>
+
+				<text class="section" id="methods">实例方法</text>
+				<view class="card">
+					<m-search ref="methodSearch" v-model:value="methodValue" placeholder="点击下方按钮控制焦点" />
+					<view class="btn-row">
+						<view class="btn" @click="focusSearch"><text class="btn__text">聚焦</text></view>
+						<view class="btn" @click="blurSearch"><text class="btn__text">失焦</text></view>
+					</view>
+					<text class="caption">通过实例方法 focus() / blur() 控制输入框焦点</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '搜索 Search', name: 'search' })
+
+	/** 基础用法输入值 */
+	const basicValue = ref<string>('')
+	/** 键盘搜索演示输入值 */
+	const searchValue = ref<string>('')
+	/** 取消按钮演示输入值 */
+	const cancelValue = ref<string>('')
+	/** 搜索按钮演示输入值 */
+	const actionValue = ref<string>('')
+	/** 自定义按钮演示输入值 */
+	const slotActionValue = ref<string>('')
+	/** 形状与背景演示输入值 */
+	const shapeValue = ref<string>('')
+	/** 居中对齐演示输入值 */
+	const alignValue = ref<string>('')
+	/** 右对齐演示输入值 */
+	const alignRightValue = ref<string>('')
+	/** 左侧文本演示输入值 */
+	const labelValue = ref<string>('')
+	/** 右侧图标演示输入值 */
+	const rightIconValue = ref<string>('')
+	/** 错误提示演示输入值 */
+	const errorValue = ref<string>('')
+	/** 外部插槽演示输入值 */
+	const outerValue = ref<string>('')
+	/** 实例方法演示输入值 */
+	const methodValue = ref<string>('')
+
+	/** 最近一次 search 的关键词 */
+	const lastSearch = ref<string>('无')
+	/** 右侧图标点击次数 */
+	const rightIconTimes = ref<number>(0)
+
+	/** m-search 实例（实例方法演示） */
+	const methodSearch = ref<ComponentPublicInstance | null>(null)
+
+	/**
+	 * change 事件日志
+	 * 形参用 any | null：codegen 对组件事件处理器参数一律生成 Any（checkbox 页已验证写法）
+	 *
+	 * @param tag 日志标签
+	 * @param v change 回传输入值
+	 */
+	function logChange(tag: string, v: any | null) {
+		const text: string = v == null ? '' : (v as string)
+		console.log('search ' + tag + ' change: ' + text)
+	}
+
+	/**
+	 * search 事件日志（形参放宽原因同上）
+	 *
+	 * @param tag 日志标签
+	 * @param v search 回传输入值
+	 */
+	function logSearch(tag: string, v: any | null) {
+		const text: string = v == null ? '' : (v as string)
+		lastSearch.value = text == '' ? '(空)' : text
+		console.log('search ' + tag + ' search: ' + text)
+	}
+
+	/**
+	 * cancel 事件日志
+	 */
+	function logCancel() {
+		console.log('search cancel')
+	}
+
+	/**
+	 * 自定义 action 点击日志
+	 */
+	function logCustomAction() {
+		console.log('search custom action: ' + slotActionValue.value)
+	}
+
+	/**
+	 * 右图标点击日志
+	 */
+	function logRightIcon() {
+		rightIconTimes.value += 1
+		console.log('search click-right-icon: ' + rightIconTimes.value.toString())
+	}
+
+	/**
+	 * 实例方法聚焦
+	 */
+	function focusSearch() {
+		const inst = methodSearch.value
+		if (inst != null) inst.$callMethod('focus')
+	}
+
+	/**
+	 * 实例方法失焦
+	 */
+	function blurSearch() {
+		const inst = methodSearch.value
+		if (inst != null) inst.$callMethod('blur')
+	}
+</script>
+
+<style lang="scss">
+	.label {
+		font-size: 13px;
+		color: #969799;
+		margin-top: 8px;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+
+	.custom-action {
+		height: 32px;
+		padding: 0 12px;
+		border-radius: 16px;
+		background-color: #1989fa;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.custom-action__text {
+		font-size: 13px;
+		color: #ffffff;
+	}
+
+	.outer-icon {
+		font-size: 18px;
+		color: #323233;
+	}
+
+	.btn-row {
+		flex-direction: row;
+		margin-top: 8px;
+	}
+
+	.btn {
+		height: 32px;
+		padding: 0 12px;
+		margin-right: 8px;
+		border-radius: 16px;
+		border-width: 1px;
+		border-style: solid;
+		border-color: #1989fa;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.btn__text {
+		font-size: 13px;
+		color: #1989fa;
+	}
+</style>

@@ -1,7 +1,7 @@
 ---
 title: CascaderInput
 subtitle: Cascader Input
-demo: pages-sub/cascader-input/cascader-input
+demo: pages-sub/pickers/cascader-input/cascader-input
 added: 0.3.0
 ---
 

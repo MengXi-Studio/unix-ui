@@ -1,7 +1,7 @@
 ---
 title: DatePickerInput
 subtitle: DatePickerInput
-demo: pages-sub/date-picker-input/date-picker-input
+demo: pages-sub/datetime/date-picker-input/date-picker-input
 added: 0.6.0
 ---
 

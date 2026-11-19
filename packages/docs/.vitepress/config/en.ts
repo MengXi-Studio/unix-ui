@@ -36,7 +36,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			{ text: 'Guide', link: '/en/guide/introduction' },
 			{ text: 'Components', link: '/en/components/button' },
 			{ text: 'Tools', link: '/en/tools/date' },
-			{ text: 'Changelog v0.6.0', link: '/en/changelog' },
+			{ text: 'Changelog v0.7.0', link: '/en/changelog' },
 			{
 				text: 'Links',
 				items: [
@@ -90,7 +90,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Divider', link: '/en/components/divider' },
 						{ text: 'Flex', link: '/en/components/flex' },
 						{ text: 'Grid', link: '/en/components/grid' },
-						{ text: 'Layout', link: '/en/components/layout' },
+						{ text: 'Row', link: '/en/components/layout' },
 						{ text: 'Space', link: '/en/components/space' },
 						{ text: 'StatusBar', link: '/en/components/status-bar' },
 						{ text: 'Sticky', link: '/en/components/sticky' },
@@ -107,7 +107,17 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'ColorPicker', link: '/en/components/color-picker' },
 						{ text: 'ColorPickerInput', link: '/en/components/color-picker-input' },
 						{ text: 'ColorPickerPopup', link: '/en/components/color-picker-popup' },
-						{ text: 'Input', link: '/en/components/input' }
+						{ text: 'Input', link: '/en/components/input' },
+						{ text: 'NumberKeyboard', link: '/en/components/number-keyboard' },
+						{ text: 'NumberKeyboardPopup', link: '/en/components/number-keyboard-popup' },
+						{ text: 'PasswordInput', link: '/en/components/password-input' },
+						{ text: 'PasswordInputPopup', link: '/en/components/password-input-popup' },
+						{ text: 'Radio', link: '/en/components/radio' },
+						{ text: 'RadioInput', link: '/en/components/radio-input' },
+						{ text: 'RadioPopup', link: '/en/components/radio-popup' },
+						{ text: 'Rate', link: '/en/components/rate' },
+						{ text: 'Search', link: '/en/components/search' },
+						{ text: 'Segmented', link: '/en/components/segmented' }
 					]
 				},
 				{
@@ -120,7 +130,10 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Picker', link: '/en/components/picker' },
 						{ text: 'PickerInput', link: '/en/components/picker-input' },
 						{ text: 'PickerPopup', link: '/en/components/picker-popup' },
-						{ text: 'PickerView', link: '/en/components/picker-view' }
+						{ text: 'PickerView', link: '/en/components/picker-view' },
+						{ text: 'Select', link: '/en/components/select' },
+						{ text: 'SelectInput', link: '/en/components/select-input' },
+						{ text: 'SelectPopup', link: '/en/components/select-popup' }
 					]
 				},
 				{

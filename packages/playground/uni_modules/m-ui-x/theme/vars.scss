@@ -351,6 +351,14 @@ $m-checkbox-padding: 10px 16px !default;
 $m-checkbox-icon-size: 20px !default;
 /** 未选中图标颜色（描边） */
 $m-checkbox-icon-color: $m-color-primary !default;
+/** 未选空框描边色 */
+$m-checkbox-box-border-color: $m-text-color-fourth !default;
+/** 空框描边宽度 */
+$m-checkbox-box-border-width: 1px !default;
+/** 方形框圆角 */
+$m-checkbox-box-radius: 4px !default;
+/** 选中态白勾字号 */
+$m-checkbox-check-icon-size: 12px !default;
 /** 图标与文本间距 */
 $m-checkbox-label-gap: 8px !default;
 /** 文本字号 */
@@ -689,3 +697,304 @@ $m-picker-input-clear-color: #c8c9cc !default;
 $m-picker-view-background: $m-white !default;
 /** 选中框细线颜色 */
 $m-picker-view-frame-color: #ebedf0 !default;
+
+/* ========== NumberKeyboard 数字键盘 ========== */
+/** 键盘底色 */
+$m-number-keyboard-background: #f2f3f5 !default;
+/** 四周内边距 */
+$m-number-keyboard-padding: 6px !default;
+/** 单侧键缝宽度（相邻键之间为两倍） */
+$m-number-keyboard-key-gap: 3px !default;
+/** 单键高度 */
+$m-number-keyboard-key-height: 48px !default;
+/** 键圆角 */
+$m-number-keyboard-key-radius: 6px !default;
+/** 键底色 */
+$m-number-keyboard-key-background: $m-white !default;
+/** 键按压态底色 */
+$m-number-keyboard-key-active-background: #e5e6eb !default;
+/** 键文字色 */
+$m-number-keyboard-key-color: $m-text-color !default;
+/** 键文字字号 */
+$m-number-keyboard-key-font-size: 24px !default;
+/** 删除键 / 动作键文字字号 */
+$m-number-keyboard-delete-font-size: 16px !default;
+/** 右侧栏关闭键底色 */
+$m-number-keyboard-close-background: $m-color-primary !default;
+/** 右侧栏关闭键文字色 */
+$m-number-keyboard-close-color: $m-white !default;
+/** 工具条高度 */
+$m-number-keyboard-title-height: 48px !default;
+/** 工具条水平内边距 */
+$m-number-keyboard-title-padding: 0 16px !default;
+/** 工具条标题色 */
+$m-number-keyboard-title-color: $m-text-color !default;
+/** 工具条文字字号（标题与按钮共用） */
+/** 工具条标题字号（与其他弹层工具条一致） */
+$m-number-keyboard-title-font-size: 16px !default;
+/** 工具条标题字重 */
+$m-number-keyboard-title-font-weight: 600 !default;
+/** 工具条左右按钮字号（小于标题，形成层级） */
+$m-number-keyboard-action-font-size: 14px !default;
+/** 完成按钮文字色 */
+$m-number-keyboard-button-color: $m-color-primary !default;
+/** 弹层顶部阴影条颜色（transparent + showShadow 时用于分隔页面） */
+$m-number-keyboard-shadow-color: rgba(0, 0, 0, 0.05) !default;
+
+/* ========== PasswordInput 密码输入格子 ========== */
+/** 格子容器高度（bordered 含边框） */
+$m-password-input-height: 50px !default;
+/** 格子间距（px，number 类型） */
+$m-password-input-gap: 8px !default;
+/** bordered 风格格子圆角 */
+$m-password-input-border-radius: 6px !default;
+/** bordered 常态边框色 */
+$m-password-input-border-color: #ebedf0 !default;
+/** bordered 聚焦态边框色（当前位高亮） */
+$m-password-input-border-color-focus: $m-color-primary !default;
+/** bordered 格子底色 */
+$m-password-input-background: $m-white !default;
+/** underlined 风格底线常态色 */
+$m-password-input-underline-color: #ebedf0 !default;
+/** underlined 聚焦底线色 */
+$m-password-input-underline-color-focus: $m-color-primary !default;
+/** 明文展示字号 */
+$m-password-input-font-size: 20px !default;
+/** 明文 / 圆点文字色 */
+$m-password-input-text-color: $m-text-color !default;
+/** mask 圆点尺寸（view 渲染，非字符） */
+$m-password-input-dot-size: 10px !default;
+/** mask 圆点颜色 */
+$m-password-input-dot-color: $m-text-color !default;
+/** 光标颜色 */
+$m-password-input-cursor-color: $m-text-color !default;
+/** 光标宽度 */
+$m-password-input-cursor-width: 2px !default;
+/** 光标高度（相对格子高度的百分比） */
+$m-password-input-cursor-height: 60% !default;
+/** 光标动画时长（毫秒） */
+$m-password-input-cursor-duration: 1000 !default;
+/** info 提示文字颜色 */
+$m-password-input-info-color: $m-text-color-secondary !default;
+/** info 提示字号 */
+$m-password-input-info-font-size: 12px !default;
+/** errorInfo 错误提示颜色 */
+$m-password-input-error-info-color: $m-color-danger !default;
+/** 禁用态透明度 */
+$m-password-input-disabled-opacity: $m-disabled-opacity !default;
+
+/* ========== Radio 单选框 ========== */
+/** 单项内边距 */
+$m-radio-padding: 10px 16px !default;
+/** 图标外环尺寸 */
+$m-radio-icon-size: 20px !default;
+/** 外环线宽 */
+$m-radio-icon-border-width: 1px !default;
+/** 未选外环颜色 */
+$m-radio-icon-border-color: $m-text-color-fourth !default;
+/** 选中外环与内点颜色 */
+$m-radio-icon-color: $m-color-primary !default;
+/** square 形态外环圆角 */
+$m-radio-square-radius: 4px !default;
+/** 内点尺寸（图标尺寸的 50%） */
+$m-radio-dot-size: 10px !default;
+/** 图标与文本间距 */
+$m-radio-label-gap: 8px !default;
+/** 文本字号 */
+$m-radio-label-font-size: 14px !default;
+/** 文本行高 */
+$m-radio-label-line-height: 20px !default;
+/** 文本颜色 */
+$m-radio-label-color: $m-text-color !default;
+/** 文本选中颜色 */
+$m-radio-label-checked-color: $m-text-color !default;
+/** 文本禁用颜色 */
+$m-radio-label-disabled-color: $m-text-color-fourth !default;
+/** 禁用态外环灰底填充色 */
+$m-radio-icon-disabled-background: #ebedf0 !default;
+/** 禁用选中态外环与内点颜色 */
+$m-radio-icon-disabled-color: $m-text-color-fourth !default;
+/** 弹层背景色 */
+$m-radio-popup-background: $m-white !default;
+/** 弹层头部内边距 */
+$m-radio-popup-header-padding: 14px 16px !default;
+/** 弹层标题字号 */
+$m-radio-popup-title-font-size: 16px !default;
+/** 弹层标题颜色 */
+$m-radio-popup-title-color: $m-text-color !default;
+/** 弹层关闭图标字号 */
+$m-radio-popup-close-icon-size: 18px !default;
+/** 弹层关闭图标颜色 */
+$m-radio-popup-close-icon-color: $m-text-color-fourth !default;
+/** 弹层选项区高度 */
+$m-radio-popup-options-height: 278px !default;
+/** 输入框触发层层级 */
+$m-radio-input-trigger-z-index: 1 !default;
+/** 输入框清空按钮层级 */
+$m-radio-input-clear-z-index: 2 !default;
+/** 输入框清空按钮宽度 */
+$m-radio-input-clear-width: 40px !default;
+/** 输入框清空图标字号 */
+$m-radio-input-clear-icon-size: 16px !default;
+/** 输入框清空图标颜色 */
+$m-radio-input-clear-color: $m-text-color-fourth !default;
+
+/* ========== Rate 评分 ========== */
+/** 图标默认尺寸 */
+$m-rate-icon-size: 20px !default;
+/** 图标默认间距 */
+$m-rate-gap: 4px !default;
+/** 选中态图标颜色 */
+$m-rate-icon-color: $m-color-danger !default;
+/** 未选中态图标颜色 */
+$m-rate-icon-void-color: $m-text-color-fourth !default;
+/** 禁用态图标颜色（选中与未选共用） */
+$m-rate-icon-disabled-color: $m-text-color-fourth !default;
+
+/* ========== Search 搜索 ========== */
+/** 搜索框上下内边距 */
+$m-search-padding-y: 10px !default;
+/** 搜索框左右内边距 */
+$m-search-padding-x: 12px !default;
+/** 搜索框外部背景色 */
+$m-search-background: #f2f2f2 !default;
+/** 输入区高度 */
+$m-search-field-height: 34px !default;
+/** 输入区左右内边距 */
+$m-search-field-padding: 0 8px !default;
+/** 输入区背景色 */
+$m-search-field-background: $m-white !default;
+/** 输入区方形圆角 */
+$m-search-field-radius: $m-radius-md !default;
+/** 输入区圆形圆角 */
+$m-search-field-radius-round: $m-radius-max !default;
+/** 框内左侧文本与图标间距 */
+$m-search-label-gap: 4px !default;
+/** 框内左侧文本颜色 */
+$m-search-label-color: $m-text-color !default;
+/** 框内左侧文本字号 */
+$m-search-label-font-size: 14px !default;
+/** 框内图标颜色 */
+$m-search-icon-color: $m-text-color-fourth !default;
+/** 框内图标字号 */
+$m-search-icon-size: 16px !default;
+/** 框内图标内边距 */
+$m-search-icon-padding: 0 2px !default;
+/** 搜索框外左侧插槽与输入区间距 */
+$m-search-action-gap: 8px !default;
+/** 右侧按钮内边距 */
+$m-search-action-padding: 0 8px !default;
+/** 右侧按钮文字颜色 */
+$m-search-action-color: $m-text-color !default;
+/** 右侧按钮文字字号 */
+$m-search-action-font-size: 14px !default;
+/** 错误提示颜色（兼错误态边框色） */
+$m-search-error-color: $m-color-danger !default;
+/** 错误提示字号 */
+$m-search-error-font-size: 12px !default;
+/** 错误提示内边距 */
+$m-search-error-padding: 0 $m-search-padding-x 8px $m-search-padding-x !default;
+
+/* ========== Segmented 分段控制器 ========== */
+/** 容器内边距（滑块与容器边缘间距） */
+$m-segmented-padding: 2px !default;
+/** 容器背景色 */
+$m-segmented-bg: #f2f3f5 !default;
+/** 方形圆角 */
+$m-segmented-radius: $m-radius-md !default;
+/** 胶囊圆角 */
+$m-segmented-radius-round: $m-radius-max !default;
+/** 选中滑块背景色 */
+$m-segmented-thumb-bg: $m-white !default;
+/** 选中滑块圆角 */
+$m-segmented-thumb-radius: 4px !default;
+/** 胶囊形状下的滑块圆角 */
+$m-segmented-thumb-radius-round: $m-radius-max !default;
+/** 选中滑块阴影 */
+$m-segmented-thumb-shadow: 0 2px 4px rgba(0, 0, 0, 0.08) !default;
+/** small 档高度 */
+$m-segmented-height-sm: 28px !default;
+/** medium 档高度 */
+$m-segmented-height: 32px !default;
+/** large 档高度 */
+$m-segmented-height-lg: 40px !default;
+/** medium 档字号 */
+$m-segmented-font-size: 14px !default;
+/** small 档字号 */
+$m-segmented-font-size-sm: 12px !default;
+/** large 档字号 */
+$m-segmented-font-size-lg: 16px !default;
+/** medium 档单项内边距 */
+$m-segmented-item-padding: 0 12px !default;
+/** small 档单项内边距 */
+$m-segmented-item-padding-sm: 0 8px !default;
+/** large 档单项内边距 */
+$m-segmented-item-padding-lg: 0 16px !default;
+/** 纵向模式单项内边距 */
+$m-segmented-item-padding-vertical: 8px 12px !default;
+/** 纵向模式 small 档单项内边距 */
+$m-segmented-item-padding-vertical-sm: 6px 8px !default;
+/** 纵向模式 large 档单项内边距 */
+$m-segmented-item-padding-vertical-lg: 10px 16px !default;
+/** 未选中文字色 */
+$m-segmented-item-color: $m-text-color-tertiary !default;
+/** 选中文字色 */
+$m-segmented-item-color-active: $m-text-color !default;
+/** 禁用文字色 */
+$m-segmented-item-color-disabled: $m-text-color-fourth !default;
+
+/* ========== Select 列表选择 ========== */
+/** 面板最大高度 */
+$m-select-max-height: 320px !default;
+/** 面板背景色 */
+$m-select-bg: $m-white !default;
+/** 筛选区内边距 */
+$m-select-filter-padding: 8px 12px !default;
+/** 多选工具栏内边距 */
+$m-select-toolbar-padding: 8px 12px !default;
+/** 多选工具栏字号 */
+$m-select-toolbar-font-size: 12px !default;
+/** 多选工具栏文字色 */
+$m-select-toolbar-text-color: $m-text-color-tertiary !default;
+/** 多选工具栏清空按钮色 */
+$m-select-toolbar-clear-color: $m-color-primary !default;
+/** 弹层标题内边距 */
+$m-select-header-padding: 14px 12px 8px 12px !default;
+/** 弹层标题字号 */
+$m-select-header-font-size: 16px !default;
+/** 弹层标题颜色 */
+$m-select-header-color: $m-text-color !default;
+/** 选项最小高度 */
+$m-select-option-min-height: 44px !default;
+/** 选项内边距 */
+$m-select-option-padding: 0 12px !default;
+/** 选项文字色 */
+$m-select-option-color: $m-text-color !default;
+/** 选项选中文字色 */
+$m-select-option-color-selected: $m-color-primary !default;
+/** 选项禁用文字色 */
+$m-select-option-color-disabled: $m-text-color-fourth !default;
+/** 选项文字字号 */
+$m-select-option-font-size: 14px !default;
+/** 勾选图标颜色 */
+$m-select-check-color: $m-color-primary !default;
+/** 勾选图标字号 */
+$m-select-check-size: 16px !default;
+/** 分组标题内边距 */
+$m-select-group-label-padding: 8px 12px !default;
+/** 分组标题字号 */
+$m-select-group-label-font-size: 12px !default;
+/** 分组标题颜色 */
+$m-select-group-label-color: $m-text-color-tertiary !default;
+/** 分组标题背景色 */
+$m-select-group-label-bg: #f2f3f5 !default;
+/** 空态内边距 */
+$m-select-empty-padding: 32px 0 !default;
+/** 空态文字色 */
+$m-select-empty-color: $m-text-color-fourth !default;
+/** 输入框清除按钮右侧偏移 */
+$m-select-input-clear-right: 12px !default;
+/** 输入框清除图标字号 */
+$m-select-input-clear-size: 16px !default;
+/** 输入框清除图标颜色 */
+$m-select-input-clear-color: $m-text-color-fourth !default;

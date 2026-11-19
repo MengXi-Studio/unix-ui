@@ -1,7 +1,7 @@
 ---
 title: Toast
 subtitle: 轻提示
-demo: pages-sub/toast/toast
+demo: pages-sub/feedback/toast/toast
 added: 0.2.0
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: Cell
 subtitle: 单元格
-demo: pages-sub/cell/cell
+demo: pages-sub/display/cell/cell
 added: 0.1.0
 ---
 

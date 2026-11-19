@@ -1,0 +1,404 @@
+<template>
+	<!-- 列表选择输入框：m-input（只读展示标签）+ m-select-popup 组合 -->
+	<!-- 触发层挂在 m-input 之上：m-input 的 readonly 以原生 disabled 模拟，原生 disabled 控件会吞点击 -->
+	<view :class="rootClass" :style="customStyle">
+		<m-input
+			:model-value="displayLabel"
+			:placeholder="props.placeholder"
+			:disabled="props.disabled"
+			:input-align="props.inputAlign"
+		/>
+		<view v-if="!props.disabled" class="m-select-input__trigger" @click="onTriggerClick"></view>
+		<view v-if="showClear" class="m-select-input__clear" @click.stop="onClearClick">
+			<m-icon name="clear" custom-class="m-select-input__clear-icon" />
+		</view>
+
+		<!-- 层级 3 高于触发层(1) / 清空钮(2)：弹层遮罩需覆盖本组件浮层 -->
+		<m-select-popup
+			v-model:show="popupShow"
+			:title="props.title"
+			:value="props.value"
+			:multiple="props.multiple"
+			:multiple-limit="props.multipleLimit"
+			:show-toolbar="props.showToolbar"
+			:options="props.options"
+			:field-names="props.fieldNames"
+			:filterable="props.filterable"
+			:filter-placeholder="props.filterPlaceholder"
+			:filter-value="props.filterValue"
+			:filter-method="props.filterMethod"
+			:disabled="props.disabled"
+			:empty-text="props.emptyText"
+			:confirm-on-select="props.confirmOnSelect"
+			:position="props.position"
+			:round="props.round"
+			:close-on-click-overlay="props.closeOnClickOverlay"
+			:safe-area-inset-top="props.safeAreaInsetTop"
+			:safe-area-inset-bottom="props.safeAreaInsetBottom"
+			:z-index="3"
+			:duration="props.duration"
+			:custom-class="props.customClass"
+			:custom-style="props.customStyle"
+			@update:show="onPopupShowChange"
+			@update:value="onSelectValueChange($event)"
+			@change="onSelectChange($event)"
+			@select="onSelect"
+			@update:filter-value="onFilterValueChange"
+		>
+			<template #option="{ option, index, selected, disabled }">
+				<slot name="option" :option="option" :index="index" :selected="selected" :disabled="disabled"></slot>
+			</template>
+			<template #bottom>
+				<slot name="bottom"></slot>
+			</template>
+		</m-select-popup>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-select-input 列表选择输入框：m-input（只读展示当前值标签）+ m-select-popup。
+	 * 整区点击打开弹层；清空为自绘按钮（m-input 内置清除图标在只读态不出现且被触发层遮挡）；
+	 * 展示标签按「options 递归查找 → mapLabel → 值字符串」顺序解析。
+	 */
+	import {
+		RadioFieldNames,
+		RadioValue,
+		DEFAULT_RADIO_FIELD_NAMES,
+		radioOptionLabel,
+		radioOptionValue,
+		valuesEqual
+	} from '../m-radio-group/radio.uts'
+	import MIcon from '../m-icon/m-icon.uvue'
+	import MInput from '../m-input/m-input.uvue'
+	import MSelectPopup from '../m-select-popup/m-select-popup.uvue'
+
+	/** 弹层方位 */
+	type SelectInputPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'
+	/** 输入文字对齐 */
+	type SelectInputAlign = 'left' | 'center' | 'right'
+
+	type Props = {
+		/** 当前值（v-model:value；multiple 时为数组） */
+		value?: RadioValue | RadioValue[]
+		/** 是否多选 */
+		multiple?: boolean
+		/** 多选最大可选个数，0 不限制 */
+		multipleLimit?: number
+		/** 多选时是否显示工具栏 */
+		showToolbar?: boolean
+		/** 多选时输入框最多展示的标签个数，-1 不限制 */
+		maxLabels?: number
+		/** 选项数组 */
+		options?: UTSJSONObject[]
+		/** 字段名映射 */
+		fieldNames?: UTSJSONObject | null
+		/** 展示占位文案 */
+		placeholder?: string
+		/** 弹层标题 */
+		title?: string
+		/** 是否显示清除按钮 */
+		clearable?: boolean
+		/** 是否禁用 */
+		disabled?: boolean
+		/** 是否只读（可打开面板查看，不可清空与选择） */
+		readonly?: boolean
+		/** 是否显示筛选框 */
+		filterable?: boolean
+		/** 筛选框占位文案 */
+		filterPlaceholder?: string
+		/** 筛选值（v-model:filter-value） */
+		filterValue?: string
+		/** 远程筛选回调 */
+		filterMethod?: ((query: string) => void) | null
+		/** 空列表文案 */
+		emptyText?: string
+		/** 选中后是否自动关闭弹层 */
+		confirmOnSelect?: boolean
+		/** 标签映射表（远程场景兜底） */
+		mapLabel?: UTSJSONObject | null
+		/** 输入文字对齐 */
+		inputAlign?: SelectInputAlign
+		/** 是否显示弹层（v-model:show） */
+		show?: boolean
+		/** 弹层方位 */
+		position?: SelectInputPosition
+		/** 弹层圆角 */
+		round?: boolean
+		/** 点击遮罩是否关闭 */
+		closeOnClickOverlay?: boolean
+		/** 顶部安全区 */
+		safeAreaInsetTop?: boolean
+		/** 底部安全区 */
+		safeAreaInsetBottom?: boolean
+		/** 动画时长（秒） */
+		duration?: number
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: '',
+		multiple: false,
+		multipleLimit: 0,
+		showToolbar: false,
+		maxLabels: 10,
+		options: () => [] as UTSJSONObject[],
+		fieldNames: null,
+		placeholder: '请选择',
+		title: '',
+		clearable: true,
+		disabled: false,
+		readonly: false,
+		filterable: false,
+		filterPlaceholder: '请输入关键词',
+		filterValue: '',
+		filterMethod: null,
+		emptyText: '暂无选项',
+		confirmOnSelect: true,
+		mapLabel: null,
+		inputAlign: 'left',
+		show: false,
+		position: 'bottom',
+		round: true,
+		closeOnClickOverlay: true,
+		safeAreaInsetTop: false,
+		safeAreaInsetBottom: true,
+		duration: 0.3,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 值变化（v-model:value；multiple 时为数组） */
+		'update:value': [value: RadioValue | RadioValue[]]
+		/** 值变化（multiple 时为数组） */
+		change: [value: RadioValue | RadioValue[]]
+		/** 选中项（原始对象） */
+		select: [option: UTSJSONObject]
+		/** 筛选值变化 */
+		'update:filterValue': [query: string]
+		/** 弹层显隐（v-model:show） */
+		'update:show': [show: boolean]
+	}>()
+
+	/** 弹层显隐（内部维护，与 show 同步） */
+	const popupShow = ref<boolean>(props.show)
+
+	watch(
+		(): boolean => props.show,
+		(v: boolean) => {
+			popupShow.value = v
+		}
+	)
+
+	/** 字段名映射 */
+	const fields = computed<RadioFieldNames>(() => {
+		const f = props.fieldNames
+		if (f == null) return DEFAULT_RADIO_FIELD_NAMES
+		const l = f.getString('label')
+		const v = f.getString('value')
+		const d = f.getString('disabled')
+		return {
+			label: l == null ? DEFAULT_RADIO_FIELD_NAMES.label : l,
+			value: v == null ? DEFAULT_RADIO_FIELD_NAMES.value : v,
+			disabled: d == null ? DEFAULT_RADIO_FIELD_NAMES.disabled : d
+		}
+	})
+
+	/**
+	 * 在选项（含一层 children）中查找值对应标签
+	 *
+	 * @param options 选项数组
+	 * @param value 目标值
+	 * @param f 字段名映射
+	 * @param childrenKey children 字段名
+	 * @returns 命中的标签，未命中返回 null
+	 */
+	function findLabel(options: UTSJSONObject[], value: RadioValue, f: RadioFieldNames, childrenKey: string): string | null {
+		for (let i = 0; i < options.length; i++) {
+			const opt = options[i]
+			const v = radioOptionValue(opt, f)
+			if (v != null && valuesEqual(v, value)) return radioOptionLabel(opt, f)
+			const children = opt.getArray<UTSJSONObject>(childrenKey)
+			if (children != null && children.length > 0) {
+				for (let j = 0; j < children.length; j++) {
+					const child = children[j]
+					const cv = radioOptionValue(child, f)
+					if (cv != null && valuesEqual(cv, value)) return radioOptionLabel(child, f)
+				}
+			}
+		}
+		return null
+	}
+
+	/**
+	 * 单个值的展示标签：options 递归查找 → mapLabel → 值字符串
+	 * 注意：Kotlin 局部函数不允许前向引用，被 displayLabel 调用必须先声明。
+	 *
+	 * @param v 目标值
+	 * @returns 展示标签
+	 */
+	function labelOf(v: RadioValue): string {
+		const f = fields.value
+		const map = props.mapLabel
+		const ck = props.fieldNames == null ? 'children' : (props.fieldNames!.getString('children') ?? 'children')
+		const found = findLabel(props.options, v, f, ck)
+		if (found != null) return found
+		if (map != null) {
+			const mapped = map.getString(v.toString())
+			if (mapped != null) return mapped
+		}
+		return v.toString()
+	}
+
+	/** 展示文本：多选按「、」拼接并受 maxLabels 约束；单选走 options → mapLabel → 值字符串 */
+	const displayLabel = computed<string>(() => {
+		const raw = props.value
+		const t = typeof raw
+		if (t == 'string' || t == 'number') {
+			const single = raw as RadioValue
+			if (single.toString() == '') return ''
+			return labelOf(single)
+		}
+		// 多选：逐个解析标签后拼接
+		const list = raw as RadioValue[]
+		if (list.length == 0) return ''
+		const limit = props.maxLabels
+		const count = limit >= 0 && list.length > limit ? limit : list.length
+		let text = ''
+		for (let i = 0; i < count; i++) {
+			if (i > 0) text += '、'
+			text += labelOf(list[i])
+		}
+		if (count < list.length) text += ' 等 ' + list.length.toString() + ' 项'
+		return text
+	})
+
+	/** 清除按钮可见性 */
+	const showClear = computed<boolean>(() => {
+		if (!props.clearable || props.disabled || props.readonly) return false
+		const raw = props.value
+		const t = typeof raw
+		if (t == 'string' || t == 'number') return (raw as RadioValue).toString() != ''
+		return (raw as RadioValue[]).length > 0
+	})
+
+	/** 根节点类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-select-input'
+		if (props.disabled) cls += ' m-select-input--disabled'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/**
+	 * 触发器点击：只读不允许打开
+	 */
+	function onTriggerClick() {
+		if (props.disabled || props.readonly) return
+		popupShow.value = true
+		emit('update:show', true)
+	}
+
+	/**
+	 * 清除按钮：单选置空串，多选置空数组
+	 */
+	function onClearClick() {
+		if (props.disabled || props.readonly) return
+		if (props.multiple) {
+			const empty: RadioValue[] = []
+			emit('update:value', empty)
+			emit('change', empty)
+			return
+		}
+		emit('update:value', '')
+		emit('change', '')
+	}
+
+	/**
+	 * 弹层显隐变化：同步内部状态
+	 */
+	function onPopupShowChange(show: boolean) {
+		popupShow.value = show
+		emit('update:show', show)
+	}
+
+	/**
+	 * 选中值变化透传
+	 * 注意：形参禁用 RadioValue | RadioValue[]、体内禁用 as 联合类型 cast——
+	 * 两者都会让 Kotlin codegen 静默丢弃整个函数（渲染层 Unresolved），
+	 * 必须展开为具体联合类型并直接 emit（TS 数组协变保证类型兼容）。
+	 *
+	 * @param v 选中值（单选为标量，多选为数组）
+	 */
+	function onSelectValueChange(v: string | number | string[] | number[]) {
+		emit('update:value', v)
+	}
+
+	/**
+	 * change 透传（限制原因同上）
+	 *
+	 * @param v 选中值（单选为标量，多选为数组）
+	 */
+	function onSelectChange(v: string | number | string[] | number[]) {
+		emit('change', v)
+	}
+
+	/**
+	 * 选中项透传
+	 */
+	function onSelect(option: UTSJSONObject) {
+		emit('select', option)
+	}
+
+	/**
+	 * 筛选值变化透传
+	 */
+	function onFilterValueChange(query: string) {
+		emit('update:filterValue', query)
+	}
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 根节点：相对定位，承载触发层与清除按钮 */
+	.m-select-input {
+		position: relative;
+	}
+
+	/* 透明触发层：接住整区点击 */
+	.m-select-input__trigger {
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 1;
+	}
+
+	/* 清除按钮 */
+	.m-select-input__clear {
+		position: absolute;
+		right: $m-select-input-clear-right;
+		top: 0;
+		bottom: 0;
+		z-index: 2;
+		justify-content: center;
+		align-items: center;
+	}
+
+	/* 清除图标 */
+	.m-select-input__clear-icon {
+		font-size: $m-select-input-clear-size;
+		color: $m-select-input-clear-color;
+	}
+</style>

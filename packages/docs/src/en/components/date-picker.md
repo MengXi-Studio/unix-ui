@@ -1,7 +1,7 @@
 ---
 title: DatePicker
 subtitle: DatePicker
-demo: pages-sub/date-picker/date-picker
+demo: pages-sub/datetime/date-picker/date-picker
 added: 0.6.0
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: PickerPopup
 subtitle: 选择器弹出框
-demo: pages-sub/picker-popup/picker-popup
+demo: pages-sub/pickers/picker-popup/picker-popup
 added: 0.6.0
 ---
 

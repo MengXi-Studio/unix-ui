@@ -49,7 +49,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 			{ text: '指南', link: '/guide/introduction' },
 			{ text: '组件', link: '/components/button' },
 			{ text: '工具', link: '/tools/date' },
-			{ text: '更新日志 v0.6.0', link: '/changelog' },
+			{ text: '更新日志 v0.7.0', link: '/changelog' },
 			{
 				text: '相关链接',
 				items: [
@@ -103,7 +103,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Divider 分割线', link: '/components/divider' },
 						{ text: 'Flex 弹性布局', link: '/components/flex' },
 						{ text: 'Grid 宫格', link: '/components/grid' },
-						{ text: 'Layout 布局', link: '/components/layout' },
+						{ text: 'Row 栅格布局', link: '/components/layout' },
 						{ text: 'Space 间距', link: '/components/space' },
 						{ text: 'StatusBar 状态栏', link: '/components/status-bar' },
 						{ text: 'Sticky 粘性布局', link: '/components/sticky' },
@@ -120,7 +120,17 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'ColorPicker 颜色选择器', link: '/components/color-picker' },
 						{ text: 'ColorPickerInput 颜色选择器输入框', link: '/components/color-picker-input' },
 						{ text: 'ColorPickerPopup 颜色选择器弹出框', link: '/components/color-picker-popup' },
-						{ text: 'Input 输入框', link: '/components/input' }
+						{ text: 'Input 输入框', link: '/components/input' },
+						{ text: 'NumberKeyboard 数字键盘', link: '/components/number-keyboard' },
+						{ text: 'NumberKeyboardPopup 数字键盘弹出框', link: '/components/number-keyboard-popup' },
+						{ text: 'PasswordInput 密码输入格子', link: '/components/password-input' },
+						{ text: 'PasswordInputPopup 密码输入弹出框', link: '/components/password-input-popup' },
+						{ text: 'Radio 单选框', link: '/components/radio' },
+						{ text: 'RadioInput 单选输入框', link: '/components/radio-input' },
+						{ text: 'RadioPopup 单选弹出框', link: '/components/radio-popup' },
+						{ text: 'Rate 评分', link: '/components/rate' },
+						{ text: 'Search 搜索', link: '/components/search' },
+						{ text: 'Segmented 分段控制器', link: '/components/segmented' }
 					]
 				},
 				{
@@ -133,7 +143,10 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Picker 选择器', link: '/components/picker' },
 						{ text: 'PickerInput 选择器输入框', link: '/components/picker-input' },
 						{ text: 'PickerPopup 选择器弹出框', link: '/components/picker-popup' },
-						{ text: 'PickerView 选择器纯视图', link: '/components/picker-view' }
+						{ text: 'PickerView 选择器纯视图', link: '/components/picker-view' },
+						{ text: 'Select 列表选择', link: '/components/select' },
+						{ text: 'SelectInput 列表选择输入框', link: '/components/select-input' },
+						{ text: 'SelectPopup 列表选择弹层', link: '/components/select-popup' }
 					]
 				},
 				{

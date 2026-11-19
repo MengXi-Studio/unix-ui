@@ -1,7 +1,7 @@
 ---
 title: Text
 subtitle: 文本
-demo: pages-sub/text/text
+demo: pages-sub/basic/text/text
 added: 0.1.0
 ---
 

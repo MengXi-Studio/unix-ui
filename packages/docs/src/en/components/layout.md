@@ -1,6 +1,6 @@
 ---
-title: Layout
-demo: pages-sub/layout/layout
+title: Row
+demo: pages-sub/layouts/layout/layout
 added: 0.1.0
 ---
 
@@ -124,4 +124,4 @@ The `wrap` attribute is enabled by default, so columns wrap naturally when the s
 
 ## Theming
 
-The Layout component has no dedicated theme variables. See [Theming](/en/guide/theming) for global variables.
+The Row layout has no dedicated theme variables. See [Theming](/en/guide/theming) for global variables.

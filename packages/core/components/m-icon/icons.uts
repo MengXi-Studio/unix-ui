@@ -225,6 +225,7 @@ export type IconName =
   | 'goods-collect'
   | 'eye'
   | 'delete'
+  | 'backspace'
   | 'font'
   | 'contact'
   | 'notes'
@@ -488,6 +489,7 @@ iconCodepoints.set('new-arrival', '\ue6ed')
 iconCodepoints.set('goods-collect', '\ue6cb')
 iconCodepoints.set('eye', '\ue6b0')
 iconCodepoints.set('delete', '\ue6a4')
+iconCodepoints.set('backspace', '\ue754')
 iconCodepoints.set('font', '\ue6bb')
 iconCodepoints.set('contact', '\ue753')
 iconCodepoints.set('notes', '\ue63c')
@@ -583,7 +585,7 @@ export const iconFilledNames: IconName[] = [
   'wap-home', 'photo', 'gift-card', 'expand', 'medal',
   'good-job', 'manager', 'label', 'bookmark', 'bill',
   'hot', 'hot-sale', 'new', 'new-arrival', 'goods-collect',
-  'eye', 'delete', 'font', 'contact', 'notes',
+  'eye', 'delete', 'backspace', 'font', 'contact', 'notes',
   'records', 'cash-back-record', 'newspaper', 'discount', 'completed',
   'user', 'description', 'wechat', 'wechat-pay', 'wechat-moments',
   'qq', 'alipay', 'weibo', 'photograph', 'youzan-shield',

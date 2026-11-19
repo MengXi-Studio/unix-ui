@@ -1,7 +1,7 @@
 ---
 title: Popup
 subtitle: 弹出层
-demo: pages-sub/popup/popup
+demo: pages-sub/feedback/popup/popup
 added: 0.2.0
 ---
 

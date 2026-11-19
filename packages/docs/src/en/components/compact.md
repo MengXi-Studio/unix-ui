@@ -1,6 +1,6 @@
 ---
 title: Compact
-demo: pages-sub/compact/compact
+demo: pages-sub/layouts/compact/compact
 added: 0.2.0
 ---
 

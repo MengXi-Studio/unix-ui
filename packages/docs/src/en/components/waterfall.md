@@ -1,6 +1,6 @@
 ---
 title: Waterfall
-demo: pages-sub/waterfall/waterfall
+demo: pages-sub/layouts/waterfall/waterfall
 added: 0.3.0
 ---
 

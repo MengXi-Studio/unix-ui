@@ -1,7 +1,7 @@
 ---
 title: Calendar
 subtitle: Calendar
-demo: pages-sub/calendar/calendar
+demo: pages-sub/datetime/calendar/calendar
 added: 0.2.0
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: Grid
 subtitle: Grid
-demo: pages-sub/grid/grid
+demo: pages-sub/layouts/grid/grid
 added: 0.2.0
 ---
 

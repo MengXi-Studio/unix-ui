@@ -32,6 +32,14 @@ export type DemoGroup = {
  * 新增组件时在对应分组的 components 中登记一条即可，
  * 首页分组列表与搜索过滤自动生效；演示页路由无需手工登记——
  * 在页面 defineUniPage 宏声明 name / title，pages.json 与路由表由 routeGen 插件生成。
+ *
+ * 分类判据（新增组件按此判定归属，避免反复讨论）：
+ * - 数据录入：产出值的表单原子控件及其形态变体（含 options 枚举的单选 / 多选、搜索、评分、分段控制器）；
+ * - 选择器：从结构化数据源（options 分组 / 层级 children / 远程加载）取值，并同时提供面板 / 弹层 / 输入框形态；
+ * - 日期时间：值域为日期或时刻的控件单独成组（color-picker 仍归数据录入——按数据类型而非交互形态分组）。
+ *
+ * 组体量阈值：单组条目超过 24 项时拆组（如日期时间拆为「日期」「时间」），
+ * 拆分须同步本表、docs 侧栏 zh.ts / en.ts 与工程规范第 6.1 节，保持三处一致。
  */
 export const demoGroups: DemoGroup[] = [
 	{
@@ -92,9 +100,9 @@ export const demoGroups: DemoGroup[] = [
 			},
 			{
 				name: 'layout',
-				zhName: '布局',
-				enName: 'Layout',
-				desc: '24 栅格布局，Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
+				zhName: '栅格布局',
+				enName: 'Row',
+				desc: '24 栅格布局（Row + Col 组合页），Row 提供间距 / 对齐 / 换行控制，Col 支持份数宽度与偏移。'
 			},
 			{
 				name: 'space',
@@ -166,6 +174,66 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '输入框',
 				enName: 'Input',
 				desc: '文本输入框，支持六种类型、清除图标、明文切换、格式化与数字精度收敛、字数统计、多行自适应、前后插槽与紧凑布局联动。'
+			},
+			{
+				name: 'number-keyboard',
+				zhName: '数字键盘',
+				enName: 'NumberKeyboard',
+				desc: '虚拟数字键盘，支持数字 / 小数 / 身份证 / 随机类型，custom 主题右侧栏、禁用键回调与手动打乱。'
+			},
+			{
+				name: 'number-keyboard-popup',
+				zhName: '数字键盘弹出框',
+				enName: 'NumberKeyboardPopup',
+				desc: '数字键盘弹层组合，输入区插槽承载验证码格与金额展示，取消 / 完成后自动关闭。'
+			},
+			{
+				name: 'password-input',
+				zhName: '密码输入格子',
+				enName: 'PasswordInput',
+				desc: '密码 / 验证码格子面板，支持方框与下划线两种风格、mask 圆点隐藏、聚焦光标闪烁、明文、禁用只读与错误提示。'
+			},
+			{
+				name: 'password-input-popup',
+				zhName: '密码输入弹出框',
+				enName: 'PasswordInputPopup',
+				desc: '密码 / 验证码弹层一体化组件，内置格子与数字键盘，v-model:value 自动收敛 maxlength，支持多种键盘类型。'
+			},
+			{
+				name: 'radio',
+				zhName: '单选框',
+				enName: 'Radio',
+				desc: '在一组备选项中进行单选：组容器 + 单项双形态，自绘圆环圆点图标，支持 round / square 形状、颜色 / 大小定制与只读禁用。'
+			},
+			{
+				name: 'radio-input',
+				zhName: '单选输入框',
+				enName: 'RadioInput',
+				desc: '单选框的表单输入形态：只读触发器 + 弹层单选，选中项 label 回显、自绘清空按钮回写 null。'
+			},
+			{
+				name: 'radio-popup',
+				zhName: '单选弹出框',
+				enName: 'RadioPopup',
+				desc: '单选框的弹层形态：底部弹层单选，options 数组驱动渲染 + field-names 映射 + footer 插槽，点选不自动关闭。'
+			},
+			{
+				name: 'rate',
+				zhName: '评分',
+				enName: 'Rate',
+				desc: '评分组件，支持半星、滑动评分、自定义图标 / 颜色 / 尺寸 / 数量、可清空、只读小数展示与禁用。'
+			},
+			{
+				name: 'search',
+				zhName: '搜索',
+				enName: 'Search',
+				desc: '搜索场景输入框，支持圆角 / 背景定制、清除、键盘搜索、取消或搜索按钮、左右图标、错误提示与内容对齐。'
+			},
+			{
+				name: 'segmented',
+				zhName: '分段控制器',
+				enName: 'Segmented',
+				desc: '等分选项的单选控件，支持三档尺寸、胶囊形状、纵向排列、滑块动画、自定义内容插槽、溢出省略与禁用只读。'
 			}
 		]
 	},
@@ -213,6 +281,24 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '选择器纯视图',
 				enName: 'PickerView',
 				desc: '无工具栏的索引受控多列滚轮，配合 m-picker-view-column 与 option 插槽，可嵌入自定义容器。'
+			},
+			{
+				name: 'select',
+				zhName: '列表选择',
+				enName: 'Select',
+				desc: '列表选择面板，支持分组、禁用、本地 / 远程筛选、自定义选项插槽、空态与回到顶部。'
+			},
+			{
+				name: 'select-input',
+				zhName: '列表选择输入框',
+				enName: 'SelectInput',
+				desc: '只读输入框触发器 + 列表选择弹层，回显标签、支持清空、标签映射与只读禁用。'
+			},
+			{
+				name: 'select-popup',
+				zhName: '列表选择弹层',
+				enName: 'SelectPopup',
+				desc: '弹层形态的列表选择，支持标题、筛选、自定义选项与选中不自动关闭。'
 			}
 		]
 	},

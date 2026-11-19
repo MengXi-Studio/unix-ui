@@ -1,7 +1,7 @@
 ---
 title: ColorPicker
 subtitle: 颜色选择器
-demo: pages-sub/color-picker/color-picker
+demo: pages-sub/form/color-picker/color-picker
 added: 0.5.0
 ---
 

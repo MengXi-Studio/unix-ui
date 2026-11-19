@@ -1,7 +1,7 @@
 ---
 title: Waterfall
 subtitle: 瀑布流
-demo: pages-sub/waterfall/waterfall
+demo: pages-sub/layouts/waterfall/waterfall
 added: 0.3.0
 ---
 

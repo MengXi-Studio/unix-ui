@@ -1,7 +1,7 @@
 ---
-title: Layout
-subtitle: 布局
-demo: pages-sub/layout/layout
+title: Row
+subtitle: 栅格布局
+demo: pages-sub/layouts/layout/layout
 added: 0.1.0
 ---
 
@@ -125,4 +125,4 @@ added: 0.1.0
 
 ## 主题定制
 
-Layout 布局无独立主题变量，全局变量见[主题定制](/guide/theming)。
+栅格布局无独立主题变量，全局变量见[主题定制](/guide/theming)。

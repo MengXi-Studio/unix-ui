@@ -1,7 +1,7 @@
 ---
 title: TimePickerInput
 subtitle: TimePickerInput
-demo: pages-sub/time-picker-input/time-picker-input
+demo: pages-sub/datetime/time-picker-input/time-picker-input
 added: 0.6.0
 ---
 

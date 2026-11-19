@@ -1,6 +1,6 @@
 ---
 title: Sticky
-demo: pages-sub/sticky/sticky
+demo: pages-sub/layouts/sticky/sticky
 added: 0.3.0
 ---
 

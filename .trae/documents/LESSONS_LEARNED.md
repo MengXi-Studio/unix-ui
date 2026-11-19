@@ -137,7 +137,7 @@
 ### 25. 演示页产物必须本机 build:demo 后入库，CI 不会构建 playground
 - 根因：deploy-docs.yml 只跑 `build:docs`，HBuilderX 无 Linux 版导致 CI 无法构建 playground，线上 `/unix-ui/playground/**` 深链全 404（文档站手机预览 iframe 显示 uni-app x 404 页）
 - 约定：playground 演示页变更后必须 `pnpm run build:demo` 重新产出并提交 `packages/docs/src/public/playground/`（产物 gitignore 已移除），push 后 CI 随文档一起部署
-- 产物自检：`pages-sub/<name>/<name>/index.html` 深链目录 + 根 404.html 必须存在；构建日志「资源路径补前缀：0 个文件」属正常（vite base 已生效，rewriteBase 是兜底）
+- 产物自检：`pages-sub/<分类>/<name>/<name>/index.html` 深链目录 + 根 404.html 必须存在；构建日志「资源路径补前缀：0 个文件」属正常（vite base 已生效，rewriteBase 是兜底）
 - 本地验收链路：`node packages/docs/node_modules/vitepress/bin/vitepress.js preview` → curl 深链/docs 页/资源均 200 → browser_evaluate 读 iframe 内文本确认渲染按钮演示而非 404
 
 ### 26. HBuilderX CLI publish 会静默改写 manifest.json（appid 重置 + vapor 配置移除）
@@ -565,3 +565,102 @@
 - **排查方法**：对每个 `.uvue` 的 `<script` 之后区域，按 `^\s*function (\w+)` 收集定义行，再扫描其前的调用行；模板中的事件引用不计入
 - **日志中的 `DatePickerOption` / `TimePickerOption` / `LunarPickerOption` unresolved 属跨界 type 依赖问题**：popup / input / range 三件套只导入了 `XxxFormatter` / `XxxFilter` 这些**引用 Option 的 type 别名**，UTS 生成 Kotlin 时把别名展开却不为被引用的 Option 生成 import，导致 `Unresolved reference`。修法是在这些文件的 import 列表里**显式加入 Option 类型**（即使源码不直接使用），让编译器生成对应 Kotlin import；`PickerOption` 能正常解析正是因为它被各组件显式 import
 - **`Any?` 与泛型推断错误多来自跨文件类型别名与 `ref` 元素访问**：`Cannot infer type argument for 'E'` 出现在未标注参数类型的 `map` / `filter` 回调；`Unresolved reference 'length'` 往往意味着上游表达式被推断为 `Any?`（先查该变量/返回值是否缺少显式类型标注）
+
+### 92. 向 m-icon 字体新增字形的两个致命坑（2026-11-17 数字键盘退格图标）
+- **字体源文件是 `packages/core/static/m-icon.ttf`**，`components/m-icon/m-icon-font.uts` 只是它的 base64 产物（小程序 `loadFontFace` 用）。改字形后必须两者同时更新并 `pnpm sync:uni-modules`
+- **坑 1：TTGlyphPen 只接受整数坐标**。SVG path 经 `TransformPen` 缩放后是小数，直接写入会产出畸形 glyf；浏览器表现极具迷惑性——HTTP 200、`fontTools` 能正常读取、控制台无报错，但 `document.fonts` 状态为 `error`、`FontFace` 报 "A network error occurred"、所有图标一起变空白。修法：`TransformPen → RoundingPen → TTGlyphPen`
+- **坑 2：TrueType 只支持二次贝塞尔**。SVG path 的三次曲线（`a` 圆弧也会转成三次）若直接进 `TTGlyphPen`，fontTools 会写 `flagCubic(0x80)`，浏览器 OTS 判定「Bad glyph flag, reserved bit 7 must be set to zero」并拒绝整个字体。修法：`Cu2QuPen(RoundingPen(TTGlyphPen), max_err=1.0, all_quadratic=True)`
+- **本地先用 OTS 校验，别靠浏览器试错**：`pip install --user opentype-sanitizer` 后调用 `~/Library/Python/3.9/lib/python/site-packages/ots/ots-sanitize in.ttf out.ttf`，失败会打印具体表与字形号
+- **写字形顺序**：先 `font.setGlyphOrder(order + [name])`，再 `font["glyf"][name] = glyph`、`font["hmtx"][name] = (adv, lsb)`；反序会触发 `maxp.recalc` 的 `len(glyphOrder) == len(glyphs)` 断言
+- **cmap 只写 format 4 / 12**：format 0 子表仅容纳 0-255，写 PUA 码点会在保存时抛 `assert set(cmap.keys()).issubset(range(256))`
+- **字体验证要硬刷新**：`/static/m-icon.ttf` 无内容哈希，浏览器强缓存旧文件；改字体后必须 Ctrl+Shift+R 才能看到效果
+
+## 2026-11-17 m-password-input 密码输入格子（密码/验证码场景，与 keyboard 配合）
+
+### #93 UTS 禁止函数形式 ref 绑定
+- **现象**：写 `:ref="(el, k) => { if (k === 0) cursorRef = el }"` 编译器报错或 runtime 不生效
+- **原因**：UTS（Kotlin 编译目标）不支持函数形式 ref 绑定；项目里所有组件的 ref 绑定都是普通字符串形式 `ref="spinnerRef"` + `const spinnerRef = ref<UniElement | null>(null)`
+- **修法**：改成 `ref="cursorRef"` 模板绑定 + `const cursorRef = ref<UniElement | null>(null)`。同一时刻只渲染一个光标 view（v-else-if 条件渲染），普通 ref 足够。watch 里用 `flush: 'post'` + `setTimeout` 确保 DOM 渲染后 ref 就绪
+
+### #94 uni-app x 全局类型无需 import
+- **现象**：`import type { UniAnimationKeyframe } from '@dcloudio/uni-app'` 编译器警告 "unused import" 或 runtime 找不到类型
+- **原因**：`UniElement`、`UniAnimationKeyframe`、`UniAnimation` 等是 uni-app x 全局类型（类似全局 JS 类型），直接使用即可，无需 import
+- **修法**：删除 import 语句，模板和 script 里直接用类型名（m-loading、m-color-picker 等项目内组件都是这么写的）
+
+### #95 SCSS 变量写进 script 是 undefined（样式全体失效 + setup 抛错）
+- **现象**：password-input 首版在 `<script>` 里拼内联样式引用 `$m-password-input-cursor-width` 等 SCSS 变量，web 编译日志出现几十条 `Cannot find name '$m-...'` 错误；页面渲染降级——格子不等分、圆点/光标不可见、明文字符错位
+- **原因**：SCSS 变量只在 `<style>` 块的编译期存在，UTS script 里的 `$m-...` 是未定义标识符；运行时取值 undefined → 拼出的内联 style 全部非法被丢弃
+- **修法**：静态样式（圆点/光标/文字/提示）全部移到 `<style>` 扁平 class；script 里只允许 props 驱动的 number 值拼接（如 gap margin）
+- **推论**：聚焦高亮等复合选择器 `.a.b` 拆成运行时拼接的扁平类（`--bordered-active`），ucss 无复合选择器对账
+
+### #96 el.animate 在 web 端不存在；el.style.setProperty 在 web 端 UniElement 代理上无效
+- **现象**：web 端控制台 `Uncaught TypeError: el.animate is not a function`（m-loading 同样写法，web 端动画实际没跑起来）；改用 `el.style.setProperty('opacity', ...)` 降级后 style attribute 仍为空（采样两次 opacity 恒为默认值）
+- **原因**：`UniElement.animate` 只在 App 端实现；web 端 UniElement 的 style 是代理对象，setProperty 不映射到 DOM style attribute
+- **修法**：闪烁类"状态切换动画"统一用 **setInterval 半周期切换响应式 ref + 模板拼 hidden class**——纯 Vue 响应式，零 DOM 操作，全平台一致，无需条件编译
+- **验证**：250ms 采样序列 `true,false,false,true,true,false` 有翻转即闪烁正常
+
+## 2026-11-17 m-radio 单选框四件套（自绘圆环图标，对标 Vant Radio）
+
+### #97 ucss 中 border-width 必须伴随显式 border-style: solid 才渲染
+- **现象**：演示页自定义图标 `.custom-icon` 只写 `border-width: 1px; border-color: #c8c9cc`，圆环边框不渲染（200% 缩放截图确认只有灰点无圈）；补 `border-style: solid` 后边框立即可见
+- **原因**：ucss 的 border-style 默认值为 `none`（与 W3C 一致），只设 width/color 时边框整体不绘制；且 uni-app x web 运行时 `getComputedStyle` 对 border-width 返回误导性 `0px`（即使实际渲染正常，如 `.m-radio__ring` 三件套齐写时边框可见但 computed 仍报 0）——**样式验证一律以截图视觉为准，不信任 web 端 computed 测量**
+- **修法**：任何描边元素三件套齐写：`border-width` + `border-style: solid` + `border-color`
+
+### #98 禁用态视觉禁用「透明度叠加浅色描边」方案
+- **现象**：radio 禁用态首版用 icon 容器 `opacity: 0.5`，但未选外环本就是浅灰（#c8c9cc），叠加后与可选态肉眼无差异（用户验收截图打回）；另一隐藏坑：弹层选项文字走 default 插槽显式色，label 禁用色类挂在外层 view 上根本罩不住
+- **修法**：Vant 同款显式方案——禁用未选 = 外环灰底填充（`$m-radio-icon-disabled-background`），禁用选中 = 环点退灰（`$m-radio-icon-disabled-color`，checkedColor 覆盖在禁用态短路）；插槽文字禁用色须在**文字元素本层**加变体类（`m-radio-popup__label--disabled`），挂父层无效
+- **推论**：默认态描边越浅，禁用态越要用「填充/换色」而非「透明度」表达；凡经插槽显式设置文字色的组件，禁用变体类必须给到 text 本层
+
+### #99 m-checkbox 未选态实色勾的隐匿成因：字形缺失期视觉「碰巧正确」
+- **现象**：checkbox 上线以来未选态一直「显示为空框」，0.7.0 重新生成 m-icon 字体（#92）后用户截图暴露未选项渲染蓝色实色勾
+- **根因**：m-checkbox 未选与选中渲染的是同一个 `m-icon 'success'` 字形，无任何分支区分——早期字体里 success 字形缺失（#92 之前字体生成有缺陷），未选/选中一起不可见，未选态「碰巧」看着像空框才通过验收；字体修好后勾形显形，错误才浮现
+- **修法**：未选 = 描边空框（round 圆环 / square 圆角方框 view），选中 = 实心填充 + 白勾（v-else-if 只在选中渲染 success），indeterminate = 实心底 + 白横杠（60% 宽白杠，替换原 inline calc 方案）
+- **教训**：依赖字体图标的「条件视觉」必须在字形可见的真实状态下验收；组件状态分支不能共用同一字形而无样式区分，验收截图要覆盖全部状态组合（尤其「未选」这种默认态）
+
+### #100 inlaid 嵌入 flex 行容器的拉伸必须加在组件根节点，且只用 grow 不动 basis
+- **现象**：m-input inlaid 嵌入 m-cell__value 后，值区剩余宽度（标题与输入框之间的空隙，实测 503px 值区 vs 151px 控件）点击无反应——0.6.0 的修复只给控件层加了 min-height（高度塌陷），宽度塌陷漏修；演示页用 `custom-style="flex: 1"` 补偿也无效
+- **根因**：m-input 模板是「根（.m-input，无宽高约束）→ body（flex:1）」两层，custom-style 落在 body 层——body 的 flex:1 只在根收缩出的 151px 内部分配，等于没生效；**使用者侧 custom-style 够不到组件根节点**
+- **修法**：inlaid 时根节点加 `m-input--inlaid-root { flex-grow: 1; flex-shrink: 1; flex-basis: auto; }`——只用 grow 不用 `flex: 1` 简写（basis 0% 会在 column + auto 高度容器中塌陷高度，uni-app x 所有 view 默认 flex column，* -input 组合组件内嵌 m-input 时正是这种容器）；basis auto 下 grow 只吃剩余空间，cell 内兄弟节点（箭头等）不被挤压
+- **教训**：两层容器组件（根 + 视觉主体）的拉伸属性必须加在「父级 flex 容器的直接子项」即根上；`flex: 1` 简写 ≠ `flex-grow: 1`，在不确定父级主轴方向时显式展开并保留 basis auto 最稳
+
+### #101 uni-h5 scroll-view 的空触点 touchmove 会抛 pageX TypeError（嵌套滚动必踩）
+- **现象**：m-select-input 演示页偶发 `Uncaught TypeError: Cannot read properties of undefined (reading 'pageX')`，来源 `uni-h5.es.js`；人工点击流程无法稳定复现
+- **根因**：uni-h5 的 scroll-view `touchmove` 处理器直接读 `event.touches[0].pageX`，没有 `touches.length` 判断；嵌套滚动（弹层内列表 + 页面 scroll-view）在快速甩动或手势被浏览器接管时会派发 `touches` 为空的 touchmove，于是 `undefined.pageX`
+- **验证方式**：在列表 `.uni-scroll-view` 上派发「1 触点 touchstart + 空 touches touchmove」，稳定 100% 复现（同一机制同理可验证修复）
+- **修法**：在组件内（m-select）于 Web 端 `window` **捕获阶段**监听 touchmove，`touches.length == 0` 时 `stopPropagation()`，事件在进入框架处理器前被拦截；`#ifdef WEB` 隔离，组件卸载时移除监听
+- **教训**：uni-h5 内置组件对触摸事件的容错不可假设；凡是「嵌套 scroll-view + 触摸交互」的组件，验收必须包含空触点/中断手势的合成事件测试，不能只测点击流程
+
+### #102 watch 的元组 getter 会让云打包 Kotlin 编译失败（Web 完全不报错）
+- **现象**：云打包 `:app:kaptGenerateStubsReleaseKotlin` 失败，报 `m-password-input.kt:156 Type expected / Expecting an element / Unexpected tokens`，Web 端运行一切正常
+- **根因**：`watch((): [boolean, number] => [props.focused, activeIndex.value], ...)` 被 uts 编译器翻译成 Kotlin 的 `fun(): [Boolean, Number]`——Kotlin 没有 `[T]` 这种类型语法（合法写法是 `Array<Any>`），连带后续 `fun(_: [Boolean, Number])`、元组字面量一起解析失败
+- **定位方式**：`cli publish app-android --type appResource --project <playground 绝对路径>` 可**本地生成** Kotlin 源码到 `packages/playground/unpackage/resources/app-android/uniappx/app-android/src/...`，直接打开对应 `.kt` 即可看到非法代码，无需等云端打包
+- **修法**：拆成两个单值 watch（`(): boolean`、`(): number`）共用一个 `syncCursorAnimation()`；或在注释中标注该约束
+- **教训**：watch getter 只返回单值；凡是改动 watcher / 多值派生逻辑，验收必须包含「本地生成 app-android 资源 + 检查生成 Kotlin 无 `: [` 等非法类型语法」，仅过 Web 编译不能作为 Android 通过的依据
+
+### #103 getCurrentInstance() 只能在 setup/生命周期内取，$callMethod 与事件处理器路径都会拿到 null
+- **现象**：微信小程序端 `m-color-picker-popup` 打开弹层必崩：`TypeError: Cannot read properties of null (reading 'proxy')`（issue #20）；Web 完全正常
+- **根因**：`measureNode` 内**调用时**执行 `getCurrentInstance()`。父组件 `$callMethod('refresh')` 与触摸/点击处理器都属于 setup 之后的执行上下文，返回 null
+- **修法**：`#ifdef MP` 在 setup 顶层一次性 `const mpInstance = getCurrentInstance()`，后续只用引用（与 m-fab / m-tabs 一致）
+- **自查结论**：`m-color-picker`、`m-rate` 各有一处调用时取值，均已改为 setup 捕获；库内其余 `getCurrentInstance` 均已在 setup 作用域
+- **教训**：凡是可能被 `$callMethod` 调用或事件处理器调用的函数，禁止内部再取 `getCurrentInstance()`；小程序端验收须覆盖「父组件调用子组件方法」这条路径，Web 无法暴露该问题
+
+### #104 UTS 函数提升在 Kotlin codegen 三处失效：前向引用、alias+数组联合形参、$slots.default 属性访问（第二轮云打包错误全记录）
+- **现象**：第二轮云打包 `compileReleaseKotlin` 报 17 处错误，波及 6 个演示页 + 5 个组件，Web 端全部正常。三类根因：
+  1. **Kotlin 局部函数禁前向引用**：UTS/JS 函数声明有提升（先调用后声明合法），但 codegen 按源码声明顺序生成 Kotlin 局部函数 / `val xxx = ::gen_xxx_fn`，先使用后声明直接 `Unresolved reference`。命中：m-select 的 `itemClass`→`isSelected`、m-select-input 的 `displayLabel` computed→`labelOf`、m-password-input 的 `startCursorAnimation`→`stopCursorAnimation`，以及演示页 computed→`valuesText`
+  2. **type alias 与数组联合的组合形参让 codegen 静默丢弃整个函数**：`function onSelectValueChange(v: RadioValue | RadioValue[])` 不生成任何 Kotlin（渲染层引用报 `Function invocation expected`）；形参展开为 `string | number | string[] | number[]` 后正常生成 `v: Any`。演示页 `@change="logMulti"` 函数名直传同样报 invocation expected（UTS 红线「函数声明不能作值传递」），内联调用 `logMulti($event)` 后正常
+  3. **`default` 是 Kotlin 保留字**：模板 `$slots.default != null` 生成的反引号转义失效（`Unresolved 'default'`），改索引访问 `$slots['default'] != null`
+- **另确认两条 codegen 规律**：
+  - watch 单表达式 source 无显式返回类型注解时 Kotlin 报 `Return type mismatch: expected 'Unit', actual 'String'/'Boolean'`；显式注解 `(): string => props.xxx`（radio-group 写法）正常
+  - codegen 对组件事件处理器的模板内联 `$event` 一律生成 `fun($event: Any)`（与组件 emit 声明的 payload 类型无关）——演示页日志函数形参必须 `any | null` 内部 cast（radio / checkbox 页早已是此写法所以从未报错）
+- **验证方式**：`cli publish app-android --type appResource` 本地生成 Kotlin，grep 复查：`gen_xxx_fn` 生成情况、`"onChange" to 函数名` 直传残留、`$slots` 访问形态、`as RadioValue | ` 联合 cast 残留
+- **教训**：① 组件内函数声明顺序按调用依赖拓扑排（被调用者在前）；② 事件/透传函数形参禁用「type alias + 数组联合」组合，写具体展开联合；③ 模板绑定组件事件一律内联 `$event` 调用；④ `$slots.xxx` 一律索引访问；⑤ watch source 一律显式返回类型注解；⑥ 演示页事件日志函数形参一律 `any | null`；⑦ 仅 Web 编译通过不能作为 Android 通过依据，改动后必须本地生成 Kotlin grep 复查
+
+### #105 演示页按分类拆分子包：路由 name 不变，但文档 frontmatter 与 build-demo 深链扫描必须同步
+- **背景**：67 个演示页由 `pages-sub/<name>/` 迁到 `pages-sub/<分类>/<name>/`（basic / layouts / form / pickers / datetime / feedback / display / nav），`vite.config.ts` 的 `subPackages` 拆成 8 项（root 与 dir 同名）
+- **关键结论**：
+  1. **路由 name 不变**：routeGen 的 `name` 取页面 `defineUniPage` 宏声明，不由目录派生；首页 `router.push({ name })` 与 `demo-components.uts` 零改动。只有 `path` 变为三段
+  2. **组目录不能与页面目录同名**：`pages-sub/layout`、`pages-sub/picker` 本身就是页面目录，无法再作组目录 → 组名改用 `layouts` / `pickers`（否则出现 `layout/layout/layout` 且 mv 冲突）
+  3. **文档 frontmatter 必须同步**：`demo: pages-sub/<name>/<name>` 共 134 处（中英各 67），`DemoPhone.vue` 直接用它拼 iframe 的 history 路由，漏改即文档站演示区 404
+  4. **`scripts/build-demo.mjs` 深链扫描只认两层**：`collectDemoPages` 写死 `readdirSync(base)` + `<name>/<name>.uvue`，页面变三层后返回空数组 → 在线演示全部 404 且**构建日志不报错**（只有 `public/playground/pages-sub` 目录整个消失才能发现）。已改为递归扫描
+- **排查信号**：`build:demo` 输出「完成（N 个文件）」但 N 未随页面数增加、`public/playground/pages-sub` 不存在或缺少分类子目录
+- **教训**：① 路由结构变更后要同时核对四处：`pages.json` 分包、`routes.gen.uts` path、文档 frontmatter、演示产物深链；② 静态产物生成脚本里的路径约定要写成递归，不要写死层级；③ 批量 `git mv` 用 Node 或显式数组，zsh 中 `${var#*:}` 不做分词会把整串当单个路径；④ 页面物理位置变更属「构建产物必须重建」变更，`pnpm build:demo` 与 `build:docs` 都要重跑并提交产物

@@ -1,7 +1,7 @@
 ---
 title: ColorPickerPopup
 subtitle: 颜色选择器弹出框
-demo: pages-sub/color-picker-popup/color-picker-popup
+demo: pages-sub/form/color-picker-popup/color-picker-popup
 added: 0.5.0
 ---
 

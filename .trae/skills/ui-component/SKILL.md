@@ -30,7 +30,7 @@ description: 按 unix-ui 既定标准流程开发新 UI 组件或扩展既有组
 ## 3. 同步与演示页
 
 - `pnpm sync:uni-modules` 同步到 playground；**禁止**手改 `playground/uni_modules/m-ui-x/` 下的 `components/`、`theme/`（同步即覆盖丢失；该目录仅 `package.json`、`changelog.md` 为手工维护）。
-- 演示页 `packages/playground/pages-sub/<name>/<name>.uvue` + `pages.json` 注册；一页穷举 props / 变体 / 事件，便于截图验收。
+- 演示页 `packages/playground/pages-sub/<分类>/<name>/<name>.uvue`（分类：basic / layouts / form / pickers / datetime / feedback / display / nav）+ `pages.json` 注册；一页穷举 props / 变体 / 事件，便于截图验收。
 
 ## 4. 双语文档
 

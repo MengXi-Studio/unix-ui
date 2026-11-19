@@ -1,7 +1,7 @@
 ---
 title: DatePickerPopup
 subtitle: 日期选择弹出框
-demo: pages-sub/date-picker-popup/date-picker-popup
+demo: pages-sub/datetime/date-picker-popup/date-picker-popup
 added: 0.6.0
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: StatusBar
-demo: pages-sub/status-bar/status-bar
+demo: pages-sub/layouts/status-bar/status-bar
 added: 0.3.0
 ---
 

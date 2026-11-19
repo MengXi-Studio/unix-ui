@@ -1,7 +1,7 @@
 ---
 title: TimeRangePickerInput
 subtitle: TimeRangePickerInput
-demo: pages-sub/time-range-picker-input/time-range-picker-input
+demo: pages-sub/datetime/time-range-picker-input/time-range-picker-input
 added: 0.6.0
 ---
 

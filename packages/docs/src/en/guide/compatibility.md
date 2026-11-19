@@ -5,7 +5,7 @@
 | Platform | Status | Notes |
 | --- | --- | --- |
 | Web (H5 / desktop browsers) | Every component verified | The demo site runs on Web, where all variants can be exercised |
-| App · Android | Supported | A cloud-built APK is available, see [Installation](/en/guide/installation#try-it-on-a-device) |
+| App · Android | Supported | A cloud-built APK is available, see [Installation](/en/guide/installation#try-it-on-a-device); 0.7.0 fixed two rounds of Kotlin compile errors and repackaged |
 | App · iOS | Supported | Shares the same uvue sources as Android |
 | App · HarmonyOS | Supported | Depends on the native renderer of the matching HBuilderX version |
 | WeChat / Alipay mini programs | Supported (with limits) | See "Known limitations" below |
@@ -37,6 +37,7 @@ The library is compatible with uni-app x [vapor mode](https://doc.dcloud.net.cn/
 
 ## Known limitations
 
+- **Kotlin compile constraints on App**: UTS function declarations behave as if hoisted on Web, but the generated Kotlin local functions do not allow forward references (callees must be declared first); a `type alias` combined with an array union as a parameter type, or accessing Kotlin keywords such as `$slots.default` as properties, will break the cloud build. The library already follows these constraints internally — keep them in mind when writing your own components, and run `cli publish app-android --type appResource` locally to inspect the generated Kotlin early.
 - **Named slots in mini programs**: when a same-named slot is used inside `v-for`, only the first instance takes effect, so per-column / per-item slots such as `option` are unavailable on mini programs and columns fall back to built-in text rendering; Web and App are unaffected.
 - **Scroll snapping feel**: snapping in wheel components relies on each platform's `UniElement` implementation, so inertia on real devices differs slightly from Web — a platform trait.
 - **Lunar range**: conversion data covers 1900–2100; Gregorian dates outside the range are clamped to the boundary.

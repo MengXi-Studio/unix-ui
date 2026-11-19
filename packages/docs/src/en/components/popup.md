@@ -1,6 +1,6 @@
 ---
 title: Popup
-demo: pages-sub/popup/popup
+demo: pages-sub/feedback/popup/popup
 added: 0.2.0
 ---
 

@@ -1,12 +1,12 @@
 <template>
 	<!-- 复选框：图标 + 文本。组内（有 name 且 bind-group）经上下文参与勾选；
-	     独立使用自持 boolean 状态。图标勾选态用 m-icon 'success'，
-	     不确定态画横杠（indeterminate），禁用态降透明度。 -->
+	     独立使用自持 boolean 状态。未选为描边空框（round 圆环 / square 方框），
+	     选中实心填充 + 白勾（m-icon 'success'），不确定态实心底白横杠，禁用态降透明度。 -->
 	<view :class="rootClass" :style="customStyle" @click="onClick">
 		<view :class="iconWrapClass" :style="iconWrapStyle" @click="onIconClick">
 			<slot name="icon" :checked="isChecked" :disabled="isDisabled">
-				<view v-if="indeterminate" class="m-checkbox__indeterminate" :style="indeterminateStyle"></view>
-				<m-icon v-else name="success" :style="iconStyle" custom-class="m-checkbox__icon" />
+				<view v-if="indeterminate" class="m-checkbox__indeterminate"></view>
+				<m-icon v-else-if="isChecked" name="success" custom-class="m-checkbox__check" :style="checkStyle" />
 			</slot>
 		</view>
 		<view v-if="showLabel" class="m-checkbox__label" :class="labelClass" :style="labelStyle" @click="onLabelClick">
@@ -151,38 +151,41 @@
 		return cls
 	})
 
-	/** 图标容器类名（整体禁用时降透明度；ucss 不支持后代选择器，禁用态直接挂在本节点） */
+	/** 图标框类名：未选描边空框（round 圆环 / square 圆角方框），选中或不确定态实心填充 */
 	const iconWrapClass = computed<string>(() => {
-		return isDisabled.value ? 'm-checkbox__icon-wrap m-checkbox__icon-wrap--disabled' : 'm-checkbox__icon-wrap'
-	})
-
-	/** 图标容器内联样式：icon-size 直达容器宽高（默认走主题类） */
-	const iconWrapStyle = computed<string>(() => {
-		const size = effectiveIconSize.value
-		if (size != '') {
-			return 'width: ' + size + '; height: ' + size + ';'
+		let cls = 'm-checkbox__icon-wrap'
+		if (effectiveShape.value == 'square') {
+			cls += ' m-checkbox__icon-wrap--square'
+		} else {
+			cls += ' m-checkbox__icon-wrap--round'
 		}
-		return ''
+		if (isChecked.value || props.indeterminate) cls += ' m-checkbox__icon-wrap--checked'
+		if (isDisabled.value) cls += ' m-checkbox__icon-wrap--disabled'
+		return cls
 	})
 
-	/** 勾选图标内联样式：选中时用 checkedColor 覆盖主题色 */
-	const iconStyle = computed<string>(() => {
+	/** 图标框内联样式：icon-size 直达框宽高（默认走主题类）；选中且配置 checkedColor 时填充与描边同步覆盖 */
+	const iconWrapStyle = computed<string>(() => {
 		let style = ''
 		const size = effectiveIconSize.value
-		if (size != '') style += ' font-size: ' + size + ';'
-		if (isChecked.value && effectiveCheckedColor.value != '') {
-			style += ' color: ' + effectiveCheckedColor.value + ';'
+		if (size != '') {
+			style += 'width: ' + size + '; height: ' + size + ';'
+		}
+		if ((isChecked.value || props.indeterminate) && effectiveCheckedColor.value != '') {
+			style += ' background-color: ' + effectiveCheckedColor.value + '; border-color: ' + effectiveCheckedColor.value + ';'
 		}
 		return style
 	})
 
-	/** 不确定态横杠内联样式（宽高随图标尺寸同步；选中色未设置时回退主题变量色） */
-	const indeterminateStyle = computed<string>(() => {
-		const size = effectiveIconSize.value != '' ? effectiveIconSize.value : '20px'
-		const color = effectiveCheckedColor.value != '' ? effectiveCheckedColor.value : '$m-checkbox-icon-color'
-		let style = 'width: calc(' + size + ' * 0.6); height: 2px;'
-		if (effectiveCheckedColor.value != '') style += ' background-color: ' + effectiveCheckedColor.value + ';'
-		return style
+	/** 勾图标内联样式：icon-size 自定义时按 0.6 比例换算勾字号（默认走主题类） */
+	const checkStyle = computed<string>(() => {
+		const size = effectiveIconSize.value
+		if (size == '') return ''
+		const numStr = size.endsWith('px') ? size.slice(0, size.length - 2) : size
+		const n = parseFloat(numStr)
+		if (isNaN(n)) return ''
+		const fs = n * 0.6
+		return 'font-size: ' + fs.toString() + 'px;'
 	})
 
 	/** 是否显示文本区（default 插槽优先；无插槽且组内有 name 时显示 name 文本） */
@@ -297,16 +300,50 @@
 		align-items: center;
 	}
 
-	/* 勾选图标：未选中描边圆 / 方，选中实心主题色 */
-	.m-checkbox__icon {
-		font-size: $m-checkbox-icon-size;
-		color: $m-checkbox-icon-color;
+	/* 图标框：未选为描边空框（三件套齐写，border-style 缺省 none 不渲染），选中 / 不确定态实心填充 */
+	.m-checkbox__icon-wrap {
+		width: $m-checkbox-icon-size;
+		height: $m-checkbox-icon-size;
+		border-width: $m-checkbox-box-border-width;
+		border-style: solid;
+		border-color: $m-checkbox-box-border-color;
+		justify-content: center;
+		align-items: center;
 	}
 
-	/* 不确定态横杠（颜色由 inline 指定，未设置时回退主题变量） */
-	.m-checkbox__indeterminate {
+	/* 圆形框（默认形状） */
+	.m-checkbox__icon-wrap--round {
+		border-radius: 50%;
+	}
+
+	/* 方形框 */
+	.m-checkbox__icon-wrap--square {
+		border-radius: $m-checkbox-box-radius;
+	}
+
+	/* 选中 / 不确定态：实心填充 */
+	.m-checkbox__icon-wrap--checked {
 		background-color: $m-checkbox-icon-color;
+		border-color: $m-checkbox-icon-color;
+	}
+
+	/* 整体禁用：降透明度 */
+	.m-checkbox__icon-wrap--disabled {
+		opacity: $m-checkbox-disabled-opacity;
+	}
+
+	/* 选中态白勾 */
+	.m-checkbox__check {
+		color: $m-white;
+		font-size: $m-checkbox-check-icon-size;
+	}
+
+	/* 不确定态白横杠 */
+	.m-checkbox__indeterminate {
+		width: 60%;
+		height: 2px;
 		border-radius: 1px;
+		background-color: $m-white;
 	}
 
 	/* 文本区 */

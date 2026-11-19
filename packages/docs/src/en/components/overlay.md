@@ -1,6 +1,6 @@
 ---
 title: Overlay
-demo: pages-sub/overlay/overlay
+demo: pages-sub/feedback/overlay/overlay
 added: 0.2.0
 ---
 

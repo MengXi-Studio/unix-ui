@@ -1,7 +1,7 @@
 ---
 title: TimePickerPopup
 subtitle: 时间弹出框
-demo: pages-sub/time-picker-popup/time-picker-popup
+demo: pages-sub/datetime/time-picker-popup/time-picker-popup
 added: 0.6.0
 ---
 

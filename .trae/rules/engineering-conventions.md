@@ -40,7 +40,7 @@ packages/docs（VitePress 双语文档站，手工维护）
 1. **组件源**：`packages/core/components/<m-name>/<m-name>.uvue`（组合式 API；`<style lang="scss">` **必须显式声明 lang**；style 顶层无条件 `@import '../../theme/vars.scss'`——组件目录固定两层，相对路径写死两级）。
 2. **主题变量**：`packages/core/theme/vars.scss` 新增 `$m-<component>-*` 段，全部 `!default`；已有变量禁止改默认值（破坏用户覆盖契约）。
 3. **同步**：`pnpm sync:uni-modules`。
-4. **演示页**：`packages/playground/pages-sub/<name>/<name>.uvue`，页面 script setup 顶部 `defineUniPage({ title: '中文名 English', name: '<kebab-name>' })`（routeGen 插件据此自动生成 pages.json 条目与 `router/routes.gen.uts` 路由表，产物提交 git）；同时在 `pages/index/demo-components.uts` 登记条目（name 与宏一致）。一页穷举该组件全部 props / 变体 / 事件，便于截图验收。
+4. **演示页**：`packages/playground/pages-sub/<分类>/<name>/<name>.uvue`（分类取分包目录：`basic` / `layouts` / `form` / `pickers` / `datetime` / `feedback` / `display` / `nav`，与首页分组一一对应），页面 script setup 顶部 `defineUniPage({ title: '中文名 English', name: '<kebab-name>' })`（routeGen 插件据此自动生成 pages.json 条目与 `router/routes.gen.uts` 路由表，产物提交 git）；同时在 `pages/index/demo-components.uts` 登记条目（name 与宏一致）。一页穷举该组件全部 props / 变体 / 事件，便于截图验收。
 5. **文档**：`packages/docs/src/components/<name>.md`（中文）与 `src/en/components/<name>.md`（英文）双份同步维护；更新 `.vitepress/config/zh.ts` 与 `en.ts` 侧栏。
 6. **验证**：见第 6 节，达到 core-protocol DoD 方可声称完成。
 
@@ -69,7 +69,7 @@ packages/docs（VitePress 双语文档站，手工维护）
 | 组件实现 | `packages/core/components/<m-name>/` |
 | 公共工具函数 | `packages/core/utils/<name>.uts`（入口）+ `packages/core/utils/<name>/`（内部分层） |
 | 主题变量 | `packages/core/theme/vars.scss` |
-| 组件演示页 | `packages/playground/pages-sub/<name>/` |
+| 组件演示页 | `packages/playground/pages-sub/<分类>/<name>/` |
 | 演示页路由声明 | 页面内 `defineUniPage` 宏（pages.json 与 `router/routes.gen.uts` 由 routeGen 插件生成，`router/router.config.uts` 仅存别名等显式扩展） |
 | 插件元数据（id / changelog） | `playground/uni_modules/m-ui-x/` 的 KEEP 文件 |
 | 使用文档 | `packages/docs/src/`（zh 主包 + `en/` 镜像） |
@@ -83,6 +83,8 @@ packages/docs（VitePress 双语文档站，手工维护）
 - **组内按组件名字母序升序**：`playground/pages/index/demo-components.uts` 各分组的 `components` 数组、文档侧栏 `docs/.vitepress/config/zh.ts` 与 `en.ts` 各分组的 `items`，一律按组件名（kebab-case 小写标识，对应 `name`）字母升序排列；分组之间的先后顺序固定为「基础 → 布局 → 数据录入 → 选择器 → 日期时间 → 反馈 → 数据展示 → 导航」，禁止按新增时间追加到组末。
 - **三处同序**：同一分组的组件顺序在 `demo-components.uts`、`zh.ts`、`en.ts` 中必须完全一致（中英文侧栏的英文项目名也同序），新增组件须插入到正确位置而非追加。
 - 示例（数据录入组）：`checkbox → checkbox-input → checkbox-popup → color-picker → color-picker-input → color-picker-popup → input`；示例（选择器组）：`cascader → cascader-input → cascader-popup → picker → picker-input → picker-popup → picker-view`。
+- **分类判据**：数据录入 = 产出值的表单原子控件及其形态变体（含 options 枚举的单选 / 多选、搜索、评分、分段控制器）；选择器 = 从结构化数据源（options 分组 / 层级 children / 远程加载）取值且同时提供面板 / 弹层 / 输入框形态；日期时间按值域单独成组（`color-picker` 归数据录入，按数据类型而非交互形态分组）。
+- **组体量阈值**：单组条目超过 24 项时拆组（如日期时间拆为「日期」「时间」），拆分须同步 `demo-components.uts`、`zh.ts` / `en.ts` 侧栏与本规范，保持三处一致。
 
 ## 7. 验证（core-protocol DoD 的项目级补充）
 

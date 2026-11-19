@@ -126,7 +126,7 @@ For all available variables see [theme/vars.scss](./theme/vars.scss), named as `
 
 ## Components
 
-65 components in total (including sub-components and variants), organized into 8 categories that mirror the documentation sidebar. Each row lists the tag and its core capabilities; see the [component reference](https://mengxi-studio.github.io/unix-ui/en/components/button.html) for full APIs.
+79 components in total (including sub-components and variants), organized into 8 categories that mirror the documentation sidebar, alphabetically ordered within each category. Each row lists the tag and its core capabilities; see the [component reference](https://mengxi-studio.github.io/unix-ui/en/components/button.html) for full APIs.
 
 ### Basic Components
 
@@ -156,48 +156,61 @@ For all available variables see [theme/vars.scss](./theme/vars.scss), named as `
 | Component | Description |
 | --- | --- |
 | `m-checkbox` / `m-checkbox-group` | Checkbox: group container + standalone item, shape / color / size customization, max limit, indeterminate state |
-| `m-checkbox-popup` | Checkbox popup: bottom-sheet multi-select, options array driven, field-names mapping, footer slot |
 | `m-checkbox-input` | Checkbox input: read-only trigger + popup multi-select, "、" joined echo, truncation over 2 items, custom clear button |
+| `m-checkbox-popup` | Checkbox popup: bottom-sheet multi-select, options array driven, field-names mapping, footer slot |
 | `m-color-picker` | Color picker: saturation-value panel + hue / alpha sliders, hex / rgb / hsl output, presets, recent colors, Web eyedropper |
-| `m-color-picker-popup` | Color picker popup: cancel / title / confirm header, commit on confirm, discard on cancel or overlay tap |
 | `m-color-picker-input` | Color picker input: read-only trigger + color swatch preview + popup picking, optional label and clear |
-| `m-input` | Input: six types, clearable with trigger timing, formatter / precision / min-max clamping, password eye toggle, word limit, multiline auto-height, prepend / append slots |
+| `m-color-picker-popup` | Color picker popup: cancel / title / confirm header, commit on confirm, discard on cancel or overlay tap |
+| `m-input` | Input: six types, clearable with trigger timing, formatter / precision / min-max clamping, password eye toggle, word limit, multiline auto-height, prepend / append slots, confirm event and input-align |
+| `m-number-keyboard` | Number keyboard: 1-9 + 0 + delete pure keypad, number / digit / idcard / random types, custom theme side column, disabled-key callback, extra-key slot |
+| `m-number-keyboard-popup` | Number keyboard popup: m-popup + keypad, the default slot hosts code cells / amount display, closes after cancel / confirm |
+| `m-password-input` | Password input cells: bordered / underlined styles, mask dots, blinking cursor when focused, plain text, disabled / readonly and error info |
+| `m-password-input-popup` | Password input popup: popup + cells + keyboard in one, v-model:value clamps to length, auto focus on open, random keypad |
+| `m-radio` / `m-radio-group` | Radio: group container + standalone item, self-drawn ring and dot, round / square shapes, color and size customization, readonly / disabled |
+| `m-radio-input` | Radio input: read-only trigger + popup single-select, echoes the selected label, custom clear button writes back null |
+| `m-radio-popup` | Radio popup: bottom-sheet single-select, options array driven, field-names mapping, footer slot, stays open after picking |
+| `m-rate` | Rate: snaps to a 0.5 grid, half-star clipping, drag-to-rate, custom icon / color / size / count, clearable, readonly decimal display |
+| `m-search` | Search: wraps m-input for input handling, round / background customization, clear, keyboard search, cancel or search action, side icons, error message and content align |
+| `m-segmented` | Segmented control: equal-width single-select, three sizes, pill / vertical, sliding thumb animation, item scoped slot, ellipsis, disabled / readonly |
 
 ### Pickers
 
 | Component | Description |
 | --- | --- |
 | `m-cascader` | Cascader: multi-level linkage, level tabs and swipe gestures, field-names mapping, async loading, four slots |
-| `m-cascader-popup` | Cascader popup: m-popup + m-cascader, closes automatically after picking the last level |
 | `m-cascader-input` | Cascader input: read-only trigger + popup picking, selected path echo, clearable and disabled |
+| `m-cascader-popup` | Cascader popup: m-popup + m-cascader, closes automatically after picking the last level |
 | `m-picker` | Generic wheel picker: auto-detects 1D / 2D columns, children cascade, disabled options, object options, columns-top / columns-bottom slots |
-| `m-picker-popup` | Picker popup: m-popup + m-picker, v-model controls visibility and value, closes on confirm / cancel |
 | `m-picker-input` | Picker input: read-only trigger + popup picking, echoes the selected text of each column, clearable and disabled |
+| `m-picker-popup` | Picker popup: m-popup + m-picker, v-model controls visibility and value, closes on confirm / cancel |
 | `m-picker-view` | Picker view: toolbar-less index-controlled wheel columns, compose with m-picker-view-column and the option slot inside custom containers |
+| `m-select` | Select: options-driven with children groups, whole / item disabled, local and remote filtering, multiple with limit, option scoped slot, scrollTop |
+| `m-select-input` | Select input: read-only trigger + popup, label resolved by options → map-label → value string, max-labels collapsing, clear and readonly / disabled |
+| `m-select-popup` | Select popup: m-popup + select panel, title and filter, closes on select (stays open in multiple mode) |
 
 ### Date & Time
 
 | Component | Description |
 | --- | --- |
 | `m-calendar` | Calendar panel: single / multiple / range selection, year-month switching navigation, formatter, over-limit feedback |
-| `m-calendar-popup` | Calendar popup: m-popup + m-calendar, closes on confirm, position / round corners / panel height / safe area |
 | `m-calendar-input` | Calendar input: read-only trigger + popup picking, formatted echo, clearable and disabled |
+| `m-calendar-popup` | Calendar popup: m-popup + m-calendar, closes on confirm, position / round corners / panel height / safe area |
 | `m-date-picker` | Date picker: year / month / day wheels, column sets, min / max range, filter / formatter, toolbar and readonly loading state |
-| `m-date-picker-popup` | Date picker popup: m-popup + date panel, closes on confirm / cancel, position / corners / safe area |
 | `m-date-picker-input` | Date picker input: read-only trigger + popup picking, formatted echo by column set, clearable and disabled |
+| `m-date-picker-popup` | Date picker popup: m-popup + date panel, closes on confirm / cancel, position / corners / safe area |
 | `m-date-range-picker` | Date range picker: start / end titles share one date wheel, auto-swaps to ascending order on confirm, range, filter / formatter and quick-option slot |
-| `m-date-range-picker-popup` | Date range popup: m-popup + date range panel, closes on confirm / cancel |
 | `m-date-range-picker-input` | Date range input: read-only trigger + popup picking, echoes "start - end" by outlet-format |
+| `m-date-range-picker-popup` | Date range popup: m-popup + date range panel, closes on confirm / cancel |
 | `m-date-strip` | Date strip: horizontal consecutive dates, single / multiple / range, value-format string binding, lunar text, filter and disabled dates, slot customization |
 | `m-lunar-picker` | Lunar picker: lunar year / month (including leap month) / day wheels, GanZhi and zodiac year column, column sets, reverse-mapped min / max; the public value stays a Gregorian Date |
-| `m-lunar-picker-popup` | Lunar picker popup: m-popup + lunar panel, closes on confirm / cancel |
 | `m-lunar-picker-input` | Lunar picker input: read-only trigger + lunar popup, echoes lunar text (e.g. 2026年六月十五) |
+| `m-lunar-picker-popup` | Lunar picker popup: m-popup + lunar panel, closes on confirm / cancel |
 | `m-time-picker` | Time picker: hour / minute / second wheels, column sets, minute and second steps, min / max time, 12/24-hour (AM / PM column for 12-hour mode) |
-| `m-time-picker-popup` | Time picker popup: m-popup + time panel, closes on confirm / cancel |
 | `m-time-picker-input` | Time picker input: read-only trigger + popup picking, echoes HH:mm (HH:mm:ss with seconds) |
+| `m-time-picker-popup` | Time picker popup: m-popup + time panel, closes on confirm / cancel |
 | `m-time-range-picker` | Time range picker: start / end titles share one time wheel, auto-swaps to ascending order on confirm, steps, time range, 12-hour mode and quick-option slot |
-| `m-time-range-picker-popup` | Time range popup: m-popup + time range panel, closes on confirm / cancel |
 | `m-time-range-picker-input` | Time range input: read-only trigger + popup picking, echoes "start - end" |
+| `m-time-range-picker-popup` | Time range popup: m-popup + time range panel, closes on confirm / cancel |
 
 ### Feedback Components
 
@@ -229,10 +242,10 @@ For all available variables see [theme/vars.scss](./theme/vars.scss), named as `
 | Platform | Status | Notes |
 | --- | --- | --- |
 | Web | ✅ Verified | Compiled and run with HBuilderX; rendering / events / theme override matrix and per-component scenarios verified in the browser |
-| App-Android | ✅ Cloud build verified | Both vapor and vdom modes compile and package via cloud build; a demo APK ships with every release |
+| App-Android | ✅ Cloud build verified | Both vapor and vdom modes compile and package via cloud build; 0.7.0 fixed two rounds of Kotlin compile errors and repackaged, a demo APK ships with every release |
 | App-iOS | 🔧 Adapted | Conditional compilation in place; on-device testing pending (requires macOS) |
 | App-HarmonyOS | 🔧 Adapted | Conditional compilation in place; testing pending (requires DevEco Studio) |
-| WeChat Mini Program | 🔧 Baseline verified | Baseline issues (overlay visibility / popup layers / font loading) fixed through testing; new components are verified release by release |
+| WeChat Mini Program | 🔧 Baseline verified | Baseline issues (overlay visibility / popup layers / font loading) fixed through testing; 0.7.0 fixed the `getCurrentInstance` null crash in popup components (issue #20); new components are verified release by release |
 | Other Mini Programs | 🔧 Adapted | Conditional compilation in place; testing pending in developer tools |
 
 Full details (HBuilderX version requirements, vapor mode configuration, platform differences) — see [Platform Compatibility](https://mengxi-studio.github.io/unix-ui/en/guide/compatibility.html).
@@ -241,7 +254,7 @@ Full details (HBuilderX version requirements, vapor mode configuration, platform
 
 The example project [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) provides one page per component exhaustively covering all props / variants / events, deployed as a [live demo](https://mengxi-studio.github.io/unix-ui/playground/) on the documentation site — try it right in your browser.
 
-**Try it on a real Android device**: [download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794836242885-__UNI__F1AA560_1794836231235.apk) — a cloud-packaged Android build showcasing native rendering of all components. The package is rebuilt with each release; use the link in the latest release notes.
+**Try it on a real Android device**: [download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1795095433761-__UNI__F1AA560_1795095406297.apk) — a cloud-packaged Android build showcasing native rendering of all components. The package is rebuilt with each release; use the link in the latest release notes.
 
 ## Project Structure
 

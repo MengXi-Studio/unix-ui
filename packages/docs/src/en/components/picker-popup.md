@@ -1,7 +1,7 @@
 ---
 title: PickerPopup
 subtitle: PickerPopup
-demo: pages-sub/picker-popup/picker-popup
+demo: pages-sub/pickers/picker-popup/picker-popup
 added: 0.6.0
 ---
 

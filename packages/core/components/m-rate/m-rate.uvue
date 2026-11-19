@@ -1,0 +1,471 @@
+<template>
+	<!-- 评分：底层未选字形 + 裁切层内的选中字形（半星 = 裁切 50%，只读可裁任意小数比例）。
+	     触摸 / 点击按容器内横坐标换算分值；MP 端 v-for 内不声明同名插槽（#17），回退内置字形。 -->
+	<view
+		ref="rateRef"
+		:class="rootClass"
+		:style="customStyle"
+		@touchstart="onTouchStart"
+		@touchmove="onTouchMove"
+		@click="onRootClick"
+	>
+		<view
+			v-for="(n, index) in items"
+			:key="index"
+			:class="itemClass(index)"
+			:style="itemStyleOf(index)"
+		>
+			<!-- #ifdef MP -->
+			<m-icon :name="props.voidIcon" :size="sizeText" :color="voidColorValue" :custom-class="voidIconClass" />
+			<!-- #endif -->
+			<!-- #ifndef MP -->
+			<slot name="void-icon" :index="index" :active="false">
+				<m-icon :name="props.voidIcon" :size="sizeText" :color="voidColorValue" :custom-class="voidIconClass" />
+			</slot>
+			<!-- #endif -->
+			<view class="m-rate__fill" :style="fillStyleOf(index)">
+				<!-- #ifdef MP -->
+				<m-icon :name="props.icon" :size="sizeText" :color="starColorValue" :custom-class="starIconClass" />
+				<!-- #endif -->
+				<!-- #ifndef MP -->
+				<slot name="icon" :index="index" :active="true">
+					<m-icon :name="props.icon" :size="sizeText" :color="starColorValue" :custom-class="starIconClass" />
+				</slot>
+				<!-- #endif -->
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-rate 评分。
+	 * 单颗星由「未选字形 + 宽度百分比裁切层」叠成，半星即裁切层宽度 50%；
+	 * 只读态（readonly + allowHalf）按分值小数位裁切，可展示 4.3 这类任意小数。
+	 * 交互支持点击与滑动（touchable），分值吸附到 0.5 网格，clearable 时点击当前分值清零。
+	 */
+	import { IconName } from '../m-icon/icons.uts'
+	import MIcon from '../m-icon/m-icon.uvue'
+
+	type Props = {
+		/** 当前分值（v-model:value），0 表示未评分 */
+		value?: number
+		/** 图标总数 */
+		count?: number
+		/** 图标尺寸（number 补 px） */
+		size?: string | number
+		/** 图标间距（number 补 px） */
+		gap?: string | number
+		/** 选中态颜色（空则用主题默认） */
+		color?: string
+		/** 未选中态颜色（空则用主题默认） */
+		voidColor?: string
+		/** 禁用态颜色（空则用主题默认，选中与未选同时生效） */
+		disabledColor?: string
+		/** 选中态字形 */
+		icon?: IconName
+		/** 未选中态字形 */
+		voidIcon?: IconName
+		/** 是否允许半星 */
+		allowHalf?: boolean
+		/** 是否允许再次点击当前分值清零 */
+		clearable?: boolean
+		/** 是否只读（视觉正常但不可交互） */
+		readonly?: boolean
+		/** 是否禁用（灰显且不可交互） */
+		disabled?: boolean
+		/** 是否允许滑动评分 */
+		touchable?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: 0,
+		count: 5,
+		size: '',
+		gap: '',
+		color: '',
+		voidColor: '',
+		disabledColor: '',
+		icon: 'star',
+		voidIcon: 'star-o',
+		allowHalf: false,
+		clearable: false,
+		readonly: false,
+		disabled: false,
+		touchable: true,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 分值变化（v-model:value） */
+		'update:value': [value: number]
+		/** 分值变化 */
+		change: [value: number]
+		/** 点击（含禁用 / 只读被拒绝时） */
+		click: [event: MouseEvent]
+	}>()
+
+	/** 图标尺寸主题默认值（未传 size 时滑动换算的兜底数值，与 $m-rate-icon-size 一致） */
+	const DEFAULT_ICON_SIZE = 20
+	/** 图标间距主题默认值（未传 gap 时滑动换算的兜底数值，与 $m-rate-gap 一致） */
+	const DEFAULT_GAP = 4
+
+	/** 根节点（滑动换算的测量目标） */
+	const rateRef = ref<UniElement | null>(null)
+	/** 根节点矩形缓存（视口坐标） */
+	const rateRect = ref<DOMRect | null>(null)
+	/** 最近一次派发的分值（防抖：拖动过程中同一分值不重复派发） */
+	let lastEmitted: number = -1
+
+	/** 是否可交互（禁用 / 只读均不响应） */
+	function canInteract(): boolean {
+		return !props.disabled && !props.readonly
+	}
+
+	/**
+	 * 数值或纯数字字符串补 px 单位（"24" → "24px"），带单位字符串原样返回
+	 *
+	 * @param value 尺寸值
+	 * @returns 带单位的尺寸文本（空值返回空串）
+	 */
+	function addUnit(value: string | number): string {
+		const raw = '' + value
+		if (raw == '') return ''
+		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
+		return pattern.test(raw) ? raw + 'px' : raw
+	}
+
+	/**
+	 * 尺寸文本转像素数值（仅识别纯数字与 px 后缀，其余单位返回 0 由调用方兜底）
+	 *
+	 * @param text 尺寸文本
+	 * @returns 像素数值（无法识别返回 0）
+	 */
+	function unitToNumber(text: string): number {
+		if (text == '') return 0
+		const pattern = new RegExp('^-?\\d+(\\.\\d+)?$')
+		let numText = ''
+		if (text.endsWith('px')) {
+			numText = text.slice(0, text.length - 2)
+		} else {
+			numText = text
+		}
+		if (!pattern.test(numText)) return 0
+		const n = parseFloat(numText)
+		if (isNaN(n) || n <= 0) return 0
+		return n
+	}
+
+	/**
+	 * 数值区间收敛
+	 *
+	 * @param value 原始值
+	 * @param min 下界
+	 * @param max 上界
+	 * @returns 收敛后的值
+	 */
+	function clamp(value: number, min: number, max: number): number {
+		if (value < min) return min
+		if (value > max) return max
+		return value
+	}
+
+	/** 图标尺寸文本（空串表示走主题样式） */
+	const sizeText = computed<string>(() => addUnit(props.size))
+	/** 图标间距文本（空串表示走主题样式） */
+	const gapText = computed<string>(() => addUnit(props.gap))
+
+	/** 滑动换算用的图标宽度（px 数值） */
+	function iconSizeNumber(): number {
+		const n = unitToNumber(sizeText.value)
+		return n > 0 ? n : DEFAULT_ICON_SIZE
+	}
+
+	/** 滑动换算用的图标间距（px 数值） */
+	function gapNumber(): number {
+		const n = unitToNumber(gapText.value)
+		return n > 0 ? n : DEFAULT_GAP
+	}
+
+	/** 星标索引数组（v-for 数据源） */
+	const items = computed<number[]>(() => {
+		const arr: number[] = []
+		const total = props.count > 0 ? props.count : 0
+		for (let i = 0; i < total; i++) {
+			arr.push(i)
+		}
+		return arr
+	})
+
+	/** 根节点类名：禁用变体 + 自定义类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-rate'
+		if (props.disabled) cls += ' m-rate--disabled'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 选中态颜色：禁用优先用禁用色，空串表示继承主题样式 */
+	const starColorValue = computed<string>(() => {
+		if (props.disabled) return props.disabledColor
+		return props.color
+	})
+
+	/** 未选中态颜色：同上 */
+	const voidColorValue = computed<string>(() => {
+		if (props.disabled) return props.disabledColor
+		return props.voidColor
+	})
+
+	/** 选中态字形类名：禁用态换色变体 */
+	const starIconClass = computed<string>(() => {
+		return props.disabled ? 'm-rate__star m-rate__star--disabled' : 'm-rate__star'
+	})
+
+	/** 未选中态字形类名：禁用态换色变体 */
+	const voidIconClass = computed<string>(() => {
+		return props.disabled ? 'm-rate__void m-rate__void--disabled' : 'm-rate__void'
+	})
+
+	/**
+	 * 单项类名：非末项在未自定义间距时挂主题间距类
+	 *
+	 * @param index 星标下标
+	 * @returns 类名
+	 */
+	function itemClass(index: number): string {
+		let cls = 'm-rate__item'
+		if (index < props.count - 1 && gapText.value == '') cls += ' m-rate__item--gap'
+		return cls
+	}
+
+	/**
+	 * 单项内联样式：自定义尺寸时直达宽高，自定义间距时补右边距到非末项
+	 *
+	 * @param index 星标下标
+	 * @returns 内联样式
+	 */
+	function itemStyleOf(index: number): string {
+		let style = ''
+		const size = sizeText.value
+		if (size != '') style += 'width: ' + size + '; height: ' + size + ';'
+		if (index < props.count - 1 && gapText.value != '') {
+			style += ' margin-right: ' + gapText.value + ';'
+		}
+		return style
+	}
+
+	/**
+	 * 单颗星填充百分比：非半星为 0 / 100；半星为 0 / 50 / 100；
+	 * 只读态按分值小数位取任意比例（支持 4.3 这类展示）
+	 *
+	 * @param index 星标下标（0 起）
+	 * @returns 填充百分比 0 ~ 100
+	 */
+	function fillPercentOf(index: number): number {
+		const i = index + 1
+		if (!props.allowHalf) return props.value >= i ? 100 : 0
+		if (props.readonly) return clamp(props.value - index, 0, 1) * 100
+		if (props.value >= i) return 100
+		if (props.value >= i - 0.5) return 50
+		return 0
+	}
+
+	/**
+	 * 裁切层内联样式：宽度即填充百分比
+	 *
+	 * @param index 星标下标
+	 * @returns 内联样式
+	 */
+	function fillStyleOf(index: number): string {
+		return 'width: ' + fillPercentOf(index).toString() + '%;'
+	}
+
+	/**
+	 * 由容器内横坐标换算分值（allowHalf 时吸附到 0.5 网格）
+	 *
+	 * @param x 相对容器左边缘的横坐标
+	 * @returns 分值
+	 */
+	function valueFromX(x: number): number {
+		const size = iconSizeNumber()
+		const step = size + gapNumber()
+		if (x <= 0) return 0
+		const index = Math.floor(x / step)
+		if (index >= props.count) return props.count
+		const inItem = clamp((x - index * step) / size, 0, 1)
+		if (!props.allowHalf) return index + 1
+		return inItem <= 0.5 ? index + 0.5 : index + 1
+	}
+
+	/**
+	 * 应用分值：不可交互直接返回；clearable 时同值清零；与外部分值或上次派发相同时跳过
+	 *
+	 * @param raw 目标分值
+	 */
+	function applyValue(raw: number) {
+		let next = clamp(raw, 0, props.count)
+		if (props.clearable && next == props.value) next = 0
+		if (next == props.value) return
+		if (next == lastEmitted) return
+		lastEmitted = next
+		emit('update:value', next)
+		emit('change', next)
+	}
+
+	// #ifdef MP
+	/**
+	 * 组件实例（createSelectorQuery 的 in 作用域参数；setup 期一次性获取）
+	 *
+	 * 不能在 measureRate 内调用 getCurrentInstance()：该方法由触摸 / 点击处理器触发，
+	 * 已脱离 setup 上下文会返回 null，访问 .proxy 直接抛错（同 issue #20）。
+	 */
+	const mpInstance = getCurrentInstance()
+	// #endif
+
+	/**
+	 * 测量根节点矩形（Web 同步 / 小程序选择器查询 / App 异步）
+	 */
+	function measureRate() {
+		// #ifdef WEB
+		if (rateRef.value != null) rateRect.value = rateRef.value!.getBoundingClientRect()
+		// #endif
+		// #ifdef MP
+		uni.createSelectorQuery().in(mpInstance!.proxy!)
+			.select('.m-rate')
+			.boundingClientRect()
+			.exec((ret: Array<any>) => {
+				const first = ret.length > 0 ? ret[0] : null
+				rateRect.value = first as DOMRect | null
+			})
+		// #endif
+		// #ifdef APP
+		if (rateRef.value != null) {
+			rateRef.value!.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+				rateRect.value = rect
+			})
+		}
+		// #endif
+	}
+
+	/**
+	 * 按触摸坐标应用分值（未测量时先测量，下一次触摸生效）
+	 *
+	 * @param e 触摸事件
+	 */
+	function applyFromTouch(e: TouchEvent) {
+		if (e.touches.length == 0) return
+		const rect = rateRect.value
+		if (rect == null) {
+			measureRate()
+			return
+		}
+		if (rect.width <= 0) return
+		applyValue(valueFromX(e.touches[0].clientX - rect.left))
+	}
+
+	/**
+	 * 触摸开始：按落点选中分值（点选与滑动共用的入口）
+	 */
+	const onTouchStart = (e: TouchEvent) => {
+		if (!canInteract()) return
+		applyFromTouch(e)
+	}
+
+	/**
+	 * 触摸移动：touchable 开启时随手指更新分值
+	 */
+	const onTouchMove = (e: TouchEvent) => {
+		if (!canInteract() || !props.touchable) return
+		applyFromTouch(e)
+	}
+
+	/**
+	 * 点击：派发 click；Web 端兼做桌面鼠标选择（App / 小程序已由 touchstart 处理）
+	 */
+	const onRootClick = (e: MouseEvent) => {
+		emit('click', e)
+		// #ifdef WEB
+		if (!canInteract()) return
+		const rect = rateRect.value
+		if (rect == null) {
+			measureRate()
+			return
+		}
+		if (rect.width <= 0) return
+		applyValue(valueFromX(e.clientX - rect.left))
+		// #endif
+	}
+
+	onMounted(() => {
+		measureRate()
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* 根容器：横向排列，不换行 */
+	.m-rate {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	/* 单颗星：裁剪层的定位包含块，尺寸即图标尺寸 */
+	.m-rate__item {
+		position: relative;
+		width: $m-rate-icon-size;
+		height: $m-rate-icon-size;
+		font-size: $m-rate-icon-size;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	/* 未自定义间距时，非末项用主题间距 */
+	.m-rate__item--gap {
+		margin-right: $m-rate-gap;
+	}
+
+	/* 未选中字形 */
+	.m-rate__void {
+		color: $m-rate-icon-void-color;
+	}
+
+	/* 未选中字形禁用色 */
+	.m-rate__void--disabled {
+		color: $m-rate-icon-disabled-color;
+	}
+
+	/* 选中字形：固定不压缩，保证裁切层内字形保持原尺寸 */
+	.m-rate__star {
+		color: $m-rate-icon-color;
+		flex-shrink: 0;
+	}
+
+	/* 选中字形禁用色 */
+	.m-rate__star--disabled {
+		color: $m-rate-icon-disabled-color;
+	}
+
+	/* 裁切层：宽度为填充百分比，超出部分隐藏（半星 / 小数展示的核心） */
+	.m-rate__fill {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		overflow: hidden;
+		flex-direction: row;
+		align-items: center;
+	}
+</style>

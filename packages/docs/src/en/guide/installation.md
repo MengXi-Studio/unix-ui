@@ -88,7 +88,7 @@ For npm installs, replace the prefix with the package name (e.g. `@meng-xi/unix-
 
 ## Try it on a device
 
-You can try the components on a real device without writing code: [download the Android demo APK](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1794836242885-__UNI__F1AA560_1794836231235.apk). It is the cloud build of the playground project, with one page per component covering every prop / variant / event; the APK is rebuilt per release, so always use the link from the latest release notes.
+You can try the components on a real device without writing code: [download the Android demo APK](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1795095433761-__UNI__F1AA560_1795095406297.apk). It is the cloud build of the playground project, with one page per component covering every prop / variant / event; the APK is rebuilt per release, so always use the link from the latest release notes.
 
 ## Next steps
 

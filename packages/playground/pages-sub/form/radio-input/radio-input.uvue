@@ -1,0 +1,97 @@
+<template>
+	<view class="page">
+		<demo-navbar title="单选输入框" subtitle="RadioInput" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-radio-input v-model:value="basicValue" :options="cityOptions" title="选择城市" placeholder="请选择城市" />
+					<text class="caption">只读触发器 + 底部弹层；选中项 label 回显（当前：{{ valueText(basicValue) }}）</text>
+				</view>
+
+				<text class="section" id="preset">预置值</text>
+				<view class="card">
+					<m-radio-input v-model:value="presetValue" :options="cityOptions" title="选择城市（预置上海）" />
+					<text class="caption">value 预置后回显对应 label；点选其他项即切换</text>
+				</view>
+
+				<text class="section" id="clear">清空按钮</text>
+				<view class="card">
+					<m-radio-input v-model:value="clearValue" :options="cityOptions" title="可清空" @clear="logClear" />
+					<text class="caption">clearable 有值时显示自绘清空按钮（点击回写 null，m-input 内置 clearable 位于触发层下会被挡住）</text>
+				</view>
+
+				<text class="section" id="disabled">禁用与形态</text>
+				<view class="card">
+					<m-radio-input v-model:value="presetValue" :options="cityOptions" disabled title="禁用" />
+					<text class="caption">disabled：触发层不渲染，无法打开弹层；值仍展示</text>
+					<m-radio-input v-model:value="inlaidValue" :options="cityOptions" inlaid title="嵌入式" style="margin-top: 8px;" />
+					<text class="caption">inlaid 嵌入式形态（清边框内边距，适配单元格）</text>
+				</view>
+
+				<text class="section" id="field-names">自定义字段名与 number 值</text>
+				<view class="card">
+					<m-radio-input v-model:value="fieldsValue" :options="codeOptions" :field-names="customFields" title="选择地区编码" />
+					<text class="caption">field-names 映射（name / code）；value 为 number（区域编码），回显 label 或值文本</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '单选输入框 RadioInput', name: 'radio-input' })
+
+	import { RadioValue, RadioFieldNames, radioValueText } from '@/uni_modules/m-ui-x/components/m-radio-group/radio.uts'
+
+	/** 各演示选中值 */
+	const basicValue = ref<RadioValue | null>(null)
+	const presetValue = ref<RadioValue | null>(310000)
+	const clearValue = ref<RadioValue | null>(110000)
+	const inlaidValue = ref<RadioValue | null>(null)
+	const fieldsValue = ref<RadioValue | null>(null)
+
+	/** 城市选项数据（value 为 number 区域编码） */
+	const cityOptions = ref<UTSJSONObject[]>([
+		{ label: '北京', value: 110000 },
+		{ label: '上海', value: 310000 },
+		{ label: '广州', value: 440100 },
+		{ label: '深圳', value: 440300 },
+		{ label: '杭州', value: 330100 }
+	] as UTSJSONObject[])
+
+	/** 自定义字段名选项数据（name / code） */
+	const codeOptions = ref<UTSJSONObject[]>([
+		{ name: '华东区', code: 'east' },
+		{ name: '华南区', code: 'south' },
+		{ name: '华北区', code: 'north' }
+	] as UTSJSONObject[])
+
+	/** 自定义字段名映射 */
+	const customFields = ref<RadioFieldNames>({ label: 'name', value: 'code', disabled: 'disabled' } as RadioFieldNames)
+
+	/**
+	 * 值的展示文本（null 显示「未选」）
+	 */
+	function valueText(v: RadioValue | null): string {
+		if (v == null) return '未选'
+		return radioValueText(v)
+	}
+
+	/**
+	 * 清空事件日志
+	 */
+	function logClear() {
+		console.log('radio-input clear')
+	}
+</script>
+
+<style lang="scss">
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+</style>

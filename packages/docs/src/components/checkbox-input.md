@@ -1,7 +1,7 @@
 ---
 title: CheckboxInput
 subtitle: 复选输入框
-demo: pages-sub/checkbox-input/checkbox-input
+demo: pages-sub/form/checkbox-input/checkbox-input
 added: 0.5.0
 ---
 

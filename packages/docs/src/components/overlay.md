@@ -1,7 +1,7 @@
 ---
 title: Overlay
 subtitle: 遮罩层
-demo: pages-sub/overlay/overlay
+demo: pages-sub/feedback/overlay/overlay
 added: 0.2.0
 ---
 

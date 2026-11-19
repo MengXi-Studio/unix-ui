@@ -60,10 +60,12 @@ const maxDate = new Date(2030, 11, 31)
 
 | Component type | Value type | Examples |
 | --- | --- | --- |
-| Text / picker | `string` | `m-input`, `m-picker` |
+| Text | `string` | `m-input`, `m-search` |
+| Picker | `string` / `number` (use `null` for empty) | `m-picker`, `m-radio-group`, `m-select`, `m-segmented` |
+| Numeric | `number` | `m-rate` |
 | Date | `Date \| null` | `m-date-picker`, `m-calendar` |
 | Time | `'HH:mm'` / `'HH:mm:ss'` | `m-time-picker` |
-| Multi-select | array | `m-checkbox-group` |
+| Multi-select | array | `m-checkbox-group`, `m-select` (`multiple`) |
 
 ## 4. Popup and input variants
 

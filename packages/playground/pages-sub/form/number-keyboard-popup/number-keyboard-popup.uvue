@@ -1,0 +1,249 @@
+<template>
+	<view class="page">
+		<demo-navbar title="数字键盘弹出框" subtitle="NumberKeyboardPopup" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="basic">基础弹层</text>
+			<view class="card">
+				<m-button block @click="openBasic">打开数字键盘</m-button>
+				<m-number-keyboard-popup
+					v-model:show="basicShow"
+					title="输入设备位号"
+					@input="onBasicInput"
+					@delete="onBasicDelete"
+					@confirm="onBasicConfirm"
+					@cancel="onBasicCancel"
+				>
+					<view class="display">
+						<text class="display-text">{{ basicValue == '' ? '请输入' : basicValue }}</text>
+					</view>
+				</m-number-keyboard-popup>
+				<text class="caption">最近事件：{{ basicLog }}</text>
+			</view>
+
+			<text class="section" id="transparent">无遮罩 + 投影条</text>
+			<view class="card">
+				<m-button block @click="openTransparent">打开轻量键盘</m-button>
+				<m-number-keyboard-popup
+					v-model:show="transparentShow"
+					title="无遮罩键盘"
+					transparent
+					show-shadow
+					@input="onTransparentInput"
+					@delete="onTransparentDelete"
+				>
+					<view class="display">
+						<text class="display-text">{{ transparentValue == '' ? '页面内容保持可见' : transparentValue }}</text>
+					</view>
+				</m-number-keyboard-popup>
+				<text class="caption">transparent 去掉黑色蒙层，show-shadow 用顶部投影分隔页面</text>
+			</view>
+
+			<text class="section" id="code">验证码输入</text>
+			<view class="card">
+				<m-button block @click="openCode">输入 6 位验证码</m-button>
+				<m-number-keyboard-popup
+					v-model:show="codeShow"
+					title="验证码"
+					:disabled-key="codeLimit"
+					@input="onCodeInput"
+					@delete="onCodeDelete"
+					@confirm="onCodeConfirm"
+				>
+					<view class="code-row">
+						<view v-for="(digit, index) in codeDigits" :key="index" class="code-cell">
+							<text class="code-text">{{ digit }}</text>
+						</view>
+					</view>
+				</m-number-keyboard-popup>
+				<text class="caption">default 插槽绘制分格，disabled-key 限制 6 位</text>
+			</view>
+
+			<text class="section" id="amount">金额输入</text>
+			<view class="card">
+				<m-button block @click="openAmount">输入金额</m-button>
+				<m-number-keyboard-popup
+					v-model:show="amountShow"
+					title="输入金额"
+					type="digit"
+					@input="onAmountInput"
+					@delete="onAmountDelete"
+					@confirm="onAmountConfirm"
+				>
+					<view class="amount-row">
+						<text class="amount-symbol">¥</text>
+						<text class="amount-text">{{ amountValue == '' ? '0.00' : amountValue }}</text>
+					</view>
+				</m-number-keyboard-popup>
+				<text class="caption">type="digit" 提供小数点键，货币符号由展示区自绘</text>
+			</view>
+
+			<text class="section" id="toolbar">自定义工具条</text>
+			<view class="card">
+				<m-button block @click="openCustom">无工具条 + 右侧栏关闭</m-button>
+				<m-number-keyboard-popup
+					v-model:show="customShow"
+					:show-toolbar="false"
+					theme="custom"
+					close-button-text="完成"
+					@input="onCustomInput"
+					@delete="onCustomDelete"
+					@close-key="onCustomClose"
+				>
+					<view class="display">
+						<text class="display-text">{{ customValue == '' ? '请输入' : customValue }}</text>
+					</view>
+				</m-number-keyboard-popup>
+				<text class="caption">show-toolbar=false 时由键盘自身右侧栏完成关闭</text>
+			</view>
+
+			<text class="section" id="random">乱序键盘</text>
+			<view class="card">
+				<m-button block @click="openRandom">乱序键盘（每次打开重排）</m-button>
+				<m-number-keyboard-popup
+					v-model:show="randomShow"
+					type="random"
+					title="乱序数字"
+					@input="onRandomInput"
+					@delete="onRandomDelete"
+				>
+					<view class="display">
+						<text class="display-text">{{ randomValue == '' ? '每次打开都会重排' : randomValue }}</text>
+					</view>
+				</m-number-keyboard-popup>
+				<text class="caption">type=random 时每次弹层打开都会重新打乱键位</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '数字键盘弹出框 NumberKeyboardPopup', name: 'number-keyboard-popup' })
+
+	const basicShow = ref(false)
+	const basicValue = ref('')
+	const basicLog = ref('无')
+	const transparentShow = ref(false)
+	const transparentValue = ref('')
+	const codeShow = ref(false)
+	const codeValue = ref('')
+	const amountShow = ref(false)
+	const amountValue = ref('')
+	const customShow = ref(false)
+	const customValue = ref('')
+	const randomShow = ref(false)
+	const randomValue = ref('')
+
+	/** 末位追加 */
+	const append = (text: string, key: string): string => text + key
+
+	/** 删除末位（空串安全） */
+	const removeLast = (text: string): string => {
+		const len = text.length
+		if (len == 0) {
+			return ''
+		}
+		return text.substring(0, len - 1)
+	}
+
+	/** 验证码 6 位上限回调 */
+	const codeLimit = (key: string): boolean => codeValue.value.length >= 6
+
+	/** 验证码分格（未输入位为空串） */
+	const codeDigits = computed<string[]>(() => {
+		const list: string[] = []
+		for (let i = 0; i < 6; i++) {
+			if (i < codeValue.value.length) {
+				list.push(codeValue.value.substring(i, i + 1))
+			} else {
+				list.push('')
+			}
+		}
+		return list
+	})
+
+	const openBasic = () => { basicShow.value = true }
+	const onBasicInput = (key: string) => { basicValue.value = append(basicValue.value, key) }
+	const onBasicDelete = () => { basicValue.value = removeLast(basicValue.value) }
+	const onBasicConfirm = () => { basicLog.value = '确认：' + basicValue.value }
+	const onBasicCancel = () => { basicLog.value = '取消' }
+
+	const openTransparent = () => { transparentShow.value = true }
+	const onTransparentInput = (key: string) => { transparentValue.value = append(transparentValue.value, key) }
+	const onTransparentDelete = () => { transparentValue.value = removeLast(transparentValue.value) }
+
+	const openCode = () => { codeShow.value = true }
+	const onCodeInput = (key: string) => { codeValue.value = append(codeValue.value, key) }
+	const onCodeDelete = () => { codeValue.value = removeLast(codeValue.value) }
+	const onCodeConfirm = () => { codeShow.value = false }
+
+	const openAmount = () => { amountShow.value = true }
+	const onAmountInput = (key: string) => { amountValue.value = append(amountValue.value, key) }
+	const onAmountDelete = () => { amountValue.value = removeLast(amountValue.value) }
+	const onAmountConfirm = () => { amountShow.value = false }
+
+	const openCustom = () => { customShow.value = true }
+	const onCustomInput = (key: string) => { customValue.value = append(customValue.value, key) }
+	const onCustomDelete = () => { customValue.value = removeLast(customValue.value) }
+	const onCustomClose = () => { customShow.value = false }
+
+	const openRandom = () => { randomShow.value = true }
+	const onRandomInput = (key: string) => { randomValue.value = append(randomValue.value, key) }
+	const onRandomDelete = () => { randomValue.value = removeLast(randomValue.value) }
+</script>
+
+<style>
+	.display {
+		min-height: 48px;
+		justify-content: center;
+		align-items: center;
+		padding: 8px 12px;
+		background-color: #f7f8fa;
+		border-radius: 6px;
+	}
+	.display-text {
+		font-size: 18px;
+		color: #323233;
+	}
+	.caption {
+		margin-top: 8px;
+		font-size: 12px;
+		color: #969799;
+	}
+	.code-row {
+		flex-direction: row;
+		justify-content: center;
+	}
+	.code-cell {
+		width: 40px;
+		height: 48px;
+		margin: 0 6px;
+		justify-content: center;
+		align-items: center;
+		background-color: #f2f3f5;
+		border-radius: 6px;
+	}
+	.code-text {
+		font-size: 20px;
+		color: #323233;
+	}
+	.amount-row {
+		flex-direction: row;
+		align-items: flex-end;
+		justify-content: center;
+	}
+	.amount-symbol {
+		margin-right: 4px;
+		font-size: 18px;
+		color: #323233;
+	}
+	.amount-text {
+		font-size: 28px;
+		color: #323233;
+	}
+</style>

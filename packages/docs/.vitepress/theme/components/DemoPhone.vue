@@ -7,7 +7,7 @@ import { setupCodeCollapse } from '../code-collapse'
 declare const __DEMO_BASE__: string
 
 const props = defineProps<{
-	/** playground 演示页路由路径（如 pages-sub/button/button） */
+	/** playground 演示页路由路径（如 pages-sub/basic/button/button） */
 	path: string
 	/** 无障碍标题，缺省取 path */
 	title?: string

@@ -1,0 +1,172 @@
+<template>
+	<view class="page">
+		<demo-navbar title="数字键盘" subtitle="NumberKeyboard" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+		<view class="container">
+
+			<text class="section" id="number">纯数字键盘</text>
+			<view class="card">
+				<view class="display">
+					<text class="display-text">{{ typed == '' ? '点击下方按键' : typed }}</text>
+				</view>
+				<m-number-keyboard @input="onTypedInput" @delete="onTypedDelete" />
+				<text class="caption">面板不持值，只派发 input(key) / delete，值由业务自行拼接</text>
+			</view>
+
+			<text class="section" id="digit">小数键盘</text>
+			<view class="card">
+				<view class="display">
+					<text class="display-text">{{ digitValue == '' ? '左下角为小数点' : digitValue }}</text>
+				</view>
+				<m-number-keyboard type="digit" @input="onDigitInput" @delete="onDigitDelete" />
+			</view>
+
+			<text class="section" id="idcard">身份证键盘</text>
+			<view class="card">
+				<view class="display">
+					<text class="display-text">{{ idcardValue == '' ? '左下角为 X' : idcardValue }}</text>
+				</view>
+				<m-number-keyboard type="idcard" @input="onIdcardInput" @delete="onIdcardDelete" />
+			</view>
+
+			<text class="section" id="random">随机数字键盘</text>
+			<view class="card">
+				<view class="display">
+					<text class="display-text">{{ randomValue == '' ? '键位已打乱' : randomValue }}</text>
+				</view>
+				<m-number-keyboard
+					ref="randomKeyboard"
+					type="random"
+					@input="onRandomInput"
+					@delete="onRandomDelete"
+				/>
+				<view class="btn-gap">
+					<m-button size="small" @click="shuffleRandom">重新打乱</m-button>
+				</view>
+				<text class="caption">挂载时打乱一次，之后仅调 shuffle() 才重排</text>
+			</view>
+
+			<text class="section" id="custom">右侧栏（custom 主题）</text>
+			<view class="card">
+				<view class="display">
+					<text class="display-text">{{ customValue == '' ? '左下角为空' : customValue }}</text>
+				</view>
+				<m-number-keyboard
+					theme="custom"
+					close-button-text="完成"
+					@input="onCustomInput"
+					@delete="onCustomDelete"
+					@close="onCustomClose"
+				/>
+				<text class="caption">最近事件：{{ customLog }}</text>
+			</view>
+
+			<text class="section" id="extra">自定义额外键</text>
+			<view class="card">
+				<view class="display">
+					<text class="display-text">{{ extraValue == '' ? '左下角为 00' : extraValue }}</text>
+				</view>
+				<m-number-keyboard :extra-keys="extraKeyList" @input="onExtraInput" @delete="onExtraDelete" />
+				<text class="caption">digit 与 idcard 类型的默认额外键，可被 extra-keys 覆盖</text>
+			</view>
+
+			<text class="section" id="disabled">禁用键回调</text>
+			<view class="card">
+				<view class="display">
+					<text class="display-text">{{ limitedValue == '' ? '最多可输入 6 位' : limitedValue }}</text>
+				</view>
+				<m-number-keyboard :disabled-key="limitSix" @input="onLimitedInput" @delete="onLimitedDelete" />
+				<text class="caption">达到 6 位后数字键灰显且不再派发 input，删除键仍可用</text>
+			</view>
+
+		</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '数字键盘 NumberKeyboard', name: 'number-keyboard' })
+
+	const typed = ref('')
+	const digitValue = ref('')
+	const idcardValue = ref('')
+	const randomValue = ref('')
+	const randomKeyboard = ref<ComponentPublicInstance | null>(null)
+	const customValue = ref('')
+	const customLog = ref('未点击')
+	const extraValue = ref('')
+	const extraKeyList: string[] = ['00']
+	const limitedValue = ref('')
+
+	/** 末位追加 */
+	const append = (text: string, key: string): string => text + key
+
+	/** 删除末位（空串安全） */
+	const removeLast = (text: string): string => {
+		const len = text.length
+		if (len == 0) {
+			return ''
+		}
+		return text.substring(0, len - 1)
+	}
+
+	/** 6 位上限回调：达到上限后所有可输入键禁用 */
+	const limitSix = (key: string): boolean => limitedValue.value.length >= 6
+
+	const onTypedInput = (key: string) => { typed.value = append(typed.value, key) }
+	const onTypedDelete = () => { typed.value = removeLast(typed.value) }
+
+	const onDigitInput = (key: string) => { digitValue.value = append(digitValue.value, key) }
+	const onDigitDelete = () => { digitValue.value = removeLast(digitValue.value) }
+
+	const onIdcardInput = (key: string) => { idcardValue.value = append(idcardValue.value, key) }
+	const onIdcardDelete = () => { idcardValue.value = removeLast(idcardValue.value) }
+
+	const onRandomInput = (key: string) => { randomValue.value = append(randomValue.value, key) }
+	const onRandomDelete = () => { randomValue.value = removeLast(randomValue.value) }
+
+	/** 调面板实例方法重新打乱 */
+	const shuffleRandom = () => {
+		const inst = randomKeyboard.value
+		if (inst != null) {
+			inst.$callMethod('shuffle')
+		}
+	}
+
+	const onCustomInput = (key: string) => { customValue.value = append(customValue.value, key) }
+	const onCustomDelete = () => { customValue.value = removeLast(customValue.value) }
+	const onCustomClose = () => { customLog.value = '点击关闭' }
+
+	const onExtraInput = (key: string) => { extraValue.value = append(extraValue.value, key) }
+	const onExtraDelete = () => { extraValue.value = removeLast(extraValue.value) }
+
+	const onLimitedInput = (key: string) => { limitedValue.value = append(limitedValue.value, key) }
+	const onLimitedDelete = () => { limitedValue.value = removeLast(limitedValue.value) }
+</script>
+
+<style>
+	.display {
+		min-height: 48px;
+		justify-content: center;
+		align-items: center;
+		margin-bottom: 12px;
+		padding: 8px 12px;
+		background-color: #f7f8fa;
+		border-radius: 6px;
+	}
+	.display-text {
+		font-size: 18px;
+		color: #323233;
+	}
+	.caption {
+		margin-top: 8px;
+		font-size: 12px;
+		color: #969799;
+	}
+	.btn-gap {
+		margin-top: 12px;
+		align-items: center;
+	}
+</style>

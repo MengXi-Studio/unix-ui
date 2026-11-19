@@ -1,7 +1,7 @@
 ---
 title: Tabs
 subtitle: 标签页
-demo: pages-sub/tabs/tabs
+demo: pages-sub/nav/tabs/tabs
 added: 0.4.0
 ---
 

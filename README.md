@@ -9,95 +9,81 @@
   </a>
 
   <h1>@meng-xi/unix-ui</h1>
-  <p>为 uni-app x 提供功能完善的 UI 组件库（UTS + uvue 编写，一套组件多端覆盖）</p>
+  <p><b>为 uni-app x 而生的 UI 组件库</b><br>79 个组件 · 8 大分类 · 一套 UTS 源码直出 App / Web / 小程序</p>
 
 [![license](https://img.shields.io/github/license/MengXi-Studio/unix-ui.svg)](./LICENSE) [![npm](https://img.shields.io/npm/v/@meng-xi/unix-ui?color=blue)](https://www.npmjs.com/package/@meng-xi/unix-ui) ![npm](https://img.shields.io/npm/dt/@meng-xi/unix-ui?color=green)
 
 [文档](https://mengxi-studio.github.io/unix-ui/) · [在线演示](https://mengxi-studio.github.io/unix-ui/playground/) · [更新日志](https://github.com/MengXi-Studio/unix-ui/blob/master/packages/docs/src/changelog.md) · [示例工程](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground)
 </div>
 
+> **你不需要再手写界面细节了。** 按钮的按压反馈与加载态、0.5px 细边框、单行与多行省略、徽标截断偏移、弹层与滚轮选择、日期与农历换算……这些「每个项目都要重写一遍、每端都要重调一次」的活，unix-ui 已经收敛成 79 个开箱即用的组件。装进去，写标签就能用；改一行变量，全站换肤。
+
 ## 目录
 
-- [为什么是 unix-ui](#为什么是-unix-ui)
-- [特性](#特性)
-- [环境要求](#环境要求)
-- [安装](#安装)
-- [快速开始](#快速开始)
-- [组件清单](#组件清单)
-- [平台兼容性](#平台兼容性)
-- [在线演示](#在线演示)
-- [项目结构](#项目结构)
-- [本地开发](#本地开发)
+- [为什么选择 unix-ui](#为什么选择-unix-ui)
+- [核心能力](#核心能力)
+- [5 分钟接入](#5-分钟接入)
+- [组件全景](#组件全景)
+- [为多端而生的实现](#为多端而生的实现)
+- [平台支持](#平台支持)
+- [真机与在线体验](#真机与在线体验)
+- [工程与共建](#工程与共建)
 - [文档](#文档)
 - [交流与支持](#交流与支持)
 
-## 为什么是 unix-ui
+## 为什么选择 unix-ui
 
-直接用 uni-app x 的原生 `view` / `text` 搭界面，按钮的按压反馈与加载态、0.5px 细边框、文本单行 / 多行省略、徽标截断与偏移……每一处交互细节都要手写，App / Web / 小程序还要逐端调样式。unix-ui 把这些重复劳动收敛成一套开箱即用的组件：
+| 你关心的 | 原生 `view` / `text` 手写 | 移植 H5 组件库 | **unix-ui** |
+| --- | --- | --- | --- |
+| 交互细节 | 按压态、加载、省略逐个手写 | 依赖 DOM，跨端表现漂移 | 组件内建，多端一致 |
+| 0.5px 细边框 | App / Web / 小程序各写一套 | 需要额外 hack | 统一的 transform 缩放方案 |
+| 主题换肤 | 样式散落各处 | 运行时 CSS 变量 | 编译期 `$m-*` 变量，零运行时开销 |
+| 类型提示 | 无 | `any` 泛滥 | UTS 全量类型，补全与提示到位 |
+| 组件接入 | — | 注册、按需引入、样式冲突 | easycom 自动扫描，**零注册零配置** |
+| 平台适配 | 每端逐条排查 | 小程序端能力缺失 | 条件编译隔离差异，库内兜底 |
 
-- **用过主流 uni-app 组件库？** 组件划分、props 命名、视觉规格遵循主流习惯，心智零迁移，看一眼 API 就能上手；
-- **多端发布？** UTS + uvue 一套源码，编译到 App（Android / iOS / HarmonyOS）、Web、小程序，hairline 细边框、滚动容器等平台差异由库内确定性实现，不用逐端排查；
-- **在意主题？** 全部视觉参数收敛为 `$m-*` SCSS 变量，编译期注入，根 `uni.scss` 改一行全组件生效，零运行时开销。
+设计上不重造渲染栈：只依赖 uni-app x 内置组件与 `UniElement.animate`。UTS 源码直接分发（Web / 小程序 → JS，Android → Kotlin，iOS → Swift），由 uni-app x 编译链现场编译，**没有一层多余的运行时**。
 
-底层只依赖 uni-app x 内置组件与 `UniElement.animate`，不重造渲染栈；UTS 源码分发（Web / 小程序 → JS，Android → Kotlin，iOS → Swift），由 uni-app x 编译链现场编译。
+## 核心能力
 
-## 特性
+### 79 个组件，覆盖真实业务场景
 
-- **easycom 零注册** - 遵循 uni_modules 组件插件规范（插件 id：`m-ui-x`），`<m-button>` 标签直接使用，无需 import 与手动注册
-- **多端覆盖，vapor 兼容** - 一套组件源码覆盖 App（Android / iOS / HarmonyOS）、Web、小程序，兼容蒸汽模式（vapor）
-- **编译期主题定制** - 全部视觉参数以 `$m-*` 变量（全 `!default`）收敛在 `theme/vars.scss`，在根 `uni.scss` 直接定义同名变量即覆盖，不定义则零配置使用默认主题
-- **跨端一致的小屏细节** - 0.5px hairline 细边框（transform 缩放方案）、按压反馈等平台差异由库内统一处理
-- **组合式 API + 强类型 UTS** - props / events 全量类型标注，UTS / TS 提示到位；动画走 `UniElement.animate`，无 `@keyframes` 依赖
-- **无全局副作用** - 组件样式自包含，仅引用同包 `vars.scss`；无全局样式注入，随用随取
+从基础按钮、布局栅格，到表单录入、滚轮与列表选择、日期时间与农历，再到反馈、展示、导航——按 8 大分类组织，与文档站侧栏一一对应，按主流组件库的命名与交互习惯设计，**心智零迁移**。
 
-## 环境要求
+### 编译期主题，改一行全站生效
 
-- HBuilderX `5.08` 及以上（uni-app x 编译器）
-- 可选：Node.js + pnpm（npm 方式安装，或参与本仓库开发时）
-- 建议启用样式隔离策略 2.0；兼容蒸汽模式（vapor）编译，详见[平台兼容性](#平台兼容性)
+全部视觉参数以 `$m-*` SCSS 变量收敛在 `theme/vars.scss`（全 `!default`）。在工程根 `uni.scss` 里写一行同名变量即完成覆盖，不写则零配置使用默认主题。变量在编译期注入，**运行时零开销**。
 
-## 安装
+### 一套源码，多端一致
 
-### 方式一：uni_modules（推荐）
+App（Android / iOS / HarmonyOS）、Web、小程序共用一套 UTS + uvue。hairline 细边框、滚动容器、弹层层级、字体加载等平台差异，由库内确定性实现，兼容蒸汽模式（vapor）。
 
-将组件库放入工程的 `uni_modules/m-ui-x/` 目录（插件市场导入或手动拷贝），easycom 自动扫描，**无需任何配置**：
+### 强类型 UTS，写错就有提示
 
-```
-uni_modules/m-ui-x/
-├── components/
-├── utils/
-└── theme/
-```
+props / events 全量类型标注，编辑器补全到位；回调一律箭头函数、可空用 `null` 而非 `undefined`，与 UTS 规范保持一致。动画统一走 `UniElement.animate`，无 `@keyframes` 依赖。
 
-> 插件 id 为 `m-ui-x`，目录名须与之一致，否则 easycom 无法自动匹配。
+### easycom 零注册，随用随取
 
-### 方式二：npm
+遵循 uni_modules 组件插件规范（插件 id：`m-ui-x`），`<m-button>` 直接写进模板即可，无需 import 与手动注册。
+
+### 无全局副作用
+
+组件样式自包含，仅引用同包 `vars.scss`；不注入全局样式、不污染工程配置，随时可加可删。
+
+## 5 分钟接入
+
+**第一步：放入工程**（二选一）
 
 ```bash
+# 方式一（推荐）：插件市场导入到 uni_modules/m-ui-x/
+# 方式二：npm 安装后同步到 uni_modules（编译器不扫描 node_modules）
 pnpm add @meng-xi/unix-ui
-```
-
-安装后将包内容同步到工程 `uni_modules/m-ui-x/`（编译器不扫描 node_modules）：
-
-```bash
 mkdir -p uni_modules && cp -R node_modules/@meng-xi/unix-ui uni_modules/m-ui-x
 ```
 
-也可在 `pages.json` 中配置 easycom 规则指向包路径，详见[安装文档](https://mengxi-studio.github.io/unix-ui/guide/installation.html)。
+> 插件 id 与目录名必须为 `m-ui-x`，否则 easycom 无法自动匹配。
 
-### 验证安装
-
-在任意页面模板中直接使用，无需 import 与注册：
-
-```html
-<template>
-  <m-button type="primary">安装成功</m-button>
-</template>
-```
-
-## 快速开始
-
-### 1. 在模板中使用组件
+**第二步：直接使用**
 
 ```html
 <template>
@@ -111,22 +97,36 @@ mkdir -p uni_modules && cp -R node_modules/@meng-xi/unix-ui uni_modules/m-ui-x
 </script>
 ```
 
-### 2. 主题定制（可选）
-
-在工程根 `uni.scss` 中**直接定义**同名变量即可覆盖默认值（编译期 `!default` 叠加，无需引入任何文件）：
+**第三步：按需换肤**（可选）
 
 ```scss
-/* 常规按钮高度 44px → 48px */
+/* 工程根 uni.scss：常规按钮高度 44px → 48px，所有按钮立即生效 */
 $m-button-normal-height: 48px;
 ```
 
-> 请勿在 `uni.scss` 中 `@import` 包内 `vars.scss`——`uni.scss` 会注入每个组件样式，与组件内引用同一文件会触发 sass 循环导入。
+> 请勿在 `uni.scss` 中 `@import` 包内 `vars.scss`——`uni.scss` 会注入每个组件样式，重复引入同一文件会触发 sass 循环导入。
 
-全部可用变量见 [theme/vars.scss](./packages/core/theme/vars.scss)，按 `$m-<组件>-<属性>` 命名；机制细节见[主题定制](https://mengxi-studio.github.io/unix-ui/guide/theming.html)。
+环境要求：HBuilderX `5.08` 及以上；建议启用样式隔离策略 2.0。全部可用变量与机制细节见[主题定制](https://mengxi-studio.github.io/unix-ui/guide/theming.html)。
 
-## 组件清单
+## 组件全景
 
-共 79 个组件（含子组件与组合形态），按 8 类组织，与文档站侧栏分组一一对应，组内按组件名字母序排列；表中列出组件标签与核心能力，完整 API 见[组件参考](https://mengxi-studio.github.io/unix-ui/components/button.html)。
+共 **79 个组件**（含子组件、弹层与输入框等组合形态），8 大分类组内按组件名字母序排列：
+
+| 分类 | 组件 |
+| --- | --- |
+| 基础 | `m-button` `m-icon` `m-image` `m-text` |
+| 布局 | `m-compact` `m-divider` `m-flex` `m-grid` `m-row` `m-space` `m-status-bar` `m-sticky` `m-waterfall` |
+| 数据录入 | `m-checkbox` `m-color-picker` `m-input` `m-number-keyboard` `m-password-input` `m-radio` `m-rate` `m-search` `m-segmented` |
+| 选择器 | `m-cascader` `m-picker` `m-picker-view` `m-select` |
+| 日期时间 | `m-calendar` `m-date-picker` `m-date-range-picker` `m-date-strip` `m-lunar-picker` `m-time-picker` `m-time-range-picker` |
+| 反馈 | `m-fab` `m-loading` `m-overlay` `m-popup` `m-toast` |
+| 数据展示 | `m-badge` `m-cell` |
+| 导航 | `m-tabs` |
+
+> 数据录入、选择器、日期时间三类的多数组件同时提供 **弹层（-popup）** 与 **输入框（-input）** 形态，上表只列基础组件名；另有覆盖 1900–2100 的纯函数日期工具集（`utils/date.uts`），见[日期工具](https://mengxi-studio.github.io/unix-ui/tools/date.html)。
+
+<details>
+<summary><b>展开完整组件清单（含全部形态与核心能力）</b></summary>
 
 ### 基础组件
 
@@ -235,9 +235,20 @@ $m-button-normal-height: 48px;
 | --- | --- |
 | `m-tabs` / `m-tab` | 标签页：line / card / pill 三种风格、索引与 name 混用匹配、标签栏横向滚动、内容转场与手势切换、吸顶、scrollspy、切换前拦截 |
 
-> 另有与组件同源的日期工具集（`utils/date.uts`，覆盖比较、算术、周月年边界、格式化解析与农历换算的纯函数集），详见[日期工具](https://mengxi-studio.github.io/unix-ui/tools/date.html)。
+</details>
 
-## 平台兼容性
+## 为多端而生的实现
+
+| 机制 | 做法 | 收益 |
+| --- | --- | --- |
+| 主题变量 | 组件样式顶层 `@import vars.scss`，全部变量 `!default` | 用户根 `uni.scss` 定义同名变量即覆盖，零配置有默认主题 |
+| 0.5px 细边框 | 绝对定位 0.5px 层 + `transform: scale(0.5)`，`transform-origin: 0 0` | App / Web / 小程序一致的 hairline，无模糊无偏移 |
+| 动画 | 统一 `UniElement.animate` | 不依赖 `@keyframes`，三端同源 |
+| 平台差异 | 条件编译（`#ifdef APP-ANDROID / WEB / MP-WEIXIN` 等）隔离 | 差异收敛在库内，业务代码不感知 |
+| 样式写法 | 只用 class 选择器 + flex，规则扁平书写 | 规避 ucss 不支持后代选择器与伪元素 |
+| 类型 | UTS 强类型，可空用 `null`，回调用箭头函数 | Web / App 编译期即暴露类型问题 |
+
+## 平台支持
 
 | 平台 | 状态 | 说明 |
 | --- | --- | --- |
@@ -245,18 +256,18 @@ $m-button-normal-height: 48px;
 | App-Android | ✅ 云打包验证 | 蒸汽与 VDOM 双模式云打包编译通过；0.7.0 修复两轮 Kotlin 编译错误后重新出包，真机演示 App 随版本发布 |
 | App-iOS | 🔧 已适配 | 代码条件编译适配，待真机实测（需 macOS 环境） |
 | App-HarmonyOS | 🔧 已适配 | 代码条件编译适配，待实测（需 DevEco Studio） |
-| 微信小程序 | 🔧 基线已实测 | 遮罩显隐 / 弹层 / 字体加载等基线问题已实测修复，0.7.0 修复弹层组件 `getCurrentInstance` 空实例崩溃（issue #20），新组件随版本陆续实测 |
+| 微信小程序 | 🔧 基线已实测 | 遮罩显隐 / 弹层 / 字体加载等基线问题已实测修复，0.7.0 修复弹层组件 `getCurrentInstance` 空实例崩溃（issue #20），0.7.1 修复图标字体加载（issue #22），新组件随版本陆续实测 |
 | 其他小程序 | 🔧 已适配 | 代码条件编译适配，待开发者工具实测 |
 
 完整说明（HBuilderX 版本要求、蒸汽模式配置、平台差异处理）见[平台兼容性](https://mengxi-studio.github.io/unix-ui/guide/compatibility.html)。
 
-## 在线演示
+## 真机与在线体验
 
-示例工程 [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) 为每个组件提供一页穷举全部 props / 变体 / 事件的可运行验证矩阵，部署于文档站的[在线演示](https://mengxi-studio.github.io/unix-ui/playground/)，浏览器可直接体验。
+- **浏览器直接体验**：文档站的[在线演示](https://mengxi-studio.github.io/unix-ui/playground/)，每个组件一页，穷举全部 props / 变体 / 事件。
+- **Android 真机**：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1795095433761-__UNI__F1AA560_1795095406297.apk)——云打包产物，覆盖全部组件的真实原生渲染效果；安装包随版本更新重新打包，链接以最新发版说明为准。
+- **源码即文档**：示例工程 [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) 的每个演示页都是可运行的最佳实践。
 
-**Android 真机体验**：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1795095433761-__UNI__F1AA560_1795095406297.apk)——云打包产物，覆盖全部组件的真实原生渲染效果；安装包随版本更新重新打包，链接以最新发版说明为准。
-
-## 项目结构
+## 工程与共建
 
 ```
 unix-ui/
@@ -271,8 +282,6 @@ unix-ui/
 └── versions/            # 各版本发布说明
 ```
 
-## 本地开发
-
 ```bash
 pnpm install
 pnpm sync:uni-modules        # core → playground/uni_modules/m-ui-x
@@ -281,13 +290,13 @@ pnpm dev:docs                # 启动文档站
 pnpm build:docs              # 构建文档站（含死链检查）
 ```
 
-- 组件源码只改 `packages/core`；`packages/playground/uni_modules/m-ui-x/` 下的 `components` / `utils` / `theme` 为同步产物，手改会在下次同步时被覆盖。
-- 演示工程需用 HBuilderX 打开 `packages/playground` 运行；新增组件按「组件 → 主题 → 同步 → 演示 → 文档」顺序落码。
-- 欢迎通过 [Issues](https://github.com/MengXi-Studio/unix-ui/issues) / [Pull Requests](https://github.com/MengXi-Studio/unix-ui/pulls) 参与共建。
+- 组件源码只改 `packages/core`；`playground/uni_modules/m-ui-x/` 下的 `components` / `utils` / `theme` 为同步产物，手改会在下次同步时被覆盖。
+- 演示工程用 HBuilderX 打开 `packages/playground` 运行；新增组件按「组件 → 主题 → 同步 → 演示 → 文档」顺序落码。
+- 欢迎通过 [Issues](https://github.com/MengXi-Studio/unix-ui/issues) / [Pull Requests](https://github.com/MengXi-Studio/unix-ui/pulls) 参与共建；如果这个库帮你省下了时间，点个 **Star** 是最好的支持。
 
 ## 文档
 
-📖 从入门到精通的完整文档（指南 + 组件参考 + 更新日志，中英双语）：
+📖 完整文档从入门到精通（指南 + 组件参考 + 更新日志，中英双语）：
 
 **[https://mengxi-studio.github.io/unix-ui/](https://mengxi-studio.github.io/unix-ui/)**
 

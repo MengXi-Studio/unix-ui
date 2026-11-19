@@ -9,6 +9,8 @@ added: 0.1.0
 
 基于字体图标的图标集，内置 257 个图标，支持颜色与大小自定义、点击事件。
 
+Web 与 App 端通过 `<style>` 内的本地 ttf `@font-face` 加载；微信小程序端 wxss 不支持本地字体文件，改由 `uni.loadFontFace` 以 `url("data:font/ttf;base64,...")` 内联形式加载（`global: true` 全端生效，模块级标记保证只加载一次），无需额外配置。若首屏图标出现短暂默认字形，属字体异步加载的固有表现。
+
 ## 代码演示
 
 ### 基础用法 {#demo-basic}

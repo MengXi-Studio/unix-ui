@@ -8,6 +8,8 @@ added: 0.1.0
 
 A font-based icon set with 257 built-in icons, supporting custom color & size and click events.
 
+Web and App load the bundled ttf through a local `@font-face` inside `<style>`. WeChat Mini Program does not support local font files in wxss, so the icon font is loaded at runtime via `uni.loadFontFace` with an inline `url("data:font/ttf;base64,...")` source (`global: true` applies app-wide, and a module-level flag guarantees a single load) — no extra configuration needed. A brief fallback glyph on the first frame is inherent to asynchronous font loading.
+
 ## Examples
 
 ### Basic Usage {#demo-basic}

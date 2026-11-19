@@ -1,7 +1,7 @@
 ---
 title: Fab
 subtitle: 悬浮按钮
-demo: pages-sub/fab/fab
+demo: pages-sub/feedback/fab/fab
 added: 0.5.0
 ---
 

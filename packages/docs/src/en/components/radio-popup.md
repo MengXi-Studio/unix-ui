@@ -1,7 +1,7 @@
 ---
 title: RadioPopup
 subtitle: 单选弹出框
-demo: pages-sub/radio-popup/radio-popup
+demo: pages-sub/form/radio-popup/radio-popup
 added: 0.7.0
 ---
 

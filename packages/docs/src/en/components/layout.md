@@ -1,6 +1,6 @@
 ---
 title: Row
-demo: pages-sub/layout/layout
+demo: pages-sub/layouts/layout/layout
 added: 0.1.0
 ---
 

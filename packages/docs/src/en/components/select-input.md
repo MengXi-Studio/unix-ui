@@ -1,7 +1,7 @@
 ---
 title: SelectInput
 subtitle: 列表选择输入框
-demo: pages-sub/select-input/select-input
+demo: pages-sub/pickers/select-input/select-input
 added: 0.7.0
 ---
 

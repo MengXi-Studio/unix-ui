@@ -1,7 +1,7 @@
 ---
 title: PasswordInputPopup
 subtitle: Password Input Popup
-demo: pages-sub/password-input-popup/password-input-popup
+demo: pages-sub/form/password-input-popup/password-input-popup
 added: 0.7.0
 ---
 

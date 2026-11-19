@@ -1,7 +1,7 @@
 ---
 title: PasswordInput
 subtitle: Password Input Grid
-demo: pages-sub/password-input/password-input
+demo: pages-sub/form/password-input/password-input
 added: 0.7.0
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: Input
 subtitle: Input
-demo: pages-sub/input/input
+demo: pages-sub/form/input/input
 added: 0.2.0
 ---
 

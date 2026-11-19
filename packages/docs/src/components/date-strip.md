@@ -1,7 +1,7 @@
 ---
 title: DateStrip
 subtitle: 日期横条
-demo: pages-sub/date-strip/date-strip
+demo: pages-sub/datetime/date-strip/date-strip
 added: 0.5.0
 ---
 

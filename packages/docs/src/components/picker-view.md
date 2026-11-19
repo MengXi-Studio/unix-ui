@@ -1,7 +1,7 @@
 ---
 title: PickerView
 subtitle: 选择器纯视图
-demo: pages-sub/picker-view/picker-view
+demo: pages-sub/pickers/picker-view/picker-view
 added: 0.6.0
 ---
 

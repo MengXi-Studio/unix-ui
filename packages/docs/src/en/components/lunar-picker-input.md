@@ -1,7 +1,7 @@
 ---
 title: LunarPickerInput
 subtitle: LunarPickerInput
-demo: pages-sub/lunar-picker-input/lunar-picker-input
+demo: pages-sub/datetime/lunar-picker-input/lunar-picker-input
 added: 0.6.0
 ---
 

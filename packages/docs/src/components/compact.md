@@ -1,7 +1,7 @@
 ---
 title: Compact
 subtitle: 紧凑布局
-demo: pages-sub/compact/compact
+demo: pages-sub/layouts/compact/compact
 added: 0.2.0
 ---
 

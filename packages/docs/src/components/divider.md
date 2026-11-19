@@ -1,7 +1,7 @@
 ---
 title: Divider
 subtitle: 分割线
-demo: pages-sub/divider/divider
+demo: pages-sub/layouts/divider/divider
 added: 0.2.0
 ---
 

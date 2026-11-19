@@ -1,7 +1,7 @@
 ---
 title: DatePickerPopup
 subtitle: DatePickerPopup
-demo: pages-sub/date-picker-popup/date-picker-popup
+demo: pages-sub/datetime/date-picker-popup/date-picker-popup
 added: 0.6.0
 ---
 

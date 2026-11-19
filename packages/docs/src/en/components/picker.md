@@ -1,7 +1,7 @@
 ---
 title: Picker
 subtitle: Picker
-demo: pages-sub/picker/picker
+demo: pages-sub/pickers/picker/picker
 added: 0.6.0
 ---
 

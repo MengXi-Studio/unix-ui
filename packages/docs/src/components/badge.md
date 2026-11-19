@@ -1,7 +1,7 @@
 ---
 title: Badge
 subtitle: 徽标
-demo: pages-sub/badge/badge
+demo: pages-sub/display/badge/badge
 added: 0.1.0
 ---
 

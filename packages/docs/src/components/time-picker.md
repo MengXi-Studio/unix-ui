@@ -1,7 +1,7 @@
 ---
 title: TimePicker
 subtitle: 时间选择
-demo: pages-sub/time-picker/time-picker
+demo: pages-sub/datetime/time-picker/time-picker
 added: 0.6.0
 ---
 

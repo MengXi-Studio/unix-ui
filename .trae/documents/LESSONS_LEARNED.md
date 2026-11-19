@@ -137,7 +137,7 @@
 ### 25. 演示页产物必须本机 build:demo 后入库，CI 不会构建 playground
 - 根因：deploy-docs.yml 只跑 `build:docs`，HBuilderX 无 Linux 版导致 CI 无法构建 playground，线上 `/unix-ui/playground/**` 深链全 404（文档站手机预览 iframe 显示 uni-app x 404 页）
 - 约定：playground 演示页变更后必须 `pnpm run build:demo` 重新产出并提交 `packages/docs/src/public/playground/`（产物 gitignore 已移除），push 后 CI 随文档一起部署
-- 产物自检：`pages-sub/<name>/<name>/index.html` 深链目录 + 根 404.html 必须存在；构建日志「资源路径补前缀：0 个文件」属正常（vite base 已生效，rewriteBase 是兜底）
+- 产物自检：`pages-sub/<分类>/<name>/<name>/index.html` 深链目录 + 根 404.html 必须存在；构建日志「资源路径补前缀：0 个文件」属正常（vite base 已生效，rewriteBase 是兜底）
 - 本地验收链路：`node packages/docs/node_modules/vitepress/bin/vitepress.js preview` → curl 深链/docs 页/资源均 200 → browser_evaluate 读 iframe 内文本确认渲染按钮演示而非 404
 
 ### 26. HBuilderX CLI publish 会静默改写 manifest.json（appid 重置 + vapor 配置移除）
@@ -654,3 +654,13 @@
   - codegen 对组件事件处理器的模板内联 `$event` 一律生成 `fun($event: Any)`（与组件 emit 声明的 payload 类型无关）——演示页日志函数形参必须 `any | null` 内部 cast（radio / checkbox 页早已是此写法所以从未报错）
 - **验证方式**：`cli publish app-android --type appResource` 本地生成 Kotlin，grep 复查：`gen_xxx_fn` 生成情况、`"onChange" to 函数名` 直传残留、`$slots` 访问形态、`as RadioValue | ` 联合 cast 残留
 - **教训**：① 组件内函数声明顺序按调用依赖拓扑排（被调用者在前）；② 事件/透传函数形参禁用「type alias + 数组联合」组合，写具体展开联合；③ 模板绑定组件事件一律内联 `$event` 调用；④ `$slots.xxx` 一律索引访问；⑤ watch source 一律显式返回类型注解；⑥ 演示页事件日志函数形参一律 `any | null`；⑦ 仅 Web 编译通过不能作为 Android 通过依据，改动后必须本地生成 Kotlin grep 复查
+
+### #105 演示页按分类拆分子包：路由 name 不变，但文档 frontmatter 与 build-demo 深链扫描必须同步
+- **背景**：67 个演示页由 `pages-sub/<name>/` 迁到 `pages-sub/<分类>/<name>/`（basic / layouts / form / pickers / datetime / feedback / display / nav），`vite.config.ts` 的 `subPackages` 拆成 8 项（root 与 dir 同名）
+- **关键结论**：
+  1. **路由 name 不变**：routeGen 的 `name` 取页面 `defineUniPage` 宏声明，不由目录派生；首页 `router.push({ name })` 与 `demo-components.uts` 零改动。只有 `path` 变为三段
+  2. **组目录不能与页面目录同名**：`pages-sub/layout`、`pages-sub/picker` 本身就是页面目录，无法再作组目录 → 组名改用 `layouts` / `pickers`（否则出现 `layout/layout/layout` 且 mv 冲突）
+  3. **文档 frontmatter 必须同步**：`demo: pages-sub/<name>/<name>` 共 134 处（中英各 67），`DemoPhone.vue` 直接用它拼 iframe 的 history 路由，漏改即文档站演示区 404
+  4. **`scripts/build-demo.mjs` 深链扫描只认两层**：`collectDemoPages` 写死 `readdirSync(base)` + `<name>/<name>.uvue`，页面变三层后返回空数组 → 在线演示全部 404 且**构建日志不报错**（只有 `public/playground/pages-sub` 目录整个消失才能发现）。已改为递归扫描
+- **排查信号**：`build:demo` 输出「完成（N 个文件）」但 N 未随页面数增加、`public/playground/pages-sub` 不存在或缺少分类子目录
+- **教训**：① 路由结构变更后要同时核对四处：`pages.json` 分包、`routes.gen.uts` path、文档 frontmatter、演示产物深链；② 静态产物生成脚本里的路径约定要写成递归，不要写死层级；③ 批量 `git mv` 用 Node 或显式数组，zsh 中 `${var#*:}` 不做分词会把整串当单个路径；④ 页面物理位置变更属「构建产物必须重建」变更，`pnpm build:demo` 与 `build:docs` 都要重跑并提交产物

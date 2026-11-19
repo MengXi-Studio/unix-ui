@@ -1,7 +1,7 @@
 ---
 title: Rate
 subtitle: 评分
-demo: pages-sub/rate/rate
+demo: pages-sub/form/rate/rate
 added: 0.7.0
 ---
 

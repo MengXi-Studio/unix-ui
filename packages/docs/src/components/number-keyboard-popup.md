@@ -1,7 +1,7 @@
 ---
 title: NumberKeyboardPopup
 subtitle: 数字键盘弹出框
-demo: pages-sub/number-keyboard-popup/number-keyboard-popup
+demo: pages-sub/form/number-keyboard-popup/number-keyboard-popup
 added: 0.7.0
 ---
 

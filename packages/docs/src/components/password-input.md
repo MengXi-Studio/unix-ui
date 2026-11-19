@@ -1,7 +1,7 @@
 ---
 title: PasswordInput
 subtitle: 密码输入格子
-demo: pages-sub/password-input/password-input
+demo: pages-sub/form/password-input/password-input
 added: 0.7.0
 ---
 

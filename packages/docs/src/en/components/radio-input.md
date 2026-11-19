@@ -1,7 +1,7 @@
 ---
 title: RadioInput
 subtitle: 单选输入框
-demo: pages-sub/radio-input/radio-input
+demo: pages-sub/form/radio-input/radio-input
 added: 0.7.0
 ---
 

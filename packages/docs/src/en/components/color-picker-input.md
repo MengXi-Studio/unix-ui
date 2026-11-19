@@ -1,7 +1,7 @@
 ---
 title: ColorPickerInput
 subtitle: 颜色选择器输入框
-demo: pages-sub/color-picker-input/color-picker-input
+demo: pages-sub/form/color-picker-input/color-picker-input
 added: 0.5.0
 ---
 

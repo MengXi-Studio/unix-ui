@@ -1,7 +1,7 @@
 ---
 title: TimeRangePickerPopup
 subtitle: TimeRangePickerPopup
-demo: pages-sub/time-range-picker-popup/time-range-picker-popup
+demo: pages-sub/datetime/time-range-picker-popup/time-range-picker-popup
 added: 0.6.0
 ---
 

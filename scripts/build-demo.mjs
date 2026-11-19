@@ -86,8 +86,9 @@ function resolveCli() {
 /**
  * 收集全部组件演示页的 history 路由路径
  *
- * 约定：pages-sub 下每个子目录 <name> 若存在同名 <name>.uvue，
- * 则演示页路由为 pages-sub/<name>/<name>，与文档 frontmatter.demo 一致
+ * 约定：pages-sub/<分类>/<name>/<name>.uvue，
+ * 则演示页路由为 pages-sub/<分类>/<name>/<name>，与文档 frontmatter.demo 一致；
+ * 递归扫描以兼容未来更深层级
  *
  * @returns {string[]} 演示页路由路径列表
  */
@@ -95,12 +96,24 @@ function collectDemoPages() {
 	const base = path.join(playgroundDir, 'pages-sub')
 	if (!existsSync(base)) return []
 	const out = []
-	for (const name of readdirSync(base)) {
-		const dir = path.join(base, name)
-		if (statSync(dir).isDirectory() && existsSync(path.join(dir, name + '.uvue'))) {
-			out.push('pages-sub/' + name + '/' + name)
+	/**
+	 * 递归扫描页面目录：目录名与内部同名 .uvue 匹配即为演示页
+	 *
+	 * @param {string} dir 当前目录绝对路径
+	 * @param {string} rel 相对 pages-sub 的路径（顶层为空串）
+	 */
+	const walk = (dir, rel) => {
+		for (const name of readdirSync(dir)) {
+			const abs = path.join(dir, name)
+			if (!statSync(abs).isDirectory()) continue
+			const nextRel = rel === '' ? name : rel + '/' + name
+			if (existsSync(path.join(abs, name + '.uvue'))) {
+				out.push('pages-sub/' + nextRel + '/' + name)
+			}
+			walk(abs, nextRel)
 		}
 	}
+	walk(base, '')
 	return out
 }
 

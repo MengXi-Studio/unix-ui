@@ -1,6 +1,6 @@
 ---
 title: NumberKeyboard
-demo: pages-sub/number-keyboard/number-keyboard
+demo: pages-sub/form/number-keyboard/number-keyboard
 added: 0.7.0
 ---
 

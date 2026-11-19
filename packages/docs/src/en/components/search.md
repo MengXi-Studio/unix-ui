@@ -1,7 +1,7 @@
 ---
 title: Search
 subtitle: 搜索
-demo: pages-sub/search/search
+demo: pages-sub/form/search/search
 added: 0.7.0
 ---
 

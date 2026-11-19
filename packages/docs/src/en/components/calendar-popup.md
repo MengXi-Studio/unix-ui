@@ -1,7 +1,7 @@
 ---
 title: CalendarPopup
 subtitle: CalendarPopup
-demo: pages-sub/calendar-popup/calendar-popup
+demo: pages-sub/datetime/calendar-popup/calendar-popup
 added: 0.2.0
 ---
 

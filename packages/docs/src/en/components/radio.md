@@ -1,7 +1,7 @@
 ---
 title: Radio
 subtitle: 单选框
-demo: pages-sub/radio/radio
+demo: pages-sub/form/radio/radio
 added: 0.7.0
 ---
 

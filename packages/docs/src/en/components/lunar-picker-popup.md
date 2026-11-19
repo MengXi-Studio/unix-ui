@@ -1,7 +1,7 @@
 ---
 title: LunarPickerPopup
 subtitle: LunarPickerPopup
-demo: pages-sub/lunar-picker-popup/lunar-picker-popup
+demo: pages-sub/datetime/lunar-picker-popup/lunar-picker-popup
 added: 0.6.0
 ---
 

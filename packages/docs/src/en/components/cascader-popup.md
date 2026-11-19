@@ -1,7 +1,7 @@
 ---
 title: CascaderPopup
 subtitle: Cascader Popup
-demo: pages-sub/cascader-popup/cascader-popup
+demo: pages-sub/pickers/cascader-popup/cascader-popup
 added: 0.3.0
 ---
 

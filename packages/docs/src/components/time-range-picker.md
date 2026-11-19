@@ -1,7 +1,7 @@
 ---
 title: TimeRangePicker
 subtitle: 时间范围选择
-demo: pages-sub/time-range-picker/time-range-picker
+demo: pages-sub/datetime/time-range-picker/time-range-picker
 added: 0.6.0
 ---
 

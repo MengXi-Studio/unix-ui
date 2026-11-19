@@ -1,7 +1,7 @@
 ---
 title: Image
 subtitle: 图片
-demo: pages-sub/image/image
+demo: pages-sub/basic/image/image
 added: 0.1.0
 ---
 

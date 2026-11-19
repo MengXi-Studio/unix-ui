@@ -1,7 +1,7 @@
 ---
 title: Checkbox
 subtitle: 复选框
-demo: pages-sub/checkbox/checkbox
+demo: pages-sub/form/checkbox/checkbox
 added: 0.5.0
 ---
 

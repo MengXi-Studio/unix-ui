@@ -1,7 +1,7 @@
 ---
 title: Segmented
 subtitle: 分段控制器
-demo: pages-sub/segmented/segmented
+demo: pages-sub/form/segmented/segmented
 added: 0.7.0
 ---
 

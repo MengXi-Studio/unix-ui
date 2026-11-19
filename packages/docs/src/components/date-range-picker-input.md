@@ -1,7 +1,7 @@
 ---
 title: DateRangePickerInput
 subtitle: 日期范围输入框
-demo: pages-sub/date-range-picker-input/date-range-picker-input
+demo: pages-sub/datetime/date-range-picker-input/date-range-picker-input
 added: 0.6.0
 ---
 

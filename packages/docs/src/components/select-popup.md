@@ -1,7 +1,7 @@
 ---
 title: SelectPopup
 subtitle: 列表选择弹层
-demo: pages-sub/select-popup/select-popup
+demo: pages-sub/pickers/select-popup/select-popup
 added: 0.7.0
 ---
 

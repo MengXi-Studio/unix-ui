@@ -1,7 +1,7 @@
 ---
 title: CheckboxPopup
 subtitle: 复选弹出框
-demo: pages-sub/checkbox-popup/checkbox-popup
+demo: pages-sub/form/checkbox-popup/checkbox-popup
 added: 0.5.0
 ---
 

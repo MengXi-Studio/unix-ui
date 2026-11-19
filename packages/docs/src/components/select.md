@@ -1,7 +1,7 @@
 ---
 title: Select
 subtitle: 列表选择
-demo: pages-sub/select/select
+demo: pages-sub/pickers/select/select
 added: 0.7.0
 ---
 

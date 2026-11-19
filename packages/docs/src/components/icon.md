@@ -1,7 +1,7 @@
 ---
 title: Icon
 subtitle: 图标
-demo: pages-sub/icon/icon
+demo: pages-sub/basic/icon/icon
 added: 0.1.0
 ---
 

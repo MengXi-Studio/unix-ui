@@ -9,20 +9,37 @@
 	],
 	"subPackages": [
 		{
-			"root": "pages-sub",
+			"root": "pages-sub/basic",
 			"pages": [
-				{
-					"path": "badge/badge",
-					"style": {
-						"navigationBarTitleText": "徽标 Badge"
-					}
-				},
 				{
 					"path": "button/button",
 					"style": {
 						"navigationBarTitleText": "按钮 Button"
 					}
 				},
+				{
+					"path": "icon/icon",
+					"style": {
+						"navigationBarTitleText": "图标 Icon"
+					}
+				},
+				{
+					"path": "image/image",
+					"style": {
+						"navigationBarTitleText": "图片 Image"
+					}
+				},
+				{
+					"path": "text/text",
+					"style": {
+						"navigationBarTitleText": "文本 Text"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages-sub/datetime",
+			"pages": [
 				{
 					"path": "calendar-input/calendar-input",
 					"style": {
@@ -39,72 +56,6 @@
 					"path": "calendar/calendar",
 					"style": {
 						"navigationBarTitleText": "日历 Calendar"
-					}
-				},
-				{
-					"path": "cascader-input/cascader-input",
-					"style": {
-						"navigationBarTitleText": "级联输入框 CascaderInput"
-					}
-				},
-				{
-					"path": "cascader-popup/cascader-popup",
-					"style": {
-						"navigationBarTitleText": "级联弹出框 CascaderPopup"
-					}
-				},
-				{
-					"path": "cascader/cascader",
-					"style": {
-						"navigationBarTitleText": "级联选择 Cascader"
-					}
-				},
-				{
-					"path": "cell/cell",
-					"style": {
-						"navigationBarTitleText": "单元格 Cell"
-					}
-				},
-				{
-					"path": "checkbox-input/checkbox-input",
-					"style": {
-						"navigationBarTitleText": "复选输入框 CheckboxInput"
-					}
-				},
-				{
-					"path": "checkbox-popup/checkbox-popup",
-					"style": {
-						"navigationBarTitleText": "复选弹出框 CheckboxPopup"
-					}
-				},
-				{
-					"path": "checkbox/checkbox",
-					"style": {
-						"navigationBarTitleText": "复选框 Checkbox"
-					}
-				},
-				{
-					"path": "color-picker-input/color-picker-input",
-					"style": {
-						"navigationBarTitleText": "颜色选择器输入框 ColorPickerInput"
-					}
-				},
-				{
-					"path": "color-picker-popup/color-picker-popup",
-					"style": {
-						"navigationBarTitleText": "颜色选择器弹出框 ColorPickerPopup"
-					}
-				},
-				{
-					"path": "color-picker/color-picker",
-					"style": {
-						"navigationBarTitleText": "颜色选择器 ColorPicker"
-					}
-				},
-				{
-					"path": "compact/compact",
-					"style": {
-						"navigationBarTitleText": "紧凑布局 Compact"
 					}
 				},
 				{
@@ -150,60 +101,6 @@
 					}
 				},
 				{
-					"path": "divider/divider",
-					"style": {
-						"navigationBarTitleText": "分割线 Divider"
-					}
-				},
-				{
-					"path": "fab/fab",
-					"style": {
-						"navigationBarTitleText": "悬浮按钮 Fab"
-					}
-				},
-				{
-					"path": "flex/flex",
-					"style": {
-						"navigationBarTitleText": "弹性布局 Flex"
-					}
-				},
-				{
-					"path": "grid/grid",
-					"style": {
-						"navigationBarTitleText": "宫格 Grid"
-					}
-				},
-				{
-					"path": "icon/icon",
-					"style": {
-						"navigationBarTitleText": "图标 Icon"
-					}
-				},
-				{
-					"path": "image/image",
-					"style": {
-						"navigationBarTitleText": "图片 Image"
-					}
-				},
-				{
-					"path": "input/input",
-					"style": {
-						"navigationBarTitleText": "输入框 Input"
-					}
-				},
-				{
-					"path": "layout/layout",
-					"style": {
-						"navigationBarTitleText": "布局 Layout"
-					}
-				},
-				{
-					"path": "loading/loading",
-					"style": {
-						"navigationBarTitleText": "加载 Loading"
-					}
-				},
-				{
 					"path": "lunar-picker-input/lunar-picker-input",
 					"style": {
 						"navigationBarTitleText": "农历输入框 LunarPickerInput"
@@ -219,150 +116,6 @@
 					"path": "lunar-picker/lunar-picker",
 					"style": {
 						"navigationBarTitleText": "农历选择 LunarPicker"
-					}
-				},
-				{
-					"path": "number-keyboard-popup/number-keyboard-popup",
-					"style": {
-						"navigationBarTitleText": "数字键盘弹出框 NumberKeyboardPopup"
-					}
-				},
-				{
-					"path": "number-keyboard/number-keyboard",
-					"style": {
-						"navigationBarTitleText": "数字键盘 NumberKeyboard"
-					}
-				},
-				{
-					"path": "overlay/overlay",
-					"style": {
-						"navigationBarTitleText": "遮罩层 Overlay"
-					}
-				},
-				{
-					"path": "password-input-popup/password-input-popup",
-					"style": {
-						"navigationBarTitleText": "密码输入弹出框 PasswordInputPopup"
-					}
-				},
-				{
-					"path": "password-input/password-input",
-					"style": {
-						"navigationBarTitleText": "密码输入格子 PasswordInput"
-					}
-				},
-				{
-					"path": "picker-input/picker-input",
-					"style": {
-						"navigationBarTitleText": "选择器输入框 PickerInput"
-					}
-				},
-				{
-					"path": "picker-popup/picker-popup",
-					"style": {
-						"navigationBarTitleText": "选择器弹出框 PickerPopup"
-					}
-				},
-				{
-					"path": "picker-view/picker-view",
-					"style": {
-						"navigationBarTitleText": "选择器纯视图 PickerView"
-					}
-				},
-				{
-					"path": "picker/picker",
-					"style": {
-						"navigationBarTitleText": "选择器 Picker"
-					}
-				},
-				{
-					"path": "popup/popup",
-					"style": {
-						"navigationBarTitleText": "弹出层 Popup"
-					}
-				},
-				{
-					"path": "radio-input/radio-input",
-					"style": {
-						"navigationBarTitleText": "单选输入框 RadioInput"
-					}
-				},
-				{
-					"path": "radio-popup/radio-popup",
-					"style": {
-						"navigationBarTitleText": "单选弹出框 RadioPopup"
-					}
-				},
-				{
-					"path": "radio/radio",
-					"style": {
-						"navigationBarTitleText": "单选框 Radio"
-					}
-				},
-				{
-					"path": "rate/rate",
-					"style": {
-						"navigationBarTitleText": "评分 Rate"
-					}
-				},
-				{
-					"path": "search/search",
-					"style": {
-						"navigationBarTitleText": "搜索 Search"
-					}
-				},
-				{
-					"path": "segmented/segmented",
-					"style": {
-						"navigationBarTitleText": "分段控制器 Segmented"
-					}
-				},
-				{
-					"path": "select-input/select-input",
-					"style": {
-						"navigationBarTitleText": "列表选择输入框 Select Input"
-					}
-				},
-				{
-					"path": "select-popup/select-popup",
-					"style": {
-						"navigationBarTitleText": "列表选择弹层 Select Popup"
-					}
-				},
-				{
-					"path": "select/select",
-					"style": {
-						"navigationBarTitleText": "列表选择 Select"
-					}
-				},
-				{
-					"path": "space/space",
-					"style": {
-						"navigationBarTitleText": "间距 Space"
-					}
-				},
-				{
-					"path": "status-bar/status-bar",
-					"style": {
-						"navigationBarTitleText": "状态栏 StatusBar"
-					}
-				},
-				{
-					"path": "sticky/sticky",
-					"style": {
-						"navigationBarTitleText": "粘性布局 Sticky"
-					}
-				},
-				{
-					"path": "tabs/tabs",
-					"style": {
-						"navigationBarTitleText": "标签页 Tabs"
-					}
-				},
-				{
-					"path": "text/text",
-					"style": {
-						"navigationBarTitleText": "文本 Text"
 					}
 				},
 				{
@@ -400,17 +153,299 @@
 					"style": {
 						"navigationBarTitleText": "时间范围选择 TimeRangePicker"
 					}
+				}
+			]
+		},
+		{
+			"root": "pages-sub/display",
+			"pages": [
+				{
+					"path": "badge/badge",
+					"style": {
+						"navigationBarTitleText": "徽标 Badge"
+					}
+				},
+				{
+					"path": "cell/cell",
+					"style": {
+						"navigationBarTitleText": "单元格 Cell"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages-sub/feedback",
+			"pages": [
+				{
+					"path": "fab/fab",
+					"style": {
+						"navigationBarTitleText": "悬浮按钮 Fab"
+					}
+				},
+				{
+					"path": "loading/loading",
+					"style": {
+						"navigationBarTitleText": "加载 Loading"
+					}
+				},
+				{
+					"path": "overlay/overlay",
+					"style": {
+						"navigationBarTitleText": "遮罩层 Overlay"
+					}
+				},
+				{
+					"path": "popup/popup",
+					"style": {
+						"navigationBarTitleText": "弹出层 Popup"
+					}
 				},
 				{
 					"path": "toast/toast",
 					"style": {
 						"navigationBarTitleText": "轻提示 Toast"
 					}
+				}
+			]
+		},
+		{
+			"root": "pages-sub/form",
+			"pages": [
+				{
+					"path": "checkbox-input/checkbox-input",
+					"style": {
+						"navigationBarTitleText": "复选输入框 CheckboxInput"
+					}
+				},
+				{
+					"path": "checkbox-popup/checkbox-popup",
+					"style": {
+						"navigationBarTitleText": "复选弹出框 CheckboxPopup"
+					}
+				},
+				{
+					"path": "checkbox/checkbox",
+					"style": {
+						"navigationBarTitleText": "复选框 Checkbox"
+					}
+				},
+				{
+					"path": "color-picker-input/color-picker-input",
+					"style": {
+						"navigationBarTitleText": "颜色选择器输入框 ColorPickerInput"
+					}
+				},
+				{
+					"path": "color-picker-popup/color-picker-popup",
+					"style": {
+						"navigationBarTitleText": "颜色选择器弹出框 ColorPickerPopup"
+					}
+				},
+				{
+					"path": "color-picker/color-picker",
+					"style": {
+						"navigationBarTitleText": "颜色选择器 ColorPicker"
+					}
+				},
+				{
+					"path": "input/input",
+					"style": {
+						"navigationBarTitleText": "输入框 Input"
+					}
+				},
+				{
+					"path": "number-keyboard-popup/number-keyboard-popup",
+					"style": {
+						"navigationBarTitleText": "数字键盘弹出框 NumberKeyboardPopup"
+					}
+				},
+				{
+					"path": "number-keyboard/number-keyboard",
+					"style": {
+						"navigationBarTitleText": "数字键盘 NumberKeyboard"
+					}
+				},
+				{
+					"path": "password-input-popup/password-input-popup",
+					"style": {
+						"navigationBarTitleText": "密码输入弹出框 PasswordInputPopup"
+					}
+				},
+				{
+					"path": "password-input/password-input",
+					"style": {
+						"navigationBarTitleText": "密码输入格子 PasswordInput"
+					}
+				},
+				{
+					"path": "radio-input/radio-input",
+					"style": {
+						"navigationBarTitleText": "单选输入框 RadioInput"
+					}
+				},
+				{
+					"path": "radio-popup/radio-popup",
+					"style": {
+						"navigationBarTitleText": "单选弹出框 RadioPopup"
+					}
+				},
+				{
+					"path": "radio/radio",
+					"style": {
+						"navigationBarTitleText": "单选框 Radio"
+					}
+				},
+				{
+					"path": "rate/rate",
+					"style": {
+						"navigationBarTitleText": "评分 Rate"
+					}
+				},
+				{
+					"path": "search/search",
+					"style": {
+						"navigationBarTitleText": "搜索 Search"
+					}
+				},
+				{
+					"path": "segmented/segmented",
+					"style": {
+						"navigationBarTitleText": "分段控制器 Segmented"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages-sub/layouts",
+			"pages": [
+				{
+					"path": "compact/compact",
+					"style": {
+						"navigationBarTitleText": "紧凑布局 Compact"
+					}
+				},
+				{
+					"path": "divider/divider",
+					"style": {
+						"navigationBarTitleText": "分割线 Divider"
+					}
+				},
+				{
+					"path": "flex/flex",
+					"style": {
+						"navigationBarTitleText": "弹性布局 Flex"
+					}
+				},
+				{
+					"path": "grid/grid",
+					"style": {
+						"navigationBarTitleText": "宫格 Grid"
+					}
+				},
+				{
+					"path": "layout/layout",
+					"style": {
+						"navigationBarTitleText": "布局 Layout"
+					}
+				},
+				{
+					"path": "space/space",
+					"style": {
+						"navigationBarTitleText": "间距 Space"
+					}
+				},
+				{
+					"path": "status-bar/status-bar",
+					"style": {
+						"navigationBarTitleText": "状态栏 StatusBar"
+					}
+				},
+				{
+					"path": "sticky/sticky",
+					"style": {
+						"navigationBarTitleText": "粘性布局 Sticky"
+					}
 				},
 				{
 					"path": "waterfall/waterfall",
 					"style": {
 						"navigationBarTitleText": "瀑布流 Waterfall"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages-sub/nav",
+			"pages": [
+				{
+					"path": "tabs/tabs",
+					"style": {
+						"navigationBarTitleText": "标签页 Tabs"
+					}
+				}
+			]
+		},
+		{
+			"root": "pages-sub/pickers",
+			"pages": [
+				{
+					"path": "cascader-input/cascader-input",
+					"style": {
+						"navigationBarTitleText": "级联输入框 CascaderInput"
+					}
+				},
+				{
+					"path": "cascader-popup/cascader-popup",
+					"style": {
+						"navigationBarTitleText": "级联弹出框 CascaderPopup"
+					}
+				},
+				{
+					"path": "cascader/cascader",
+					"style": {
+						"navigationBarTitleText": "级联选择 Cascader"
+					}
+				},
+				{
+					"path": "picker-input/picker-input",
+					"style": {
+						"navigationBarTitleText": "选择器输入框 PickerInput"
+					}
+				},
+				{
+					"path": "picker-popup/picker-popup",
+					"style": {
+						"navigationBarTitleText": "选择器弹出框 PickerPopup"
+					}
+				},
+				{
+					"path": "picker-view/picker-view",
+					"style": {
+						"navigationBarTitleText": "选择器纯视图 PickerView"
+					}
+				},
+				{
+					"path": "picker/picker",
+					"style": {
+						"navigationBarTitleText": "选择器 Picker"
+					}
+				},
+				{
+					"path": "select-input/select-input",
+					"style": {
+						"navigationBarTitleText": "列表选择输入框 Select Input"
+					}
+				},
+				{
+					"path": "select-popup/select-popup",
+					"style": {
+						"navigationBarTitleText": "列表选择弹层 Select Popup"
+					}
+				},
+				{
+					"path": "select/select",
+					"style": {
+						"navigationBarTitleText": "列表选择 Select"
 					}
 				}
 			]

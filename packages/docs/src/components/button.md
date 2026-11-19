@@ -1,7 +1,7 @@
 ---
 title: Button
 subtitle: 按钮
-demo: pages-sub/button/button
+demo: pages-sub/basic/button/button
 added: 0.1.0
 ---
 

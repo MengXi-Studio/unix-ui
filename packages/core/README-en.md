@@ -9,124 +9,124 @@
   </a>
 
   <h1>@meng-xi/unix-ui</h1>
-  <p>A full-featured UI component library for uni-app x (written in UTS + uvue, one codebase for all platforms)</p>
+  <p><b>The UI component library built for uni-app x</b><br>79 components · 8 categories · one UTS codebase for App / Web / mini-programs</p>
 
 [![license](https://img.shields.io/github/license/MengXi-Studio/unix-ui.svg)](./LICENSE) [![npm](https://img.shields.io/npm/v/@meng-xi/unix-ui?color=blue)](https://www.npmjs.com/package/@meng-xi/unix-ui) ![npm](https://img.shields.io/npm/dt/@meng-xi/unix-ui?color=green)
 
 [Docs](https://mengxi-studio.github.io/unix-ui/en/) · [Live Demo](https://mengxi-studio.github.io/unix-ui/playground/) · [Changelog](https://github.com/MengXi-Studio/unix-ui/blob/master/packages/docs/src/changelog.md) · [Playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground)
 </div>
 
+> **Stop hand-writing UI details.** Pressed states and loading indicators, 0.5px hairline borders, single- and multi-line ellipsis, badge truncation and offsets, popups and wheel pickers, date and lunar conversion — work you normally rewrite for every project and re-tune for every platform is distilled into 79 ready-to-use components. Install, write a tag, ship. Change one variable, re-skin the whole app.
+
 ## Table of Contents
 
 - [Why unix-ui](#why-unix-ui)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Components](#components)
-- [Platform Compatibility](#platform-compatibility)
-- [Live Demo](#live-demo)
-- [Project Structure](#project-structure)
-- [Local Development](#local-development)
+- [Capabilities](#capabilities)
+- [Up and running in 5 minutes](#up-and-running-in-5-minutes)
+- [Component landscape](#component-landscape)
+- [Engineered for every platform](#engineered-for-every-platform)
+- [Platform support](#platform-support)
+- [Try it on a device or in the browser](#try-it-on-a-device-or-in-the-browser)
+- [Project & contributing](#project--contributing)
 - [Documentation](#documentation)
 - [Community & Support](#community--support)
 
 ## Why unix-ui
 
-Building UI with raw uni-app x `view` / `text` elements means hand-writing every interaction detail — button pressed states and loading indicators, 0.5px hairline borders, single- / multi-line text ellipsis, badge truncation and offsets — and then re-tuning styles per platform for App / Web / mini-programs. unix-ui converges all of this into a set of ready-to-use components:
+| What you care about | Raw `view` / `text` | Ported H5 libraries | **unix-ui** |
+| --- | --- | --- | --- |
+| Interaction details | Pressed states, loading, ellipsis — by hand | DOM-bound, drifts across platforms | Built in, consistent everywhere |
+| 0.5px hairline | One implementation per platform | Extra hacks required | Unified transform-scale technique |
+| Theming | Styles scattered around | Runtime CSS variables | Compile-time `$m-*` variables, zero runtime cost |
+| Type safety | None | Pervasive `any` | Fully typed UTS with reliable IntelliSense |
+| Adoption | — | Register, import, style conflicts | easycom auto-scan, **zero registration** |
+| Platform parity | Debug each target | Missing mini-program capabilities | Conditional compilation, handled inside |
 
-- **Familiar with mainstream uni-app component libraries?** Component taxonomy, prop naming and visual specs follow mainstream conventions — zero mental remapping, pick it up at a glance;
-- **Multi-platform release?** One UTS + uvue codebase compiles to App (Android / iOS / HarmonyOS), Web and mini-programs; platform quirks like hairline borders and scroll containers are handled deterministically inside the library;
-- **Care about theming?** Every visual parameter is a `$m-*` SCSS variable injected at compile time — change one line in the root `uni.scss` and it applies across all components, with zero runtime overhead.
+No custom rendering stack either: the library only depends on built-in uni-app x components and `UniElement.animate`. UTS source ships directly (Web / mini-programs → JS, Android → Kotlin, iOS → Swift) and is compiled on the fly by the uni-app x toolchain — **no extra runtime layer**.
 
-The library depends only on built-in uni-app x components and `UniElement.animate` — no custom rendering stack. UTS source is distributed directly (Web / mini-programs → JS, Android → Kotlin, iOS → Swift) and compiled on the fly by the uni-app x toolchain.
+## Capabilities
 
-## Features
+### 79 components for real product scenarios
 
-- **Zero-registration easycom** - Follows the uni_modules component plugin spec (plugin id: `m-ui-x`); use `<m-button>` directly, no imports or manual registration
-- **All platforms, vapor-compatible** - One component codebase for App (Android / iOS / HarmonyOS), Web and mini-programs, compatible with vapor mode
-- **Compile-time theming** - All visual parameters live in `theme/vars.scss` as `$m-*` variables (all `!default`); define the same variable in the root `uni.scss` to override, otherwise the default theme works with zero configuration
-- **Cross-platform pixel details** - 0.5px hairline borders (transform scale technique) and pressed feedback are handled uniformly by the library
-- **Composition API + strongly typed UTS** - Fully typed props and events for UTS / TS IntelliSense; animations use `UniElement.animate`, no `@keyframes` dependency
-- **No global side effects** - Component styles are self-contained and only reference the in-package `vars.scss`; no global style injection
+From buttons, grids and layout to form controls, wheel and list pickers, dates and lunar calendars, then feedback, display and navigation — organized into 8 categories that mirror the documentation sidebar, following mainstream component-library naming and interaction conventions so **there is nothing new to learn**.
 
-## Requirements
+### Compile-time theming, one line app-wide
 
-- HBuilderX `5.08` or above (uni-app x compiler)
-- Optional: Node.js + pnpm (for the npm install method or contributing to this repository)
-- Style isolation strategy 2.0 recommended; vapor mode compilation supported — see [Platform Compatibility](#platform-compatibility)
+Every visual parameter is a `$m-*` SCSS variable living in `theme/vars.scss` (all `!default`). Define the same variable in your root `uni.scss` to override it, or use the default theme with zero configuration. Variables are injected at compile time — **zero runtime overhead**.
 
-## Installation
+### One codebase, consistent everywhere
 
-### Option 1: uni_modules (recommended)
+App (Android / iOS / HarmonyOS), Web and mini-programs share the same UTS + uvue source. Hairline borders, scroll containers, popup layering and font loading are implemented deterministically inside the library, with vapor mode supported.
 
-Place the library into your project's `uni_modules/m-ui-x/` directory (via the plugin marketplace or manual copy). easycom picks it up automatically — **no configuration required**:
+### Strongly typed UTS, mistakes surface early
 
-```
-uni_modules/m-ui-x/
-├── components/
-├── utils/
-└── theme/
-```
+Fully typed props and events with editor completion; callbacks are arrow functions and nullable values use `null` rather than `undefined`, matching the UTS spec. Animations go through `UniElement.animate` — no `@keyframes` dependency.
 
-> The plugin id is `m-ui-x`; the directory name must match, otherwise easycom cannot resolve the components.
+### easycom, zero registration
 
-### Option 2: npm
+Follows the uni_modules component plugin spec (plugin id: `m-ui-x`). Write `<m-button>` straight into your template — no imports, no manual registration.
+
+### No global side effects
+
+Component styles are self-contained and only reference the in-package `vars.scss`. Nothing is injected globally and no project config is touched — add or remove at will.
+
+## Up and running in 5 minutes
+
+**Step 1: add it to your project** (choose one)
 
 ```bash
+# Option 1 (recommended): import from the plugin marketplace into uni_modules/m-ui-x/
+# Option 2: install via npm, then sync into uni_modules (the compiler skips node_modules)
 pnpm add @meng-xi/unix-ui
-```
-
-Then sync the package contents into your project's `uni_modules/m-ui-x/` (the compiler does not scan node_modules):
-
-```bash
 mkdir -p uni_modules && cp -R node_modules/@meng-xi/unix-ui uni_modules/m-ui-x
 ```
 
-Alternatively, configure an easycom rule in `pages.json` pointing to the package path — see the [installation guide](https://mengxi-studio.github.io/unix-ui/en/guide/installation.html).
+> The plugin id and directory name must both be `m-ui-x`, otherwise easycom cannot resolve the components.
 
-### Verify the Installation
-
-Use a component directly in any page template, no import or registration:
+**Step 2: use it**
 
 ```html
 <template>
-	<m-button type="primary">Installed</m-button>
-</template>
-```
-
-## Quick Start
-
-### 1. Use components in templates
-
-```html
-<template>
-	<m-button type="primary" @click="onClick">Primary Button</m-button>
+  <m-button type="primary" @click="onClick">Primary Button</m-button>
 </template>
 
 <script setup lang="uts">
-	const onClick = () => {
-		uni.showToast({ title: 'Button clicked' })
-	}
+  const onClick = () => {
+    uni.showToast({ title: 'Button clicked' })
+  }
 </script>
 ```
 
-### 2. Theming (optional)
-
-Define same-named variables directly in the root `uni.scss` to override defaults (stacked via `!default` at compile time, no imports needed):
+**Step 3: re-skin as needed** (optional)
 
 ```scss
-/* Normal button height 44px → 48px */
+/* Root uni.scss: normal button height 44px → 48px, every button updates instantly */
 $m-button-normal-height: 48px;
 ```
 
 > Do NOT `@import` the in-package `vars.scss` from `uni.scss` — `uni.scss` is injected into every component's style, and importing the same file again triggers a sass circular-import error.
 
-For all available variables see [theme/vars.scss](./theme/vars.scss), named as `$m-<component>-<property>`; for the mechanism see [Theming](https://mengxi-studio.github.io/unix-ui/en/guide/theming.html).
+Requirements: HBuilderX `5.08` or above; style isolation strategy 2.0 recommended. For every available variable and how the mechanism works, see [Theming](https://mengxi-studio.github.io/unix-ui/en/guide/theming.html).
 
-## Components
+## Component landscape
 
-79 components in total (including sub-components and variants), organized into 8 categories that mirror the documentation sidebar, alphabetically ordered within each category. Each row lists the tag and its core capabilities; see the [component reference](https://mengxi-studio.github.io/unix-ui/en/components/button.html) for full APIs.
+**79 components** in total (including sub-components, popup and input variants), alphabetically ordered within each of the 8 categories:
+
+| Category | Components |
+| --- | --- |
+| Basic | `m-button` `m-icon` `m-image` `m-text` |
+| Layout | `m-compact` `m-divider` `m-flex` `m-grid` `m-row` `m-space` `m-status-bar` `m-sticky` `m-waterfall` |
+| Data entry | `m-checkbox` `m-color-picker` `m-input` `m-number-keyboard` `m-password-input` `m-radio` `m-rate` `m-search` `m-segmented` |
+| Pickers | `m-cascader` `m-picker` `m-picker-view` `m-select` |
+| Date & time | `m-calendar` `m-date-picker` `m-date-range-picker` `m-date-strip` `m-lunar-picker` `m-time-picker` `m-time-range-picker` |
+| Feedback | `m-fab` `m-loading` `m-overlay` `m-popup` `m-toast` |
+| Data display | `m-badge` `m-cell` |
+| Navigation | `m-tabs` |
+
+> Most data-entry, picker and date & time components also ship **popup (`-popup`)** and **input (`-input`)** variants — the table lists base names only. A pure-function date toolset covering 1900–2100 (`utils/date.uts`) is included too, see [Date tools](https://mengxi-studio.github.io/unix-ui/en/tools/date.html).
+
+<details>
+<summary><b>Expand the full component list (all variants and capabilities)</b></summary>
 
 ### Basic Components
 
@@ -235,9 +235,20 @@ For all available variables see [theme/vars.scss](./theme/vars.scss), named as `
 | --- | --- |
 | `m-tabs` / `m-tab` | Tabs: line / card / pill styles, index and name mixed matching, horizontally scrollable bar, content transition and swipe switching, sticky, scrollspy, before-change interception |
 
-> A date utility set also ships with the library (`utils/date.uts`, a pure-function set covering comparison, arithmetic, week / month / year boundaries, formatting / parsing and lunar conversion) — see [Date tools](https://mengxi-studio.github.io/unix-ui/en/tools/date.html).
+</details>
 
-## Platform Compatibility
+## Engineered for every platform
+
+| Mechanism | How | Benefit |
+| --- | --- | --- |
+| Theme variables | Components `@import vars.scss` at the top of styles, every variable `!default` | Define the same variable in your root `uni.scss` to override; default theme works with zero config |
+| 0.5px hairline | Absolutely positioned 0.5px layer + `transform: scale(0.5)` with `transform-origin: 0 0` | Consistent hairline on App / Web / mini-programs, no blur, no offset |
+| Animation | `UniElement.animate` everywhere | No `@keyframes` dependency, same source for all targets |
+| Platform differences | Conditional compilation (`#ifdef APP-ANDROID / WEB / MP-WEIXIN`, etc.) | Differences stay inside the library; application code does not care |
+| Style authoring | Class selectors + flex only, flat rule lists | Avoids ucss limits (no descendant selectors, no pseudo-elements) |
+| Typing | Strongly typed UTS, `null` for nullable, arrow-function callbacks | Type problems surface at compile time on Web / App |
+
+## Platform support
 
 | Platform | Status | Notes |
 | --- | --- | --- |
@@ -245,18 +256,18 @@ For all available variables see [theme/vars.scss](./theme/vars.scss), named as `
 | App-Android | ✅ Cloud build verified | Both vapor and vdom modes compile and package via cloud build; 0.7.0 fixed two rounds of Kotlin compile errors and repackaged, a demo APK ships with every release |
 | App-iOS | 🔧 Adapted | Conditional compilation in place; on-device testing pending (requires macOS) |
 | App-HarmonyOS | 🔧 Adapted | Conditional compilation in place; testing pending (requires DevEco Studio) |
-| WeChat Mini Program | 🔧 Baseline verified | Baseline issues (overlay visibility / popup layers / font loading) fixed through testing; 0.7.0 fixed the `getCurrentInstance` null crash in popup components (issue #20); new components are verified release by release |
+| WeChat Mini Program | 🔧 Baseline verified | Baseline issues (overlay visibility / popup layers / font loading) fixed through testing; 0.7.0 fixed the `getCurrentInstance` null crash in popup components (issue #20); 0.7.1 fixed icon font loading (issue #22); new components are verified release by release |
 | Other Mini Programs | 🔧 Adapted | Conditional compilation in place; testing pending in developer tools |
 
 Full details (HBuilderX version requirements, vapor mode configuration, platform differences) — see [Platform Compatibility](https://mengxi-studio.github.io/unix-ui/en/guide/compatibility.html).
 
-## Live Demo
+## Try it on a device or in the browser
 
-The example project [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) provides one page per component exhaustively covering all props / variants / events, deployed as a [live demo](https://mengxi-studio.github.io/unix-ui/playground/) on the documentation site — try it right in your browser.
+- **In the browser**: the [live demo](https://mengxi-studio.github.io/unix-ui/playground/) on the documentation site — one page per component, exhaustively covering all props / variants / events.
+- **On an Android device**: [download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1795095433761-__UNI__F1AA560_1795095406297.apk) — a cloud-packaged build showing every component with native rendering. The package is rebuilt with each release; use the link in the latest release notes.
+- **Source as documentation**: every demo page in [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) is a runnable best practice.
 
-**Try it on a real Android device**: [download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1795095433761-__UNI__F1AA560_1795095406297.apk) — a cloud-packaged Android build showcasing native rendering of all components. The package is rebuilt with each release; use the link in the latest release notes.
-
-## Project Structure
+## Project & contributing
 
 ```
 unix-ui/
@@ -271,8 +282,6 @@ unix-ui/
 └── versions/            # Per-release notes
 ```
 
-## Local Development
-
 ```bash
 pnpm install
 pnpm sync:uni-modules        # core → playground/uni_modules/m-ui-x
@@ -281,9 +290,9 @@ pnpm dev:docs                # start the docs site
 pnpm build:docs              # build the docs site (with dead-link checks)
 ```
 
-- Only edit `packages/core`; everything under `packages/playground/uni_modules/m-ui-x/` (`components` / `utils` / `theme`) is a sync artifact and would be overwritten on the next sync.
+- Only edit `packages/core`; everything under `playground/uni_modules/m-ui-x/` (`components` / `utils` / `theme`) is a sync artifact and would be overwritten on the next sync.
 - Run the demo project by opening `packages/playground` in HBuilderX. New components follow the order: component → theme → sync → demo → docs.
-- Contributions via [Issues](https://github.com/MengXi-Studio/unix-ui/issues) / [Pull Requests](https://github.com/MengXi-Studio/unix-ui/pulls) are welcome.
+- Contributions via [Issues](https://github.com/MengXi-Studio/unix-ui/issues) / [Pull Requests](https://github.com/MengXi-Studio/unix-ui/pulls) are welcome. If this library saved you time, a **Star** is the best way to say thanks.
 
 ## Documentation
 

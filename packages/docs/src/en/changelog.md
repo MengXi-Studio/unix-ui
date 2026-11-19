@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.1] - 2026-11-19
+
+Fixes icon font loading failure on WeChat Mini Program.
+
+### Fixed
+
+- **m-icon**: on WeChat Mini Program the `source` passed to `uni.loadFontFace` lacked the `url("data:font/ttf;base64,...")` wrapper, so WeChat parsed the raw base64 as a URL and failed with `createDownloadTask:fail invalid url`, making every icon fall back to the default glyph; it is now formatted as a CSS resource address, and a module-level loaded flag guarantees a single global load (`global: true`) instead of one per icon instance ([#22](https://github.com/MengXi-Studio/unix-ui/issues/22))
+
 ## [0.7.0] - 2026-11-17
 
 Adds a numeric keypad panel and popup for verification codes, payment passwords, amounts and ID numbers.

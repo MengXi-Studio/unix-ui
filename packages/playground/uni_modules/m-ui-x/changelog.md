@@ -1,3 +1,7 @@
+## 0.7.1 (2026-11-19)
+
+- 修复 `m-icon` 微信小程序端图标字体加载失败（issue #22）：`uni.loadFontFace` 的 `source` 由裸 base64 改为标准 CSS 资源地址 `url("data:font/ttf;base64,...")`，此前微信将裸 base64 当作 URL 解析并报 `loadFontFace:fail createDownloadTask:fail invalid url`，导致所有图标回退默认字形；新增模块级 `mpFontState` 加载标记（`global: true` 全端生效只需一次），避免每个图标实例重复调用与重复报错，失败时复位以便重试并输出 `[m-icon] loadFontFace fail`
+
 ## 0.7.0 (2026-11-17)
 
 - 新增 `m-number-keyboard` 数字键盘面板：1-9 + 0 + 删除键的纯按键区，不持有输入值，只派发 `input(key)` / `delete` / `close`；`type` 支持 `number` / `digit` / `idcard` / `random`（挂载与 `type` 切换时重排，也可调用 `shuffle()` 手动重排）；无额外键时 `0` 加宽占两格填满末行，`digit` / `idcard` 或自定义 `extra-keys` 时额外键位于末行左侧（digit 默认 `.`、idcard 默认 `X`）；`theme="custom"` 用右侧栏替代末行删除键，删除键与关闭键上下平分高度；`show-delete-key` / `delete-button-text` / `close-button-text` 控制动作键；`disabled-key` 回调返回 true 的键灰显且不派发事件；`extra-key` 插槽自定义额外键；expose `shuffle()`

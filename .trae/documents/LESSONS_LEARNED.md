@@ -664,3 +664,13 @@
   4. **`scripts/build-demo.mjs` 深链扫描只认两层**：`collectDemoPages` 写死 `readdirSync(base)` + `<name>/<name>.uvue`，页面变三层后返回空数组 → 在线演示全部 404 且**构建日志不报错**（只有 `public/playground/pages-sub` 目录整个消失才能发现）。已改为递归扫描
 - **排查信号**：`build:demo` 输出「完成（N 个文件）」但 N 未随页面数增加、`public/playground/pages-sub` 不存在或缺少分类子目录
 - **教训**：① 路由结构变更后要同时核对四处：`pages.json` 分包、`routes.gen.uts` path、文档 frontmatter、演示产物深链；② 静态产物生成脚本里的路径约定要写成递归，不要写死层级；③ 批量 `git mv` 用 Node 或显式数组，zsh 中 `${var#*:}` 不做分词会把整串当单个路径；④ 页面物理位置变更属「构建产物必须重建」变更，`pnpm build:demo` 与 `build:docs` 都要重跑并提交产物
+
+### #106 微信小程序 loadFontFace：source 必须是 CSS 资源地址，去重标记必须放模块级
+- **背景**：issue #22——微信小程序端任意 `m-icon` 挂载即报 `loadFontFace:fail createDownloadTask:fail invalid url`，全部图标回退默认字形；编译期无任何告警，只有运行时报错
+- **根因一（格式）**：`uni.loadFontFace` 的 `source` 必须是 CSS 资源地址格式，内联字体要包成 `url("data:font/ttf;base64,<base64>")`；直接传裸 base64 会被当作 URL 去创建下载任务，必然失败。注意 wxss 的 `@font-face` 在小程序端不支持本地字体文件，所以本地 ttf 方案在 MP 端不可用，只能走 loadFontFace
+- **根因二（作用域）**：`<script setup>` 顶层声明的变量是 **setup 实例级**，写在组件里做「已加载」标记，N 个图标实例就是 N 份独立状态 → N 次重复加载。去重标记必须放在独立 `.uts` 的**模块级导出对象**里（编译产物是单例 `const o = new e({...}); exports.mpFontState = o`，所有实例共享同一引用）
+- **验证链路（本次实测有效）**：
+  1. `cli publish --platform mp-weixin --project <playground>` 生成产物，grep `unpackage/dist/build/mp-weixin/uni_modules/m-ui-x/components/m-icon/m-icon.js` 的 `loadFontFace({...})` 行，确认 `source:'url("data:font/ttf;base64,'+...+')'` 与 `if(mpFontState.loaded)return` 都在
+  2. wechatide skill 打开产物目录 → `get_simulator_console --command 'grep -iE "loadFontFace|invalid url|m-icon|error"'` 返回空 + `simulator_screenshot` 看到图标字形正常，即为通过
+- **坑（运行才知道）**：HBuilderX 产物 `project.config.json` 的 `appid` 是 `touristappid`，MCP `open_project_window` 会直接报 `APPID_ERROR`（游客模式不被接受）；需先 `get_user_appids` 拿一个有权限的测试号 AppID，临时写进**产物目录**的 `project.config.json`（unpackage 不入 git，无需还原），再开窗
+- **教训**：① 字体 / 资源加载类问题编译期不报错，必须进模拟器看 console；② 组件内任何「全局只做一次」的状态都要用模块级文件承载，不能写在 setup 里；③ 小程序端 `global: true` 的副作用是全端生效，天然适合单次加载

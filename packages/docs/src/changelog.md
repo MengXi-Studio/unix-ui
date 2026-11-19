@@ -1,5 +1,13 @@
 # 更新日志
 
+## [0.7.1] - 2026-11-19
+
+修复微信小程序端图标字体加载失败。
+
+### 修复
+
+- **m-icon**：微信小程序端 `uni.loadFontFace` 的 `source` 缺少 `url("data:font/ttf;base64,...")` 包装，微信将裸 base64 当作 URL 解析并报 `createDownloadTask:fail invalid url`，导致所有图标回退默认字形；已按 CSS 资源地址格式拼接，并新增模块级加载标记（`global: true` 全局生效只需一次），避免每个图标实例重复调用与重复报错（[#22](https://github.com/MengXi-Studio/unix-ui/issues/22)）
+
 ## [0.7.0] - 2026-11-17
 
 新增数字键盘面板与弹层，补齐验证码、支付密码、金额、身份证号等输入场景。

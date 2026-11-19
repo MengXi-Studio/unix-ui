@@ -1,0 +1,19 @@
+/**
+ * m-icon 微信小程序端字体加载状态（模块级，跨 m-icon 实例共享）。
+ *
+ * 背景：wxss 的 @font-face 不支持本地字体文件路径，微信端改用 uni.loadFontFace
+ * 在运行时加载 base64 内联字体；`global: true` 使 family 对整个小程序生效，
+ * 进程内加载一次即可，故用模块级标记避免每个图标实例重复发起加载
+ * （否则每个实例都会产生一条重复调用与失败日志）。
+ */
+
+/** 字体加载状态 */
+export type MpFontState = {
+	/** 是否已发起加载（失败时复位，允许后续实例重试） */
+	loaded: boolean
+}
+
+/** 模块级共享状态：所有 m-icon 实例共用同一份 */
+export const mpFontState: MpFontState = {
+	loaded: false
+}

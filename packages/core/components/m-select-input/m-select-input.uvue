@@ -40,8 +40,8 @@
 			:custom-class="props.customClass"
 			:custom-style="props.customStyle"
 			@update:show="onPopupShowChange"
-			@update:value="onSelectValueChange"
-			@change="onSelectChange"
+			@update:value="onSelectValueChange($event)"
+			@change="onSelectChange($event)"
 			@select="onSelect"
 			@update:filter-value="onFilterValueChange"
 		>
@@ -188,7 +188,7 @@
 	const popupShow = ref<boolean>(props.show)
 
 	watch(
-		() => props.show,
+		(): boolean => props.show,
 		(v: boolean) => {
 			popupShow.value = v
 		}
@@ -234,6 +234,26 @@
 		return null
 	}
 
+	/**
+	 * 单个值的展示标签：options 递归查找 → mapLabel → 值字符串
+	 * 注意：Kotlin 局部函数不允许前向引用，被 displayLabel 调用必须先声明。
+	 *
+	 * @param v 目标值
+	 * @returns 展示标签
+	 */
+	function labelOf(v: RadioValue): string {
+		const f = fields.value
+		const map = props.mapLabel
+		const ck = props.fieldNames == null ? 'children' : (props.fieldNames!.getString('children') ?? 'children')
+		const found = findLabel(props.options, v, f, ck)
+		if (found != null) return found
+		if (map != null) {
+			const mapped = map.getString(v.toString())
+			if (mapped != null) return mapped
+		}
+		return v.toString()
+	}
+
 	/** 展示文本：多选按「、」拼接并受 maxLabels 约束；单选走 options → mapLabel → 值字符串 */
 	const displayLabel = computed<string>(() => {
 		const raw = props.value
@@ -265,25 +285,6 @@
 		if (t == 'string' || t == 'number') return (raw as RadioValue).toString() != ''
 		return (raw as RadioValue[]).length > 0
 	})
-
-	/**
-	 * 单个值的展示标签：options 递归查找 → mapLabel → 值字符串
-	 *
-	 * @param v 目标值
-	 * @returns 展示标签
-	 */
-	function labelOf(v: RadioValue): string {
-		const f = fields.value
-		const map = props.mapLabel
-		const ck = props.fieldNames == null ? 'children' : (props.fieldNames!.getString('children') ?? 'children')
-		const found = findLabel(props.options, v, f, ck)
-		if (found != null) return found
-		if (map != null) {
-			const mapped = map.getString(v.toString())
-			if (mapped != null) return mapped
-		}
-		return v.toString()
-	}
 
 	/** 根节点类名 */
 	const rootClass = computed<string>(() => {
@@ -327,15 +328,22 @@
 
 	/**
 	 * 选中值变化透传
+	 * 注意：形参禁用 RadioValue | RadioValue[]、体内禁用 as 联合类型 cast——
+	 * 两者都会让 Kotlin codegen 静默丢弃整个函数（渲染层 Unresolved），
+	 * 必须展开为具体联合类型并直接 emit（TS 数组协变保证类型兼容）。
+	 *
+	 * @param v 选中值（单选为标量，多选为数组）
 	 */
-	function onSelectValueChange(v: RadioValue | RadioValue[]) {
+	function onSelectValueChange(v: string | number | string[] | number[]) {
 		emit('update:value', v)
 	}
 
 	/**
-	 * change 透传
+	 * change 透传（限制原因同上）
+	 *
+	 * @param v 选中值（单选为标量，多选为数组）
 	 */
-	function onSelectChange(v: RadioValue | RadioValue[]) {
+	function onSelectChange(v: string | number | string[] | number[]) {
 		emit('change', v)
 	}
 

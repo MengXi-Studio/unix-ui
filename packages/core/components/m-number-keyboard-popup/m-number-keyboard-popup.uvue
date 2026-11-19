@@ -48,7 +48,7 @@
 					</slot>
 				</view>
 			</view>
-			<view class="m-number-keyboard-popup__content" v-if="$slots.default != null">
+			<view class="m-number-keyboard-popup__content" v-if="$slots['default'] != null">
 				<slot></slot>
 			</view>
 			<m-number-keyboard

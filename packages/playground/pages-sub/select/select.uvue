@@ -12,7 +12,7 @@
 
 				<text class="section" id="multiple">多选</text>
 				<view class="card">
-					<m-select v-model:value="multiValue" :options="lineOptions" multiple show-toolbar @change="logMulti" />
+					<m-select v-model:value="multiValue" :options="lineOptions" multiple show-toolbar @change="logMulti($event)" />
 					<text class="caption">multiple + show-toolbar：点击切换选中，工具栏可一键清空（当前：{{ multiText }}）</text>
 				</view>
 
@@ -48,8 +48,8 @@
 					<m-select v-model:value="colorValue" :options="colorOptions">
 						<template #option="{ option, selected }">
 							<view class="color-item">
-								<view class="color-item__block" :style="'background-color: ' + option.getString('value')! + ';'"></view>
-								<text :class="selected ? 'color-item__text color-item__text--selected' : 'color-item__text'">{{ option.getString('label') }}</text>
+								<view class="color-item__block" :style="colorBlockStyle(option)"></view>
+								<text :class="selected ? 'color-item__text color-item__text--selected' : 'color-item__text'">{{ colorItemLabel(option) }}</text>
 							</view>
 						</template>
 					</m-select>
@@ -170,6 +170,8 @@
 
 	/**
 	 * 多选 change 日志
+	 *
+	 * @param v change 回传选中集合
 	 */
 	function logMulti(v: string | number | string[] | number[]): void {
 		console.log('select 多选 change: ' + valuesText(v))
@@ -177,9 +179,37 @@
 
 	/**
 	 * change 事件日志
+	 * 形参用 any | null：codegen 对组件事件处理器参数一律生成 Any（checkbox 页已验证写法）
+	 *
+	 * @param tag 日志标签
+	 * @param v change 回传选中值
 	 */
-	function logChange(tag: string, v: string | number) {
-		console.log('select ' + tag + ' change: ' + v.toString())
+	function logChange(tag: string, v: any | null) {
+		console.log('select ' + tag + ' change: ' + (v == null ? '' : (v as string | number).toString()))
+	}
+
+	/**
+	 * 插槽作用域取选项色块颜色（作用域变量在 Kotlin 端为 Any?，形参放宽后内部 cast）
+	 *
+	 * @param option 插槽作用域 option
+	 * @returns 内联样式
+	 */
+	function colorBlockStyle(option: any | null): string {
+		const obj = option as UTSJSONObject
+		const v = obj.getString('value')
+		return 'background-color: ' + (v == null ? '' : v) + ';'
+	}
+
+	/**
+	 * 插槽作用域取选项文本（同上）
+	 *
+	 * @param option 插槽作用域 option
+	 * @returns 选项 label
+	 */
+	function colorItemLabel(option: any | null): string {
+		const obj = option as UTSJSONObject
+		const label = obj.getString('label')
+		return label == null ? '' : label
 	}
 
 	/**

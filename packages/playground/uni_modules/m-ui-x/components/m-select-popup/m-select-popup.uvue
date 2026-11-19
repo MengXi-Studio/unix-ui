@@ -37,8 +37,8 @@
 				:empty-text="props.emptyText"
 				:custom-class="props.customClass"
 				:custom-style="props.customStyle"
-				@update:value="onSelectValueChange"
-				@change="onSelectChange"
+				@update:value="onSelectValueChange($event)"
+				@change="onSelectChange($event)"
 				@select="onSelect"
 				@update:filter-value="onFilterValueChange"
 			>
@@ -179,15 +179,23 @@
 
 	/**
 	 * 列表值变化：同步并派发 change / select
+	 * 注意：形参禁用 RadioValue | RadioValue[]、体内禁用 as 联合类型 cast——
+	 * 两者都会让 Kotlin codegen 静默丢弃整个函数（渲染层 Unresolved），
+	 * 必须展开为具体联合类型并直接 emit（TS 数组协变保证类型兼容）。
+	 *
+	 * @param v 选中值（单选为标量，多选为数组）
 	 */
-	function onSelectValueChange(v: RadioValue | RadioValue[]) {
+	function onSelectValueChange(v: string | number | string[] | number[]) {
 		emit('update:value', v)
 	}
 
 	/**
 	 * 列表 change：单选且 confirmOnSelect 时选中后关闭弹层（多选保持打开以便连续勾选）
+	 * 限制原因同上
+	 *
+	 * @param v 选中值（单选为标量，多选为数组）
 	 */
-	function onSelectChange(v: RadioValue | RadioValue[]) {
+	function onSelectChange(v: string | number | string[] | number[]) {
 		emit('change', v)
 		if (!props.multiple && props.confirmOnSelect) emit('update:show', false)
 	}

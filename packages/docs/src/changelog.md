@@ -31,6 +31,7 @@
 - **微信小程序端打开 `m-color-picker-popup` 抛 `reading 'proxy'`**（issue #20）：`m-color-picker` 的 `measureNode` 在调用时取 `getCurrentInstance()`，经父组件 `$callMethod('refresh')` 调用时已脱离 setup 上下文而返回 null。改为 setup 期一次性捕获实例（`#ifdef MP`），与 `m-fab` / `m-tabs` 写法一致；`m-rate` 的同类调用时取值一并修正
 - **m-checkbox 未选中态误渲染为实色勾**：未选与选中渲染同一个 `m-icon` 'success' 字形，m-icon 字体修复后勾形显形暴露。未选态改为标准描边空框（`round` 圆环 / `square` 圆角方框），选中态实心填充（`$m-checkbox-icon-color` / `checked-color`）+ 白勾，indeterminate 实心底 + 白横杠；新增 `$m-checkbox-box-border-color` / `$m-checkbox-box-border-width` / `$m-checkbox-box-radius` / `$m-checkbox-check-icon-size` 主题变量
 - **m-input `inlaid` 嵌入 m-cell 时值区宽度不拉伸、点击区缺失**：0.6.0 的控件层 `min-height` 只解决了高度塌陷，inlaid 根节点未参与 flex 拉伸，标题与输入框之间的值区空隙点击无反应。inlaid 根节点新增 `flex-grow: 1`（`flex-basis` 保持 auto，column 容器高度不塌陷、cell 内兄弟节点不被挤压），body / 控件随之填满 value 区；演示页移除用户侧补偿的 `custom-style="flex: 1"`（组件层已内建）
+- **Android 云打包 Kotlin 编译错误第二轮**（rate / search / segmented / select / select-input / select-popup 演示页与 5 个组件，Web 端行为不变）：UTS 函数声明有提升但生成 Kotlin 后失效，被其他函数调用的函数调整声明顺序（`m-select` / `m-select-input` / `m-password-input`）；`m-select-input` / `m-select-popup` 的值透传函数形参展开为具体联合类型并改为内联事件绑定（type alias 与数组联合的组合会让 codegen 静默丢弃函数）；watch 单表达式 source 补显式返回类型注解；`m-number-keyboard-popup` 的 `$slots.default` 改索引访问（`default` 为 Kotlin 保留字）；演示页事件日志形参放宽为 `any | null`、插槽作用域变量经页面函数内部 cast
 
 ## [0.6.0] - 2026-11-15
 

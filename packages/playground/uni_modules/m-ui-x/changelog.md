@@ -26,6 +26,12 @@
 - 三件套支持多选：`multiple` / `multiple-limit`（0 不限）/ `show-toolbar`（已选数量 + 清空）；多选时 `value` 为数组，点击已选项取消，达到上限后其余项点击无效；多选弹层选中不自动关闭（`confirmOnSelect` 仅对单选生效）；输入框新增 `max-labels`（默认 10，-1 不限），标签按「、」拼接并折叠为「等 N 项」
 - 新增 `$m-select-toolbar-*` 主题变量段（内边距 / 字号 / 文字色 / 清空色 4 项）
 - 修复微信小程序端打开 `m-color-picker-popup` 抛 `TypeError: Cannot read properties of null (reading 'proxy')`（issue #20）：`m-color-picker` 的 `measureNode` 在调用时取 `getCurrentInstance()`，经父组件 `$callMethod('refresh')` 调用时已脱离 setup 上下文返回 null；改为 setup 期一次性捕获实例（`#ifdef MP`，与 `m-fab` / `m-tabs` 写法一致）；`m-rate` 同类调用时取值一并修正
+- 修复 Android 云打包 Kotlin 编译错误第二轮（5 个组件 + 6 个演示页，Web 端行为不变）：
+  - Kotlin 局部函数禁前向引用（UTS 函数声明有提升、生成 Kotlin 后失效）：`m-select` 的 `selectedValues` / `containsValue` / `isSelected` 移至 `itemClass` 之前；`m-select-input` 的 `labelOf` 移至 `displayLabel` 之前；`m-password-input` 的 `stopCursorAnimation` 移至 `startCursorAnimation` 之前
+  - Kotlin codegen 静默丢弃函数：`m-select-input` / `m-select-popup` 的 `onSelectValueChange` / `onSelectChange` 形参从 `RadioValue | RadioValue[]`（type alias 与数组联合的组合）展开为 `string | number | string[] | number[]`，事件绑定由函数名直传改为内联调用（UTS 函数声明不能作值传递）
+  - watch 单表达式 source 补显式返回类型注解（`m-select` / `m-select-input`，对齐 m-radio-group 已验证写法）
+  - `m-number-keyboard-popup`：`$slots.default` 改索引访问 `$slots['default']`（`default` 为 Kotlin 保留字，属性访问转义失败）
+  - 演示页 rate / search / segmented / select / select-input / select-popup：事件日志函数形参放宽为 `any | null`（codegen 对组件事件处理器参数一律生成 Any）；插槽作用域变量（option / index）改为经页面函数内部 cast；`valuesText` 声明移至 `multiText` computed 之前；select 页 `@change="logMulti"` 改内联调用
 
 ## 0.6.0 (2026-11-15)
 

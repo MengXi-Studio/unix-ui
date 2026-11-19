@@ -149,7 +149,7 @@
 	const scrollTopValue = ref<number>(0)
 
 	watch(
-		() => props.filterValue,
+		(): string => props.filterValue,
 		(v: string) => {
 			innerFilter.value = v
 		}
@@ -255,31 +255,9 @@
 	})
 
 	/**
-	 * 选项类名
-	 *
-	 * @param item 选项
-	 * @returns 类名
-	 */
-	function itemClass(item: SelectItem): string {
-		let cls = 'm-select__item'
-		if (isSelected(item)) cls += ' m-select__item--selected'
-		return cls
-	}
-
-	/**
-	 * 选项文本类名
-	 *
-	 * @param item 选项
-	 * @returns 类名
-	 */
-	function labelClass(item: SelectItem): string {
-		if (props.disabled || item.disabled) return 'm-select__label m-select__label--disabled'
-		if (isSelected(item)) return 'm-select__label m-select__label--selected'
-		return 'm-select__label'
-	}
-
-	/**
 	 * 当前选中值数组（单选时封装为单元素数组；空值返回空数组）
+	 * 注意：UTS 函数声明有提升，但 codegen 按声明顺序生成 Kotlin 局部函数，
+	 * Kotlin 局部函数不允许前向引用——被其他函数调用的函数必须先声明。
 	 *
 	 * @returns 选中值数组
 	 */
@@ -308,9 +286,6 @@
 		return false
 	}
 
-	/** 多选已选数量 */
-	const selectedCount = computed<number>(() => selectedValues().length)
-
 	/**
 	 * 是否为当前选中项
 	 *
@@ -323,6 +298,33 @@
 		if (typeof current != 'string' && typeof current != 'number') return false
 		return valuesEqual(item.value, current as RadioValue)
 	}
+
+	/**
+	 * 选项类名
+	 *
+	 * @param item 选项
+	 * @returns 类名
+	 */
+	function itemClass(item: SelectItem): string {
+		let cls = 'm-select__item'
+		if (isSelected(item)) cls += ' m-select__item--selected'
+		return cls
+	}
+
+	/**
+	 * 选项文本类名
+	 *
+	 * @param item 选项
+	 * @returns 类名
+	 */
+	function labelClass(item: SelectItem): string {
+		if (props.disabled || item.disabled) return 'm-select__label m-select__label--disabled'
+		if (isSelected(item)) return 'm-select__label m-select__label--selected'
+		return 'm-select__label'
+	}
+
+	/** 多选已选数量 */
+	const selectedCount = computed<number>(() => selectedValues().length)
 
 	/**
 	 * 筛选输入：同步内部值并派发（远程模式交给外部处理）

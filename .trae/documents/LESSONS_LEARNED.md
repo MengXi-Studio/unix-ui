@@ -643,3 +643,14 @@
 - **修法**：`#ifdef MP` 在 setup 顶层一次性 `const mpInstance = getCurrentInstance()`，后续只用引用（与 m-fab / m-tabs 一致）
 - **自查结论**：`m-color-picker`、`m-rate` 各有一处调用时取值，均已改为 setup 捕获；库内其余 `getCurrentInstance` 均已在 setup 作用域
 - **教训**：凡是可能被 `$callMethod` 调用或事件处理器调用的函数，禁止内部再取 `getCurrentInstance()`；小程序端验收须覆盖「父组件调用子组件方法」这条路径，Web 无法暴露该问题
+
+### #104 UTS 函数提升在 Kotlin codegen 三处失效：前向引用、alias+数组联合形参、$slots.default 属性访问（第二轮云打包错误全记录）
+- **现象**：第二轮云打包 `compileReleaseKotlin` 报 17 处错误，波及 6 个演示页 + 5 个组件，Web 端全部正常。三类根因：
+  1. **Kotlin 局部函数禁前向引用**：UTS/JS 函数声明有提升（先调用后声明合法），但 codegen 按源码声明顺序生成 Kotlin 局部函数 / `val xxx = ::gen_xxx_fn`，先使用后声明直接 `Unresolved reference`。命中：m-select 的 `itemClass`→`isSelected`、m-select-input 的 `displayLabel` computed→`labelOf`、m-password-input 的 `startCursorAnimation`→`stopCursorAnimation`，以及演示页 computed→`valuesText`
+  2. **type alias 与数组联合的组合形参让 codegen 静默丢弃整个函数**：`function onSelectValueChange(v: RadioValue | RadioValue[])` 不生成任何 Kotlin（渲染层引用报 `Function invocation expected`）；形参展开为 `string | number | string[] | number[]` 后正常生成 `v: Any`。演示页 `@change="logMulti"` 函数名直传同样报 invocation expected（UTS 红线「函数声明不能作值传递」），内联调用 `logMulti($event)` 后正常
+  3. **`default` 是 Kotlin 保留字**：模板 `$slots.default != null` 生成的反引号转义失效（`Unresolved 'default'`），改索引访问 `$slots['default'] != null`
+- **另确认两条 codegen 规律**：
+  - watch 单表达式 source 无显式返回类型注解时 Kotlin 报 `Return type mismatch: expected 'Unit', actual 'String'/'Boolean'`；显式注解 `(): string => props.xxx`（radio-group 写法）正常
+  - codegen 对组件事件处理器的模板内联 `$event` 一律生成 `fun($event: Any)`（与组件 emit 声明的 payload 类型无关）——演示页日志函数形参必须 `any | null` 内部 cast（radio / checkbox 页早已是此写法所以从未报错）
+- **验证方式**：`cli publish app-android --type appResource` 本地生成 Kotlin，grep 复查：`gen_xxx_fn` 生成情况、`"onChange" to 函数名` 直传残留、`$slots` 访问形态、`as RadioValue | ` 联合 cast 残留
+- **教训**：① 组件内函数声明顺序按调用依赖拓扑排（被调用者在前）；② 事件/透传函数形参禁用「type alias + 数组联合」组合，写具体展开联合；③ 模板绑定组件事件一律内联 `$event` 调用；④ `$slots.xxx` 一律索引访问；⑤ watch source 一律显式返回类型注解；⑥ 演示页事件日志函数形参一律 `any | null`；⑦ 仅 Web 编译通过不能作为 Android 通过依据，改动后必须本地生成 Kotlin grep 复查

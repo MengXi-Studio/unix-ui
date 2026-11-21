@@ -734,3 +734,12 @@
   - **修法**：把被调用函数移到前面；互相调用（A→B、B→A）无法靠换序解决，就内联为**单个函数自递归**（本次校验逻辑内联进 `requestScroll`，递归调用 `requestScroll(index, false)`）或改为对象上的方法
 - **验证链路**：mp-weixin 编译 + 截图回归（选择器弹层工具栏、滚轮定位、复选框白勾）仍通过；Android 端只能由云打包验证，本地 macOS 无 Android 编译链，**必须在提交前把「模板内是否调用导入函数」「函数是否前向引用」当作静态检查项**
 - **教训**：① uvue 模板的最佳实践是「模板只做取值与比较，逻辑一律收敛到 computed / 方法」，既避开各端模板编译器差异，也方便三端一致验证；② 云打包错误请按 `.kt` 文件与行号定位到源码模板行，两条报错成对出现（列号差 6）就是模板表达式的信号；③ 本地能跑的端（mp / Web）通过 ≠ 全平台通过，Android 的 Kotlin 约束要在写代码时就遵守
+
+### #111 补充：还漏了 `slots['x']`（无 `$`）这一写法，静态检查要按「模板段」扫描
+- 第一次修复按 `slotHasContent($slots[` 搜索，漏掉了 3 个用 setup 变量直接写的组件（`m-tabs` 4 处、`m-date-strip` 3 处，形如 `v-if="slotHasContent(slots['nav-left'])"`），云打包第二轮仍报同样的 `Unresolved reference 'invoke'`
+- **正确的静态检查**：以 `<script` 为界只扫模板段，而不是按具体写法匹配——
+  ```python
+  t = source.split('<script')[0]
+  assert 'slotHasContent(' not in t
+  ```
+- 教训：跨端编译规则的检查要按「语法位置」定义（模板内 / 脚本内），不要按某一种书写形式定义，否则换个变量名或加不加 `$` 就会漏

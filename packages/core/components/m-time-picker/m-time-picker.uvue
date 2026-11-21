@@ -21,21 +21,21 @@
 			@cancel="onPickerCancel"
 		>
 			<!-- 插槽条件转发：未传入时不覆盖 m-picker 的默认渲染 -->
-			<template v-if="$slots['toolbar'] != null" #toolbar>
+			<template v-if="hasToolbarSlot" #toolbar>
 				<slot name="toolbar"></slot>
 			</template>
-			<template v-if="$slots['title'] != null" #title>
+			<template v-if="hasTitleSlot" #title>
 				<slot name="title"></slot>
 			</template>
-			<template v-if="$slots['confirm'] != null" #confirm>
+			<template v-if="hasConfirmSlot" #confirm>
 				<slot name="confirm"></slot>
 			</template>
-			<template v-if="$slots['cancel'] != null" #cancel>
+			<template v-if="hasCancelSlot" #cancel>
 				<slot name="cancel"></slot>
 			</template>
 			<!-- #ifdef WEB -->
 			<!-- 小程序端列选项在 v-for 内不声明具名插槽（LESSONS #17），无需转发 -->
-			<template v-if="$slots['option'] != null" #option="{ option, index }">
+			<template v-if="hasOptionSlot" #option="{ option, index }">
 				<slot name="option" :option="toTimePickerOption(option)" :index="index"></slot>
 			</template>
 			<!-- #endif -->
@@ -71,6 +71,19 @@
 	} from './time-picker.uts'
 	import { PickerOption, PickerValue, valueToText } from '../m-picker/picker.uts'
 	import MPicker from '../m-picker/m-picker.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
+	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
+	const slots = useSlots()
+	/** cancel 具名插槽是否有内容 */
+	const hasCancelSlot = computed<boolean>(() => slotHasContent(slots['cancel']))
+	/** confirm 具名插槽是否有内容 */
+	const hasConfirmSlot = computed<boolean>(() => slotHasContent(slots['confirm']))
+	/** option 具名插槽是否有内容 */
+	const hasOptionSlot = computed<boolean>(() => slotHasContent(slots['option']))
+	/** title 具名插槽是否有内容 */
+	const hasTitleSlot = computed<boolean>(() => slotHasContent(slots['title']))
+	/** toolbar 具名插槽是否有内容 */
+	const hasToolbarSlot = computed<boolean>(() => slotHasContent(slots['toolbar']))
 
 	type Props = {
 		/** 选项类型组合（hour / minute / second 任意顺序；null 用默认时-分） */
@@ -561,6 +574,16 @@
 	}
 
 	/**
+	 * 要求 m-picker 各列重新定位到当前值：弹层打开后滚动视口才真正可滚动（issue #25）
+	 */
+	function reposition() {
+		const inst = picker.value
+		if (inst != null) {
+			inst.$callMethod('reposition')
+		}
+	}
+
+	/**
 	 * m-picker 列切换：先解析时段列，再按列顺序重建时 / 分 / 秒（12 制按 AM/PM 换算 24 制）
 	 */
 	const onPickerChange = (_value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
@@ -692,6 +715,7 @@
 	defineExpose({
 		confirm,
 		resetSelection,
+		reposition,
 		getSelectedValue
 	})
 </script>

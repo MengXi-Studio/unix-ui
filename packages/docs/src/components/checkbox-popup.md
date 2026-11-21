@@ -69,7 +69,7 @@ const options = [{ label: '标签 A', value: 'a' }, { label: '标签 B', value: 
 | disabled | 是否禁用全部选项 | boolean | `false` |
 | max | 最大可选数（0 不限制） | number | `0` |
 | direction | 排列方向：`vertical` / `horizontal` | CheckboxDirection | `vertical` |
-| shape | 形状：`round` / `square` | CheckboxShape | `round` |
+| shape | 形状：`square` / `round` | CheckboxShape | `square` |
 | icon-size | 图标尺寸（number 补 px / string 原样） | string \| number | `''` |
 | checked-color | 选中态颜色 | string | `''` |
 | label-position | 文本位置：`right` / `left` | CheckboxLabelPosition | `right` |

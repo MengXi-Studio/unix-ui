@@ -58,6 +58,8 @@
 		readonly: boolean
 		/** 禁用项标记（按索引对齐 options；null 表示无禁用；通用 Picker 使用，日期 / 时间不传） */
 		disabledOptions?: boolean[]
+		/** 重新定位令牌：宿主每次自增即触发按受控下标重新定位（弹层打开后滚动视口才真正可滚动） */
+		positionToken?: number
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
@@ -68,7 +70,8 @@
 		visibleOptionNum: 6,
 		swipeDuration: 200,
 		readonly: false,
-		disabledOptions: null
+		disabledOptions: null,
+		positionToken: 0
 	})
 
 	const emit = defineEmits<{
@@ -78,7 +81,7 @@
 
 	/** 绑定给 scroll-view 的滚动目标值（仅程序化定位时变更） */
 	const scrollTopRequest = ref<number>(0)
-	/** 实际滚动位置镜像（@scroll 回灌，吸附判定基准） */
+	/** 实际滚动位置镜像（仅由 @scroll 回灌 SDK 真实位置，吸附判定与定位校验基准） */
 	const actualTop = ref<number>(0)
 	/** 视觉激活下标（滚动过程中实时更新，驱动透明度渐隐） */
 	const activeIndex = ref<number>(0)
@@ -88,6 +91,12 @@
 	let programmatic = false
 	/** 程序化标记复位定时器 id */
 	let programmaticTimer = -1
+	/** 偏移 1px 后归位的定时器 id（-1 无） */
+	let resetTimer = -1
+	/** 定位校验定时器 id（-1 无） */
+	let verifyTimer = -1
+	/** 本次定位请求后是否发生过用户滚动（用户手势优先，取消校验重发） */
+	let touchedAfterRequest = false
 
 	/** 选项列表（props.options 为 null 时按空列渲染，避免首帧空指针） */
 	const optionList = computed<DatePickerOption[]>(() => {
@@ -188,11 +197,16 @@
 	}
 
 	/**
-	 * 程序化滚动到指定下标：同值时属性更新不会重发，先偏移 0.5px 再归位强制生效
+	 * 程序化滚动到指定下标：同值时属性更新不会重发，先偏移 1px 再归位强制生效；
+	 * 归位用定时器而非 nextTick —— 小程序端相邻两次 setData 会合帧，同帧内先加后减等效于未变化。
+	 * 不在此处回写 actualTop：镜像只认 @scroll 回灌的真实滚动位置。弹层首帧挂载时滚动视口高度为 0，
+	 * scroll-top 会被忽略，若提前写入镜像，后续定位会误判「已到位」而直接跳过（issue #25）。
+	 * 定位校验内联在本函数内自递归：Android 端 setup 函数按声明顺序编译为局部函数，拆成前后两个函数会互相引用失败。
 	 */
-	function requestScroll(index: number) {
+	function requestScroll(index: number, allowVerify: boolean = true) {
 		const target = index * props.optionHeight
 		programmatic = true
+		touchedAfterRequest = false
 		if (programmaticTimer != -1) {
 			clearTimeout(programmaticTimer)
 		}
@@ -201,14 +215,46 @@
 			programmaticTimer = -1
 		}, 120)
 		if (scrollTopRequest.value == target) {
-			scrollTopRequest.value = target + 0.5
-			nextTick(() => {
+			scrollTopRequest.value = target + 1
+			if (resetTimer != -1) {
+				clearTimeout(resetTimer)
+			}
+			resetTimer = setTimeout(() => {
+				resetTimer = -1
 				scrollTopRequest.value = target
-			})
+			}, 50)
 		} else {
 			scrollTopRequest.value = target
 		}
-		actualTop.value = target
+		// 布局未完成时 scroll-top 会被忽略且不产生 @scroll：延迟一帧按镜像复核，未到位则强制重发一次
+		// （只重试一层，避免隐藏态无限轮询；用户已接管滚动时以手势为准，不拉回）
+		if (allowVerify) {
+			if (verifyTimer != -1) {
+				clearTimeout(verifyTimer)
+			}
+			verifyTimer = setTimeout(() => {
+				verifyTimer = -1
+				if (touchedAfterRequest) {
+					return
+				}
+				const checkTarget = index * props.optionHeight
+				if (Math.abs(actualTop.value - checkTarget) >= 1) {
+					requestScroll(index, false)
+				}
+			}, 120)
+		}
+	}
+
+	/**
+	 * 重新定位到受控下标：供宿主在弹层打开 / 布局变化后调用（此时滚动视口才真正可滚动）
+	 */
+	function reposition() {
+		activeIndex.value = props.modelValue
+		const target = props.modelValue * props.optionHeight
+		if (Math.abs(actualTop.value - target) < 1) {
+			return
+		}
+		requestScroll(props.modelValue)
 	}
 
 	/**
@@ -261,6 +307,7 @@
 		if (programmatic) {
 			return
 		}
+		touchedAfterRequest = true
 		if (snapTimer != -1) {
 			clearTimeout(snapTimer)
 		}
@@ -304,6 +351,11 @@
 		})
 	}, { flush: 'post' })
 
+	// 宿主重新定位令牌变化（弹层打开后滚动视口才真正可滚动）→ 再次对齐受控下标
+	watch((): number => props.positionToken, (_: number) => {
+		reposition()
+	}, { flush: 'post' })
+
 	onMounted(() => {
 		activeIndex.value = props.modelValue
 		nextTick(() => {
@@ -319,6 +371,14 @@
 		if (programmaticTimer != -1) {
 			clearTimeout(programmaticTimer)
 			programmaticTimer = -1
+		}
+		if (resetTimer != -1) {
+			clearTimeout(resetTimer)
+			resetTimer = -1
+		}
+		if (verifyTimer != -1) {
+			clearTimeout(verifyTimer)
+			verifyTimer = -1
 		}
 	})
 </script>

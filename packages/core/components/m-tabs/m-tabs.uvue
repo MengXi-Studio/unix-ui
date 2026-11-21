@@ -6,7 +6,7 @@
 		<!-- 标签栏：sticky 吸附分支（模板无法抽公共块，两分支重复渲染同一结构） -->
 		<m-sticky v-if="sticky && showHeader" :scroll-top="scrollTop" :offset-top="offsetTop" @change="onStickyChange">
 			<view ref="navRef" id="m-tabs-nav" class="m-tabs__nav" :class="navClass">
-				<view v-if="slots['nav-left'] != null" class="m-tabs__nav-extra">
+				<view v-if="hasNavLeftSlot" class="m-tabs__nav-extra">
 					<slot name="nav-left"></slot>
 				</view>
 				<scroll-view
@@ -37,7 +37,7 @@
 						</view>
 					</view>
 				</scroll-view>
-				<view v-if="slots['nav-right'] != null" class="m-tabs__nav-extra">
+				<view v-if="hasNavRightSlot" class="m-tabs__nav-extra">
 					<slot name="nav-right"></slot>
 				</view>
 				<view v-if="showFreeLine" ref="lineRef" id="m-tabs-line" class="m-tabs__line" :style="lineStyle"></view>
@@ -45,7 +45,7 @@
 		</m-sticky>
 		<template v-else-if="showHeader">
 			<view ref="navRef" id="m-tabs-nav" class="m-tabs__nav" :class="navClass">
-				<view v-if="slots['nav-left'] != null" class="m-tabs__nav-extra">
+				<view v-if="hasNavLeftSlot" class="m-tabs__nav-extra">
 					<slot name="nav-left"></slot>
 				</view>
 				<scroll-view
@@ -76,7 +76,7 @@
 						</view>
 					</view>
 				</scroll-view>
-				<view v-if="slots['nav-right'] != null" class="m-tabs__nav-extra">
+				<view v-if="hasNavRightSlot" class="m-tabs__nav-extra">
 					<slot name="nav-right"></slot>
 				</view>
 				<view v-if="showFreeLine" ref="lineRef" id="m-tabs-line" class="m-tabs__line" :style="lineStyle"></view>
@@ -110,6 +110,7 @@
 	import { TABS_KEY, TabsContext, TabItem, TabsClickEvent } from './tabs.uts'
 	import MSticky from '../m-sticky/m-sticky.uvue'
 	import MBadge from '../m-badge/m-badge.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	/** 标签页样式风格 */
 	type TabsType = 'line' | 'card' | 'pill'
@@ -224,6 +225,10 @@
 	}>()
 
 	const slots = useSlots()
+	/** nav-left 具名插槽是否有内容 */
+	const hasNavLeftSlot = computed<boolean>(() => slotHasContent(slots['nav-left']))
+	/** nav-right 具名插槽是否有内容 */
+	const hasNavRightSlot = computed<boolean>(() => slotHasContent(slots['nav-right']))
 
 	// ========== 上下文与元素引用 ==========
 

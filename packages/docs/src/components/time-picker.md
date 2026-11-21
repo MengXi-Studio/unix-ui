@@ -118,6 +118,7 @@ picker.value?.$callMethod('confirm')
 | --- | --- |
 | confirm | 程序化确认 |
 | resetSelection | 重置为外部 value / 当前时间 |
+| reposition | 按当前选中值重新定位滚轮（弹层 `open` 后布局可用时由弹层自动调用） |
 | getSelectedValue | 读取当前时间字符串 |
 
 ### Slots

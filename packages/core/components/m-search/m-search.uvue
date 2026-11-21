@@ -71,6 +71,7 @@
 	import { IconName } from '../m-icon/icons.uts'
 	import MIcon from '../m-icon/m-icon.uvue'
 	import MInput from '../m-input/m-input.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	/** 右侧按钮语义：cancel 取消（Vant）/ search 搜索（Sard） */
 	type SearchActionType = 'cancel' | 'search'
@@ -188,10 +189,10 @@
 	const inputRef = ref<ComponentPublicInstance | null>(null)
 
 	/** 是否传入搜索框外左侧插槽 */
-	const hasLeftSlot = computed<boolean>(() => slots['left'] != null)
+	const hasLeftSlot = computed<boolean>(() => slotHasContent(slots['left']))
 
 	/** 是否显示框内右图标（prop 或插槽） */
-	const hasRightIcon = computed<boolean>(() => props.rightIcon != null || slots['right-icon'] != null)
+	const hasRightIcon = computed<boolean>(() => props.rightIcon != null || slotHasContent(slots['right-icon']))
 
 	/** 右图标字形名（未传时回落 search，仅占位，实际渲染由 hasRightIcon 控制） */
 	const rightIconName = computed<IconName>(() => {
@@ -299,7 +300,7 @@
 	 */
 	function onActionClick(e: MouseEvent) {
 		emit('click', e)
-		if (slots['action'] != null) return
+		if (slotHasContent(slots['action'])) return
 		if (props.actionType == 'search') {
 			emit('search', props.value)
 			return

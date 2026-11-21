@@ -11,53 +11,59 @@
 		>
 			<!-- 插槽条件转发：v-if="$slots.xxx != null" 保证未传入的插槽不覆盖 panel 的内置默认渲染
 			     （默认内容与样式同居 panel scope，宿主无条件转发 fallback 会因样式隔离不命中） -->
-			<template v-if="$slots['title'] != null" #title>
+			<template v-if="hasTitleSlot" #title>
 				<slot name="title"></slot>
 			</template>
-			<template v-if="$slots['subtitle'] != null" #subtitle>
+			<template v-if="hasSubtitleSlot" #subtitle>
 				<slot name="subtitle"></slot>
 			</template>
 			<!-- #ifndef MP -->
 			<!-- 小程序端 panel 在 v-for 内不声明具名插槽（同名插槽仅第一个生效，#17），无需转发 -->
-			<template v-if="$slots['month-title'] != null" #month-title="{ month, text }">
+			<template v-if="hasMonthTitleSlot" #month-title="{ month, text }">
 				<slot name="month-title" :month="month" :text="text"></slot>
 			</template>
-			<template v-if="$slots['top-info'] != null" #top-info="{ day }">
+			<template v-if="hasTopInfoSlot" #top-info="{ day }">
 				<slot name="top-info" :day="day"></slot>
 			</template>
-			<template v-if="$slots['bottom-info'] != null" #bottom-info="{ day }">
+			<template v-if="hasBottomInfoSlot" #bottom-info="{ day }">
 				<slot name="bottom-info" :day="day"></slot>
 			</template>
-			<template v-if="$slots['text'] != null" #text="{ day }">
+			<template v-if="hasTextSlot" #text="{ day }">
 				<slot name="text" :day="day"></slot>
 			</template>
 			<!-- #endif -->
 			<template #footer>
-				<slot name="footer">
-					<view v-if="showConfirm" class="m-calendar__footer">
-						<m-button
-							block
-							:type="color == '' ? 'primary' : 'default'"
-							:color="color"
-							:disabled="confirmDisabled"
-							custom-style="height: 36px;"
-							@click="onConfirmButtonClick"
-						>
-							<slot name="confirm-text">{{ confirmDisabled ? confirmDisabledText : confirmText }}</slot>
-						</m-button>
-					</view>
-				</slot>
+				<!-- footer / confirm-text 的默认内容改用显式 v-if：小程序端弹层会把插槽静态声明给面板，
+				     `$slots.xxx` 恒存在导致 slot fallback 永不渲染（issue #24） -->
+				<template v-if="hasFooterSlot">
+					<slot name="footer"></slot>
+				</template>
+				<view v-else-if="showConfirm" class="m-calendar__footer">
+					<m-button
+						block
+						:type="color == '' ? 'primary' : 'default'"
+						:color="color"
+						:disabled="confirmDisabled"
+						custom-style="height: 36px;"
+						@click="onConfirmButtonClick"
+					>
+						<template v-if="hasConfirmTextSlot">
+							<slot name="confirm-text"></slot>
+						</template>
+						<template v-else>{{ confirmDisabled ? confirmDisabledText : confirmText }}</template>
+					</m-button>
+				</view>
 			</template>
-			<template v-if="$slots['prev-year'] != null" #prev-year>
+			<template v-if="hasPrevYearSlot" #prev-year>
 				<slot name="prev-year"></slot>
 			</template>
-			<template v-if="$slots['prev-month'] != null" #prev-month>
+			<template v-if="hasPrevMonthSlot" #prev-month>
 				<slot name="prev-month"></slot>
 			</template>
-			<template v-if="$slots['next-month'] != null" #next-month>
+			<template v-if="hasNextMonthSlot" #next-month>
 				<slot name="next-month"></slot>
 			</template>
-			<template v-if="$slots['next-year'] != null" #next-year>
+			<template v-if="hasNextYearSlot" #next-year>
 				<slot name="next-year"></slot>
 			</template>
 		</MCalendarPanel>
@@ -92,6 +98,7 @@
 	import { addDays, getDaysInMonth, getFirstDayWeekday, startOfMonth } from '../../utils/date.uts'
 	import MCalendarPanel from './m-calendar-panel.uvue'
 	import { showToast } from '../m-toast/toast.uts'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 选择类型 */
@@ -196,6 +203,30 @@
 	}>()
 
 	const slots = useSlots()
+	/** bottom-info 具名插槽是否有内容 */
+	const hasBottomInfoSlot = computed<boolean>(() => slotHasContent(slots['bottom-info']))
+	/** confirm-text 具名插槽是否有内容 */
+	const hasConfirmTextSlot = computed<boolean>(() => slotHasContent(slots['confirm-text']))
+	/** footer 具名插槽是否有内容 */
+	const hasFooterSlot = computed<boolean>(() => slotHasContent(slots['footer']))
+	/** month-title 具名插槽是否有内容 */
+	const hasMonthTitleSlot = computed<boolean>(() => slotHasContent(slots['month-title']))
+	/** next-month 具名插槽是否有内容 */
+	const hasNextMonthSlot = computed<boolean>(() => slotHasContent(slots['next-month']))
+	/** next-year 具名插槽是否有内容 */
+	const hasNextYearSlot = computed<boolean>(() => slotHasContent(slots['next-year']))
+	/** prev-month 具名插槽是否有内容 */
+	const hasPrevMonthSlot = computed<boolean>(() => slotHasContent(slots['prev-month']))
+	/** prev-year 具名插槽是否有内容 */
+	const hasPrevYearSlot = computed<boolean>(() => slotHasContent(slots['prev-year']))
+	/** subtitle 具名插槽是否有内容 */
+	const hasSubtitleSlot = computed<boolean>(() => slotHasContent(slots['subtitle']))
+	/** text 具名插槽是否有内容 */
+	const hasTextSlot = computed<boolean>(() => slotHasContent(slots['text']))
+	/** title 具名插槽是否有内容 */
+	const hasTitleSlot = computed<boolean>(() => slotHasContent(slots['title']))
+	/** top-info 具名插槽是否有内容 */
+	const hasTopInfoSlot = computed<boolean>(() => slotHasContent(slots['top-info']))
 
 	// ========== 选择状态（时间戳口径，全部为当日零点） ==========
 	/** single 当前选中时间戳（null 未选） */
@@ -559,8 +590,8 @@
 			readonly: props.readonly,
 			switchMode: props.switchMode,
 			scrollAnchor: scrollAnchor.value,
-			hasTopInfoSlot: slots['top-info'] != null,
-			hasBottomInfoSlot: slots['bottom-info'] != null
+			hasTopInfoSlot: slotHasContent(slots['top-info']),
+			hasBottomInfoSlot: slotHasContent(slots['bottom-info'])
 		} as CalendarPanelConfig
 	})
 

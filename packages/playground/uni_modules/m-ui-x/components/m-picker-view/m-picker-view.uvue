@@ -20,7 +20,7 @@
 				>
 					<!-- 插槽条件转发：未传入时不覆盖列内置文本 -->
 					<!-- #ifdef WEB -->
-					<template v-if="$slots['option'] != null" #option="{ option, index, rowIndex, columnIndex }">
+					<template v-if="hasOptionSlot" #option="{ option, index, rowIndex, columnIndex }">
 						<slot
 							name="option"
 							:option="option"
@@ -51,6 +51,11 @@
 		clampIndex
 	} from '../m-picker/picker.uts'
 	import MPickerViewColumn from './m-picker-view-column.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
+	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
+	const slots = useSlots()
+	/** option 具名插槽是否有内容 */
+	const hasOptionSlot = computed<boolean>(() => slotHasContent(slots['option']))
 
 	type Props = {
 		/** 列数据：一维（单列）/ 二维（多列）；级联 children 不在本组件展开 */

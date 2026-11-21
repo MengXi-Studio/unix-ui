@@ -103,6 +103,7 @@ picker.value?.$callMethod('getSelectedValue')
 | --- | --- |
 | confirm | Programmatic confirm |
 | resetSelection | Resets to the external value / now |
+| reposition | Re-aligns the wheels to the current value (called by the popup on `open`, once layout is ready) |
 | getSelectedValue | Returns the current time string |
 
 ### Slots

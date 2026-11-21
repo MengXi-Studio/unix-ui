@@ -1,0 +1,38 @@
+/**
+ * 插槽工具：跨端判断具名插槽是否实际传入了内容。
+ *
+ * 背景（issue #24）：未传具名插槽时，Web / App 端 `$slots[name]` / `useSlots()[name]` 为 null，
+ * 而微信小程序端会得到一个空数组（个别实现为空对象），因此 `slots[name] != null` 在小程序端恒为真。
+ * 若直接据此向子组件条件转发插槽，就会把「空插槽」转发下去，覆盖子组件的默认内容
+ * （典型表现：picker-popup 系列的取消 / 标题 / 确认工具栏消失，无法提交选择）。
+ *
+ * 用法：
+ *   import { slotHasContent } from '../../utils/slot.uts'
+ *   模板：v-if="slotHasContent($slots['toolbar'])" #toolbar
+ *   脚本：computed<boolean>(() => slotHasContent(slots['content']))
+ *
+ * 注意：本函数只适用于**具名插槽**。默认插槽（写在组件标签之间的匿名子节点）在小程序端
+ * 父级传了内容时 `$slots.default` 是「空数组」（子节点不进入数组元素），未传时则没有该 key；
+ * 长度判定在本端恒为 false，会把「已传」误判成「未传」。默认插槽请一律用 `slots['default'] != null` 判定。
+ */
+
+/**
+ * 判断具名插槽是否实际传入内容（Web / App / 小程序跨端一致）。
+ *
+ * @param slot 插槽值：Web / App 为渲染函数（存在即已传入），小程序为节点数组（未传时为空）
+ * @returns 是否实际传入内容；null 或空容器均返回 false
+ */
+export function slotHasContent(slot: any | null): boolean {
+	if (slot == null) return false
+	// #ifdef MP
+	// 小程序端：插槽为节点数组，未传时为空数组；空对象取不到 length，同样视为未传
+	const list = slot as any[]
+	const len = list.length
+	if (len == null) return false
+	return len > 0
+	// #endif
+	// #ifndef MP
+	// Web / App：插槽存在即视为已传入（渲染函数），内容为空是调用方自身的选择
+	return true
+	// #endif
+}

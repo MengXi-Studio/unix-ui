@@ -226,9 +226,9 @@
 
 	const slots = useSlots()
 	/** nav-left 具名插槽是否有内容 */
-	const hasNavLeftSlot = computed<boolean>(() => hasNavLeftSlot)
+	const hasNavLeftSlot = computed<boolean>(() => slotHasContent(slots['nav-left']))
 	/** nav-right 具名插槽是否有内容 */
-	const hasNavRightSlot = computed<boolean>(() => hasNavRightSlot)
+	const hasNavRightSlot = computed<boolean>(() => slotHasContent(slots['nav-right']))
 
 	// ========== 上下文与元素引用 ==========
 

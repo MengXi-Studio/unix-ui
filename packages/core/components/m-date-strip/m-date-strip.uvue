@@ -154,11 +154,11 @@
 
 	const slots = useSlots()
 	/** bottom-info 具名插槽是否有内容 */
-	const hasBottomInfoSlot = computed<boolean>(() => hasBottomInfoSlot)
+	const hasBottomInfoSlot = computed<boolean>(() => slotHasContent(slots['bottom-info']))
 	/** item 具名插槽是否有内容 */
-	const hasItemSlot = computed<boolean>(() => hasItemSlot)
+	const hasItemSlot = computed<boolean>(() => slotHasContent(slots['item']))
 	/** top-info 具名插槽是否有内容 */
-	const hasTopInfoSlot = computed<boolean>(() => hasTopInfoSlot)
+	const hasTopInfoSlot = computed<boolean>(() => slotHasContent(slots['top-info']))
 
 	// ========== 状态 ==========
 

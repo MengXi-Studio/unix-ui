@@ -743,3 +743,18 @@
   assert 'slotHasContent(' not in t
   ```
 - 教训：跨端编译规则的检查要按「语法位置」定义（模板内 / 脚本内），不要按某一种书写形式定义，否则换个变量名或加不加 `$` 就会漏
+
+### #111 再补充：批量改写要防「自引用替换」，Kotlin daemon 崩溃是编译错误的次生现象
+- 第三轮云打包报 `unresolved reference 'hasBottomInfoSlot' / 'hasNavLeftSlot'` 等，并附带 `Connection to the Kotlin daemon has been unexpectedly lost`。**daemon 崩溃是大量编译错误后的次生现象，不是内存/环境问题**，先修 `e:` 行
+- 根因：批量脚本先插入 `const hasNavLeftSlot = computed(() => slotHasContent(slots['nav-left']))`，随后又对全文执行 `slotHasContent(slots['nav-left']) → hasNavLeftSlot` 替换，把刚生成的函数体替换成了它自己（`computed(() => hasNavLeftSlot)`）。上一批 22 个文件因为模板里写的是 `$slots[...]`（带 `$`），与插入体里的 `slots[...]` 不匹配，才侥幸没中招
+- **规则**：批量改写时，插入的声明必须是**替换完成后**的最终文本，或先替换模板段再插入声明；改完必须做一致性自检——「计算属性名 ↔ 插槽名」是否一一对应、模板引用的每个标识符在脚本中是否有声明
+- 自检脚本（本次有效）：
+  ```python
+  tpl, _, script = src.partition('<script')
+  assert 'slotHasContent(' not in tpl
+  for cn, slot in re.findall(r"const (has\w+Slot) = computed<boolean>\(\(\) => slotHasContent\(slots\['([^']+)'\]\)\)", src):
+      assert cn == 'has' + pascal(slot) + 'Slot'
+  for name in set(re.findall(r'\b(has\w+Slot)\b', tpl)):
+      assert re.search(r'const %s\s*=' % name, script)
+  ```
+- 验证：mp-weixin 编译成功，`tabs`（基础/name 匹配/滚动/禁用/卡片与药丸风格）与 `date-strip`（基础单选/多选超限/范围端点/value-format）截图正常

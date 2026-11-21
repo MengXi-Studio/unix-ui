@@ -264,7 +264,7 @@ $m-button-normal-height: 48px;
 ## 真机与在线体验
 
 - **浏览器直接体验**：文档站的[在线演示](https://mengxi-studio.github.io/unix-ui/playground/)，每个组件一页，穷举全部 props / 变体 / 事件。
-- **Android 真机**：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1795095433761-__UNI__F1AA560_1795095406297.apk)——云打包产物，覆盖全部组件的真实原生渲染效果；安装包随版本更新重新打包，链接以最新发版说明为准。
+- **Android 真机**：[下载演示 App（APK）](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1795255930231-__UNI__F1AA560_1795255914654.apk)——云打包产物，覆盖全部组件的真实原生渲染效果；安装包随版本更新重新打包，链接以最新发版说明为准。
 - **源码即文档**：示例工程 [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) 的每个演示页都是可运行的最佳实践。
 
 ## 工程与共建

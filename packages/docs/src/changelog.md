@@ -1,5 +1,13 @@
 # 更新日志
 
+## [0.7.3] - 2026-11-22
+
+修复 VDOM 模式（uni-app x + 微信小程序）下具名插槽被误判为未传入、调用方内容被整块丢弃的问题（0.7.2 回归）。
+
+### 修复
+
+- **所有经 `slotHasContent` 守卫的具名插槽**（`m-tabs` 的 `nav-left` / `nav-right`，picker-popup 系列的 `toolbar` / `title` / `confirm` / `cancel` / `footer` / `columns-top` / `columns-bottom` / `option`，以及 `m-calendar`、`m-cascader`、`m-search`、`m-checkbox` 等，共 30 个组件文件、121 处判定）：uni-app x VDOM 模式下微信小程序的具名插槽值是布尔 `true`（已传）或 key 不存在（未传），并非节点数组；原实现只按「数组长度 > 0」判定，布尔值取不到 `length` → 判为未传入，插槽内容被模板 `v-if` 整块隐藏。`slotHasContent` 的小程序分支改为按值形态分流——渲染函数视为已传入、布尔直接返回其值，其余仍按数组长度判定，0.7.2「空数组视为未传」的修复不受影响（[#27](https://github.com/MengXi-Studio/unix-ui/issues/27)）
+
 ## [0.7.2] - 2026-11-21
 
 修复微信小程序端 picker-popup 系列未传插槽时默认工具栏被空插槽覆盖、弹层首次打开滚轮不定位到传入值、默认插槽判定失效导致的选中态与文案丢失，并将复选框默认形状调整为方形。

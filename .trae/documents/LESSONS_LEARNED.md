@@ -758,3 +758,13 @@
       assert re.search(r'const %s\s*=' % name, script)
   ```
 - 验证：mp-weixin 编译成功，`tabs`（基础/name 匹配/滚动/禁用/卡片与药丸风格）与 `date-strip`（基础单选/多选超限/范围端点/value-format）截图正常
+
+### #112 VDOM（小程序）具名插槽值是布尔 `true`，不是函数——`slotHasContent` 需同时识别 function 与 boolean
+- 背景：issue #27 反馈 0.7.2 在「uni-app x VDOM 模式 + 微信小程序」下，`m-tabs` 的 `nav-left` / `nav-right` 等具名插槽被判定为未传入而整体隐藏（0.7.1 正常）
+- **运行实证（不是猜测）**：在 `dist/dev/mp-weixin` 的 m-tabs.js 里临时打日志（改产物只为取证，重新编译即还原），打印 `typeof slots['nav-right']` 与 `Object.keys(slots)`：
+  - 未传插槽：`slots` 只有 `d,default`，`slots['nav-right']` 为 `undefined`
+  - 传入插槽：key 出现，值为 **`true`（typeof === 'boolean'）**，不是 issue 里推测的渲染函数
+- 原实现只在小程序分支按「数组 length > 0」判定，布尔值取不到 `length` → 恒 false，插槽内容被 `v-if` 整块吞掉
+- **修法**（`packages/core/utils/slot.uts`，仅 `#ifdef MP` 段）：`null` → false；`typeof slot == 'function'` → true；`typeof slot == 'boolean'` → 返回该值；其余仍按数组长度判定（保住 issue #24 的「空数组视为未传」）
+- 验证：HBuilderX 编译 mp-weixin（日志确认「VDOM模式」）→ wechatide 打开产物、进 `pages-sub/nav/tabs/tabs`，插槽卡片渲染为「左 标签1 标签2 右」，console 无报错；`pnpm sync:uni-modules:check` 通过
+- **教训**：跨端插槽判定不要只覆盖「已见过的形态」，`slots[name]` 在 VDOM / 非 VDOM、Web / App / 各小程序里可能是函数、布尔、数组或空对象；新增分支必须用运行日志取证，issue 里的原因分析只能当线索

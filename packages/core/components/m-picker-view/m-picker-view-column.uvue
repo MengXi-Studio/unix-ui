@@ -16,7 +16,7 @@
 			<!-- 插槽条件转发：作用域回传原始选项对象与行列下标
 			     仅 Web 编译：App 端具名插槽解构出的下标为 Any?，传入 number 参数会报类型不匹配 -->
 			<!-- #ifdef WEB -->
-			<template v-if="slotHasContent($slots['option'])" #option="{ index }">
+			<template v-if="hasOptionSlot" #option="{ index }">
 				<slot name="option" :option="optionOf(index)" :index="index" :row-index="index" :column-index="columnIndex"></slot>
 			</template>
 			<!-- #endif -->
@@ -38,6 +38,10 @@
 	import { DatePickerOption } from '../m-date-picker/date-picker.uts'
 	import MDatePickerColumn from '../m-date-picker/m-date-picker-column.uvue'
 	import { slotHasContent } from '../../utils/slot.uts'
+	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
+	const slots = useSlots()
+	/** option 具名插槽是否有内容 */
+	const hasOptionSlot = computed<boolean>(() => slotHasContent(slots['option']))
 
 	type Props = {
 		/** 列选项（null 按空列渲染） */

@@ -6,7 +6,7 @@
 		<view :class="iconWrapClass" :style="iconWrapStyle" @click="onIconClick">
 			<!-- 默认内容不能写成 <slot> 的 fallback：小程序端未传具名插槽时 `$slots.x` 为空数组（truthy），
 			     fallback 被编译成 wx:else 后永不渲染，选中态的白勾会整体消失（与 issue #24 同根因） -->
-			<template v-if="slotHasContent($slots['icon'])">
+			<template v-if="hasIconSlot">
 				<slot name="icon" :checked="isChecked" :disabled="isDisabled"></slot>
 			</template>
 			<view v-else-if="indeterminate" class="m-checkbox__indeterminate"></view>
@@ -95,6 +95,8 @@
 
 	/** 槽位检测（uvue 需索引访问读取具名插槽） */
 	const slots = useSlots()
+	/** icon 具名插槽是否有内容 */
+	const hasIconSlot = computed<boolean>(() => slotHasContent(slots['icon']))
 
 	/** 组上下文（不在组内时为 null） */
 	const ctx = inject<CheckboxGroupContext | null>(CHECKBOX_KEY, null)

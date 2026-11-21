@@ -201,6 +201,7 @@
 	 * 归位用定时器而非 nextTick —— 小程序端相邻两次 setData 会合帧，同帧内先加后减等效于未变化。
 	 * 不在此处回写 actualTop：镜像只认 @scroll 回灌的真实滚动位置。弹层首帧挂载时滚动视口高度为 0，
 	 * scroll-top 会被忽略，若提前写入镜像，后续定位会误判「已到位」而直接跳过（issue #25）。
+	 * 定位校验内联在本函数内自递归：Android 端 setup 函数按声明顺序编译为局部函数，拆成前后两个函数会互相引用失败。
 	 */
 	function requestScroll(index: number, allowVerify: boolean = true) {
 		const target = index * props.optionHeight
@@ -225,30 +226,23 @@
 		} else {
 			scrollTopRequest.value = target
 		}
+		// 布局未完成时 scroll-top 会被忽略且不产生 @scroll：延迟一帧按镜像复核，未到位则强制重发一次
+		// （只重试一层，避免隐藏态无限轮询；用户已接管滚动时以手势为准，不拉回）
 		if (allowVerify) {
-			scheduleVerify(index)
-		}
-	}
-
-	/**
-	 * 定位校验：首帧挂载 / 弹层复开时滚动视口可能尚未布局完成，scroll-top 被忽略且不产生 @scroll；
-	 * 延迟一帧按镜像判断是否到位，未到位则强制重发一次（只重试一层，避免隐藏态无限轮询）
-	 */
-	function scheduleVerify(index: number) {
-		if (verifyTimer != -1) {
-			clearTimeout(verifyTimer)
-		}
-		verifyTimer = setTimeout(() => {
-			verifyTimer = -1
-			// 用户已接管滚动时以手势为准，不拉回
-			if (touchedAfterRequest) {
-				return
+			if (verifyTimer != -1) {
+				clearTimeout(verifyTimer)
 			}
-			const target = index * props.optionHeight
-			if (Math.abs(actualTop.value - target) >= 1) {
-				requestScroll(index, false)
-			}
-		}, 120)
+			verifyTimer = setTimeout(() => {
+				verifyTimer = -1
+				if (touchedAfterRequest) {
+					return
+				}
+				const checkTarget = index * props.optionHeight
+				if (Math.abs(actualTop.value - checkTarget) >= 1) {
+					requestScroll(index, false)
+				}
+			}, 120)
+		}
 	}
 
 	/**

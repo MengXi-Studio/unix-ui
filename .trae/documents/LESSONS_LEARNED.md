@@ -725,3 +725,12 @@
 - **修法**：颜色 / 字号落到**本组件自己的容器**（`.m-checkbox__icon-wrap--checked`）上，靠 CSS 继承穿透组件边界下发——继承按渲染树计算，不受样式隔离影响；`custom-class` 只保留给定位类（如弹层关闭图标的 absolute 定位）或干脆不再依赖
 - **顺带调整**：`m-checkbox` 族 `shape` 默认值 `round → square`（产品决策，非缺陷），演示页与文档默认值列同步；`shape="round"` 仍可覆盖
 - **教训**：① 小程序端凡是「父组件样式 + 子组件节点」的组合都必须假定不生效，跨组件着色/字号一律用「容器继承」或子组件自身 prop（`m-icon` 的 `color` / `size`）实现；② 组件演示页要同时覆盖「默认形状 / 显式覆盖」两种形态，默认值变更才能被看到；③ 同一类视觉问题先看编译产物（wxss / wxml / json 隔离配置），比盲改源码快
+
+### #111 uvue 模板的两条 Android（Kotlin）编译红线：模板内插槽函数调用、setup 函数前向引用
+- **背景**：0.7.2 的插槽修复在 mp-weixin / Web 验证通过后，用户 Android 云打包失败（`compileReleaseKotlin`），报错全部集中在 `uni_modules/m-ui-x/components/**/*.kt`
+- **红线一：模板里不能直接调用「以 `$slots[…]` 为入参的导入函数」**。报错 `Unresolved reference 'invoke'` + `Function invocation 'slotHasContent(...)' expected`：Android 模板编译器会把 `slotHasContent($slots['toolbar'])` 生成成 `.invoke` 形式，导入的模块函数在这里不可调用。对照证据：同一文件里 `$slots['x'] != null`（纯属性访问）与组件方法调用（`isOptionSelected(opt, li)`）都能正常编译，说明问题出在「导入函数 + `$slots` 实参」这一组合，而不是 `$slots` 本身
+  - **修法**：守卫一律在脚本层用计算属性求值，模板只引用布尔值：`const hasToolbarSlot = computed<boolean>(() => slotHasContent(slots['toolbar']))` + `v-if="hasToolbarSlot"`（本次 22 个组件、105 处模板守卫）
+- **红线二：`<script setup>` 里的函数按声明顺序编译为局部函数，不能前向引用**。`requestScroll` 调用后声明的 `scheduleVerify` → `Unresolved reference 'scheduleVerify'`（mp / Web 的 JS 有函数提升，完全看不出来）
+  - **修法**：把被调用函数移到前面；互相调用（A→B、B→A）无法靠换序解决，就内联为**单个函数自递归**（本次校验逻辑内联进 `requestScroll`，递归调用 `requestScroll(index, false)`）或改为对象上的方法
+- **验证链路**：mp-weixin 编译 + 截图回归（选择器弹层工具栏、滚轮定位、复选框白勾）仍通过；Android 端只能由云打包验证，本地 macOS 无 Android 编译链，**必须在提交前把「模板内是否调用导入函数」「函数是否前向引用」当作静态检查项**
+- **教训**：① uvue 模板的最佳实践是「模板只做取值与比较，逻辑一律收敛到 computed / 方法」，既避开各端模板编译器差异，也方便三端一致验证；② 云打包错误请按 `.kt` 文件与行号定位到源码模板行，两条报错成对出现（列号差 6）就是模板表达式的信号；③ 本地能跑的端（mp / Web）通过 ≠ 全平台通过，Android 的 Kotlin 约束要在写代码时就遵守

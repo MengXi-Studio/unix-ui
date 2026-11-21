@@ -45,19 +45,19 @@
 			@update:value="onPickerValueChange"
 		>
 			<!-- 插槽条件转发：未传入时不覆盖面板默认渲染 -->
-			<template v-if="slotHasContent($slots['header'])" #header>
+			<template v-if="hasHeaderSlot" #header>
 				<slot name="header"></slot>
 			</template>
-			<template v-if="slotHasContent($slots['title'])" #title="{ tabs, activeIndex }">
+			<template v-if="hasTitleSlot" #title="{ tabs, activeIndex }">
 				<slot name="title" :tabs="tabs" :active-index="activeIndex"></slot>
 			</template>
-			<template v-if="slotHasContent($slots['footer'])" #footer>
+			<template v-if="hasFooterSlot" #footer>
 				<slot name="footer"></slot>
 			</template>
-			<template v-if="slotHasContent($slots['confirm'])" #confirm>
+			<template v-if="hasConfirmSlot" #confirm>
 				<slot name="confirm"></slot>
 			</template>
-			<template v-if="slotHasContent($slots['cancel'])" #cancel>
+			<template v-if="hasCancelSlot" #cancel>
 				<slot name="cancel"></slot>
 			</template>
 		</m-time-range-picker>
@@ -79,6 +79,18 @@
 	import { DatePickerPosition } from '../m-date-picker/date-picker.uts'
 	import MTimeRangePicker from '../m-time-range-picker/m-time-range-picker.uvue'
 	import { slotHasContent } from '../../utils/slot.uts'
+	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
+	const slots = useSlots()
+	/** cancel 具名插槽是否有内容 */
+	const hasCancelSlot = computed<boolean>(() => slotHasContent(slots['cancel']))
+	/** confirm 具名插槽是否有内容 */
+	const hasConfirmSlot = computed<boolean>(() => slotHasContent(slots['confirm']))
+	/** footer 具名插槽是否有内容 */
+	const hasFooterSlot = computed<boolean>(() => slotHasContent(slots['footer']))
+	/** header 具名插槽是否有内容 */
+	const hasHeaderSlot = computed<boolean>(() => slotHasContent(slots['header']))
+	/** title 具名插槽是否有内容 */
+	const hasTitleSlot = computed<boolean>(() => slotHasContent(slots['title']))
 
 	type Props = {
 		/** 是否显示弹出层（v-model:show） */

@@ -39,27 +39,27 @@
 			@update:value="onPickerValueChange"
 		>
 			<!-- 插槽条件转发：未传入时不覆盖面板默认渲染 -->
-			<template v-if="slotHasContent($slots['toolbar'])" #toolbar>
+			<template v-if="hasToolbarSlot" #toolbar>
 				<slot name="toolbar"></slot>
 			</template>
-			<template v-if="slotHasContent($slots['title'])" #title>
+			<template v-if="hasTitleSlot" #title>
 				<slot name="title"></slot>
 			</template>
-			<template v-if="slotHasContent($slots['confirm'])" #confirm>
+			<template v-if="hasConfirmSlot" #confirm>
 				<slot name="confirm"></slot>
 			</template>
-			<template v-if="slotHasContent($slots['cancel'])" #cancel>
+			<template v-if="hasCancelSlot" #cancel>
 				<slot name="cancel"></slot>
 			</template>
-			<template v-if="slotHasContent($slots['columns-top'])" #columns-top>
+			<template v-if="hasColumnsTopSlot" #columns-top>
 				<slot name="columns-top"></slot>
 			</template>
-			<template v-if="slotHasContent($slots['columns-bottom'])" #columns-bottom>
+			<template v-if="hasColumnsBottomSlot" #columns-bottom>
 				<slot name="columns-bottom"></slot>
 			</template>
 			<!-- #ifdef WEB -->
 			<!-- 小程序端列选项在 v-for 内不声明具名插槽（#17），无需转发 -->
-			<template v-if="slotHasContent($slots['option'])" #option="{ option, index, rowIndex, columnIndex }">
+			<template v-if="hasOptionSlot" #option="{ option, index, rowIndex, columnIndex }">
 				<slot name="option" :option="option" :index="index" :row-index="rowIndex" :column-index="columnIndex"></slot>
 			</template>
 			<!-- #endif -->
@@ -77,6 +77,22 @@
 	import { DatePickerPosition } from '../m-date-picker/date-picker.uts'
 	import MPicker from '../m-picker/m-picker.uvue'
 	import { slotHasContent } from '../../utils/slot.uts'
+	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
+	const slots = useSlots()
+	/** cancel 具名插槽是否有内容 */
+	const hasCancelSlot = computed<boolean>(() => slotHasContent(slots['cancel']))
+	/** columns-bottom 具名插槽是否有内容 */
+	const hasColumnsBottomSlot = computed<boolean>(() => slotHasContent(slots['columns-bottom']))
+	/** columns-top 具名插槽是否有内容 */
+	const hasColumnsTopSlot = computed<boolean>(() => slotHasContent(slots['columns-top']))
+	/** confirm 具名插槽是否有内容 */
+	const hasConfirmSlot = computed<boolean>(() => slotHasContent(slots['confirm']))
+	/** option 具名插槽是否有内容 */
+	const hasOptionSlot = computed<boolean>(() => slotHasContent(slots['option']))
+	/** title 具名插槽是否有内容 */
+	const hasTitleSlot = computed<boolean>(() => slotHasContent(slots['title']))
+	/** toolbar 具名插槽是否有内容 */
+	const hasToolbarSlot = computed<boolean>(() => slotHasContent(slots['toolbar']))
 
 	type Props = {
 		/** 是否显示弹出层（v-model:show） */

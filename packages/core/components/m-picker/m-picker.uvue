@@ -6,24 +6,24 @@
 		<!-- 顶部栏：toolbar 插槽整体替换；未传（或为空）时按 show-toolbar 渲染取消 / 标题 / 确认三段。
 		     不用 <slot> 的默认内容机制：小程序端 popup 会把插槽静态声明给面板，
 		     `$slots.xxx` 恒存在导致 fallback 永不渲染（issue #24） -->
-		<template v-if="slotHasContent($slots['toolbar'])">
+		<template v-if="hasToolbarSlot">
 			<slot name="toolbar"></slot>
 		</template>
 		<view v-else-if="showToolbar" class="m-picker__toolbar">
 			<view class="m-picker__action" @click="onCancelClick">
-				<template v-if="slotHasContent($slots['cancel'])">
+				<template v-if="hasCancelSlot">
 					<slot name="cancel"></slot>
 				</template>
 				<text v-else class="m-picker__cancel-text">{{ cancelButtonText }}</text>
 			</view>
 			<view class="m-picker__title">
-				<template v-if="slotHasContent($slots['title'])">
+				<template v-if="hasTitleSlot">
 					<slot name="title"></slot>
 				</template>
 				<text v-else class="m-picker__title-text">{{ title }}</text>
 			</view>
 			<view class="m-picker__action" @click="onConfirmClick">
-				<template v-if="slotHasContent($slots['confirm'])">
+				<template v-if="hasConfirmSlot">
 					<slot name="confirm"></slot>
 				</template>
 				<text v-else class="m-picker__confirm-text">{{ confirmButtonText }}</text>
@@ -51,7 +51,7 @@
 				>
 					<!-- 插槽条件转发：未传入时不覆盖列内置文本；作用域补充原始选项与行列下标 -->
 					<!-- #ifdef WEB -->
-					<template v-if="slotHasContent($slots['option'])" #option="{ option, index }">
+					<template v-if="hasOptionSlot" #option="{ option, index }">
 						<slot
 							name="option"
 							:option="optionOf(columnIndex, index)"
@@ -98,6 +98,18 @@
 	import MDatePickerColumn from '../m-date-picker/m-date-picker-column.uvue'
 	import MLoading from '../m-loading/m-loading.uvue'
 	import { slotHasContent } from '../../utils/slot.uts'
+	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
+	const slots = useSlots()
+	/** cancel 具名插槽是否有内容 */
+	const hasCancelSlot = computed<boolean>(() => slotHasContent(slots['cancel']))
+	/** confirm 具名插槽是否有内容 */
+	const hasConfirmSlot = computed<boolean>(() => slotHasContent(slots['confirm']))
+	/** option 具名插槽是否有内容 */
+	const hasOptionSlot = computed<boolean>(() => slotHasContent(slots['option']))
+	/** title 具名插槽是否有内容 */
+	const hasTitleSlot = computed<boolean>(() => slotHasContent(slots['title']))
+	/** toolbar 具名插槽是否有内容 */
+	const hasToolbarSlot = computed<boolean>(() => slotHasContent(slots['toolbar']))
 
 	/** 面板内部列视图（原始选项 + 列组件文本 + 选中下标 + 禁用标记） */
 	type PickerColumnView = {

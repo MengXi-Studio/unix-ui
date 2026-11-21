@@ -19,13 +19,16 @@
 /**
  * 判断具名插槽是否实际传入内容（Web / App / 小程序跨端一致）。
  *
- * @param slot 插槽值：Web / App 为渲染函数（存在即已传入），小程序为节点数组（未传时为空）
+ * @param slot 插槽值：渲染函数 / 布尔标记（存在即已传入）或节点数组（未传时为空）
  * @returns 是否实际传入内容；null 或空容器均返回 false
  */
 export function slotHasContent(slot: any | null): boolean {
 	if (slot == null) return false
 	// #ifdef MP
-	// 小程序端：插槽为节点数组，未传时为空数组；空对象取不到 length，同样视为未传
+	// VDOM 模式下小程序端插槽值可能是布尔标记（已传为 true，未传则无该 key）或渲染函数（Function.length 恒为 0），存在即视为已传入（issue #27）
+	if (typeof slot == 'function') return true
+	if (typeof slot == 'boolean') return slot as boolean
+	// 非 VDOM 模式：插槽为节点数组，未传时为空数组；空对象取不到 length，同样视为未传
 	const list = slot as any[]
 	const len = list.length
 	if (len == null) return false

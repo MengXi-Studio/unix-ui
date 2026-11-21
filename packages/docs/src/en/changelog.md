@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.3] - 2026-11-22
+
+Fixes named slots being treated as empty on VDOM mode (uni-app x + WeChat Mini Program), which dropped caller-provided content entirely (a 0.7.2 regression).
+
+### Fixed
+
+- **Every named slot guarded by `slotHasContent`** (`nav-left` / `nav-right` on `m-tabs`; `toolbar` / `title` / `confirm` / `cancel` / `footer` / `columns-top` / `columns-bottom` / `option` across the picker-popup family; plus `m-calendar`, `m-cascader`, `m-search`, `m-checkbox` and others — 30 component files, 121 checks): on WeChat Mini Program in uni-app x VDOM mode a passed named slot is the boolean `true` and an omitted one has no key at all, rather than a node array. The old length-based check could not read `length` from a boolean and reported "not passed", so the slot wrapper's `v-if` hid the content. The Mini Program branch of `slotHasContent` now branches on the value shape — a render function counts as passed and a boolean returns its own value — while the array-length rule is kept, so the 0.7.2 fix for empty arrays is unaffected ([#27](https://github.com/MengXi-Studio/unix-ui/issues/27))
+
 ## [0.7.2] - 2026-11-21
 
 Fixes the default toolbar of the picker-popup family being overridden by empty slots on WeChat Mini Program, the wheel not positioning to the passed value on first open, missing selected states / texts caused by the default-slot detection, and switches the checkbox default shape to square.

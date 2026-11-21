@@ -1,3 +1,7 @@
+## 0.7.3 (2026-11-22)
+
+- 修复 VDOM 模式（uni-app x + 微信小程序）下具名插槽被误判为「未传入」、调用方传入的内容被整块隐藏（issue #27，0.7.2 回归）：VDOM 模式下小程序端具名插槽值是布尔 `true`（已传）或不存在该 key（未传），并非节点数组，原 `slotHasContent` 只按「数组长度 > 0」判定，布尔值取不到 `length`，`m-tabs` 的 `nav-left` / `nav-right` 以及所有经该守卫的具名插槽（picker-popup 系列的 `toolbar` / `title` / `confirm` / `cancel` 等）全部被 `v-if` 隐藏。`slotHasContent` 的小程序分支改为按值形态分流：渲染函数视为已传入、布尔直接返回其值，其余仍按数组长度判定（0.7.2「空数组视为未传」的修复不受影响）；Web / App 代码路径不变
+
 ## 0.7.2 (2026-11-21)
 
 - 修复微信小程序端 picker-popup 系列未传插槽时默认工具栏被空插槽覆盖（issue #24）：小程序端未传具名插槽时 `$slots.x` 为空数组而非 null，`$slots.x != null` 恒真，弹层转发空插槽后面板 `<slot>` fallback 不再渲染，顶部取消 / 标题 / 确认与底部按钮区域空白、无法提交。新增 `utils/slot.uts` 的 `slotHasContent` 跨端判定，弹层条件转发与面板默认内容改显式 `v-if / v-else`；同根因一并修复 `m-date-range-picker` / `m-time-range-picker`（两段标题与底部按钮）、`m-calendar`（确认按钮文案）、`m-cascader`（标题）、`m-number-keyboard`（额外键文字）

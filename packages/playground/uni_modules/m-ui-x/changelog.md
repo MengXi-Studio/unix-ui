@@ -1,83 +1,146 @@
 ## 0.7.3 (2026-11-22)
 
-- 修复 VDOM 模式（uni-app x + 微信小程序）下具名插槽被误判为「未传入」、调用方传入的内容被整块隐藏（issue #27，0.7.2 回归）：VDOM 模式下小程序端具名插槽值是布尔 `true`（已传）或不存在该 key（未传），并非节点数组，原 `slotHasContent` 只按「数组长度 > 0」判定，布尔值取不到 `length`，`m-tabs` 的 `nav-left` / `nav-right` 以及所有经该守卫的具名插槽（picker-popup 系列的 `toolbar` / `title` / `confirm` / `cancel` 等）全部被 `v-if` 隐藏。`slotHasContent` 的小程序分支改为按值形态分流：渲染函数视为已传入、布尔直接返回其值，其余仍按数组长度判定（0.7.2「空数组视为未传」的修复不受影响）；Web / App 代码路径不变
+- 修复 VDOM 模式（uni-app x + 微信小程序）下具名插槽被误判为「未传入」、调用方传入的内容被整块隐藏（issue #27，0.7.2 回归）：VDOM 模式下小程序端具名插槽值是布尔 `true`（已传）或不存在该 key（未传），并非节点数组，原
+  `slotHasContent` 只按「数组长度 > 0」判定，布尔值取不到 `length`，`m-tabs` 的 `nav-left` / `nav-right` 以及所有经该守卫的具名插槽（picker-popup 系列的 `toolbar` / `title` / `confirm` / `cancel` 等）全部被 `v-if`
+  隐藏。`slotHasContent` 的小程序分支改为按值形态分流：渲染函数视为已传入、布尔直接返回其值，其余仍按数组长度判定（0.7.2「空数组视为未传」的修复不受影响）；Web / App 代码路径不变
 
 ## 0.7.2 (2026-11-21)
 
-- 修复微信小程序端 picker-popup 系列未传插槽时默认工具栏被空插槽覆盖（issue #24）：小程序端未传具名插槽时 `$slots.x` 为空数组而非 null，`$slots.x != null` 恒真，弹层转发空插槽后面板 `<slot>` fallback 不再渲染，顶部取消 / 标题 / 确认与底部按钮区域空白、无法提交。新增 `utils/slot.uts` 的 `slotHasContent` 跨端判定，弹层条件转发与面板默认内容改显式 `v-if / v-else`；同根因一并修复 `m-date-range-picker` / `m-time-range-picker`（两段标题与底部按钮）、`m-calendar`（确认按钮文案）、`m-cascader`（标题）、`m-number-keyboard`（额外键文字）
-- 修复 Android 端云打包 Kotlin 编译失败：插槽判定原先直接写在模板里（`v-if="slotHasContent($slots['toolbar'])"`），Android 模板编译器会把「导入函数 + `$slots` 入参」生成成 `.invoke` 形式，报 `Unresolved reference 'invoke'`；改为 24 个组件在脚本层用计算属性（`hasToolbarSlot` 等）求值，模板只引用布尔值。同时修复 `m-date-picker-column` 的 `scheduleVerify` 前向引用——Android 端 setup 函数按声明顺序编译为局部函数，后面的函数不能被前面的函数调用，定位校验已内联为自递归
+- 修复微信小程序端 picker-popup 系列未传插槽时默认工具栏被空插槽覆盖（issue #24）：小程序端未传具名插槽时 `$slots.x` 为空数组而非 null，`$slots.x != null` 恒真，弹层转发空插槽后面板 `<slot>`
+  fallback 不再渲染，顶部取消 / 标题 / 确认与底部按钮区域空白、无法提交。新增 `utils/slot.uts` 的 `slotHasContent` 跨端判定，弹层条件转发与面板默认内容改显式 `v-if / v-else`；同根因一并修复 `m-date-range-picker` /
+  `m-time-range-picker`（两段标题与底部按钮）、`m-calendar`（确认按钮文案）、`m-cascader`（标题）、`m-number-keyboard`（额外键文字）
+- 修复 Android 端云打包 Kotlin 编译失败：插槽判定原先直接写在模板里（`v-if="slotHasContent($slots['toolbar'])"`），Android 模板编译器会把「导入函数 + `$slots` 入参」生成成 `.invoke` 形式，报
+  `Unresolved reference 'invoke'`；改为 24 个组件在脚本层用计算属性（`hasToolbarSlot` 等）求值，模板只引用布尔值。同时修复 `m-date-picker-column` 的 `scheduleVerify`
+  前向引用——Android 端 setup 函数按声明顺序编译为局部函数，后面的函数不能被前面的函数调用，定位校验已内联为自递归
 - 调整 `m-checkbox` / `m-checkbox-group` / `m-checkbox-input` / `m-checkbox-popup` 的 `shape` 默认值为 `square`（圆角方框），需要圆形请显式传 `shape="round"`
-- 修复微信小程序端勾选图标显示为黑色：选中态的白勾原由 `.m-checkbox__check` 着色，该类挂在 `m-icon` 内部节点上，小程序端自定义组件默认样式隔离（`isolated`）导致父组件样式无法命中子组件内部节点，`custom-class` 的 `color` 被静默忽略；改为把 `color / font-size` 落在 `m-checkbox` 自己的图标容器 `.m-checkbox__icon-wrap--checked` 上、靠继承穿透组件边界下发，并删除失效规则
-- 修复微信小程序端默认插槽判定失效导致选中态与文案丢失：`slotHasContent` 按数组长度判定只对具名插槽成立，小程序端写在组件标签之间的匿名子节点不进入 `$slots.default` 数组（有内容时为空数组、无内容时该 key 缺失），长度判定恒为 `false`，组件内 `<slot>` 的 fallback 被编译成 `wx:else` 后永不渲染。默认插槽统一改用 `slots['default'] != null` 判定，`m-checkbox` 选中白勾 / `indeterminate` 横杠、`m-loading` 文案、`m-toast` 消息、`m-badge` 包裹子元素、`m-radio` / `m-checkbox` 独立使用时的标签、`m-number-keyboard-popup` 键盘上方内容区恢复正常；`utils/slot.uts` 补充「仅用于具名插槽」的口径说明
-- 修复微信小程序端 `m-date-picker-popup` / `m-time-picker-popup` 首次打开（及复开）滚轮停在首项、不定位到 `value`（issue #25）：滚轮列原先把内部镜像 `actualTop` 提前写成目标值，而弹层首帧挂载时滚动视口高度为 0、`scroll-top` 被忽略且不产生 `@scroll`，镜像与真实位置脱节后 `resetSelection` 的再次定位被「已到位」判断跳过；改为镜像只由 `@scroll` 回灌真实位置，同值强制定位的偏移归位改用定时器（小程序端相邻两次 setData 会合帧），并在布局可用后补一次校验重发；新增 `m-picker` / `m-date-picker` / `m-time-picker` / `m-lunar-picker` 实例方法 `reposition()`，四个 picker-popup 在 `open` 时自动调用
+- 修复微信小程序端勾选图标显示为黑色：选中态的白勾原由 `.m-checkbox__check` 着色，该类挂在 `m-icon` 内部节点上，小程序端自定义组件默认样式隔离（`isolated`）导致父组件样式无法命中子组件内部节点，`custom-class` 的 `color`
+  被静默忽略；改为把 `color / font-size` 落在 `m-checkbox` 自己的图标容器 `.m-checkbox__icon-wrap--checked` 上、靠继承穿透组件边界下发，并删除失效规则
+- 修复微信小程序端默认插槽判定失效导致选中态与文案丢失：`slotHasContent` 按数组长度判定只对具名插槽成立，小程序端写在组件标签之间的匿名子节点不进入 `$slots.default`
+  数组（有内容时为空数组、无内容时该 key 缺失），长度判定恒为 `false`，组件内 `<slot>` 的 fallback 被编译成 `wx:else` 后永不渲染。默认插槽统一改用 `slots['default'] != null` 判定，`m-checkbox` 选中白勾 / `indeterminate`
+  横杠、`m-loading` 文案、`m-toast` 消息、`m-badge` 包裹子元素、`m-radio` / `m-checkbox` 独立使用时的标签、`m-number-keyboard-popup` 键盘上方内容区恢复正常；`utils/slot.uts` 补充「仅用于具名插槽」的口径说明
+- 修复微信小程序端 `m-date-picker-popup` / `m-time-picker-popup` 首次打开（及复开）滚轮停在首项、不定位到 `value`（issue #25）：滚轮列原先把内部镜像 `actualTop`
+  提前写成目标值，而弹层首帧挂载时滚动视口高度为 0、`scroll-top` 被忽略且不产生 `@scroll`，镜像与真实位置脱节后 `resetSelection` 的再次定位被「已到位」判断跳过；改为镜像只由 `@scroll`
+  回灌真实位置，同值强制定位的偏移归位改用定时器（小程序端相邻两次 setData 会合帧），并在布局可用后补一次校验重发；新增 `m-picker` / `m-date-picker` / `m-time-picker` / `m-lunar-picker` 实例方法
+  `reposition()`，四个 picker-popup 在 `open` 时自动调用
 
 ## 0.7.1 (2026-11-19)
 
-- 修复 `m-icon` 微信小程序端图标字体加载失败（issue #22）：`uni.loadFontFace` 的 `source` 由裸 base64 改为标准 CSS 资源地址 `url("data:font/ttf;base64,...")`，此前微信将裸 base64 当作 URL 解析并报 `loadFontFace:fail createDownloadTask:fail invalid url`，导致所有图标回退默认字形；新增模块级 `mpFontState` 加载标记（`global: true` 全端生效只需一次），避免每个图标实例重复调用与重复报错，失败时复位以便重试并输出 `[m-icon] loadFontFace fail`
+- 修复 `m-icon` 微信小程序端图标字体加载失败（issue #22）：`uni.loadFontFace` 的 `source` 由裸 base64 改为标准 CSS 资源地址 `url("data:font/ttf;base64,...")`，此前微信将裸 base64 当作 URL 解析并报
+  `loadFontFace:fail createDownloadTask:fail invalid url`，导致所有图标回退默认字形；新增模块级 `mpFontState` 加载标记（`global: true` 全端生效只需一次），避免每个图标实例重复调用与重复报错，失败时复位以便重试并输出
+  `[m-icon] loadFontFace fail`
 
 ## 0.7.0 (2026-11-17)
 
-- 新增 `m-number-keyboard` 数字键盘面板：1-9 + 0 + 删除键的纯按键区，不持有输入值，只派发 `input(key)` / `delete` / `close`；`type` 支持 `number` / `digit` / `idcard` / `random`（挂载与 `type` 切换时重排，也可调用 `shuffle()` 手动重排）；无额外键时 `0` 加宽占两格填满末行，`digit` / `idcard` 或自定义 `extra-keys` 时额外键位于末行左侧（digit 默认 `.`、idcard 默认 `X`）；`theme="custom"` 用右侧栏替代末行删除键，删除键与关闭键上下平分高度；`show-delete-key` / `delete-button-text` / `close-button-text` 控制动作键；`disabled-key` 回调返回 true 的键灰显且不派发事件；`extra-key` 插槽自定义额外键；expose `shuffle()`
-- 新增 `m-number-keyboard-popup` 数字键盘弹出框：`m-popup` + 面板组合，默认插槽位于键盘上方承载验证码格 / 金额展示（未传插槽时不渲染内容区）；`title` / `show-toolbar` / `show-cancel` / `show-confirm` / `cancel-button-text` / `confirm-button-text` 控制工具条，取消 / 完成派发后自动关闭；`transparent` 去掉黑色蒙层、`show-shadow` 用顶部投影条分隔页面；面板 `close` 在弹层拆为 `close-key`，`close` 仅表示弹层生命周期；`type="random"` 每次打开重新打乱
+- 新增 `m-number-keyboard` 数字键盘面板：1-9 + 0 + 删除键的纯按键区，不持有输入值，只派发 `input(key)` / `delete` / `close`；`type` 支持 `number` / `digit` / `idcard` / `random`（挂载与 `type` 切换时重排，也可调用
+  `shuffle()` 手动重排）；无额外键时 `0` 加宽占两格填满末行，`digit` / `idcard` 或自定义 `extra-keys` 时额外键位于末行左侧（digit 默认 `.`、idcard 默认 `X`）；`theme="custom"`
+  用右侧栏替代末行删除键，删除键与关闭键上下平分高度；`show-delete-key` / `delete-button-text` / `close-button-text` 控制动作键；`disabled-key` 回调返回 true 的键灰显且不派发事件；`extra-key` 插槽自定义额外键；expose
+  `shuffle()`
+- 新增 `m-number-keyboard-popup` 数字键盘弹出框：`m-popup` + 面板组合，默认插槽位于键盘上方承载验证码格 / 金额展示（未传插槽时不渲染内容区）；`title` / `show-toolbar` / `show-cancel` / `show-confirm` /
+  `cancel-button-text` / `confirm-button-text` 控制工具条，取消 / 完成派发后自动关闭；`transparent` 去掉黑色蒙层、`show-shadow` 用顶部投影条分隔页面；面板 `close` 在弹层拆为 `close-key`，`close`
+  仅表示弹层生命周期；`type="random"` 每次打开重新打乱
 - 新增 `$m-number-keyboard-*` 主题变量段（键高 / 圆角 / 底色 / 按压态 / 工具条 / 投影条等 20 项）
-- 新增 `m-password-input` 密码输入格子：纯展示不持值，两种视觉风格 `bordered`（圆角方框）/ `underlined`（仅底部 1px 底线）；`mask` 隐藏为圆点（view + border-radius: 50% 跨平台一致）、`plain-text` 明文显示；`gap` 格子间距（px number 类型，禁用 string 避免 UTS 联合类型 Kotlin 退化）；`focused` 驱动当前位闪烁光标（setInterval 半周期切换响应式 class，全平台一致）与高亮边框；`disabled` 灰显不派发 `focus`、`readonly` 只读；`info` / `error-info` 下方提示文字（error 优先）
-- 新增 `m-password-input-popup` 密码输入弹出框：`m-popup` + 格子 + `m-number-keyboard` 一体化组合；`v-model:value` 双向绑定，输入自动收敛 `maxlength=length`；弹层打开自动 `focused` 显示光标、`keyboard-type="random"` 每次打开重新打乱；内置 `disabledKey` 填满后数字键自动禁用；透传格子全部 props + 弹层主题工具条 + 透明投影等
+- 新增 `m-password-input` 密码输入格子：纯展示不持值，两种视觉风格 `bordered`（圆角方框）/ `underlined`（仅底部 1px 底线）；`mask` 隐藏为圆点（view + border-radius: 50% 跨平台一致）、`plain-text` 明文显示；`gap`
+  格子间距（px number 类型，禁用 string 避免 UTS 联合类型 Kotlin 退化）；`focused` 驱动当前位闪烁光标（setInterval 半周期切换响应式 class，全平台一致）与高亮边框；`disabled` 灰显不派发 `focus`、`readonly` 只读；`info` /
+  `error-info` 下方提示文字（error 优先）
+- 新增 `m-password-input-popup` 密码输入弹出框：`m-popup` + 格子 + `m-number-keyboard` 一体化组合；`v-model:value` 双向绑定，输入自动收敛 `maxlength=length`；弹层打开自动 `focused` 显示光标、`keyboard-type="random"`
+  每次打开重新打乱；内置 `disabledKey` 填满后数字键自动禁用；透传格子全部 props + 弹层主题工具条 + 透明投影等
 - 新增 `$m-password-input-*` 主题变量段（高度 / gap / 圆角 / 边框 / 底线 / 圆点 / 光标 / 提示文字等 20 项）
-- 新增 `m-radio` / `m-radio-group` 单选框两件套（对标 Vant Radio）：`v-model:value` 单值绑定（`RadioValue | null`，null 未选，UTS 无 any）；图标为自绘 view（外环 border + 内实心圆点，跨端渲染一致），禁用态用外环灰底填充 + 灰点表达（弃用透明度方案——未选灰环叠加透明度无可见差异），选中态退灰不再用主题色，`shape` 支持 `round` / `square`（Vant 的 `dot` 形态与本项目默认圆环+圆点视觉相同故不设独立值，`square` 为方框+内圆点，不引入 Vant 白勾以免与 checkbox 混淆）；独立使用为受控 `checked` prop（不持值）；吸收 Sard 的 `readonly`（子项 / 组容器合并）；点已选项不取消（单选刚性）；`label-position` / `label-disabled` / `icon-size` / `checked-color` / `direction` / `icon` / `default` 插槽与 checkbox 系对齐
-- 修复 `m-input` inlaid 嵌入 `m-cell` 后值区拉伸与点击区问题（0.6.0 的控件层 `min-height` 只解决了高度塌陷）：inlaid 根节点新增 `flex-grow: 1`（basis 保持 auto——column 容器高度不塌陷、cell 内兄弟节点不被挤压），body / 控件随之填满 value 区，此前值区剩余宽度（标题与输入框之间的空隙）点击无反应；演示页移除用户侧补偿的 `custom-style="flex: 1"`（组件层已内建）
-- 修复 `m-checkbox` 未选中态误渲染为实色勾（未选与选中渲染同一 `m-icon` 'success' 字形，m-icon 字体修复后勾形显形暴露）：未选态改为标准描边空框（`round` 圆环 / `square` 圆角方框），选中态实心填充（`$m-checkbox-icon-color` / `checked-color`）+ 白勾，indeterminate 实心底 + 白横杠；新增 `$m-checkbox-box-border-color` / `$m-checkbox-box-border-width` / `$m-checkbox-box-radius` / `$m-checkbox-check-icon-size` 主题变量
-- 新增 `m-radio-popup` 单选弹出框：`m-popup` + `m-radio-group` 组合，options 数组驱动渲染（label / value / disabled + field-names 映射，对齐 checkbox-popup 先例）；点选后弹层不自动关闭（受控模型一致，需即选即关可监听 change）；头部标题 + 关闭钮，footer 插槽；透传弹层方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长
-- 新增 `m-radio-input` 单选输入框：`m-input` 只读触发器 + 单选弹层，选中项 label 回显（无匹配回退值文本）；自绘清空按钮回写 `null` 并派发 `clear`（m-input 内置 clearable 位于触发层下会被挡住）；`disabled` / `clearable` / `border` / `inlaid` 可配
+- 新增 `m-radio` / `m-radio-group` 单选框两件套（对标 Vant Radio）：`v-model:value`
+  单值绑定（`RadioValue | null`，null 未选，UTS 无 any）；图标为自绘 view（外环 border + 内实心圆点，跨端渲染一致），禁用态用外环灰底填充 + 灰点表达（弃用透明度方案——未选灰环叠加透明度无可见差异），选中态退灰不再用主题色，`shape`
+  支持 `round` / `square`（Vant 的 `dot` 形态与本项目默认圆环+圆点视觉相同故不设独立值，`square` 为方框+内圆点，不引入 Vant 白勾以免与 checkbox 混淆）；独立使用为受控 `checked` prop（不持值）；吸收 Sard 的
+  `readonly`（子项 / 组容器合并）；点已选项不取消（单选刚性）；`label-position` / `label-disabled` / `icon-size` / `checked-color` / `direction` / `icon` / `default` 插槽与 checkbox 系对齐
+- 修复 `m-input` inlaid 嵌入 `m-cell` 后值区拉伸与点击区问题（0.6.0 的控件层 `min-height` 只解决了高度塌陷）：inlaid 根节点新增 `flex-grow: 1`（basis 保持 auto——column 容器高度不塌陷、cell 内兄弟节点不被挤压），body
+  / 控件随之填满 value 区，此前值区剩余宽度（标题与输入框之间的空隙）点击无反应；演示页移除用户侧补偿的 `custom-style="flex: 1"`（组件层已内建）
+- 修复 `m-checkbox` 未选中态误渲染为实色勾（未选与选中渲染同一 `m-icon` 'success' 字形，m-icon 字体修复后勾形显形暴露）：未选态改为标准描边空框（`round` 圆环 / `square`
+  圆角方框），选中态实心填充（`$m-checkbox-icon-color` / `checked-color`）+ 白勾，indeterminate 实心底 + 白横杠；新增 `$m-checkbox-box-border-color` / `$m-checkbox-box-border-width` / `$m-checkbox-box-radius` /
+  `$m-checkbox-check-icon-size` 主题变量
+- 新增 `m-radio-popup` 单选弹出框：`m-popup` + `m-radio-group` 组合，options 数组驱动渲染（label / value / disabled +
+  field-names 映射，对齐 checkbox-popup 先例）；点选后弹层不自动关闭（受控模型一致，需即选即关可监听 change）；头部标题 + 关闭钮，footer 插槽；透传弹层方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长
+- 新增 `m-radio-input` 单选输入框：`m-input` 只读触发器 + 单选弹层，选中项 label 回显（无匹配回退值文本）；自绘清空按钮回写 `null` 并派发 `clear`（m-input 内置 clearable 位于触发层下会被挡住）；`disabled` / `clearable` /
+  `border` / `inlaid` 可配
 - 新增 `$m-radio-*` 主题变量段（内边距 / 外环 / 内点 / 文本 / 弹层 / 触发层与清空按钮等 27 项）
-- 新增 `m-rate` 评分组件：`v-model:value` 绑定 `number`（0 = 未评分），交互分值吸附 0.5 网格；单颗星由「未选字形 + 宽度百分比裁切层」叠成，`allow-half` 时裁切 50% 实现半星；`readonly` + `allow-half` 按小数位裁切，可展示 3.3 这类任意小数；`icon` / `void-icon` 接 m-icon 字形名（默认 `star` / `star-o`）并提供同名插槽（作用域 `{ index, active }`）；`count` / `size` / `gap` / `color` / `void-color` / `disabled-color` 定制；`clearable` 再次点击当前分值清零；`touchable` 默认开启，按住横向拖动连续选分（Web 桌面 click 与触摸共用同一套坐标换算）；`disabled` 灰显、`readonly` 视觉正常，均不响应交互但照常派发 `click`；MP 端 `v-for` 内不声明同名插槽，回退内置字形
+- 新增 `m-rate` 评分组件：`v-model:value` 绑定 `number`（0 = 未评分），交互分值吸附 0.5 网格；单颗星由「未选字形 + 宽度百分比裁切层」叠成，`allow-half` 时裁切 50% 实现半星；`readonly` + `allow-half`
+  按小数位裁切，可展示 3.3 这类任意小数；`icon` / `void-icon` 接 m-icon 字形名（默认 `star` / `star-o`）并提供同名插槽（作用域 `{ index, active }`）；`count` / `size` / `gap` / `color` / `void-color` / `disabled-color`
+  定制；`clearable` 再次点击当前分值清零；`touchable` 默认开启，按住横向拖动连续选分（Web 桌面 click 与触摸共用同一套坐标换算）；`disabled` 灰显、`readonly` 视觉正常，均不响应交互但照常派发 `click`；MP 端 `v-for`
+  内不声明同名插槽，回退内置字形
 - 新增 `$m-rate-*` 主题变量段（图标尺寸 / 间距 / 选中色 / 未选色 / 禁用色 5 项）
-- 新增 `m-search` 搜索组件：组合 `m-input`（inlaid 形态）承载输入 / 清空 / 聚焦 / 只读禁用 / 格式化，自身负责搜索框外观与附加区域；`v-model:value` 绑定输入值，`change` 值变即派发；`shape`（round）+ `background` / `input-background` 定制外观；`label` / `left-icon`（默认 search）/ `right-icon` + 同名插槽承载框内元素；`show-action` + `action-text` + `action-type`（cancel / search）统一右侧按钮语义，`action` 插槽自定义后不再自动派发；键盘确认键派发 `search`；`error` / `error-message` 渲染红框与提示行；`left` / `action` 外部插槽；`focus()` / `blur()` 实例方法
+- 新增 `m-search` 搜索组件：组合 `m-input`（inlaid 形态）承载输入 / 清空 / 聚焦 / 只读禁用 / 格式化，自身负责搜索框外观与附加区域；`v-model:value` 绑定输入值，`change` 值变即派发；`shape`（round）+ `background` /
+  `input-background` 定制外观；`label` / `left-icon`（默认 search）/ `right-icon` + 同名插槽承载框内元素；`show-action` + `action-text` + `action-type`（cancel / search）统一右侧按钮语义，`action`
+  插槽自定义后不再自动派发；键盘确认键派发 `search`；`error` / `error-message` 渲染红框与提示行；`left` / `action` 外部插槽；`focus()` / `blur()` 实例方法
 - `m-input` 增强（新增能力，默认行为不变）：新增 `confirm` 事件（键盘确认键，回传当前值）与 `input-align` 属性（`left` / `center` / `right` 输入文字对齐）
 - 新增 `$m-search-*` 主题变量段（内边距 / 外部与输入区背景 / 高度 / 圆角 / 左侧文本 / 图标 / 右侧按钮 / 错误提示等 20 项）
-- 新增 `m-segmented` 分段控制器：`options` + `fieldNames` 驱动的等分单选，`v-model:value` 受控；`size`（三档）/ `shape`（胶囊）/ `direction`（纵向）全量支持；选中滑块按等分百分比定位，切换时走 `UniElement.animate` 平移（小程序端直接落位），`duration` 可关闭；`item` 作用域插槽（`{ option, index, active, disabled }`）支持图标 + 文本 / 仅图标等自定义内容；`ellipsis` 默认单行省略；组件级 `disabled` / 选项级 `disabled` / `readonly` 三态语义明确；同值点击不派发事件
+- 新增 `m-segmented` 分段控制器：`options` + `fieldNames` 驱动的等分单选，`v-model:value` 受控；`size`（三档）/ `shape`（胶囊）/ `direction`（纵向）全量支持；选中滑块按等分百分比定位，切换时走 `UniElement.animate`
+  平移（小程序端直接落位），`duration` 可关闭；`item` 作用域插槽（`{ option, index, active, disabled }`）支持图标 + 文本 / 仅图标等自定义内容；`ellipsis` 默认单行省略；组件级 `disabled` / 选项级 `disabled` / `readonly`
+  三态语义明确；同值点击不派发事件
 - 新增 `$m-segmented-*` 主题变量段（内边距 / 背景 / 圆角 / 滑块 / 三档高度与字号与内边距 / 三态文字色等 20 项）
-- 新增 `m-select` 列表选择面板：`options` 驱动单选（含 `children` 的项渲染为分组标题，子项可选），`v-model:value` 受控；`filterable` 本地包含匹配筛选 + `filterMethod` 远程受控筛选（`v-model:filter-value`）；整体 / 单项禁用、空态文案、选中态勾选图标、`option` 作用域插槽、`bottom` 插槽、`scrollTop()` 回顶
+- 新增 `m-select` 列表选择面板：`options` 驱动单选（含 `children` 的项渲染为分组标题，子项可选），`v-model:value` 受控；`filterable` 本地包含匹配筛选 + `filterMethod`
+  远程受控筛选（`v-model:filter-value`）；整体 / 单项禁用、空态文案、选中态勾选图标、`option` 作用域插槽、`bottom` 插槽、`scrollTop()` 回顶
 - 新增 `m-select-popup` 列表选择弹层：`m-popup` + `m-select` 组合，支持 `title`、`v-model:show`、`confirmOnSelect`（选中后自动关闭，默认开启）
 - 新增 `m-select-input` 列表选择输入框：只读输入框触发器 + 弹层，展示标签按 `options` → `map-label` → 值字符串解析，自绘清除按钮，支持只读 / 禁用 / `v-model:show` 受控显隐
 - 新增 `$m-select-*` 主题变量段（面板 / 筛选 / 标题 / 选项 / 勾选 / 分组 / 空态 / 输入框清除等 24 项）
-- 三件套支持多选：`multiple` / `multiple-limit`（0 不限）/ `show-toolbar`（已选数量 + 清空）；多选时 `value` 为数组，点击已选项取消，达到上限后其余项点击无效；多选弹层选中不自动关闭（`confirmOnSelect` 仅对单选生效）；输入框新增 `max-labels`（默认 10，-1 不限），标签按「、」拼接并折叠为「等 N 项」
+- 三件套支持多选：`multiple` / `multiple-limit`（0 不限）/ `show-toolbar`（已选数量 + 清空）；多选时 `value` 为数组，点击已选项取消，达到上限后其余项点击无效；多选弹层选中不自动关闭（`confirmOnSelect`
+  仅对单选生效）；输入框新增 `max-labels`（默认 10，-1 不限），标签按「、」拼接并折叠为「等 N 项」
 - 新增 `$m-select-toolbar-*` 主题变量段（内边距 / 字号 / 文字色 / 清空色 4 项）
-- 修复微信小程序端打开 `m-color-picker-popup` 抛 `TypeError: Cannot read properties of null (reading 'proxy')`（issue #20）：`m-color-picker` 的 `measureNode` 在调用时取 `getCurrentInstance()`，经父组件 `$callMethod('refresh')` 调用时已脱离 setup 上下文返回 null；改为 setup 期一次性捕获实例（`#ifdef MP`，与 `m-fab` / `m-tabs` 写法一致）；`m-rate` 同类调用时取值一并修正
+- 修复微信小程序端打开 `m-color-picker-popup` 抛 `TypeError: Cannot read properties of null (reading 'proxy')`（issue #20）：`m-color-picker` 的 `measureNode` 在调用时取 `getCurrentInstance()`，经父组件
+  `$callMethod('refresh')` 调用时已脱离 setup 上下文返回 null；改为 setup 期一次性捕获实例（`#ifdef MP`，与 `m-fab` / `m-tabs` 写法一致）；`m-rate` 同类调用时取值一并修正
 - 修复 Android 云打包 Kotlin 编译错误第二轮（5 个组件 + 6 个演示页，Web 端行为不变）：
-  - Kotlin 局部函数禁前向引用（UTS 函数声明有提升、生成 Kotlin 后失效）：`m-select` 的 `selectedValues` / `containsValue` / `isSelected` 移至 `itemClass` 之前；`m-select-input` 的 `labelOf` 移至 `displayLabel` 之前；`m-password-input` 的 `stopCursorAnimation` 移至 `startCursorAnimation` 之前
-  - Kotlin codegen 静默丢弃函数：`m-select-input` / `m-select-popup` 的 `onSelectValueChange` / `onSelectChange` 形参从 `RadioValue | RadioValue[]`（type alias 与数组联合的组合）展开为 `string | number | string[] | number[]`，事件绑定由函数名直传改为内联调用（UTS 函数声明不能作值传递）
+  - Kotlin 局部函数禁前向引用（UTS 函数声明有提升、生成 Kotlin 后失效）：`m-select` 的 `selectedValues` / `containsValue` / `isSelected` 移至 `itemClass` 之前；`m-select-input` 的 `labelOf` 移至 `displayLabel`
+    之前；`m-password-input` 的 `stopCursorAnimation` 移至 `startCursorAnimation` 之前
+  - Kotlin codegen 静默丢弃函数：`m-select-input` / `m-select-popup` 的 `onSelectValueChange` / `onSelectChange` 形参从 `RadioValue | RadioValue[]`（type alias 与数组联合的组合）展开为
+    `string | number | string[] | number[]`，事件绑定由函数名直传改为内联调用（UTS 函数声明不能作值传递）
   - watch 单表达式 source 补显式返回类型注解（`m-select` / `m-select-input`，对齐 m-radio-group 已验证写法）
   - `m-number-keyboard-popup`：`$slots.default` 改索引访问 `$slots['default']`（`default` 为 Kotlin 保留字，属性访问转义失败）
-  - 演示页 rate / search / segmented / select / select-input / select-popup：事件日志函数形参放宽为 `any | null`（codegen 对组件事件处理器参数一律生成 Any）；插槽作用域变量（option / index）改为经页面函数内部 cast；`valuesText` 声明移至 `multiText` computed 之前；select 页 `@change="logMulti"` 改内联调用
+  - 演示页 rate / search / segmented / select / select-input / select-popup：事件日志函数形参放宽为 `any | null`（codegen 对组件事件处理器参数一律生成 Any）；插槽作用域变量（option /
+    index）改为经页面函数内部 cast；`valuesText` 声明移至 `multiText` computed 之前；select 页 `@change="logMulti"` 改内联调用
 
 ## 0.6.0 (2026-11-15)
 
-- 新增 `m-date-picker` / `m-date-picker-popup` / `m-date-picker-input` 日期选择三件套（对标 Vant DatePicker）：年 / 月 / 日滚轮列滚动停止后吸附到最近选项，`columns-type` 支持 `year` / `month` / `day` 任意顺序组合（缺失分量按 1 月 1 日归一），`min-date` / `max-date` 默认前后十年并据已选年月收敛月 / 日取值域；`filter` / `formatter` 二次加工列选项；`option-height` / `visible-option-num` / `swipe-duration` 调整滚轮，`readonly` 回弹、`loading` 阻断交互；顶部栏支持 `show-toolbar` 与 `toolbar` / `title` / `confirm` / `cancel` 插槽，另有 `option` / `columns-top` / `columns-bottom` 插槽（`option` 仅 Web 生效，App / 小程序端回退内置文本）；expose `confirm` / `resetSelection` / `getSelectedDate`；弹层确认或取消后自动关闭，输入框展示格式随列组合派生（`YYYY` / `YYYY-MM` / `YYYY-MM-DD` / `MM-DD`）并支持清空；`v-model:value` 绑定 `Date`；新增 `$m-date-picker-option-*` 与 `$m-date-picker-input-*` 主题变量
-- 新增 `m-date-range-picker` / `m-date-range-picker-popup` / `m-date-range-picker-input` 日期范围三件套（对标 Sard DatetimeRangePicker）：开始 / 结束两段标题（`tabs` 可自定义）复用同一套日期滚轮，两端值分别维护，确认时若起点晚于终点自动交换为升序；`columns-type` / `min-date` / `max-date` / `filter` / `formatter` 沿用 `m-date-picker` 契约，`change` 派发两端快照与当前编辑端下标；弹层确认 / 取消后自动关闭；输入框 `outlet-format` 自定义「起 - 止」展示格式（缺省按列组合派生）、清空回写 `null`；插槽 `header`（快捷选项）/ `title`（整体替换两段标题，作用域 `tabs` / `activeIndex`）/ `footer` / `confirm` / `cancel`；expose `confirm` / `resetSelection` / `getSelectedValue`；新增 `$m-date-range-picker-*` 与 `$m-date-range-picker-input-*` 主题变量；首版仅年 / 月 / 日粒度
-- 新增 `m-time-picker` / `m-time-picker-popup` / `m-time-picker-input` 时间三件套：时 / 分 / 秒滚轮列（`columns-type` 任意组合，默认时-分），值为 24 小时制 `'HH:mm'` / `'HH:mm:ss'` 字符串；`minute-step` / `second-step` 步长（1-59），`min-time` / `max-time` 同日选项收敛（单端配置自动补齐，跨天视为不约束），`hour-cycle` 24 / 12（12 制自动附加「上午 / 下午」列，值仍为 24 制）；复用 `m-date-picker-column` 滚轮；`toolbar` / `title` / `confirm` / `cancel` / `option` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue`
-- 新增 `m-time-range-picker` / `m-time-range-picker-popup` / `m-time-range-picker-input` 时间范围三件套：开始 / 结束两段标题（`tabs` 可自定义）复用一个时间滚轮，两端字符串各自维护，确认时自动交换为升序；两端共用列组合 / 步长 / 区间 / 制式；`header` / `title` / `footer` / `confirm` / `cancel` 插槽；输入框以「起 - 止」展示并支持清空
+- 新增 `m-date-picker` / `m-date-picker-popup` / `m-date-picker-input` 日期选择三件套（对标 Vant DatePicker）：年 / 月 / 日滚轮列滚动停止后吸附到最近选项，`columns-type` 支持 `year` / `month` / `day`
+  任意顺序组合（缺失分量按 1 月 1 日归一），`min-date` / `max-date` 默认前后十年并据已选年月收敛月 / 日取值域；`filter` / `formatter` 二次加工列选项；`option-height` / `visible-option-num` / `swipe-duration`
+  调整滚轮，`readonly` 回弹、`loading` 阻断交互；顶部栏支持 `show-toolbar` 与 `toolbar` / `title` / `confirm` / `cancel` 插槽，另有 `option` / `columns-top` / `columns-bottom` 插槽（`option` 仅 Web 生效，App
+  / 小程序端回退内置文本）；expose `confirm` / `resetSelection` / `getSelectedDate`；弹层确认或取消后自动关闭，输入框展示格式随列组合派生（`YYYY` / `YYYY-MM` / `YYYY-MM-DD` / `MM-DD`）并支持清空；`v-model:value` 绑定
+  `Date`；新增 `$m-date-picker-option-*` 与 `$m-date-picker-input-*` 主题变量
+- 新增 `m-date-range-picker` / `m-date-range-picker-popup` / `m-date-range-picker-input` 日期范围三件套（对标 Sard DatetimeRangePicker）：开始 / 结束两段标题（`tabs`
+  可自定义）复用同一套日期滚轮，两端值分别维护，确认时若起点晚于终点自动交换为升序；`columns-type` / `min-date` / `max-date` / `filter` / `formatter` 沿用 `m-date-picker` 契约，`change`
+  派发两端快照与当前编辑端下标；弹层确认 / 取消后自动关闭；输入框 `outlet-format` 自定义「起 - 止」展示格式（缺省按列组合派生）、清空回写 `null`；插槽 `header`（快捷选项）/ `title`（整体替换两段标题，作用域 `tabs` /
+  `activeIndex`）/ `footer` / `confirm` / `cancel`；expose `confirm` / `resetSelection` / `getSelectedValue`；新增 `$m-date-range-picker-*` 与 `$m-date-range-picker-input-*` 主题变量；首版仅年 / 月 / 日粒度
+- 新增 `m-time-picker` / `m-time-picker-popup` / `m-time-picker-input` 时间三件套：时 / 分 / 秒滚轮列（`columns-type` 任意组合，默认时-分），值为 24 小时制 `'HH:mm'` / `'HH:mm:ss'` 字符串；`minute-step` / `second-step`
+  步长（1-59），`min-time` / `max-time` 同日选项收敛（单端配置自动补齐，跨天视为不约束），`hour-cycle` 24 / 12（12 制自动附加「上午 / 下午」列，值仍为 24 制）；复用 `m-date-picker-column` 滚轮；`toolbar` / `title` /
+  `confirm` / `cancel` / `option` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue`
+- 新增 `m-time-range-picker` / `m-time-range-picker-popup` / `m-time-range-picker-input` 时间范围三件套：开始 / 结束两段标题（`tabs`
+  可自定义）复用一个时间滚轮，两端字符串各自维护，确认时自动交换为升序；两端共用列组合 / 步长 / 区间 / 制式；`header` / `title` / `footer` / `confirm` / `cancel` 插槽；输入框以「起 - 止」展示并支持清空
 - 新增 `$m-time-picker-*` / `$m-time-picker-input-*` / `$m-time-range-picker-*` / `$m-time-range-picker-input-*` 主题变量段
-- 新增 `m-picker` / `m-picker-popup` / `m-picker-input` 通用选择器三件套：`columns` 一维 / 二维自动识别（一维按单列、元素为数组按多列），选项统一 `{ label, value, children?, disabled? }`；一维含 `children` 走级联（切换上层后下层重建并回到首项）；值单列标量、多列 / 级联数组，事件回传 `(value, selectedOptions, indexes)`；禁用项灰显 / 吸附跳过 / 点击不选中；`toolbar` / `title` / `cancel` / `confirm` / `option` / `columns-top` / `columns-bottom` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue` / `getSelectedIndexes`
+- 新增 `m-picker` / `m-picker-popup` / `m-picker-input` 通用选择器三件套：`columns` 一维 / 二维自动识别（一维按单列、元素为数组按多列），选项统一 `{ label, value, children?, disabled? }`；一维含 `children`
+  走级联（切换上层后下层重建并回到首项）；值单列标量、多列 / 级联数组，事件回传 `(value, selectedOptions, indexes)`；禁用项灰显 / 吸附跳过 / 点击不选中；`toolbar` / `title` / `cancel` / `confirm` / `option` /
+  `columns-top` / `columns-bottom` 插槽；expose `confirm` / `resetSelection` / `getSelectedValue` / `getSelectedIndexes`
 - 新增 `m-picker-view` / `m-picker-view-column` 索引受控纯视图：`value: number[]`，无工具栏、无数值换算、不展开级联，`option` 插槽可自定义选项内容
 - 新增 `$m-picker-*` / `$m-picker-input-*` / `$m-picker-view-*` 主题变量段
 - `m-date-picker-column` 新增可选 `disabledOptions`（默认 null）：禁用项灰显、点击忽略、吸附跳过，日期 / 时间选择不传即行为不变
-- 变更：`m-date-picker` / `m-time-picker` 面板内部迁移为 `m-picker` 组合（无 API 变更）：顶部栏 / 选中框 / 滚轮容器 / 加载遮罩由通用选择器承担，对外 props / events / 插槽 / 实例方法不变；面板级主题变量收敛为 `$m-picker-*`（`$m-date-picker-*` 仅保留选项文本三项，`$m-time-picker-*` 不再提供面板变量）
-- 新增 `m-lunar-picker` 农历选择面板：农历年 / 月（含闰月，月序负值）/ 日三列滚轮，`columns-type` 任意组合；月列按 `getLunarMonthSequence` 生成（闰月紧随其月，文案形如「闰二月」），日列按农历月长 29 / 30 生成；`show-gan-zhi` / `show-zodiac` 为年列追加干支与生肖；`min-date` / `max-date` 为公历日期，列边界反向映射并默认覆盖农历表 1900–2100，越界静默钳制；`filter` / `formatter`、顶部栏与插槽契约同日期面板（`option` 插槽回退 `{ text, value }` 口径）；`v-model:value` 与 `change(date, columnIndex)` / `confirm(date)` 均为公历 `Date`；expose `confirm` / `resetSelection` / `getSelectedDate` / `getSelectedLunarText`
+- 变更：`m-date-picker` / `m-time-picker` 面板内部迁移为 `m-picker` 组合（无 API 变更）：顶部栏 / 选中框 / 滚轮容器 / 加载遮罩由通用选择器承担，对外 props / events / 插槽 / 实例方法不变；面板级主题变量收敛为
+  `$m-picker-*`（`$m-date-picker-*` 仅保留选项文本三项，`$m-time-picker-*` 不再提供面板变量）
+- 新增 `m-lunar-picker` 农历选择面板：农历年 / 月（含闰月，月序负值）/ 日三列滚轮，`columns-type` 任意组合；月列按 `getLunarMonthSequence` 生成（闰月紧随其月，文案形如「闰二月」），日列按农历月长 29 /
+  30 生成；`show-gan-zhi` / `show-zodiac` 为年列追加干支与生肖；`min-date` / `max-date` 为公历日期，列边界反向映射并默认覆盖农历表 1900–2100，越界静默钳制；`filter` / `formatter`、顶部栏与插槽契约同日期面板（`option`
+  插槽回退 `{ text, value }` 口径）；`v-model:value` 与 `change(date, columnIndex)` / `confirm(date)` 均为公历 `Date`；expose `confirm` / `resetSelection` / `getSelectedDate` / `getSelectedLunarText`
 - 新增 `m-lunar-picker-popup` 农历选择弹出框：`m-popup` + 农历面板组合，`v-model:show` / `v-model:value` 受控，确认 / 取消后自动关闭；透传方位 / 圆角 / 遮罩关闭 / 安全区 / 层级 / 动画时长，`reset-on-open` 控制复开复位
-- 新增 `m-lunar-picker-input` 农历输入框：`m-input` 只读触发器 + 农历弹层，展示文本按列组合派生（如 `2026年六月十五`，开启 `show-gan-zhi` 为 `丙午年六月十五`）；自绘清空按钮回写 `null` 并派发 `clear`，`disabled` / `clearable` / `border` / `inlaid` 可配
+- 新增 `m-lunar-picker-input` 农历输入框：`m-input` 只读触发器 + 农历弹层，展示文本按列组合派生（如 `2026年六月十五`，开启 `show-gan-zhi` 为 `丙午年六月十五`）；自绘清空按钮回写 `null` 并派发 `clear`，`disabled` /
+  `clearable` / `border` / `inlaid` 可配
 - 新增 `$m-lunar-picker-input-*`（触发层 / 清空按钮）主题变量段；面板视觉复用 `$m-picker-*`，列文本沿用 `$m-date-picker-option-*`
 - `utils/date` 新增导出 `getLunarMonthSequence(year)` / `LUNAR_START_YEAR` / `LUNAR_END_YEAR`
-- 修复：`m-input` 开启 `inlaid` 嵌入 `m-cell` 时控件高度塌陷（仅剩文本行高约 19.6px，贴顶且可点击区过小）；新增 `$m-input-inlaid-min-height`（默认 24px，与 `m-cell` 单行内容区一致），inlaid 控件保底高度并垂直居中占位符；所有透传 inlaid 的输入类组件同步生效
+- 修复：`m-input` 开启 `inlaid` 嵌入 `m-cell` 时控件高度塌陷（仅剩文本行高约 19.6px，贴顶且可点击区过小）；新增 `$m-input-inlaid-min-height`（默认 24px，与 `m-cell`
+  单行内容区一致），inlaid 控件保底高度并垂直居中占位符；所有透传 inlaid 的输入类组件同步生效
 - 修复：`m-input` 在 `m-compact` 水平组合中输入文字贴顶（边框容器改为 `flex: 1` 撑满根节点，与同行 `m-button` 等高后文字垂直居中），普通形态与 `textarea` 高度不受影响
 - 说明：`option` 插槽统一为仅 Web 生效——App 端插槽解构出的行下标为 `Any?`，无法作为 number 参数通过 Kotlin 编译；小程序端同名插槽在 `v-for` 内仅首个生效。两端回退内置文本，自定义文案请用 `formatter`
 
 ## 0.5.3 (2026-11-15)
 
-- 修复 `m-calendar` 小程序端日格 `v-for` 内重复声明同名插槽（`month-title` / `text` / `top-info` / `bottom-info`）导致的 `More than one slot named "top-info"` 刷屏告警（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）；小程序端改用 `formatter` 文本渲染，Web / App 插槽行为不变；`m-date-strip` 的 `item` / `top-info` / `bottom-info` 同理（`show-lunar` 不受影响）；`m-cascader` 的 `option` / `options-top` / `options-bottom` 同理
+- 修复 `m-calendar` 小程序端日格 `v-for` 内重复声明同名插槽（`month-title` / `text` / `top-info` / `bottom-info`）导致的 `More than one slot named "top-info"`
+  刷屏告警（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）；小程序端改用 `formatter` 文本渲染，Web / App 插槽行为不变；`m-date-strip` 的 `item` / `top-info` / `bottom-info` 同理（`show-lunar`
+  不受影响）；`m-cascader` 的 `option` / `options-top` / `options-bottom` 同理
 
 ## 0.5.2 (2026-11-15)
 
-- 修复 `m-calendar` `switch-mode` 非 `none` 时首帧渲染全量月份（[#15](https://github.com/MengXi-Studio/unix-ui/issues/15)）：`currentPanelMonth` 挂载前为 `null` 时 `visibleMonths` 回退全量，`min-date` ~ `max-date` 覆盖 1900~2100 时首帧渲染 2412 个月，微信小程序触发 `Dom limit exceeded`（`setData` 约 36 MB）；兜底分支改为仅渲染聚焦月，首帧节点数与范围宽度无关
+- 修复 `m-calendar` `switch-mode` 非 `none` 时首帧渲染全量月份（[#15](https://github.com/MengXi-Studio/unix-ui/issues/15)）：`currentPanelMonth` 挂载前为 `null` 时 `visibleMonths` 回退全量，`min-date` ~ `max-date`
+  覆盖 1900~2100 时首帧渲染 2412 个月，微信小程序触发 `Dom limit exceeded`（`setData` 约 36 MB）；兜底分支改为仅渲染聚焦月，首帧节点数与范围宽度无关
 
 ## 0.5.1 (2026-11-14)
 

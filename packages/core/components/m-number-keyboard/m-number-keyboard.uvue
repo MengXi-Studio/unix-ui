@@ -22,9 +22,12 @@
 						:hover-stay-time="80"
 						@click="onExtraTap"
 					>
-						<slot name="extra-key">
-							<text class="m-number-keyboard__text">{{ extraText }}</text>
-						</slot>
+						<!-- 默认文字改用显式 v-if：小程序端弹层会把 extra-key 插槽静态声明给面板，
+						     `$slots['extra-key']` 恒存在导致 slot fallback 永不渲染（issue #24） -->
+						<template v-if="slotHasContent($slots['extra-key'])">
+							<slot name="extra-key"></slot>
+						</template>
+						<text v-else class="m-number-keyboard__text">{{ extraText }}</text>
 					</view>
 				</view>
 				<view v-if="!isRandom" :class="zeroCellClass()">
@@ -89,6 +92,7 @@
 		NumberKeyboardTheme
 	} from './keyboard.uts'
 	import MIcon from '../m-icon/m-icon.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 键盘类型 */

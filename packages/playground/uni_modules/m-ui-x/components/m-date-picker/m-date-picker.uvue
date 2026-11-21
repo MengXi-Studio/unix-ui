@@ -21,27 +21,27 @@
 			@cancel="onPickerCancel"
 		>
 			<!-- 插槽条件转发：未传入时不覆盖 m-picker 的默认渲染 -->
-			<template v-if="$slots['toolbar'] != null" #toolbar>
+			<template v-if="slotHasContent($slots['toolbar'])" #toolbar>
 				<slot name="toolbar"></slot>
 			</template>
-			<template v-if="$slots['title'] != null" #title>
+			<template v-if="slotHasContent($slots['title'])" #title>
 				<slot name="title"></slot>
 			</template>
-			<template v-if="$slots['confirm'] != null" #confirm>
+			<template v-if="slotHasContent($slots['confirm'])" #confirm>
 				<slot name="confirm"></slot>
 			</template>
-			<template v-if="$slots['cancel'] != null" #cancel>
+			<template v-if="slotHasContent($slots['cancel'])" #cancel>
 				<slot name="cancel"></slot>
 			</template>
-			<template v-if="$slots['columns-top'] != null" #columns-top>
+			<template v-if="slotHasContent($slots['columns-top'])" #columns-top>
 				<slot name="columns-top"></slot>
 			</template>
-			<template v-if="$slots['columns-bottom'] != null" #columns-bottom>
+			<template v-if="slotHasContent($slots['columns-bottom'])" #columns-bottom>
 				<slot name="columns-bottom"></slot>
 			</template>
 			<!-- #ifdef WEB -->
 			<!-- 小程序端列选项在 v-for 内不声明具名插槽（LESSONS #17），无需转发 -->
-			<template v-if="$slots['option'] != null" #option="{ option, index }">
+			<template v-if="slotHasContent($slots['option'])" #option="{ option, index }">
 				<slot name="option" :option="toDatePickerOption(option)" :index="index"></slot>
 			</template>
 			<!-- #endif -->
@@ -70,6 +70,7 @@
 	import { getDayStart, getDaysInMonth, addYears, clampDate } from '../../utils/date.uts'
 	import { PickerOption, PickerValue, valueToText } from '../m-picker/picker.uts'
 	import MPicker from '../m-picker/m-picker.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 选项类型组合（year / month / day 任意顺序；null 用默认年-月-日） */
@@ -452,6 +453,16 @@
 	}
 
 	/**
+	 * 要求 m-picker 各列重新定位到当前值：弹层打开后滚动视口才真正可滚动（issue #25）
+	 */
+	function reposition() {
+		const inst = picker.value
+		if (inst != null) {
+			inst.$callMethod('reposition')
+		}
+	}
+
+	/**
 	 * m-picker 列切换：按列组合顺序从 selectedOptions 重建日期分量，再定位变化列派发 change
 	 */
 	const onPickerChange = (_value: PickerValue | null, selectedOptions: PickerOption[], indexes: number[]) => {
@@ -552,6 +563,7 @@
 	defineExpose({
 		confirm,
 		resetSelection,
+		reposition,
 		getSelectedDate
 	})
 </script>

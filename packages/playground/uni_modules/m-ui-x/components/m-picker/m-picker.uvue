@@ -3,26 +3,32 @@
 	     纯平铺形态，弹层组合见 m-picker-popup，输入框触发组合见 m-picker-input，
 	     无工具栏纯视图见 m-picker-view。根节点常驻静态（LESSONS #32） -->
 	<view :class="rootClass" :style="customStyle">
-		<!-- 顶部栏：toolbar 插槽整体替换，未传时按 show-toolbar 渲染取消 / 标题 / 确认三段 -->
-		<slot name="toolbar">
-			<view v-if="showToolbar" class="m-picker__toolbar">
-				<view class="m-picker__action" @click="onCancelClick">
-					<slot name="cancel">
-						<text class="m-picker__cancel-text">{{ cancelButtonText }}</text>
-					</slot>
-				</view>
-				<view class="m-picker__title">
-					<slot name="title">
-						<text class="m-picker__title-text">{{ title }}</text>
-					</slot>
-				</view>
-				<view class="m-picker__action" @click="onConfirmClick">
-					<slot name="confirm">
-						<text class="m-picker__confirm-text">{{ confirmButtonText }}</text>
-					</slot>
-				</view>
+		<!-- 顶部栏：toolbar 插槽整体替换；未传（或为空）时按 show-toolbar 渲染取消 / 标题 / 确认三段。
+		     不用 <slot> 的默认内容机制：小程序端 popup 会把插槽静态声明给面板，
+		     `$slots.xxx` 恒存在导致 fallback 永不渲染（issue #24） -->
+		<template v-if="slotHasContent($slots['toolbar'])">
+			<slot name="toolbar"></slot>
+		</template>
+		<view v-else-if="showToolbar" class="m-picker__toolbar">
+			<view class="m-picker__action" @click="onCancelClick">
+				<template v-if="slotHasContent($slots['cancel'])">
+					<slot name="cancel"></slot>
+				</template>
+				<text v-else class="m-picker__cancel-text">{{ cancelButtonText }}</text>
 			</view>
-		</slot>
+			<view class="m-picker__title">
+				<template v-if="slotHasContent($slots['title'])">
+					<slot name="title"></slot>
+				</template>
+				<text v-else class="m-picker__title-text">{{ title }}</text>
+			</view>
+			<view class="m-picker__action" @click="onConfirmClick">
+				<template v-if="slotHasContent($slots['confirm'])">
+					<slot name="confirm"></slot>
+				</template>
+				<text v-else class="m-picker__confirm-text">{{ confirmButtonText }}</text>
+			</view>
+		</view>
 		<!-- 滚轮上方自定义区 -->
 		<slot name="columns-top"></slot>
 		<view class="m-picker__columns" :style="columnsStyle">
@@ -40,11 +46,12 @@
 					:swipe-duration="swipeDuration"
 					:readonly="readonly"
 					:disabled-options="column.disabledFlags"
+					:position-token="positionToken"
 					@change="onColumnChange"
 				>
 					<!-- 插槽条件转发：未传入时不覆盖列内置文本；作用域补充原始选项与行列下标 -->
 					<!-- #ifdef WEB -->
-					<template v-if="$slots['option'] != null" #option="{ option, index }">
+					<template v-if="slotHasContent($slots['option'])" #option="{ option, index }">
 						<slot
 							name="option"
 							:option="optionOf(columnIndex, index)"
@@ -90,6 +97,7 @@
 	import { DatePickerOption } from '../m-date-picker/date-picker.uts'
 	import MDatePickerColumn from '../m-date-picker/m-date-picker-column.uvue'
 	import MLoading from '../m-loading/m-loading.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	/** 面板内部列视图（原始选项 + 列组件文本 + 选中下标 + 禁用标记） */
 	type PickerColumnView = {
@@ -248,6 +256,9 @@
 
 	/** 各列选中下标 */
 	const indexes = ref<number[]>(initialIndexes())
+
+	/** 重新定位令牌：自增后下发给各列，触发按当前下标重新滚动（弹层打开后调用） */
+	const positionToken = ref<number>(0)
 
 	/**
 	 * 归一化用的列结构：级联按当前下标逐层展开（与 resolveColumns 一致，供非 computed 上下文复用）
@@ -458,6 +469,14 @@
 	}
 
 	/**
+	 * 要求各列重新定位到当前下标：弹层打开后滚动视口才真正可滚动，
+	 * 隐藏态下发的 scroll-top 会被忽略，需由宿主在此刻再对齐一次（issue #25）
+	 */
+	function reposition() {
+		positionToken.value = positionToken.value + 1
+	}
+
+	/**
 	 * 读取当前选中值
 	 */
 	function getSelectedValue(): PickerValue | null {
@@ -481,6 +500,7 @@
 	defineExpose({
 		confirm,
 		resetSelection,
+		reposition,
 		getSelectedValue,
 		getSelectedIndexes
 	})

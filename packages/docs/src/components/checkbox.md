@@ -134,7 +134,7 @@ added: 0.5.0
 | direction | 排列方向：`vertical` / `horizontal` | CheckboxDirection | `vertical` |
 | icon-size | 图标尺寸（number 补 px / string 原样） | string \| number | `''` |
 | checked-color | 选中态颜色 | string | `''` |
-| shape | 形状：`round` / `square` | CheckboxShape | `round` |
+| shape | 形状：`square` / `round` | CheckboxShape | `square` |
 | custom-class / custom-style | 根节点样式直达 | - | - |
 
 ### Events（m-checkbox-group）

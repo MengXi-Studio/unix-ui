@@ -146,6 +146,7 @@ A wheel picker for the Chinese lunar calendar (year / month including leap month
 | --- | --- | --- |
 | confirm() | Confirm programmatically | — |
 | resetSelection() | Reset to value / today | — |
+| reposition() | Re-aligns the wheels to the current value (called by the popup on `open`, once layout is ready) | — |
 | getSelectedDate() | Get the selected Gregorian date | `Date` |
 | getSelectedLunarText() | Get the lunar display text | `string` |
 

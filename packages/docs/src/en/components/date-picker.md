@@ -184,6 +184,7 @@ Call through a template ref (uvue components are invoked via `$callMethod`).
 | --- | --- | --- |
 | confirm | Programmatic confirm (same as clicking confirm) | - |
 | resetSelection | Resets the selection to value (`null` means today) | - |
+| reposition | Re-aligns the wheels to the current value (called by the popup on `open`, once layout is ready) | - |
 | getSelectedDate | Returns the currently selected date | - |
 
 ### Slots

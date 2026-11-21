@@ -40,18 +40,18 @@
 		>
 			<!-- 插槽条件转发：v-if="$slots.xxx != null" 保证未传入的插槽不覆盖 m-cascader
 			     的默认渲染（无条件转发空内容会吞默认渲染） -->
-			<template v-if="$slots['title'] != null" #title>
+			<template v-if="slotHasContent($slots['title'])" #title>
 				<slot name="title"></slot>
 			</template>
 			<!-- #ifndef MP -->
 			<!-- 小程序端级联面板在 v-for 内不声明具名插槽（同名插槽仅第一个生效，#17），无需转发 -->
-			<template v-if="$slots['option'] != null" #option="{ option, selected }">
+			<template v-if="slotHasContent($slots['option'])" #option="{ option, selected }">
 				<slot name="option" :option="option" :selected="selected"></slot>
 			</template>
-			<template v-if="$slots['options-top'] != null" #options-top="{ tabIndex }">
+			<template v-if="slotHasContent($slots['options-top'])" #options-top="{ tabIndex }">
 				<slot name="options-top" :tab-index="tabIndex"></slot>
 			</template>
-			<template v-if="$slots['options-bottom'] != null" #options-bottom="{ tabIndex }">
+			<template v-if="slotHasContent($slots['options-bottom'])" #options-bottom="{ tabIndex }">
 				<slot name="options-bottom" :tab-index="tabIndex"></slot>
 			</template>
 			<!-- #endif -->
@@ -74,6 +74,7 @@
 	} from '../m-cascader/cascader.uts'
 	import { IconName } from '../m-icon/icons.uts'
 	import MCascader from '../m-cascader/m-cascader.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	/** 弹出方位（与 m-popup 的 position 取值一致） */
 	type CascaderPopupPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'

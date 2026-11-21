@@ -122,6 +122,7 @@ picker.value?.$callMethod('getSelectedIndexes')
 | --- | --- |
 | confirm | Programmatic confirm |
 | resetSelection | Resets to the external value |
+| reposition | Re-aligns the wheels to the current selection (called by the popup on `open`, once layout is ready) |
 | getSelectedValue | Returns the current value |
 | getSelectedIndexes | Returns the selected indexes |
 

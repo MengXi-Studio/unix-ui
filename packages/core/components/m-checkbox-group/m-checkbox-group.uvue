@@ -50,7 +50,7 @@
 		direction: 'vertical',
 		iconSize: '',
 		checkedColor: '',
-		shape: 'round',
+		shape: 'square',
 		customClass: '',
 		customStyle: ''
 	})

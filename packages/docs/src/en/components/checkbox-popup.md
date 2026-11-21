@@ -69,7 +69,7 @@ The `footer` slot holds bottom content such as a confirm button (selections are 
 | disabled | Disable all options | boolean | `false` |
 | max | Maximum selectable count (0 unbounded) | number | `0` |
 | direction | Layout direction: `vertical` / `horizontal` | CheckboxDirection | `vertical` |
-| shape | Shape: `round` / `square` | CheckboxShape | `round` |
+| shape | Shape: `square` / `round` | CheckboxShape | `square` |
 | icon-size | Icon size (number gets px appended) | string \| number | `''` |
 | checked-color | Checked color | string | `''` |
 | label-position | Label position: `right` / `left` | CheckboxLabelPosition | `right` |

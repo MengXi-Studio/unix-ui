@@ -68,7 +68,7 @@ const options = [{ label: '北京', value: 'beijing' }, { label: '上海', value
 | title | 弹层标题 | string | `''` |
 | max | 最大可选数（0 不限制） | number | `0` |
 | direction | 排列方向 | CheckboxDirection | `vertical` |
-| shape | 形状 | CheckboxShape | `round` |
+| shape | 形状 | CheckboxShape | `square` |
 | icon-size | 图标尺寸 | string \| number | `''` |
 | checked-color | 选中态颜色 | string | `''` |
 | label-position | 文本位置 | CheckboxLabelPosition | `right` |

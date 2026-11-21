@@ -29,6 +29,7 @@
 <script setup lang="uts">
 	import { IconName } from '../m-icon/icons.uts'
 	import { GRID_KEY, GridContext, generateGridItemId } from '../m-grid/context.uts'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 文字内容 */
@@ -188,7 +189,7 @@
 
 	/** 是否渲染图标区（icon prop 或 icon 插槽任一存在） */
 	const hasIconArea = computed<boolean>(() => {
-		return props.icon != null || slots['icon'] != null
+		return props.icon != null || slotHasContent(slots['icon'])
 	})
 
 	/** 图标名（hasIconArea 为 true 且 icon prop 非空时才渲染，断言安全） */
@@ -210,7 +211,7 @@
 
 	/** 是否渲染文字区（text prop 或 text 插槽任一存在） */
 	const hasTextArea = computed<boolean>(() => {
-		return props.text != '' || slots['text'] != null
+		return props.text != '' || slotHasContent(slots['text'])
 	})
 
 	/** 文字区类名：横排时占剩余宽度（文本左对齐） */

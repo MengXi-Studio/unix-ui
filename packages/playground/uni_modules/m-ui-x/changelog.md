@@ -1,3 +1,11 @@
+## 0.7.2 (2026-11-21)
+
+- 修复微信小程序端 picker-popup 系列未传插槽时默认工具栏被空插槽覆盖（issue #24）：小程序端未传具名插槽时 `$slots.x` 为空数组而非 null，`$slots.x != null` 恒真，弹层转发空插槽后面板 `<slot>` fallback 不再渲染，顶部取消 / 标题 / 确认与底部按钮区域空白、无法提交。新增 `utils/slot.uts` 的 `slotHasContent` 跨端判定，弹层条件转发与面板默认内容改显式 `v-if / v-else`；同根因一并修复 `m-date-range-picker` / `m-time-range-picker`（两段标题与底部按钮）、`m-calendar`（确认按钮文案）、`m-cascader`（标题）、`m-number-keyboard`（额外键文字）
+- 调整 `m-checkbox` / `m-checkbox-group` / `m-checkbox-input` / `m-checkbox-popup` 的 `shape` 默认值为 `square`（圆角方框），需要圆形请显式传 `shape="round"`
+- 修复微信小程序端勾选图标显示为黑色：选中态的白勾原由 `.m-checkbox__check` 着色，该类挂在 `m-icon` 内部节点上，小程序端自定义组件默认样式隔离（`isolated`）导致父组件样式无法命中子组件内部节点，`custom-class` 的 `color` 被静默忽略；改为把 `color / font-size` 落在 `m-checkbox` 自己的图标容器 `.m-checkbox__icon-wrap--checked` 上、靠继承穿透组件边界下发，并删除失效规则
+- 修复微信小程序端默认插槽判定失效导致选中态与文案丢失：`slotHasContent` 按数组长度判定只对具名插槽成立，小程序端写在组件标签之间的匿名子节点不进入 `$slots.default` 数组（有内容时为空数组、无内容时该 key 缺失），长度判定恒为 `false`，组件内 `<slot>` 的 fallback 被编译成 `wx:else` 后永不渲染。默认插槽统一改用 `slots['default'] != null` 判定，`m-checkbox` 选中白勾 / `indeterminate` 横杠、`m-loading` 文案、`m-toast` 消息、`m-badge` 包裹子元素、`m-radio` / `m-checkbox` 独立使用时的标签、`m-number-keyboard-popup` 键盘上方内容区恢复正常；`utils/slot.uts` 补充「仅用于具名插槽」的口径说明
+- 修复微信小程序端 `m-date-picker-popup` / `m-time-picker-popup` 首次打开（及复开）滚轮停在首项、不定位到 `value`（issue #25）：滚轮列原先把内部镜像 `actualTop` 提前写成目标值，而弹层首帧挂载时滚动视口高度为 0、`scroll-top` 被忽略且不产生 `@scroll`，镜像与真实位置脱节后 `resetSelection` 的再次定位被「已到位」判断跳过；改为镜像只由 `@scroll` 回灌真实位置，同值强制定位的偏移归位改用定时器（小程序端相邻两次 setData 会合帧），并在布局可用后补一次校验重发；新增 `m-picker` / `m-date-picker` / `m-time-picker` / `m-lunar-picker` 实例方法 `reposition()`，四个 picker-popup 在 `open` 时自动调用
+
 ## 0.7.1 (2026-11-19)
 
 - 修复 `m-icon` 微信小程序端图标字体加载失败（issue #22）：`uni.loadFontFace` 的 `source` 由裸 base64 改为标准 CSS 资源地址 `url("data:font/ttf;base64,...")`，此前微信将裸 base64 当作 URL 解析并报 `loadFontFace:fail createDownloadTask:fail invalid url`，导致所有图标回退默认字形；新增模块级 `mpFontState` 加载标记（`global: true` 全端生效只需一次），避免每个图标实例重复调用与重复报错，失败时复位以便重试并输出 `[m-icon] loadFontFace fail`

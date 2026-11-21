@@ -18,13 +18,13 @@
 					@click="onItemClick(item)"
 				>
 					<!-- #ifndef MP -->
-					<slot v-if="slots['item'] != null" name="item" :item="item.day"></slot>
+					<slot v-if="slotHasContent(slots['item'])" name="item" :item="item.day"></slot>
 					<template v-else>
-						<slot v-if="slots['top-info'] != null" name="top-info" :day="item.day"></slot>
+						<slot v-if="slotHasContent(slots['top-info'])" name="top-info" :day="item.day"></slot>
 						<text v-else-if="item.day.topInfo != ''" :class="infoClass(item)">{{ item.day.topInfo }}</text>
 						<text :class="weekClass(item)">{{ item.weekText }}</text>
 						<text :class="dayClass(item)">{{ item.day.text }}</text>
-						<slot v-if="slots['bottom-info'] != null" name="bottom-info" :day="item.day"></slot>
+						<slot v-if="slotHasContent(slots['bottom-info'])" name="bottom-info" :day="item.day"></slot>
 						<text v-else-if="item.day.bottomInfo != ''" :class="infoClass(item)">{{ item.day.bottomInfo }}</text>
 					</template>
 					<!-- #endif -->
@@ -67,6 +67,7 @@
 		parseDate,
 		solarToLunar
 	} from '../../utils/date.uts'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	/** 对外值形态：valueFormat 为空时为 Date 口径，非空时为字符串口径 */
 	type DateStripValue = Date | Date[] | string | string[] | null

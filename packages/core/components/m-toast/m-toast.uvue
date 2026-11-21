@@ -194,7 +194,7 @@
 	/** 是否图标方形布局（竖排 88px 方形气泡）：非 text 型或传入自定义 icon；纯 text 走横排窄气泡 */
 	const iconLayout = computed<boolean>(() => activeType.value != 'text' || active.value.icon != null)
 
-	/** 是否使用默认插槽替代 message 文本 */
+	/** 是否使用默认插槽替代 message 文本（默认插槽按「key 是否存在」判定，小程序端内容不进入数组） */
 	const hasSlot = computed<boolean>(() => slots['default'] != null)
 
 	/** 遮罩是否渲染：overlay 背景遮罩或 forbidClick 透明拦截 */

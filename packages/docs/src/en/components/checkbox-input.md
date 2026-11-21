@@ -68,7 +68,7 @@ More than 2 selected items collapse to "first two + N items".
 | title | Popup title | string | `''` |
 | max | Maximum selectable count (0 unbounded) | number | `0` |
 | direction | Layout direction | CheckboxDirection | `vertical` |
-| shape | Shape | CheckboxShape | `round` |
+| shape | Shape | CheckboxShape | `square` |
 | icon-size | Icon size | string \| number | `''` |
 | checked-color | Checked color | string | `''` |
 | label-position | Label position | CheckboxLabelPosition | `right` |

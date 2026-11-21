@@ -58,7 +58,8 @@
 	/** spinner 型辐条数量：仅 spinner 型渲染 12 条，其余类型为 0（不产生节点） */
 	const spokeCount = computed<number>(() => props.type == 'spinner' ? 12 : 0)
 
-	/** 是否传入默认插槽内容（决定文案节点是否渲染） */
+	/** 是否传入默认插槽内容（决定文案节点是否渲染）：默认插槽只能按「key 是否存在」判定，
+	 *  小程序端传了子节点时是空数组、未传时为空缺值，长度衡量的 slotHasContent 恒为 false */
 	const hasText = computed<boolean>(() => slots['default'] != null)
 
 	/** 根节点类名：纵向排列与自定义类名按 props 拼接 */

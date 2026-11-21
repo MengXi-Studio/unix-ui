@@ -4,12 +4,18 @@
 	     选中实心填充 + 白勾（m-icon 'success'），不确定态实心底白横杠，禁用态降透明度。 -->
 	<view :class="rootClass" :style="customStyle" @click="onClick">
 		<view :class="iconWrapClass" :style="iconWrapStyle" @click="onIconClick">
-			<slot name="icon" :checked="isChecked" :disabled="isDisabled">
-				<view v-if="indeterminate" class="m-checkbox__indeterminate"></view>
-				<m-icon v-else-if="isChecked" name="success" custom-class="m-checkbox__check" :style="checkStyle" />
-			</slot>
+			<!-- 默认内容不能写成 <slot> 的 fallback：小程序端未传具名插槽时 `$slots.x` 为空数组（truthy），
+			     fallback 被编译成 wx:else 后永不渲染，选中态的白勾会整体消失（与 issue #24 同根因） -->
+			<template v-if="slotHasContent($slots['icon'])">
+				<slot name="icon" :checked="isChecked" :disabled="isDisabled"></slot>
+			</template>
+			<view v-else-if="indeterminate" class="m-checkbox__indeterminate"></view>
+			<m-icon v-else-if="isChecked" name="success" :style="checkStyle" />
 		</view>
 		<view v-if="showLabel" class="m-checkbox__label" :class="labelClass" :style="labelStyle" @click="onLabelClick">
+			<!-- 默认插槽保留原生 fallback：小程序端父级直接写在标签内的文本走「匿名插槽」，
+			     `$slots.default` 恒为空数组，无法用 slotHasContent 判定（与具名插槽口径不同）；
+			     有文本时插槽渲染传入内容，无文本时 fallback 仅 Web / App 生效 -->
 			<slot name="default" :checked="isChecked" :disabled="isDisabled">
 				<text :class="labelClass">{{ labelText }}</text>
 			</slot>
@@ -34,13 +40,14 @@
 		checkboxValueText
 	} from '../m-checkbox-group/checkbox.uts'
 	import MIcon from '../m-icon/m-icon.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 标识符（组内必填，独立使用可空） */
 		name?: CheckboxValue
 		/** 是否为选中状态（独立使用 v-model；组内由组集合驱动） */
 		modelValue?: boolean
-		/** 形状（组内未设置时继承组容器） */
+		/** 形状：square 圆角方框（默认）/ round 圆环（组内未设置时继承组容器） */
 		shape?: CheckboxShape
 		/** 是否禁用复选框 */
 		disabled?: boolean
@@ -116,11 +123,11 @@
 		return props.disabled
 	})
 
-	/** 有效形状（组内继承容器） */
+	/** 有效形状（组内继承容器；默认方形） */
 	const effectiveShape = computed<CheckboxShape>(() => {
 		if (props.shape != null) return props.shape
 		if (inGroup.value && ctx != null) return ctx.shape.value
-		return 'round'
+		return 'square'
 	})
 
 	/** 有效图标尺寸（number 补 px，组内继承容器） */
@@ -321,21 +328,19 @@
 		border-radius: $m-checkbox-box-radius;
 	}
 
-	/* 选中 / 不确定态：实心填充 */
+	/* 选中 / 不确定态：实心填充；勾图标与横杠为白色。
+	   颜色 / 字号必须落在本组件的容器上靠继承下发：小程序端自定义组件样式隔离，
+	   父组件 wxss 无法命中 m-icon 内部节点，`custom-class` 写的 color 会被忽略（勾会显示为黑色） */
 	.m-checkbox__icon-wrap--checked {
 		background-color: $m-checkbox-icon-color;
 		border-color: $m-checkbox-icon-color;
+		color: $m-white;
+		font-size: $m-checkbox-check-icon-size;
 	}
 
 	/* 整体禁用：降透明度 */
 	.m-checkbox__icon-wrap--disabled {
 		opacity: $m-checkbox-disabled-opacity;
-	}
-
-	/* 选中态白勾 */
-	.m-checkbox__check {
-		color: $m-white;
-		font-size: $m-checkbox-check-icon-size;
 	}
 
 	/* 不确定态白横杠 */

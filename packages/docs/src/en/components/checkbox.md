@@ -134,7 +134,7 @@ Toggle on the whole row: put m-checkbox into m-cell's `value` slot and call `tog
 | direction | Layout direction: `vertical` / `horizontal` | CheckboxDirection | `vertical` |
 | icon-size | Icon size (number gets px appended) | string \| number | `''` |
 | checked-color | Checked color | string | `''` |
-| shape | Shape: `round` / `square` | CheckboxShape | `round` |
+| shape | Shape: `square` / `round` | CheckboxShape | `square` |
 | custom-class / custom-style | Root node styling | - | - |
 
 ### Events（m-checkbox-group）

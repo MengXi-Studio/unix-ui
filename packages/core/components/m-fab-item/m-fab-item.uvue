@@ -21,6 +21,7 @@
 	 * 入场 / 收场过渡为 inline transition（opacity + translateY + scale），延迟按注册序 stagger。
 	 */
 	import { FAB_KEY, FabContext, generateFabItemId } from '../m-fab/fab.uts'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 按钮名称（显示在图标旁，hide-name 时隐藏；同时作为 click 的业务标识） */
@@ -88,7 +89,7 @@
 
 	/** 是否显示名称：具名插槽优先，否则 name 非空且未开启 hide-name */
 	const showName = computed<boolean>(() => {
-		if (slots['name'] != null) return true
+		if (slotHasContent(slots['name'])) return true
 		if (props.name == '') return false
 		if (fab == null) return true
 		return !fab.hideName.value

@@ -6,19 +6,23 @@
 		<!-- 快捷选项区（如「上午 / 下午 / 工作时间」，由使用方自绘） -->
 		<slot name="header"></slot>
 		<!-- 标题区：title 插槽整体替换两段标题，未传时按 tabs 自绘 -->
-		<slot name="title" :tabs="tabList" :active-index="activeIndex">
-			<view class="m-time-range-picker__tabs">
-				<view
-					v-for="(tab, index) in tabList"
-					:key="index"
-					class="m-time-range-picker__tab"
-					@click="onTabClick(index)"
-				>
-					<text :class="tabTextClass(index)">{{ tab }}</text>
-					<view v-if="index == activeIndex" class="m-time-range-picker__tab-line"></view>
-				</view>
+		<!-- 标题区：title 插槽整体替换两段标题，未传（或为空）时按 tabs 自绘。
+		     不用 <slot> 的默认内容机制：小程序端弹层会把插槽静态声明给面板，
+		     `$slots.title` 恒存在导致 fallback 永不渲染（issue #24） -->
+		<template v-if="slotHasContent($slots['title'])">
+			<slot name="title" :tabs="tabList" :active-index="activeIndex"></slot>
+		</template>
+		<view v-else class="m-time-range-picker__tabs">
+			<view
+				v-for="(tab, index) in tabList"
+				:key="index"
+				class="m-time-range-picker__tab"
+				@click="onTabClick(index)"
+			>
+				<text :class="tabTextClass(index)">{{ tab }}</text>
+				<view v-if="index == activeIndex" class="m-time-range-picker__tab-line"></view>
 			</view>
-		</slot>
+		</view>
 		<!-- 滚轮区：v-if 切换保证每次重建后按当前端点值重新定位 -->
 		<view class="m-time-range-picker__panel">
 			<m-time-picker
@@ -63,20 +67,24 @@
 			/>
 		</view>
 		<!-- 底部按钮区：footer 插槽整体替换，未传时渲染取消 + 确认 -->
-		<slot name="footer">
-			<view class="m-time-range-picker__footer">
-				<view class="m-time-range-picker__action" @click="onCancelClick">
-					<slot name="cancel">
-						<text class="m-time-range-picker__cancel-text">{{ cancelButtonText }}</text>
-					</slot>
-				</view>
-				<view class="m-time-range-picker__action" @click="onConfirmClick">
-					<slot name="confirm">
-						<text class="m-time-range-picker__confirm-text">{{ confirmButtonText }}</text>
-					</slot>
-				</view>
+		<!-- 底部按钮区：footer 插槽整体替换，未传（或为空）时渲染取消 + 确认（同样规避 slot fallback） -->
+		<template v-if="slotHasContent($slots['footer'])">
+			<slot name="footer"></slot>
+		</template>
+		<view v-else class="m-time-range-picker__footer">
+			<view class="m-time-range-picker__action" @click="onCancelClick">
+				<template v-if="slotHasContent($slots['cancel'])">
+					<slot name="cancel"></slot>
+				</template>
+				<text v-else class="m-time-range-picker__cancel-text">{{ cancelButtonText }}</text>
 			</view>
-		</slot>
+			<view class="m-time-range-picker__action" @click="onConfirmClick">
+				<template v-if="slotHasContent($slots['confirm'])">
+					<slot name="confirm"></slot>
+				</template>
+				<text v-else class="m-time-range-picker__confirm-text">{{ confirmButtonText }}</text>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -93,6 +101,7 @@
 		TimePickerOption
 	} from '../m-time-picker/time-picker.uts'
 	import MTimePicker from '../m-time-picker/m-time-picker.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 两端选中值（v-model:value；长度 0-2，按 起始、结束 顺序；null 未选） */

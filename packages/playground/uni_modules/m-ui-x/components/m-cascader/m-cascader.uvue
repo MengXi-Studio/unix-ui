@@ -6,9 +6,12 @@
 		<!-- 头部：标题 + 关闭图标 -->
 		<view v-if="showHeader" class="m-cascader__header">
 			<view class="m-cascader__header-title">
-				<slot name="title">
-					<text class="m-cascader__header-title-text">{{ title }}</text>
-				</slot>
+				<!-- 默认标题改用显式 v-if：小程序端弹层会把 title 插槽静态声明给面板，
+				     `$slots.title` 恒存在导致 slot fallback 永不渲染（issue #24） -->
+				<template v-if="slotHasContent($slots['title'])">
+					<slot name="title"></slot>
+				</template>
+				<text v-else class="m-cascader__header-title-text">{{ title }}</text>
 			</view>
 			<view v-if="closeable" class="m-cascader__close" @click="onClose">
 				<m-icon :name="closeIcon" custom-class="m-cascader__close-icon" />
@@ -45,7 +48,7 @@
 		>
 			<swiper-item v-for="(level, li) in levels" :key="li" class="m-cascader__pane">
 				<!-- #ifndef MP -->
-				<slot v-if="$slots['options-top'] != null" name="options-top" :tab-index="li"></slot>
+				<slot v-if="slotHasContent($slots['options-top'])" name="options-top" :tab-index="li"></slot>
 				<!-- #endif -->
 				<scroll-view class="m-cascader__options" :scroll-y="true">
 					<view
@@ -69,7 +72,7 @@
 					</view>
 				</scroll-view>
 				<!-- #ifndef MP -->
-				<slot v-if="$slots['options-bottom'] != null" name="options-bottom" :tab-index="li"></slot>
+				<slot v-if="slotHasContent($slots['options-bottom'])" name="options-bottom" :tab-index="li"></slot>
 				<!-- #endif -->
 			</swiper-item>
 		</swiper>
@@ -99,6 +102,7 @@
 	} from './cascader.uts'
 	import { IconName } from '../m-icon/icons.uts'
 	import MIcon from '../m-icon/m-icon.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 选中值（v-model:value，叶子 value；null 未选；string | number） */

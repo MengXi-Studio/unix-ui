@@ -42,19 +42,19 @@
 			@update:value="onPickerValueChange"
 		>
 			<!-- 插槽条件转发：未传入时不覆盖面板默认渲染 -->
-			<template v-if="$slots['header'] != null" #header>
+			<template v-if="slotHasContent($slots['header'])" #header>
 				<slot name="header"></slot>
 			</template>
-			<template v-if="$slots['title'] != null" #title="{ tabs, activeIndex }">
+			<template v-if="slotHasContent($slots['title'])" #title="{ tabs, activeIndex }">
 				<slot name="title" :tabs="tabs" :active-index="activeIndex"></slot>
 			</template>
-			<template v-if="$slots['footer'] != null" #footer>
+			<template v-if="slotHasContent($slots['footer'])" #footer>
 				<slot name="footer"></slot>
 			</template>
-			<template v-if="$slots['confirm'] != null" #confirm>
+			<template v-if="slotHasContent($slots['confirm'])" #confirm>
 				<slot name="confirm"></slot>
 			</template>
-			<template v-if="$slots['cancel'] != null" #cancel>
+			<template v-if="slotHasContent($slots['cancel'])" #cancel>
 				<slot name="cancel"></slot>
 			</template>
 		</m-date-range-picker>
@@ -75,6 +75,7 @@
 		DatePickerPosition
 	} from '../m-date-picker/date-picker.uts'
 	import MDateRangePicker from '../m-date-range-picker/m-date-range-picker.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 是否显示弹出层（v-model:show） */

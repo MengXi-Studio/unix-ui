@@ -58,43 +58,43 @@
 		>
 			<!-- 插槽条件转发：v-if="$slots.xxx != null" 保证未传入的插槽不覆盖 m-calendar
 			     的默认渲染（Vue 的 slot fallback 仅在「未传入」时生效，无条件转发空内容会吞默认） -->
-			<template v-if="$slots['title'] != null" #title>
+			<template v-if="slotHasContent($slots['title'])" #title>
 				<slot name="title"></slot>
 			</template>
-			<template v-if="$slots['subtitle'] != null" #subtitle>
+			<template v-if="slotHasContent($slots['subtitle'])" #subtitle>
 				<slot name="subtitle"></slot>
 			</template>
 			<!-- #ifndef MP -->
 			<!-- 小程序端日历面板在 v-for 内不声明具名插槽（同名插槽仅第一个生效，#17），无需转发 -->
-			<template v-if="$slots['month-title'] != null" #month-title="{ month, text }">
+			<template v-if="slotHasContent($slots['month-title'])" #month-title="{ month, text }">
 				<slot name="month-title" :month="month" :text="text"></slot>
 			</template>
-			<template v-if="$slots['top-info'] != null" #top-info="{ day }">
+			<template v-if="slotHasContent($slots['top-info'])" #top-info="{ day }">
 				<slot name="top-info" :day="day"></slot>
 			</template>
-			<template v-if="$slots['bottom-info'] != null" #bottom-info="{ day }">
+			<template v-if="slotHasContent($slots['bottom-info'])" #bottom-info="{ day }">
 				<slot name="bottom-info" :day="day"></slot>
 			</template>
-			<template v-if="$slots['text'] != null" #text="{ day }">
+			<template v-if="slotHasContent($slots['text'])" #text="{ day }">
 				<slot name="text" :day="day"></slot>
 			</template>
 			<!-- #endif -->
-			<template v-if="$slots['footer'] != null" #footer>
+			<template v-if="slotHasContent($slots['footer'])" #footer>
 				<slot name="footer"></slot>
 			</template>
-			<template v-if="$slots['confirm-text'] != null" #confirm-text>
+			<template v-if="slotHasContent($slots['confirm-text'])" #confirm-text>
 				<slot name="confirm-text"></slot>
 			</template>
-			<template v-if="$slots['prev-year'] != null" #prev-year>
+			<template v-if="slotHasContent($slots['prev-year'])" #prev-year>
 				<slot name="prev-year"></slot>
 			</template>
-			<template v-if="$slots['prev-month'] != null" #prev-month>
+			<template v-if="slotHasContent($slots['prev-month'])" #prev-month>
 				<slot name="prev-month"></slot>
 			</template>
-			<template v-if="$slots['next-month'] != null" #next-month>
+			<template v-if="slotHasContent($slots['next-month'])" #next-month>
 				<slot name="next-month"></slot>
 			</template>
-			<template v-if="$slots['next-year'] != null" #next-year>
+			<template v-if="slotHasContent($slots['next-year'])" #next-year>
 				<slot name="next-year"></slot>
 			</template>
 		</m-calendar>
@@ -115,6 +115,7 @@
 		CalendarDayItem
 	} from '../m-calendar/calendar.uts'
 	import MCalendar from '../m-calendar/m-calendar.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 是否显示弹出层（v-model:show） */

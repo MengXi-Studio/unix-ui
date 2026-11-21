@@ -674,3 +674,54 @@
   2. wechatide skill 打开产物目录 → `get_simulator_console --command 'grep -iE "loadFontFace|invalid url|m-icon|error"'` 返回空 + `simulator_screenshot` 看到图标字形正常，即为通过
 - **坑（运行才知道）**：HBuilderX 产物 `project.config.json` 的 `appid` 是 `touristappid`，MCP `open_project_window` 会直接报 `APPID_ERROR`（游客模式不被接受）；需先 `get_user_appids` 拿一个有权限的测试号 AppID，临时写进**产物目录**的 `project.config.json`（unpackage 不入 git，无需还原），再开窗
 - **教训**：① 字体 / 资源加载类问题编译期不报错，必须进模拟器看 console；② 组件内任何「全局只做一次」的状态都要用模块级文件承载，不能写在 setup 里；③ 小程序端 `global: true` 的副作用是全端生效，天然适合单次加载
+
+### #107 小程序插槽三连坑：`$slots` 空数组恒真、`<slot>` fallback 编译为 `wx:if`、弹层插槽声明是静态的
+- **背景**：issue #24——微信小程序端 picker-popup 系列未传插槽时顶部工具栏空白、无法确认提交；Web / App 正常
+- **坑一（空数组）**：小程序端未传具名插槽时 `$slots['x']` 是空数组（个别情况空对象），不是 `null`，因此 `$slots.x != null` 恒为真。任何「未传就不转发」的守卫都不能用 `!= null`
+- **坑二（fallback 编译）**：`<slot name="x">默认内容</slot>` 在小程序端编译为 `<block wx:if="{{$slots.x}}"><slot name="x"/></block><block wx:else>默认内容</block>`；空数组 truthy → fallback 永不渲染。默认内容必须自己写成 `<template v-if="slotHasContent($slots['x'])"><slot name="x"/></template><view v-else>默认内容</view>`
+- **坑三（静态声明）**：父组件对子组件的插槽声明是**编译期静态**的——即使 `<template v-if="..." #toolbar>` 运行时为 false，产物仍生成 `u-s="{{['toolbar','title',...]}}"`，子组件 `$slots` 始终有对应 key。因此只修弹层转发不够，叶子面板层也必须改用显式判断
+- **统一解法**：新增 `utils/slot.uts#slotHasContent(slot)`（MP 取 length > 0，非 MP 非 null 即 true），弹层 89 处模板守卫 + 23 处脚本判断统一替换；带默认内容的面板插槽全部改显式 `v-if / v-else`
+- **验证链路（本次实测有效）**：
+  1. `cli publish --platform mp-weixin` → 产物 `m-picker.wxml` 确认 `wx:if="{{a}}"><slot name="toolbar"` + `wx:elif="{{b}}" class="m-picker__toolbar"`；`utils/slot.js` 为 `length>0` 判定
+  2. 产物 `project.config.json` 的 `appid` 改为测试号；wechatide `simulator_refresh` → `automation_navigate` 进演示页
+  3. 自定义组件无法用 automation selector 命中（`m-button`、`.m-button` 均 `no such element`），改用 `automation_evaluate`：`const p=getCurrentPages().pop(); p[p.data.c]({type:"tap"})` 触发页面按钮（`p.data.c` 是 WXML 里 `bindclick="{{c}}"` 编译出的方法名，形如 `e0_51`）
+  4. 给产物 WXML 临时注入 `id`（页面 `#t-popup` / 弹层 `#t-panel` / 面板 `#t-picker`），用 `p.selectComponent('#t-popup').selectComponent('#t-panel')...` 逐层取实例；读 `picker.data.a/b/c/f/h` 即插槽判定值；`picker.createSelectorQuery().in(picker).select('.m-picker__toolbar').boundingClientRect` 非 null 即已渲染
+  5. 触发按钮：`picker[picker.data.j]({type:"tap"})`（WXML 中 `bindtap="{{j}}"` 的编译方法名），随后截图看事件日志 / 弹层关闭
+- **注意**：`automation_evaluate` 里用 `setTimeout` 等待会超时；`select(...).text()` 不存在（用 `.fields({text:true})`）；直接调用事件方法可能触发 `[Component] recursive update detected` 警告，重载页面即可恢复
+- **教训**：① 跨端插槽判断一律走 `slotHasContent`，禁止裸 `!= null`；② 组件默认内容不要依赖 `<slot>` fallback，显式分支在小程序端才可控；③ 排查小程序插槽问题必须看产物 WXML/WXSS/JS，源码层的直觉不可靠
+
+
+### #108 小程序弹层内滚轮列定位：隐藏态 scroll-top 无效 + 镜像提前写入 + nextTick 合帧三重叠加
+- **背景**：issue #25——`mp-weixin` 端 `m-date-picker-popup` / `m-time-picker-popup` 首次打开滚轮停在首项（`1900-01-01` / `00:00`），不定位到传入的 `value`；关闭复开仍错；点确认会把首项回写
+- **根因一（镜像提前写入）**：`requestScroll()` 在写 `scroll-top` 的同时把内部镜像 `actualTop` 写成目标值。弹层首帧挂载时面板处在隐藏态、滚动视口高度为 0，`scroll-top` 被忽略且不产生 `@scroll`——属性值已是目标值、镜像也已是目标值，但真实位置仍是 0，形成「假到位」
+- **根因二（同值强制失效）**：同值定位靠「先写 `target + 0.5` 再 `nextTick` 归位」，而小程序端相邻两次 setData 会合帧渲染，同帧内先加后减等效于没有变化（与 m-overlay 淡入、m-popup 滑入同源的时序坑，见 #43 / m-popup 注释）
+- **根因三（跳过判断）**：上述假到位之后，`resetSelection()` 再次请求定位时被「镜像已等于目标值」的判断跳过，弹层复开也无法自愈——这也是报告者看到「重新打开仍错」的原因
+- **修法**：① 镜像只由 `@scroll` 回灌的 `e.detail.scrollTop` 更新，程序化定位不再回写；② 同值强制先写 `target + 1`、50ms 后归位 `target`（两次 setData 落在不同渲染帧，1px 偏移不可感知）；③ `requestScroll` 内挂 120ms 校验，镜像仍未到位且期间无用户滚动则强制重发一次（只重试一层，避免隐藏态轮询）；④ `m-picker` 以 `positionToken` 令牌下发给各列，新增 `reposition()` 并在弹层 `open`（`reset-on-open` 复位之后）调用——此时滚动视口才真正可滚动
+- **验证链路（本次实测有效）**：
+  1. `cli publish --platform mp-weixin` 编译成功；产物 `project.config.json` 的 appid 改测试号后用 wechatide 打开
+  2. `automation_navigate --action navigateTo --url "/pages-sub/datetime/date-picker-popup/date-picker-popup" --wait 2`
+  3. 自定义组件无法用 selector 命中，读页面 WXML 的 `bindclick="{{c}}"`，再用 `automation_evaluate` 执行 `p[p.data.c]({type:"tap"})` 触发按钮；`simulator_screenshot` 目视三列居中 `2026 / 11 / 21`
+  4. 关闭弹层：同法调用 `p.data.m`（`v-model:show` 的 `updateShow` 绑定）——编译产物是 `m: e.o(o=>n.value=o)`，**直接传值** `p[k](false)` 才生效（传 `{detail:false}` 无效），随后再点按钮复开，截图仍居中
+  5. 受控值验证：`m-time-picker-popup` 演示页第二个按钮（`bindclick="{{n}}"`）打开 09:30，截图三列居中 `09 / 30 / 00`
+- **坑**：`automation_page_action --action callMethod` 对编译期生成的事件方法名无效（`this.e0_31 is not a function`）；`--args` 已被 CLI 废弃（改 `--args-file`）。事件方法只能在 `automation_evaluate` 里通过 `p[p.data.xxx](...)` 调用
+- **教训**：① 程序化滚动的位置镜像**只能**由真实 scroll 事件回灌，任何「写属性即当作已生效」的优化都会在隐藏态/零高度容器里制造假状态；② 小程序端凡是「两次 setData 构成一次视觉变化」的写法（偏移归位、两段动画）都必须用定时器分帧，不能依赖 `nextTick`；③ 弹层内的滚轮/列表定位要挂在「打开且布局可用」的时机上（本次用 `open` + 校验重发），不能只靠子组件 `onMounted`
+
+### #109 小程序默认插槽不能用「数组长度」判定：内容不进入 `$slots.default` 数组
+- **背景**：复选框选中态只剩实心蓝圆 / 蓝方块、没有白勾（用户截图反馈）；顺带发现 `m-loading` 文案、`m-toast` 消息、`m-badge` 包裹子元素、`m-radio` 独立标签、`m-number-keyboard-popup` 内容区在 mp-weixin 端全部不渲染
+- **根因**：`slotHasContent()`（#107 为解决 #24 引入）按「数组长度 > 0」判定。该口径只对**具名插槽**成立——具名插槽的内容是父级 `<template #x>` 生成的插槽 vnode，会进入数组。**默认插槽**（直接写在组件标签之间的匿名子节点）在小程序端由匿名 `<slot/>` 直接渲染，不进入 `$slots.default` 的元素：父级传了内容时它是**空数组**（length=0），未传时该 key 根本不存在。长度判定恒为 false → 组件把「已传」误判成「未传」；而组件内默认内容都写在 `<slot>` fallback 里，fallback 被编译成 `wx:else`，于是勾选图标、文案、包裹内容整体消失
+- **同一 bug 的双向表现**：#24 是「空数组 truthy → 误判为已传」（具名插槽），本次是「空数组 length=0 → 误判为未传」（默认插槽）。**同一个 `$slots` 值，两种判据，两个方向都错**
+- **修法**：默认插槽一律用 `slots['default'] != null`（有内容时空数组非 null；无内容时 key 不存在为 null）；具名插槽继续用 `slotHasContent` 的长度判定。`utils/slot.uts` 注释补充口径区分，避免下次再混用
+- **验证方法（本次实测有效）**：
+  1. 用 `u-s` 属性确认父级是否真的传了默认插槽：产物页面 WXML 中带 `u-s="{{['d']}}"` 的组件标签才是传了匿名子节点，自闭合标签没有该属性——这是编译期的确切信号，可用来核对运行时行为
+  2. 临时把 `unpackage/dist` 的组件 JS 里 `slotHasContent(n.default)` 改成 `null!=n.default` 后 `simulator_refresh`，先验证假设再改源码（改产物只为验证，正式改动仍落在 core）
+  3. 观察「有内容 / 无内容」两类实例：`m-loading` 有文案卡片应出现「加载中…」，无文案卡片布局不得出现多余空白（证明「无内容 → key 缺失 → false」成立）
+  4. 逐页截图复核：checkbox（圆 / 方 / 禁用选中 / indeterminate）、radio（独立项）、badge（包裹模式子元素）、number-keyboard-popup（键盘上方内容区）、loading（文案 + 无文案）
+- **教训**：① 跨端插槽判定必须按「插槽种类」区分口径，具名插槽看长度、默认插槽看 key 存在性，不能用一个工具函数打天下；② 默认内容尽量写成显式 `v-if / v-else` 分支而不是 `<slot>` fallback——fallback 在小程序端的可达性完全依赖 `$slots` 判定，一旦判定错就是整块内容静默消失，而显式分支至少是可读、可测的；③ 选中态、文案这类「缺失即不可见」的问题最容易在联调里被忽略，组件级演示页应同时覆盖「传内容 / 不传内容」两种形态
+
+### #110 小程序自定义组件样式隔离：父组件 wxss 无法给 `m-icon` 内部节点着色（`custom-class` 静默失效）
+- **背景**：复选框白勾恢复渲染后仍是**黑色**（用户截图反馈）。`.m-checkbox__check { color: #fff; font-size: 12px }` 写在 `m-checkbox` 的样式里，类名通过 `<m-icon custom-class="m-checkbox__check">` 挂在子组件内部节点上
+- **根因**：小程序自定义组件默认样式隔离为 `isolated`（产物 `m-checkbox.json` 未设置 `styleIsolation`），父组件 wxss 的类选择器**无法命中**子组件内部节点。`custom-class` 只是把类名挂上去，样式仍旧在父组件的样式作用域里，于是 `color / font-size` 全部被忽略，勾取图标回落到默认黑色。Web / App 端没有该隔离，所以此前只在小程序端暴露
+- **诊断方法**：编译产物 wxss 里能看到规则（`m-checkbox__check{color:#fff;font-size:12px}`），但渲染不生效 → 优先怀疑跨组件样式作用域，而不是 SCSS 变量或选择器优先级
+- **修法**：颜色 / 字号落到**本组件自己的容器**（`.m-checkbox__icon-wrap--checked`）上，靠 CSS 继承穿透组件边界下发——继承按渲染树计算，不受样式隔离影响；`custom-class` 只保留给定位类（如弹层关闭图标的 absolute 定位）或干脆不再依赖
+- **顺带调整**：`m-checkbox` 族 `shape` 默认值 `round → square`（产品决策，非缺陷），演示页与文档默认值列同步；`shape="round"` 仍可覆盖
+- **教训**：① 小程序端凡是「父组件样式 + 子组件节点」的组合都必须假定不生效，跨组件着色/字号一律用「容器继承」或子组件自身 prop（`m-icon` 的 `color` / `size`）实现；② 组件演示页要同时覆盖「默认形状 / 显式覆盖」两种形态，默认值变更才能被看到；③ 同一类视觉问题先看编译产物（wxss / wxml / json 隔离配置），比盲改源码快

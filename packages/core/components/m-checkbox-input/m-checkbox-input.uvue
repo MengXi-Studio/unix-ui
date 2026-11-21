@@ -127,7 +127,7 @@
 		title: '',
 		max: 0,
 		direction: 'vertical',
-		shape: 'round',
+		shape: 'square',
 		iconSize: '',
 		checkedColor: '',
 		labelPosition: 'right',

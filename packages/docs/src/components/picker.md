@@ -140,6 +140,7 @@ picker.value?.$callMethod('resetSelection')
 | --- | --- |
 | confirm | 程序化确认 |
 | resetSelection | 重置为外部 value |
+| reposition | 按当前选中下标重新定位滚轮（弹层 `open` 后布局可用时由弹层自动调用） |
 | getSelectedValue | 读取当前选中值 |
 | getSelectedIndexes | 读取各列选中下标 |
 

@@ -152,6 +152,7 @@ added: 0.6.0
 | --- | --- | --- |
 | confirm() | 程序化确认 | — |
 | resetSelection() | 复位为 value / 今天 | — |
+| reposition() | 按当前选中值重新定位滚轮（弹层 `open` 后布局可用时由弹层自动调用） | — |
 | getSelectedDate() | 读取当前公历日期 | `Date` |
 | getSelectedLunarText() | 读取当前农历文案（如 2026年六月十五） | `string` |
 

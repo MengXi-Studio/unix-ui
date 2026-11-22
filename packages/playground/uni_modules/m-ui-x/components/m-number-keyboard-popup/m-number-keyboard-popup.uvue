@@ -114,7 +114,7 @@
 		/** 右侧栏关闭键文字（仅 custom） */
 		closeButtonText?: string
 		/** 按键禁用回调 */
-		disabledKey?: ((key: string) => boolean) | null
+		disabledKey?: ((key: string) => boolean)
 		/** 工具条标题（空则不显示文字） */
 		title?: string
 		/** 是否显示取消 / 完成工具条 */

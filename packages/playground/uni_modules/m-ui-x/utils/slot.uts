@@ -48,19 +48,20 @@ export function slotHasContent(slot: any | null): boolean {
  * 面板优先采用该标记渲染默认内容，避免默认工具栏 / 标题被空插槽吞掉。
  *
  * @param slot 本组件 useSlots() 中对应插槽的值
- * @param presence 父级下发的存在性标记（英文逗号分隔的插槽名）；null 表示未下发，回退本组件探测
+ * @param presence 父级下发的存在性标记（英文逗号分隔的插槽名）；`'*'` 表示未下发，回退本组件探测
  * @param name 插槽名
  * @returns 该具名插槽是否应视为已传入
  */
-export function slotActive(slot: any | null, presence: string | null, name: string): boolean {
-	if (presence != null) {
-		const names = presence.split(',')
-		for (let i = 0; i < names.length; i++) {
-			if (names[i] == name) {
-				return true
-			}
-		}
-		return false
+export function slotActive(slot: any | null, presence: string, name: string): boolean {
+	// 未下发标记：面板被独立使用（没有组合组件转发）时按自身插槽值探测
+	if (presence == '*') {
+		return slotHasContent(slot)
 	}
-	return slotHasContent(slot)
+	const names = presence.split(',')
+	for (let i = 0; i < names.length; i++) {
+		if (names[i] == name) {
+			return true
+		}
+	}
+	return false
 }

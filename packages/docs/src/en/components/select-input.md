@@ -130,7 +130,7 @@ The `option` / `bottom` slots are forwarded to the inner panel:
 | filterable | Whether to show the filter box | boolean | `false` |
 | filter-placeholder | Filter box placeholder | string | `请输入关键词` |
 | filter-value | Filter value (`v-model:filter-value`) | string | `''` |
-| filter-method | Remote filter callback; disables local filtering when present | (query: string) => void \| null | `null` |
+| filter-method | Remote filter callback; disables local filtering when present | (query: string) => void | - |
 | empty-text | Empty list text | string | `暂无选项` |
 | confirm-on-select | Whether to close the popup after selection | boolean | `true` |
 | map-label | Label mapping (`value → text`, fallback for remote data) | UTSJSONObject \| null | `null` |

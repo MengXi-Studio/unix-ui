@@ -105,7 +105,7 @@ Whole-row toggling: place m-radio in the m-cell `value` slot and write the group
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
-| value | Currently selected key (v-model:value; null = none) | RadioValue \| null | `null` |
+| value | Currently selected key (v-model:value; null = none) | RadioValue | `null` |
 | disabled | Disable all radios | boolean | `false` |
 | readonly | Make all radios readonly | boolean | `false` |
 | direction | Layout direction: `vertical` / `horizontal` | RadioDirection | `vertical` |

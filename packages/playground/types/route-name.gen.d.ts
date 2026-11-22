@@ -102,6 +102,8 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		search: 'pages-sub/form/search/search'
 		/** 分段控制器 Segmented */
 		segmented: 'pages-sub/form/segmented/segmented'
+		/** 签名 Signature */
+		signature: 'pages-sub/form/signature/signature'
 		/** 紧凑布局 Compact */
 		compact: 'pages-sub/layouts/compact/compact'
 		/** 分割线 Divider */

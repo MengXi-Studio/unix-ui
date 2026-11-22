@@ -247,6 +247,11 @@ export const routes: RouteConfig[] = [
 		meta: { title: '分段控制器 Segmented' },
 	},
 	{
+		path: 'pages-sub/form/signature/signature',
+		name: 'signature',
+		meta: { title: '签名 Signature' },
+	},
+	{
 		path: 'pages-sub/layouts/compact/compact',
 		name: 'compact',
 		meta: { title: '紧凑布局 Compact' },

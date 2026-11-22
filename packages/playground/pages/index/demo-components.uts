@@ -234,6 +234,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '分段控制器',
 				enName: 'Segmented',
 				desc: '等分选项的单选控件，支持三档尺寸、胶囊形状、纵向排列、滑块动画、自定义内容插槽、溢出省略与禁用只读。'
+			},
+			{
+				name: 'signature',
+				zhName: '签名',
+				enName: 'Signature',
+				desc: 'Canvas 手写签名板，支持自定义笔触 / 线宽 / 背景、撤销与历史深度、清空确认、实例方法调用与全屏签名。'
 			}
 		]
 	},

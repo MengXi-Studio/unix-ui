@@ -105,7 +105,7 @@ added: 0.7.0
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| value | 当前选中项标识（v-model:value；null 未选） | RadioValue \| null | `null` |
+| value | 当前选中项标识（v-model:value；null 未选） | RadioValue | `null` |
 | disabled | 是否禁用全部单选框 | boolean | `false` |
 | readonly | 是否只读全部单选框 | boolean | `false` |
 | direction | 排列方向：`vertical` / `horizontal` | RadioDirection | `vertical` |

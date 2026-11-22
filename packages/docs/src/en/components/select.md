@@ -165,7 +165,7 @@ const backToTop = () => {
 | filterable | Whether to show the filter box | boolean | `false` |
 | filter-placeholder | Filter box placeholder | string | `请输入关键词` |
 | filter-value | Filter value (`v-model:filter-value`) | string | `''` |
-| filter-method | Remote filter callback; disables local filtering when present | (query: string) => void \| null | `null` |
+| filter-method | Remote filter callback; disables local filtering when present | (query: string) => void | - |
 | disabled | Disable the whole panel | boolean | `false` |
 | empty-text | Empty list text | string | `暂无选项` |
 | custom-class / custom-style | Pass-through classes / styles on the root node | - | - |

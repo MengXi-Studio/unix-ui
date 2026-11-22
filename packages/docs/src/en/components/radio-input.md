@@ -53,7 +53,7 @@ Passes through all `m-radio-popup` props (except show), plus:
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
-| value | Currently selected key (v-model:value; null = none) | RadioValue \| null | `null` |
+| value | Currently selected key (v-model:value; null = none) | RadioValue | `null` |
 | options | Option array (label / value / disabled fields) | UTSJSONObject[] | `null` |
 | placeholder | Placeholder text | string | `请选择` |
 | disabled | Disabled (trigger layer not rendered, popup cannot open) | boolean | `false` |

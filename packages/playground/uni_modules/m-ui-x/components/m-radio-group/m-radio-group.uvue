@@ -22,7 +22,7 @@
 
 	type Props = {
 		/** 当前选中项标识（v-model:value；null 未选） */
-		value?: RadioValue | null
+		value?: RadioValue
 		/** 是否禁用全部单选框 */
 		disabled?: boolean
 		/** 是否只读全部单选框（视觉正常但不可切换） */

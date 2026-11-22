@@ -777,3 +777,24 @@
 - 覆盖范围：picker / date-picker / time-picker / lunar-picker / date-range / time-range / calendar / cascader / number-keyboard / password-input / select 的弹层与面板两侧
 - 验证：mp-weixin 编译通过；`picker-popup` 默认态显示「取消 / 选择产线 / 确认」且滚轮可滚动，传 `#confirm` + `#columns-top` 时分别显示「完成」与提示（两个方向都对）；`calendar-popup` 标题「日期选择」+ 副标题 + 网格 + 确认按钮正常；`tabs` 的 `nav-left/right` 仍正常（#27 未回归）；console 无报错
 - **教训**：小程序端「组合组件向下转发插槽」不能靠子组件再探测，必须在转发方把真实存在性显式带下去；任何新增弹层/面板组合都要同时接上这条标记链
+
+### #114 m-signature（Canvas）三处跨端坑：@ready 不可靠、载荷必须 UTSJSONObject、测量要按端分流
+- 现象一：Web 端 `m-signature` 画布始终不初始化，一直显示兜底提示「当前环境暂不支持手写签名」
+- **原因 / 修法**：Web 下 canvas 的 `@ready` 触发时机不可靠（实测不触发）。改为 `onMounted + nextTick → measureCanvas()` 主动测量；`@ready` 仅作为补充触发，另在 `visible` / `fullScreen` 变化时重新测量
+- 现象二：Web 上点确认后页面报 `data.getString is not a function`
+- **原因 / 修法**：emit 载荷用 `type SignatureSubmitData` 时，Web 端传到页面是普通 JS 对象，不是 UTSJSONObject。组件内改为 `const data = { image } as UTSJSONObject` 再 emit，页面侧 `(data as UTSJSONObject).getString('image')` 才能各端一致。**跨组件事件载荷一律用 UTSJSONObject，不要用类型别名对象**
+- 测量矩阵（复用 m-rate / m-tabs 的既有模式）：Web 用组件 ref 的 `getBoundingClientRect()`；App 用 `getBoundingClientRectAsync()`；小程序用 `uni.createSelectorQuery().in(proxy).select('#id').boundingClientRect().exec((ret: Array<any>) => ...)`（`uni.getElementById` 在小程序端不可用）
+- 画布上下文统一 `uni.createCanvasContextAsync` + `getContext('2d')`，导出 `CanvasContext.toDataURL()`（无参数，不能指定 png/jpeg 与质量）
+- 触屏坐标：`UniTouch` 只有 `clientX/clientY`（视口坐标），需减去 `boundingClientRect` 的 left/top；桌面浏览器鼠标拖拽不触发 touch 事件，Web 验收要用模拟触摸
+- 验证：Web 绘制 / 撤销禁用态 / 确认回显 / 全屏打开与取消均通过；mp-weixin 编译成功且签名页画布与按钮渲染正常；文档构建通过
+- **补丁（线条发飘）**：实测反馈书写时线条与手指错位。根因是画布视口偏移只在挂载时测量一次，页面滚动后 `rect.top` 变化而缓存未更新，`clientY - 缓存 top` 整体偏移。修法：**每次 `touchstart` 重新测量偏移**（Web 同步矩形 / App 异步矩形 / 小程序 SelectorQuery），异步平台在回调返回前的触摸点先存入 `pendingPoints`、回调后统一换算补画；同时 Web 画布加 `touch-action: none` 阻止书写过程中页面滚动。复测：滚动到视口下方画布再绘制，笔画中心与触点偏移一致（60 vs 60），页面 scrollTop 不变
+- **补丁（帧合并 + 二次曲线平滑）**：为避免逐点 `stroke()` 的渲染延迟与折线感，`touchmove` 只入队点，用 **`CanvasContext.requestAnimationFrame` / `cancelAnimationFrame`**（Web 4.25 / 微信 4.41 / Android·iOS 4.25 / 鸿蒙 4.61 全端可用，且与画布生命周期同源，优于 `setTimeout`）按帧合并绘制；相邻点中点作为段端点、原始点作为控制点画 `quadraticCurveTo`，用 `drawnIndex/lastMidX/lastMidY` 增量续画（不要每帧整笔重绘，长签名会 O(n²)），末点用直线预览避免笔画落后手指半个线段；收笔、撤销、清空时都要 `cancelAnimationFrame` 并补画尾段。复测：Web 21 点弧线连续到达末点（drawnIndex=20、终点一致），撤销清空、确认导出正常，console 无报错；mp-weixin 编译通过
+
+### #115 可空 prop 会触发 Web 编译 TS2769（`type: [String, null]`），只能靠去掉 `| null` 解决
+- 现象：Web 开发编译出现大量 `warning: ... error TS2769: No overload matches this call`，生成代码形如 `slotPresence: { type: [String, null], required: false, default: null }`
+- **原因**：uni-app x 把 prop 类型里的 `null` 编译进运行时构造器数组（`[String, null]`、`[Function, null]`、`[String, Number, null]`、`[Date, Array, String, null]`），而 Vue 的 `PropConstructor` 不接受 `null`
+- **修法**：从 prop **声明类型**里删掉 `| null`（`value?: RadioValue`、`disabledKey?: ((key: string) => boolean)`、`filterMethod?: ((query: string) => void)`、`value?: Date | Date[] | string | string[]`、`rightIcon?: string`）。运行时 `withDefaults` 里保留 `null` / 不传即可：Vue 对 `null` 会跳过类型校验，事件回调仍可回传 `null`
+- 需要区分「未下发」的内部标记不要用 `null`，改用哨兵（`slotPresence` 用 `'*'`；**不能用空串**，空串需要表达「已下发但一个插槽都没传」）
+- **无效尝试**：在 `withDefaults` 的默认值行上加 `// @ts-ignore`、或在 script 顶部加 `// @ts-nocheck` 均无法稳定抑制（告警定位到编译器生成的 props 行，源码注释不跟随映射）；不要用这类抑制手段
+- 附带清理：`m-search` 的 `rightIcon` 由 `IconName | null` 改为 `string`（`''` 不显示）；可选函数 prop 直接不写默认值
+- 验证：`mp-weixin --compile true` 全量编译 `TS2769 = 0`；radio / search / number-keyboard / date-strip 演示页回归通过；文档 API 类型列已同步

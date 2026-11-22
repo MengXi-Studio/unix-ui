@@ -111,8 +111,8 @@
 		actionType?: SearchActionType
 		/** 框内左侧图标 */
 		leftIcon?: IconName
-		/** 框内右侧图标（null 不显示） */
-		rightIcon?: IconName | null
+		/** 框内右侧图标（空不显示） */
+		rightIcon?: string
 		/** 输入文字对齐方式 */
 		inputAlign?: SearchAlign
 		/** 是否禁用 */
@@ -124,7 +124,7 @@
 		/** 错误提示文案（空不展示） */
 		errorMessage?: string
 		/** 输入内容格式化函数（透传 m-input） */
-		formatter?: ((value: string) => string) | null
+		formatter?: ((value: string) => string)
 		/** 自定义根节点类名 */
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */
@@ -146,13 +146,12 @@
 		actionText: '取消',
 		actionType: 'cancel',
 		leftIcon: 'search',
-		rightIcon: null,
+		rightIcon: '',
 		inputAlign: 'left',
 		disabled: false,
 		readonly: false,
 		error: false,
 		errorMessage: '',
-		formatter: null,
 		customClass: '',
 		customStyle: ''
 	})
@@ -192,12 +191,12 @@
 	const hasLeftSlot = computed<boolean>(() => slotHasContent(slots['left']))
 
 	/** 是否显示框内右图标（prop 或插槽） */
-	const hasRightIcon = computed<boolean>(() => props.rightIcon != null || slotHasContent(slots['right-icon']))
+	const hasRightIcon = computed<boolean>(() => props.rightIcon != '' || slotHasContent(slots['right-icon']))
 
 	/** 右图标字形名（未传时回落 search，仅占位，实际渲染由 hasRightIcon 控制） */
 	const rightIconName = computed<IconName>(() => {
 		const r = props.rightIcon
-		return r == null ? 'search' : r
+		return r == '' ? 'search' : r as IconName
 	})
 
 	/** 根节点类名：自定义类名拼接 */

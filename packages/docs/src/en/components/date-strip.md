@@ -86,7 +86,7 @@ The `item` slot replaces the entire item content; `top-info` / `bottom-info` rep
 | Name | Description | Type | Default |
 | --- | --- | --- | --- |
 | type | Selection type: `single` `multiple` `range` | CalendarType | `single` |
-| value | Selected value (`v-model:value`) | Date \| Date[] \| string \| string[] \| null | `null` |
+| value | Selected value (`v-model:value`; omit for none) | Date \| Date[] \| string \| string[] | `null` |
 | value-format | Value format (e.g. `YYYY-MM-DD`); strings are bound when non-empty | string | - |
 | min-date | Minimum selectable date | Date \| null | `null` (today - 7 days) |
 | max-date | Maximum selectable date | Date \| null | `null` (today + 7 days) |

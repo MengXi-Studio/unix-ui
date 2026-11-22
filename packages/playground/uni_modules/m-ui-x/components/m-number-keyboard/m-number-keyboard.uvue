@@ -110,13 +110,13 @@
 		/** 右侧栏关闭键文字（仅 custom；空则不渲染关闭键） */
 		closeButtonText?: string
 		/** 按键禁用回调：返回 true 的键灰显且不派发事件 */
-		disabledKey?: ((key: string) => boolean) | null
+		disabledKey?: ((key: string) => boolean)
 		/** 自定义根节点类名 */
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */
 		customStyle?: string
-		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；null 表示未下发，由本组件自行探测（issue #29） */
-		slotPresence?: string | null
+		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；'*' 表示未下发，由本组件自行探测（issue #29） */
+		slotPresence?: string
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
@@ -128,7 +128,7 @@
 		closeButtonText: '',
 		customClass: '',
 		customStyle: '',
-		slotPresence: null
+		slotPresence: '*'
 	})
 
 	/** extra-key 具名插槽是否生效（父级弹层下发的存在性标记优先，issue #29） */

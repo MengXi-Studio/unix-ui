@@ -144,13 +144,13 @@ searchRef.value?.$callMethod('focus')
 | action-text | Right button text | string | `取消` |
 | action-type | Right button semantics, one of `cancel` `search` | string | `cancel` |
 | left-icon | Inner left icon (m-icon glyph name) | string | `search` |
-| right-icon | Inner right icon, `null` hides it | string \| null | `null` |
+| right-icon | Inner right icon, empty string hides it | string | `''` |
 | input-align | Text alignment, one of `left` `center` `right` | string | `left` |
 | disabled | Whether disabled | boolean | `false` |
 | readonly | Whether readonly | boolean | `false` |
 | error | Error state (red input border) | boolean | `false` |
 | error-message | Error hint text, hidden when empty | string | `''` |
-| formatter | Value formatter (passed to m-input) | (value: string) => string | `null` |
+| formatter | Value formatter (passed to m-input) | (value: string) => string | - |
 | custom-class / custom-style | Pass-through classes / styles on the root node | - | - |
 
 ### Events

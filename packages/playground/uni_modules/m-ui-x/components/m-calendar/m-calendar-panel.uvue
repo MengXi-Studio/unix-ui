@@ -160,13 +160,13 @@
 	type Props = {
 		/** 面板配置（宿主计算后整体下发；null 时按空配置渲染，避免首帧崩溃） */
 		panel?: CalendarPanelConfig
-		/** 内部使用：宿主已确认传入的具名插槽名（英文逗号分隔）；null 表示未下发，由本组件自行探测（issue #29） */
-		slotPresence?: string | null
+		/** 内部使用：宿主已确认传入的具名插槽名（英文逗号分隔）；'*' 表示未下发，由本组件自行探测（issue #29） */
+		slotPresence?: string
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
 		panel: null,
-		slotPresence: null
+		slotPresence: '*'
 	})
 
 	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */

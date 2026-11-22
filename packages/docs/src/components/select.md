@@ -165,7 +165,7 @@ const backToTop = () => {
 | filterable | 是否显示筛选框 | boolean | `false` |
 | filter-placeholder | 筛选框占位文案 | string | `请输入关键词` |
 | filter-value | 筛选值（`v-model:filter-value`） | string | `''` |
-| filter-method | 远程筛选回调；存在时关闭本地过滤 | (query: string) => void \| null | `null` |
+| filter-method | 远程筛选回调；存在时关闭本地过滤 | (query: string) => void | - |
 | disabled | 是否禁用整个面板 | boolean | `false` |
 | empty-text | 空列表文案 | string | `暂无选项` |
 | custom-class / custom-style | 根节点样式直达 | - | - |

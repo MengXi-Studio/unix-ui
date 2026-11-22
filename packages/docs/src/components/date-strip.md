@@ -86,7 +86,7 @@ added: 0.5.0
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | type | 选择类型，可选值 `single` `multiple` `range` | CalendarType | `single` |
-| value | 选中值（`v-model:value`） | Date \| Date[] \| string \| string[] \| null | `null` |
+| value | 选中值（`v-model:value`；不传即未选） | Date \| Date[] \| string \| string[] | `null` |
 | value-format | 值格式（如 `YYYY-MM-DD`）；非空时绑定值为字符串 | string | - |
 | min-date | 最小可选日 | Date \| null | `null`（今天 - 7 天） |
 | max-date | 最大可选日 | Date \| null | `null`（今天 + 7 天） |

@@ -53,7 +53,7 @@ added: 0.7.0
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| value | 当前选中项标识（v-model:value；null 未选） | RadioValue \| null | `null` |
+| value | 当前选中项标识（v-model:value；null 未选） | RadioValue | `null` |
 | options | 选项数组（label / value / disabled 字段） | UTSJSONObject[] | `null` |
 | placeholder | 占位符 | string | `请选择` |
 | disabled | 是否禁用（触发层不渲染，无法打开弹层） | boolean | `false` |

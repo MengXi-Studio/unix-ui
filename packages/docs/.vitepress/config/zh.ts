@@ -130,7 +130,8 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'RadioPopup 单选弹出框', link: '/components/radio-popup' },
 						{ text: 'Rate 评分', link: '/components/rate' },
 						{ text: 'Search 搜索', link: '/components/search' },
-						{ text: 'Segmented 分段控制器', link: '/components/segmented' }
+						{ text: 'Segmented 分段控制器', link: '/components/segmented' },
+						{ text: 'Signature 签名', link: '/components/signature' }
 					]
 				},
 				{

@@ -30,9 +30,10 @@
 					:class="itemClass(item)"
 					@click="onItemClick(item)"
 				>
-					<slot name="option" :option="item.raw" :index="ii" :selected="isSelected(item)" :disabled="props.disabled || item.disabled">
-						<text :class="labelClass(item)">{{ item.label }}</text>
-					</slot>
+					<template v-if="hasOptionSlot">
+						<slot name="option" :option="item.raw" :index="ii" :selected="isSelected(item)" :disabled="props.disabled || item.disabled"></slot>
+					</template>
+					<text v-else :class="labelClass(item)">{{ item.label }}</text>
 					<m-icon v-if="isSelected(item)" name="success" custom-class="m-select__check" />
 				</view>
 			</view>
@@ -63,6 +64,7 @@
 	} from '../m-radio-group/radio.uts'
 	import MIcon from '../m-icon/m-icon.uvue'
 	import MSearch from '../m-search/m-search.uvue'
+	import { slotActive } from '../../utils/slot.uts'
 
 	/** 解析后的选项 */
 	type SelectItem = {
@@ -113,6 +115,8 @@
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */
 		customStyle?: string
+		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；null 表示未下发，由本组件自行探测（issue #29） */
+		slotPresence?: string | null
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
@@ -129,8 +133,14 @@
 		disabled: false,
 		emptyText: '暂无选项',
 		customClass: '',
-		customStyle: ''
+		customStyle: '',
+		slotPresence: null
 	})
+
+	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
+	const slots = useSlots()
+	/** option 具名插槽是否生效（父级弹层下发的存在性标记优先，issue #29） */
+	const hasOptionSlot = computed<boolean>(() => slotActive(slots['option'], props.slotPresence, 'option'))
 
 	const emit = defineEmits<{
 		/** 选中值变化（v-model:value；multiple 时为数组） */

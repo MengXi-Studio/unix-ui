@@ -6,42 +6,49 @@
 		<view class="m-calendar__header">
 			<template v-if="cfg.switchMode == 'none'">
 				<view v-if="cfg.showTitle" class="m-calendar__header-title">
-					<slot name="title">
-						<text class="m-calendar__header-title-text">{{ cfg.title }}</text>
-					</slot>
+					<template v-if="hasTitleSlot">
+						<slot name="title"></slot>
+					</template>
+					<text v-else class="m-calendar__header-title-text">{{ cfg.title }}</text>
 				</view>
 				<view v-if="cfg.showSubtitle" class="m-calendar__header-subtitle" @click="onSubtitleClick">
-					<slot name="subtitle">
-						<text class="m-calendar__header-subtitle-text">{{ cfg.subtitle }}</text>
-					</slot>
+					<template v-if="hasSubtitleSlot">
+						<slot name="subtitle"></slot>
+					</template>
+					<text v-else class="m-calendar__header-subtitle-text">{{ cfg.subtitle }}</text>
 				</view>
 			</template>
 			<template v-else>
 				<view class="m-calendar__nav">
 					<view v-if="cfg.switchMode == 'year-month'" class="m-calendar__nav-btn" @click="onNavClick('prev-year')">
-						<slot name="prev-year">
-							<MIcon name="arrow-double-left" custom-class="m-calendar__nav-icon" />
-						</slot>
+						<template v-if="hasPrevYearSlot">
+							<slot name="prev-year"></slot>
+						</template>
+						<MIcon v-else name="arrow-double-left" custom-class="m-calendar__nav-icon" />
 					</view>
 					<view class="m-calendar__nav-btn" @click="onNavClick('prev-month')">
-						<slot name="prev-month">
-							<MIcon name="arrow-left" custom-class="m-calendar__nav-icon" />
-						</slot>
+						<template v-if="hasPrevMonthSlot">
+							<slot name="prev-month"></slot>
+						</template>
+						<MIcon v-else name="arrow-left" custom-class="m-calendar__nav-icon" />
 					</view>
 					<view class="m-calendar__nav-title" @click="onSubtitleClick">
-						<slot name="subtitle">
-							<text class="m-calendar__header-subtitle-text">{{ cfg.subtitle }}</text>
-						</slot>
+						<template v-if="hasSubtitleSlot">
+							<slot name="subtitle"></slot>
+						</template>
+						<text v-else class="m-calendar__header-subtitle-text">{{ cfg.subtitle }}</text>
 					</view>
 					<view class="m-calendar__nav-btn" @click="onNavClick('next-month')">
-						<slot name="next-month">
-							<MIcon name="arrow" custom-class="m-calendar__nav-icon" />
-						</slot>
+						<template v-if="hasNextMonthSlot">
+							<slot name="next-month"></slot>
+						</template>
+						<MIcon v-else name="arrow" custom-class="m-calendar__nav-icon" />
 					</view>
 					<view v-if="cfg.switchMode == 'year-month'" class="m-calendar__nav-btn" @click="onNavClick('next-year')">
-						<slot name="next-year">
-							<MIcon name="arrow-double-right" custom-class="m-calendar__nav-icon" />
-						</slot>
+						<template v-if="hasNextYearSlot">
+							<slot name="next-year"></slot>
+						</template>
+						<MIcon v-else name="arrow-double-right" custom-class="m-calendar__nav-icon" />
 					</view>
 				</view>
 			</template>
@@ -148,15 +155,34 @@
 	import { CalendarPanelConfig, CalendarDayItem, CalendarDayType, CALENDAR_WEEKDAYS, dayTextClass, dayInfoTextClass, getMonthTitle, hexToRgba, isCircularDayType, isEdgeDayType } from './calendar.uts'
 	import { formatDate } from '../../utils/date.uts'
 	import MIcon from '../m-icon/m-icon.uvue'
+	import { slotActive } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 面板配置（宿主计算后整体下发；null 时按空配置渲染，避免首帧崩溃） */
 		panel?: CalendarPanelConfig
+		/** 内部使用：宿主已确认传入的具名插槽名（英文逗号分隔）；null 表示未下发，由本组件自行探测（issue #29） */
+		slotPresence?: string | null
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
-		panel: null
+		panel: null,
+		slotPresence: null
 	})
+
+	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
+	const slots = useSlots()
+	/** next-month 具名插槽是否生效 */
+	const hasNextMonthSlot = computed<boolean>(() => slotActive(slots['next-month'], props.slotPresence, 'next-month'))
+	/** next-year 具名插槽是否生效 */
+	const hasNextYearSlot = computed<boolean>(() => slotActive(slots['next-year'], props.slotPresence, 'next-year'))
+	/** prev-month 具名插槽是否生效 */
+	const hasPrevMonthSlot = computed<boolean>(() => slotActive(slots['prev-month'], props.slotPresence, 'prev-month'))
+	/** prev-year 具名插槽是否生效 */
+	const hasPrevYearSlot = computed<boolean>(() => slotActive(slots['prev-year'], props.slotPresence, 'prev-year'))
+	/** subtitle 具名插槽是否生效 */
+	const hasSubtitleSlot = computed<boolean>(() => slotActive(slots['subtitle'], props.slotPresence, 'subtitle'))
+	/** title 具名插槽是否生效 */
+	const hasTitleSlot = computed<boolean>(() => slotActive(slots['title'], props.slotPresence, 'title'))
 
 	const emit = defineEmits<{
 		/** 日期格点击（含 disabled，由宿主区分处理；placeholder 不上抛） */

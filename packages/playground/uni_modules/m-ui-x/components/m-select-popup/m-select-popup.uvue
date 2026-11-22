@@ -37,6 +37,7 @@
 				:empty-text="props.emptyText"
 				:custom-class="props.customClass"
 				:custom-style="props.customStyle"
+				:slot-presence="slotPresence"
 				@update:value="onSelectValueChange($event)"
 				@change="onSelectChange($event)"
 				@select="onSelect"
@@ -62,6 +63,24 @@
 	import { RadioValue } from '../m-radio-group/radio.uts'
 	import MPopup from '../m-popup/m-popup.uvue'
 	import MSelect from '../m-select/m-select.uvue'
+	import { slotHasContent } from '../../utils/slot.uts'
+	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
+	const slots = useSlots()
+	/** bottom 具名插槽是否有内容 */
+	const hasBottomSlot = computed<boolean>(() => slotHasContent(slots['bottom']))
+	/** option 具名插槽是否有内容 */
+	const hasOptionSlot = computed<boolean>(() => slotHasContent(slots['option']))
+
+	/**
+	 * 已传入的具名插槽名（英文逗号分隔），随 props 下发给面板。
+	 * 小程序端面板上的插槽会被静态声明而恒为 true，面板无法自行探测真实存在性（issue #29）。
+	 */
+	const slotPresence = computed<string>(() => {
+		const names: string[] = []
+		if (hasOptionSlot.value) names.push('option')
+		if (hasBottomSlot.value) names.push('bottom')
+		return names.join(',')
+	})
 
 	/** 弹层方位 */
 	type SelectPopupPosition = 'top' | 'bottom' | 'left' | 'right' | 'center'

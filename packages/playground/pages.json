@@ -318,6 +318,12 @@
 					"style": {
 						"navigationBarTitleText": "签名 Signature"
 					}
+				},
+				{
+					"path": "slider/slider",
+					"style": {
+						"navigationBarTitleText": "滑动条 Slider"
+					}
 				}
 			]
 		},

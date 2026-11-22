@@ -1,0 +1,1030 @@
+<template>
+	<!-- 滑动条：单值 / 双滑块范围选择，支持垂直、反向、值气泡、刻度与自定义滑块插槽。
+	     轨道与滑块位置全部用内联 style 计算，避免动态类名；根节点常驻静态（LESSONS #32） -->
+	<view :class="rootClass" :style="rootStyle">
+		<view
+			:id="trackId"
+			ref="trackRef"
+			:class="trackClass"
+			:style="trackStyle"
+			@touchstart="onTrackTouchStart"
+			@mousemove="onTrackMouseMove"
+			@mouseup="onTrackMouseUp"
+			@mouseleave="onTrackMouseLeave"
+		>
+			<!-- 未激活轨道 -->
+			<view :class="barClass" :style="barStyle"></view>
+			<!-- 激活段 -->
+			<view :class="fillClass" :style="fillStyle"></view>
+			<!-- 刻度（数量过多时只画线不画文字） -->
+			<view
+				v-for="(scale, index) in scales"
+				:key="index"
+				:class="scaleItemClass"
+				:style="scaleStyle(scale.position)"
+			>
+				<view :class="scaleLineClass"></view>
+				<text v-if="showScaleText" :class="scaleTextClass">{{ scale.text }}</text>
+			</view>
+			<!-- 单滑块 -->
+			<view
+				v-if="!props.range"
+				class="m-slider__thumb"
+				:style="thumbWrapStyle(0)"
+				@touchstart.stop="onThumbTouchStart0"
+				@touchmove.stop="onThumbTouchMove0"
+				@touchend.stop="onThumbTouchEnd0"
+				@touchcancel.stop="onThumbTouchEnd0"
+				@mousedown.stop="onThumbMouseDown0"
+			>
+				<view v-if="props.showValue" class="m-slider__value" :class="valuePositionClass">
+					<text class="m-slider__value-text">{{ valueText(0) }}</text>
+				</view>
+				<slot name="button" :value="valueAt(0)" :dragging="draggingIndex == 0">
+					<view class="m-slider__button-inner" :style="buttonInnerStyle"></view>
+				</slot>
+			</view>
+			<!-- 范围：左侧滑块 -->
+			<view
+				v-else
+				class="m-slider__thumb"
+				:style="thumbWrapStyle(0)"
+				@touchstart.stop="onThumbTouchStart0"
+				@touchmove.stop="onThumbTouchMove0"
+				@touchend.stop="onThumbTouchEnd0"
+				@touchcancel.stop="onThumbTouchEnd0"
+				@mousedown.stop="onThumbMouseDown0"
+			>
+				<view v-if="props.showValue" class="m-slider__value" :class="valuePositionClass">
+					<text class="m-slider__value-text">{{ valueText(0) }}</text>
+				</view>
+				<slot name="left-button" :value="valueAt(0)" :dragging="draggingIndex == 0" :drag-index="0">
+					<view class="m-slider__button-inner" :style="buttonInnerStyle"></view>
+				</slot>
+			</view>
+			<!-- 范围：右侧滑块 -->
+			<view
+				v-if="props.range"
+				class="m-slider__thumb"
+				:style="thumbWrapStyle(1)"
+				@touchstart.stop="onThumbTouchStart1"
+				@touchmove.stop="onThumbTouchMove1"
+				@touchend.stop="onThumbTouchEnd1"
+				@touchcancel.stop="onThumbTouchEnd1"
+				@mousedown.stop="onThumbMouseDown1"
+			>
+				<view v-if="props.showValue" class="m-slider__value" :class="valuePositionClass">
+					<text class="m-slider__value-text">{{ valueText(1) }}</text>
+				</view>
+				<slot name="right-button" :value="valueAt(1)" :dragging="draggingIndex == 1" :drag-index="1">
+					<view class="m-slider__button-inner" :style="buttonInnerStyle"></view>
+				</slot>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-slider 滑动条：在给定区间内选择单值或双值范围。
+	 * 交互：点击轨道跳转（范围模式取最近滑块）、拖动滑块实时更新、松手触发 change。
+	 * 平台：拖拽测量按端分流（Web 同步 / 小程序 SelectorQuery / App 异步）。
+	 */
+	/** 对外值类型 */
+	type SliderValue = number | number[]
+
+	/** 刻度项 */
+	type SliderScale = {
+		/** 视觉位置百分比（0-100） */
+		position: number
+		/** 刻度文字 */
+		text: string
+	}
+
+	type Props = {
+		/** 当前值（v-model:value）；范围模式必须是数组 */
+		value?: SliderValue
+		/** 最小值 */
+		min?: number
+		/** 最大值 */
+		max?: number
+		/** 步长 */
+		step?: number
+		/** 双滑块范围模式 */
+		range?: boolean
+		/** 禁用 */
+		disabled?: boolean
+		/** 只读 */
+		readonly?: boolean
+		/** 垂直方向 */
+		vertical?: boolean
+		/** 反转方向 */
+		reverse?: boolean
+		/** 轨道高度 px（0 用主题变量） */
+		barHeight?: number
+		/** 滑块尺寸 px（0 用主题变量） */
+		buttonSize?: number
+		/** 激活色（'' 用主题变量） */
+		activeColor?: string
+		/** 轨道底色（'' 用主题变量） */
+		inactiveColor?: string
+		/** 是否显示值气泡 */
+		showValue?: boolean
+		/** 值气泡方位（默认水平 top / 垂直 right） */
+		valuePosition?: string
+		/** 是否显示刻度 */
+		showScale?: boolean
+		/** 刻度方位（默认水平 bottom / 垂直 left） */
+		scalePosition?: string
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: 0,
+		min: 0,
+		max: 100,
+		step: 1,
+		range: false,
+		disabled: false,
+		readonly: false,
+		vertical: false,
+		reverse: false,
+		barHeight: 0,
+		buttonSize: 0,
+		activeColor: '',
+		inactiveColor: '',
+		showValue: false,
+		valuePosition: '',
+		showScale: false,
+		scalePosition: '',
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 值实时变化（v-model:value） */
+		'update:value': [value: SliderValue]
+		/** 拖动结束且值变化 */
+		change: [value: SliderValue]
+		/** 开始拖动（触摸为 TouchEvent，Web 鼠标为 MouseEvent） */
+		'drag-start': [event: any]
+		/** 结束拖动（触摸为 TouchEvent，Web 鼠标为 MouseEvent） */
+		'drag-end': [event: any]
+	}>()
+
+	/** 组件实例（小程序 SelectorQuery 作用域） */
+	const instance = getCurrentInstance()
+	/** 轨道节点引用 */
+	const trackRef = ref<UniElement | null>(null)
+	/** 轨道节点 id（小程序查询用；选择器在组件作用域内，静态 id 不会串组件） */
+	const trackId = 'm-slider-track'
+	/** 内部值（拖动期间以本值为准） */
+	const values = ref<number[]>([0])
+	/** 正在拖动的滑块下标（-1 未拖动） */
+	const draggingIndex = ref<number>(-1)
+	/** 拖动起点值（判断 change 是否触发） */
+	let dragStartValues: number[] = []
+	/** 轨道矩形缓存 */
+	let trackLeft = 0
+	let trackTop = 0
+	let trackWidth = 0
+	let trackHeight = 0
+
+	/** 轨道高度（0 表示用主题变量，由 class 控制） */
+	const barHeightValue = computed<number>(() => props.barHeight)
+
+	/** 滑块尺寸（0 表示用主题变量，由 class 控制） */
+	const buttonSizeValue = computed<number>(() => props.buttonSize)
+
+	/** 根类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-slider'
+		if (props.vertical) {
+			cls += ' m-slider--vertical'
+		}
+		if (props.disabled) {
+			cls += ' m-slider--disabled'
+		}
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 根内联样式：垂直默认高度 + 按滑块尺寸留出半宽边距（未传尺寸时由 class 控制） */
+	const rootStyle = computed<string>(() => {
+		let style = props.customStyle
+		if (props.vertical && style.indexOf('height') < 0) {
+			style += 'height: 150px;'
+		}
+		const size = buttonSizeValue.value
+		if (size > 0) {
+			const half = (size / 2).toString() + 'px;'
+			if (props.vertical) {
+				style += 'padding-top: ' + half + 'padding-bottom: ' + half
+			} else {
+				style += 'padding-left: ' + half + 'padding-right: ' + half
+			}
+		}
+		return style
+	})
+
+	/** 轨道类名 */
+	const trackClass = computed<string>(() => {
+		return props.vertical ? 'm-slider__track m-slider__track--vertical' : 'm-slider__track'
+	})
+
+	/** 轨道样式：传了滑块尺寸时用内联覆盖，默认交给主题变量 */
+	const trackStyle = computed<string>(() => {
+		const size = buttonSizeValue.value
+		if (size <= 0) {
+			return ''
+		}
+		if (props.vertical) {
+			return 'width: ' + size.toString() + 'px;'
+		}
+		return 'height: ' + size.toString() + 'px;'
+	})
+
+	/** 未激活轨道类名 */
+	const barClass = computed<string>(() => {
+		return props.vertical ? 'm-slider__bar m-slider__bar--vertical' : 'm-slider__bar m-slider__bar--horizontal'
+	})
+
+	/** 激活段类名 */
+	const fillClass = computed<string>(() => {
+		return props.vertical ? 'm-slider__fill m-slider__fill--vertical' : 'm-slider__fill m-slider__fill--horizontal'
+	})
+
+	/** 刻度线类名 */
+	const scaleLineClass = computed<string>(() => {
+		return props.vertical ? 'm-slider__scale-line m-slider__scale-line--vertical' : 'm-slider__scale-line'
+	})
+
+	/** 未激活轨道样式：仅颜色走内联，几何由 class + 主题变量控制 */
+	const barStyle = computed<string>(() => {
+		const height = barHeightValue.value
+		let style = ''
+		if (height > 0) {
+			if (props.vertical) {
+				style = 'width: ' + height.toString() + 'px; margin-left: -' + (height / 2).toString() + 'px;'
+			} else {
+				style = 'height: ' + height.toString() + 'px; margin-top: -' + (height / 2).toString() + 'px;'
+			}
+		}
+		if (props.inactiveColor != '') {
+			style += 'background-color: ' + props.inactiveColor + ';'
+		}
+		return style
+	})
+
+	/** 滑块内部圆点样式（仅在传了尺寸时内联，颜色走主题变量） */
+	const buttonInnerStyle = computed<string>(() => {
+		const size = buttonSizeValue.value
+		if (size <= 0) {
+			return ''
+		}
+		return 'width: ' + size.toString() + 'px; height: ' + size.toString() + 'px;'
+	})
+
+	/** 生效的值气泡方位（默认水平 top / 垂直 right） */
+	const effectiveValuePosition = computed<string>(() => {
+		if (props.valuePosition != '') {
+			return props.valuePosition
+		}
+		return props.vertical ? 'right' : 'top'
+	})
+
+	/** 生效的刻度方位（默认水平 bottom / 垂直 left） */
+	const effectiveScalePosition = computed<string>(() => {
+		if (props.scalePosition != '') {
+			return props.scalePosition
+		}
+		return props.vertical ? 'left' : 'bottom'
+	})
+
+	/** 值气泡方位类名 */
+	const valuePositionClass = computed<string>(() => {
+		return 'm-slider__value--' + effectiveValuePosition.value
+	})
+
+	/** 刻度方位类名 */
+	const scaleItemClass = computed<string>(() => {
+		return 'm-slider__scale m-slider__scale--' + effectiveScalePosition.value
+	})
+
+	/** 刻度文字类名（方位不同，与刻度线的间距方向不同） */
+	const scaleTextClass = computed<string>(() => {
+		return 'm-slider__scale-text m-slider__scale-text--' + effectiveScalePosition.value
+	})
+
+	/** 刻度文字是否展示（数量过多时只留刻度线） */
+	const showScaleText = computed<boolean>(() => scales.value.length <= 11)
+
+	/** 归一化：夹取区间 + 步长对齐 */
+	function normalize(raw: number): number {
+		const min = props.min
+		const max = props.max > min ? props.max : min
+		let v = raw
+		if (v < min) {
+			v = min
+		}
+		if (v > max) {
+			v = max
+		}
+		const step = props.step > 0 ? props.step : 1
+		const steps = Math.round((v - min) / step)
+		const snapped = min + steps * step
+		return Math.round(snapped * 1000000) / 1000000
+	}
+
+	/**
+	 * 把外部值归一化为内部数组
+	 *
+	 * @param raw 外部值
+	 * @returns [单值] 或 [左值, 右值]
+	 */
+	function toInternal(raw: SliderValue): number[] {
+		if (props.range) {
+			if (typeof raw == 'number') {
+				return [normalize(props.min), normalize(props.max)]
+			}
+			const arr = raw as number[]
+			const left = arr.length > 0 ? normalize(arr[0]) : normalize(props.min)
+			const right = arr.length > 1 ? normalize(arr[1]) : normalize(props.max)
+			return left <= right ? [left, right] : [right, left]
+		}
+		const single = typeof raw == 'number' ? raw as number : props.min
+		return [normalize(single)]
+	}
+
+	/**
+	 * 值转视觉位置百分比（已考虑 reverse / vertical）
+	 *
+	 * @param index 滑块下标
+	 * @returns 0-100 的百分比
+	 */
+	function positionPercent(index: number): number {
+		const min = props.min
+		const max = props.max > min ? props.max : min
+		const list = values.value
+		const value = index < list.length ? list[index] : min
+		const raw = max > min ? ((value - min) / (max - min)) * 100 : 0
+		if (props.vertical) {
+			return props.reverse ? raw : 100 - raw
+		}
+		return props.reverse ? 100 - raw : raw
+	}
+
+	/**
+	 * 读取第 index 个滑块当前值
+	 *
+	 * @param index 滑块下标
+	 * @returns 当前值
+	 */
+	function valueAt(index: number): number {
+		const list = values.value
+		return index < list.length ? list[index] : props.min
+	}
+
+	/**
+	 * 值气泡文案（整数不补小数）
+	 *
+	 * @param index 滑块下标
+	 * @returns 文案
+	 */
+	function valueText(index: number): string {
+		const v = valueAt(index)
+		return v.toString()
+	}
+
+	/** 滑块包裹层样式（绝对定位到百分比位置并居中） */
+	function thumbWrapStyle(index: number): string {
+		const p = positionPercent(index)
+		if (props.vertical) {
+			return 'left: 50%; top: ' + p.toString() + '%; transform: translate(-50%, -50%);'
+		}
+		return 'left: ' + p.toString() + '%; top: 50%; transform: translate(-50%, -50%);'
+	}
+
+	/** 刻度样式（沿轨道交叉轴偏移） */
+	function scaleStyle(position: number): string {
+		if (props.vertical) {
+			return 'top: ' + position.toString() + '%;'
+		}
+		return 'left: ' + position.toString() + '%;'
+	}
+
+	/** 激活段样式：位置百分比内联，厚度走 class / 主题变量 */
+	const fillStyle = computed<string>(() => {
+		const first = positionPercent(0)
+		const second = props.range ? positionPercent(1) : 0
+		// 统一换算为「沿轨道方向距起点（水平左 / 垂直下）的百分比」
+		const firstOffset = props.vertical ? 100 - first : first
+		const secondOffset = props.vertical ? 100 - second : second
+		// 单值从最小值端填到滑块，范围模式填两滑块之间
+		let start = 0
+		let end = firstOffset
+		if (props.range) {
+			start = Math.min(firstOffset, secondOffset)
+			end = Math.max(firstOffset, secondOffset)
+		} else if (props.reverse) {
+			// 反向时最小值在末端，从滑块填到 100%
+			start = firstOffset
+			end = 100
+		}
+		const size = barHeightValue.value
+		let style = ''
+		if (props.vertical) {
+			style = 'bottom: ' + start.toString() + '%; height: ' + (end - start).toString() + '%;'
+			if (size > 0) {
+				style += 'width: ' + size.toString() + 'px; margin-left: -' + (size / 2).toString() + 'px;'
+			}
+		} else {
+			style = 'left: ' + start.toString() + '%; width: ' + (end - start).toString() + '%;'
+			if (size > 0) {
+				style += 'height: ' + size.toString() + 'px; margin-top: -' + (size / 2).toString() + 'px;'
+			}
+		}
+		if (props.activeColor != '') {
+			style += 'background-color: ' + props.activeColor + ';'
+		}
+		return style
+	})
+
+	/** 刻度集合（最多 51 个，避免密集时渲染过多） */
+	const scales = computed<SliderScale[]>(() => {
+		const result: SliderScale[] = []
+		if (!props.showScale) {
+			return result
+		}
+		const min = props.min
+		const max = props.max > min ? props.max : min
+		const step = props.step > 0 ? props.step : 1
+		const total = Math.floor((max - min) / step)
+		if (total < 0) {
+			return result
+		}
+		const stride = total > 50 ? Math.ceil(total / 50) : 1
+		for (let i = 0; i <= total; i += stride) {
+			const value = min + i * step
+			const raw = max > min ? ((value - min) / (max - min)) * 100 : 0
+			let pos = raw
+			if (props.vertical) {
+				pos = props.reverse ? raw : 100 - raw
+			} else {
+				pos = props.reverse ? 100 - raw : raw
+			}
+			result.push({ position: pos, text: value.toString() } as SliderScale)
+		}
+		return result
+	})
+
+	/**
+	 * 测量轨道矩形（Web 同步 / 小程序 SelectorQuery / App 异步）
+	 *
+	 * @param done 测量完成后的回调（可为 null）
+	 */
+	function measureTrack(done: (() => void) | null) {
+		// #ifdef WEB
+		const element = trackRef.value
+		if (element != null) {
+			const rect = element.getBoundingClientRect()
+			trackLeft = rect.left
+			trackTop = rect.top
+			trackWidth = rect.width
+			trackHeight = rect.height
+		}
+		if (done != null) {
+			done!()
+		}
+		// #endif
+		// #ifdef MP
+		uni.createSelectorQuery().in(instance!.proxy!)
+			.select('#' + trackId)
+			.boundingClientRect()
+			.exec((ret: Array<any>) => {
+				const first = ret.length > 0 ? ret[0] : null
+				if (first != null) {
+					const rect = first as DOMRect
+					trackLeft = rect.left
+					trackTop = rect.top
+					trackWidth = rect.width
+					trackHeight = rect.height
+				}
+				if (done != null) {
+					done!()
+				}
+			})
+		// #endif
+		// #ifdef APP
+		const appElement = trackRef.value
+		if (appElement != null) {
+			appElement.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+				trackLeft = rect.left
+				trackTop = rect.top
+				trackWidth = rect.width
+				trackHeight = rect.height
+				if (done != null) {
+					done!()
+				}
+			})
+		}
+		// #endif
+	}
+
+	/**
+	 * 触摸点换算为归一化比例（0-1，已考虑方向）
+	 *
+	 * @param clientX 触摸横坐标
+	 * @param clientY 触摸纵坐标
+	 * @returns 0-1 比例
+	 */
+	function touchRatio(clientX: number, clientY: number): number {
+		if (props.vertical) {
+			const h = trackHeight > 0 ? trackHeight : 1
+			let ratio = 1 - (clientY - trackTop) / h
+			if (props.reverse) {
+				ratio = 1 - ratio
+			}
+			return ratio < 0 ? 0 : (ratio > 1 ? 1 : ratio)
+		}
+		const w = trackWidth > 0 ? trackWidth : 1
+		let ratio = (clientX - trackLeft) / w
+		if (props.reverse) {
+			ratio = 1 - ratio
+		}
+		return ratio < 0 ? 0 : (ratio > 1 ? 1 : ratio)
+	}
+
+	/**
+	 * 比例转值
+	 *
+	 * @param ratio 0-1 比例
+	 * @returns 归一化后的值
+	 */
+	function ratioToValue(ratio: number): number {
+		const min = props.min
+		const max = props.max > min ? props.max : min
+		return normalize(min + ratio * (max - min))
+	}
+
+	/**
+	 * 更新某个滑块的值（范围模式保持左右顺序，越过时交换）
+	 *
+	 * @param index 滑块下标
+	 * @param value 新值
+	 * @param withChange 是否同时派发 change
+	 */
+	function setValueAt(index: number, value: number, withChange: boolean) {
+		const next: number[] = []
+		for (let i = 0; i < values.value.length; i++) {
+			next.push(values.value[i])
+		}
+		if (props.range) {
+			if (next.length < 2) {
+				next.push(props.max)
+			}
+			next[index] = value
+			if (next[0] > next[1]) {
+				const tmp = next[0]
+				next[0] = next[1]
+				next[1] = tmp
+			}
+		} else {
+			next[0] = value
+		}
+		values.value = next
+		const payload: SliderValue = props.range ? next as SliderValue : next[0] as SliderValue
+		emit('update:value', payload)
+		if (withChange) {
+			emit('change', payload)
+		}
+	}
+
+	/**
+	 * 轨道点击：单滑块直接跳；范围模式选最近的滑块
+	 *
+	 * @param e 触摸事件
+	 */
+	function onTrackTouchStart(e: TouchEvent) {
+		if (props.disabled || props.readonly || e.touches.length == 0) {
+			return
+		}
+		const touch = e.touches[0]
+		const clientX = touch.clientX
+		const clientY = touch.clientY
+		measureTrack(() => {
+			const value = ratioToValue(touchRatio(clientX, clientY))
+			let index = 0
+			if (props.range) {
+				const d0 = Math.abs(value - valueAt(0))
+				const d1 = Math.abs(value - valueAt(1))
+				index = d1 < d0 ? 1 : 0
+			}
+			setValueAt(index, value, true)
+		})
+	}
+
+	/**
+	 * 滑块按下：记录起点并刷新轨道矩形（触摸 / 鼠标共用）
+	 *
+	 * @param index 滑块下标
+	 * @param e 事件
+	 */
+	function beginDrag(index: number, e: any) {
+		if (props.disabled || props.readonly) {
+			return
+		}
+		draggingIndex.value = index
+		dragStartValues = values.value
+		measureTrack(null)
+		emit('drag-start', e)
+	}
+
+	/**
+	 * 按触点坐标更新当前拖动滑块的值
+	 *
+	 * @param clientX 视口横坐标
+	 * @param clientY 视口纵坐标
+	 */
+	function applyPoint(clientX: number, clientY: number) {
+		if (draggingIndex.value < 0) {
+			return
+		}
+		const value = ratioToValue(touchRatio(clientX, clientY))
+		setValueAt(draggingIndex.value, value, false)
+	}
+
+	/**
+	 * 拖动结束：值有变化时派发 change，并派发 drag-end
+	 *
+	 * @param e 事件
+	 */
+	function finishDrag(e: any) {
+		if (draggingIndex.value < 0) {
+			return
+		}
+		let changed = false
+		for (let i = 0; i < values.value.length; i++) {
+			if (i >= dragStartValues.length || values.value[i] != dragStartValues[i]) {
+				changed = true
+				break
+			}
+		}
+		draggingIndex.value = -1
+		if (changed) {
+			const payload: SliderValue = props.range ? values.value as SliderValue : values.value[0] as SliderValue
+			emit('change', payload)
+		}
+		emit('drag-end', e)
+	}
+
+	/**
+	 * 触摸拖动：按最新触点更新值
+	 *
+	 * @param e 触摸事件
+	 */
+	function moveThumb(e: TouchEvent) {
+		if (e.touches.length == 0) {
+			return
+		}
+		const touch = e.touches[0]
+		applyPoint(touch.clientX, touch.clientY)
+	}
+
+	/**
+	 * 单滑块按下
+	 *
+	 * @param e 触摸事件
+	 */
+	function onThumbTouchStart0(e: TouchEvent) {
+		beginDrag(0, e)
+	}
+
+	/**
+	 * 单滑块 / 左侧滑块移动
+	 *
+	 * @param e 触摸事件
+	 */
+	function onThumbTouchMove0(e: TouchEvent) {
+		moveThumb(e)
+	}
+
+	/**
+	 * 单滑块 / 左侧滑块抬起
+	 *
+	 * @param e 触摸事件
+	 */
+	function onThumbTouchEnd0(e: TouchEvent) {
+		finishDrag(e)
+	}
+
+	/**
+	 * 右侧滑块按下
+	 *
+	 * @param e 触摸事件
+	 */
+	function onThumbTouchStart1(e: TouchEvent) {
+		beginDrag(1, e)
+	}
+
+	/**
+	 * 右侧滑块移动
+	 *
+	 * @param e 触摸事件
+	 */
+	function onThumbTouchMove1(e: TouchEvent) {
+		moveThumb(e)
+	}
+
+	/**
+	 * 右侧滑块抬起
+	 *
+	 * @param e 触摸事件
+	 */
+	function onThumbTouchEnd1(e: TouchEvent) {
+		finishDrag(e)
+	}
+
+	/**
+	 * 单滑块 / 左侧滑块鼠标按下（Web 桌面端；移动 / 抬起由轨道统一处理）
+	 *
+	 * @param e 鼠标事件
+	 */
+	function onThumbMouseDown0(e: MouseEvent) {
+		beginDrag(0, e)
+	}
+
+	/**
+	 * 右侧滑块鼠标按下（Web 桌面端）
+	 *
+	 * @param e 鼠标事件
+	 */
+	function onThumbMouseDown1(e: MouseEvent) {
+		beginDrag(1, e)
+	}
+
+	/**
+	 * 轨道鼠标移动：仅在拖动中生效
+	 *
+	 * @param e 鼠标事件
+	 */
+	function onTrackMouseMove(e: MouseEvent) {
+		if (draggingIndex.value < 0) {
+			return
+		}
+		applyPoint(e.clientX, e.clientY)
+	}
+
+	/**
+	 * 轨道鼠标抬起：结束拖动
+	 *
+	 * @param e 鼠标事件
+	 */
+	function onTrackMouseUp(e: MouseEvent) {
+		finishDrag(e)
+	}
+
+	/**
+	 * 鼠标移出轨道：结束拖动（避免松手在轨道外时状态残留）
+	 *
+	 * @param e 鼠标事件
+	 */
+	function onTrackMouseLeave(e: MouseEvent) {
+		finishDrag(e)
+	}
+
+	// 外部值变化：非拖动状态下同步到内部
+	watch((): SliderValue => props.value, (value: SliderValue) => {
+		if (draggingIndex.value >= 0) {
+			return
+		}
+		values.value = toInternal(value)
+	})
+
+	// 初始化内部值
+	values.value = toInternal(props.value)
+
+	// 挂载后测量一次轨道（后续每次触摸按下再刷新）
+	onMounted(() => {
+		nextTick(() => {
+			measureTrack(null)
+		})
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根 ========== */
+	.m-slider {
+		/* 左右留白 = 滑块半径，保证 0% / 100% 时滑块不出界（传 buttonSize 时由内联覆盖） */
+		padding: 0 12px;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.m-slider--vertical {
+		padding: 12px 0;
+		height: $m-slider-vertical-height;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	.m-slider--disabled {
+		opacity: $m-slider-disabled-opacity;
+	}
+
+	/* ========== 轨道 ========== */
+	.m-slider__track {
+		position: relative;
+		flex: 1;
+		height: $m-slider-button-size;
+		/* Web：书写 / 拖拽时阻止页面滚动抢手势（其它端忽略该属性） */
+		touch-action: none;
+	}
+
+	.m-slider__track--vertical {
+		height: auto;
+		width: $m-slider-button-size;
+	}
+
+	/* 未激活轨道 */
+	.m-slider__bar {
+		position: absolute;
+		background-color: $m-slider-inactive-color;
+		border-radius: $m-slider-bar-radius;
+	}
+
+	.m-slider__bar--horizontal {
+		left: 0;
+		right: 0;
+		top: 50%;
+		height: $m-slider-bar-height;
+		transform: translateY(-50%);
+	}
+
+	.m-slider__bar--vertical {
+		top: 0;
+		bottom: 0;
+		left: 50%;
+		width: $m-slider-bar-height;
+		transform: translateX(-50%);
+	}
+
+	/* 激活段 */
+	.m-slider__fill {
+		position: absolute;
+		background-color: $m-slider-active-color;
+		border-radius: $m-slider-bar-radius;
+	}
+
+	.m-slider__fill--horizontal {
+		top: 50%;
+		height: $m-slider-bar-height;
+		transform: translateY(-50%);
+	}
+
+	.m-slider__fill--vertical {
+		left: 50%;
+		width: $m-slider-bar-height;
+		transform: translateX(-50%);
+	}
+
+	/* ========== 滑块 ========== */
+	.m-slider__thumb {
+		position: absolute;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.m-slider__button-inner {
+		width: $m-slider-button-size;
+		height: $m-slider-button-size;
+		border-radius: $m-slider-button-radius;
+		background-color: $m-slider-button-background;
+		box-shadow: $m-slider-button-shadow;
+	}
+
+	/* ========== 值气泡 ========== */
+	.m-slider__value {
+		position: absolute;
+		padding: $m-slider-value-padding;
+		border-radius: $m-slider-value-radius;
+		background-color: $m-slider-value-background;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.m-slider__value--top {
+		left: 50%;
+		bottom: 100%;
+		margin-bottom: $m-slider-value-offset;
+		transform: translateX(-50%);
+	}
+
+	.m-slider__value--bottom {
+		left: 50%;
+		top: 100%;
+		margin-top: $m-slider-value-offset;
+		transform: translateX(-50%);
+	}
+
+	.m-slider__value--left {
+		right: 100%;
+		top: 50%;
+		margin-right: $m-slider-value-offset;
+		transform: translateY(-50%);
+	}
+
+	.m-slider__value--right {
+		left: 100%;
+		top: 50%;
+		margin-left: $m-slider-value-offset;
+		transform: translateY(-50%);
+	}
+
+	.m-slider__value-text {
+		font-size: $m-slider-value-font-size;
+		color: $m-slider-value-color;
+	}
+
+	/* ========== 刻度 ========== */
+	.m-slider__scale {
+		position: absolute;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.m-slider__scale-line {
+		width: 1px;
+		height: 4px;
+		background-color: $m-slider-scale-color;
+	}
+
+	.m-slider__scale-line--vertical {
+		width: 4px;
+		height: 1px;
+	}
+
+	.m-slider__scale--bottom {
+		top: 100%;
+		margin-top: $m-slider-scale-gap;
+		transform: translateX(-50%);
+	}
+
+	.m-slider__scale--top {
+		bottom: 100%;
+		margin-bottom: $m-slider-scale-gap;
+		transform: translateX(-50%);
+	}
+
+	.m-slider__scale--left {
+		right: 100%;
+		margin-right: $m-slider-scale-gap;
+		flex-direction: row;
+		transform: translateY(-50%);
+	}
+
+	.m-slider__scale--right {
+		left: 100%;
+		margin-left: $m-slider-scale-gap;
+		flex-direction: row;
+		transform: translateY(-50%);
+	}
+
+	.m-slider__scale-text {
+		font-size: $m-slider-scale-font-size;
+		color: $m-slider-scale-color;
+	}
+
+	.m-slider__scale-text--left {
+		margin-right: 2px;
+	}
+
+	.m-slider__scale-text--right {
+		margin-left: 2px;
+	}
+
+	.m-slider__scale-text--top {
+		margin-bottom: 2px;
+	}
+
+	.m-slider__scale-text--bottom {
+		margin-top: 2px;
+	}
+
+	.m-slider__scale-text {
+		font-size: $m-slider-scale-font-size;
+		color: $m-slider-scale-color;
+	}
+</style>

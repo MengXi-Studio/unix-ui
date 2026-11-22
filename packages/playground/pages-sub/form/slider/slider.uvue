@@ -1,0 +1,192 @@
+<template>
+	<view class="page">
+		<demo-navbar title="滑动条" subtitle="Slider" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-slider v-model:value="basicValue" @change="onBasicChange" />
+					<text class="caption">当前值：{{ basicValue }}（拖动或点击轨道调整）</text>
+				</view>
+
+				<text class="section" id="range">双滑块范围</text>
+				<view class="card">
+					<m-slider range v-model:value="rangeValue" @change="onRangeChange" />
+					<text class="caption">当前区间：{{ rangeText }}</text>
+				</view>
+
+				<text class="section" id="minmax">指定范围与步长</text>
+				<view class="card">
+					<m-slider :min="-50" :max="50" :step="10" v-model:value="minMaxValue" />
+					<text class="caption">min=-50 / max=50 / step=10，当前值：{{ minMaxValue }}</text>
+				</view>
+
+				<text class="section" id="style">自定义颜色与尺寸</text>
+				<view class="card">
+					<m-slider
+						:bar-height="8"
+						:button-size="32"
+						active-color="#ee0a24"
+						inactive-color="#f2f3f5"
+						v-model:value="styleValue"
+					/>
+					<text class="caption">bar-height=8 / button-size=32 / active-color / inactive-color</text>
+				</view>
+
+				<text class="section" id="vertical">垂直方向</text>
+				<view class="card">
+					<view class="vertical-row">
+						<m-slider vertical v-model:value="verticalValue" show-value />
+						<m-slider vertical range v-model:value="verticalRange" show-value />
+					</view>
+					<text class="caption">vertical：单值 {{ verticalValue }}，范围 {{ verticalRangeText }}</text>
+				</view>
+
+				<text class="section" id="value">值气泡与刻度</text>
+				<view class="card">
+					<m-slider show-value value-position="bottom" show-scale :max="10" :step="2" v-model:value="scaleValue" />
+					<text class="caption">show-value / value-position="bottom" / show-scale，当前值：{{ scaleValue }}</text>
+				</view>
+
+				<text class="section" id="disabled">禁用与只读</text>
+				<view class="card">
+					<m-slider disabled v-model:value="disabledValue" />
+					<text class="caption">disabled：整体降透明度且不可交互</text>
+					<m-slider readonly v-model:value="readonlyValue" :min="0" :max="10" show-value />
+					<text class="caption">readonly：可聚焦展示，但拖动无效</text>
+				</view>
+
+				<text class="section" id="slot">自定义滑块</text>
+				<view class="card">
+					<m-slider v-model:value="slotValue" :min="0" :max="10">
+						<template #button="{ value, dragging }">
+							<view class="custom-button">
+								<text class="custom-button-text">{{ value }}</text>
+							</view>
+						</template>
+					</m-slider>
+					<text class="caption">#button 作用域 { value, dragging }，当前值：{{ slotValue }}</text>
+				</view>
+
+				<text class="section" id="events">事件</text>
+				<view class="card">
+					<m-slider
+						range
+						v-model:value="eventValue"
+						@drag-start="onDragStart"
+						@drag-end="onDragEnd"
+						@change="onEventChange"
+					/>
+					<text class="caption">{{ eventLog }}</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '滑动条 Slider', name: 'slider' })
+
+	/** 基础用法值 */
+	const basicValue = ref<number>(40)
+	/** 范围值 */
+	const rangeValue = ref<number[]>([20, 60])
+	/** 范围文案 */
+	const rangeText = computed<string>(() => rangeValue.value[0].toString() + ' ~ ' + rangeValue.value[1].toString())
+	/** 指定范围值 */
+	const minMaxValue = ref<number>(-10)
+	/** 自定义样式值 */
+	const styleValue = ref<number>(50)
+	/** 垂直单值 */
+	const verticalValue = ref<number>(60)
+	/** 垂直范围 */
+	const verticalRange = ref<number[]>([10, 80])
+	/** 垂直范围文案 */
+	const verticalRangeText = computed<string>(() => verticalRange.value[0].toString() + ' ~ ' + verticalRange.value[1].toString())
+	/** 气泡与刻度值 */
+	const scaleValue = ref<number>(4)
+	/** 禁用值 */
+	const disabledValue = ref<number>(30)
+	/** 只读值 */
+	const readonlyValue = ref<number>(6)
+	/** 插槽值 */
+	const slotValue = ref<number>(6)
+	/** 事件演示值 */
+	const eventValue = ref<number[]>([30, 70])
+	/** 事件日志 */
+	const eventLog = ref<string>('拖动滑块查看事件顺序')
+
+	/**
+	 * 基础用法变更
+	 *
+	 * @param value 当前值
+	 */
+	function onBasicChange(value: number) {
+		console.log('slider basic change: ' + value.toString())
+	}
+
+	/**
+	 * 范围变更
+	 *
+	 * @param value 当前区间
+	 */
+	function onRangeChange(value: number[]) {
+		console.log('slider range change: ' + value[0].toString() + ' - ' + value[1].toString())
+	}
+
+	/**
+	 * 开始拖动
+	 *
+	 * @param _e 触摸事件
+	 */
+	function onDragStart(_e: TouchEvent) {
+		eventLog.value = 'drag-start'
+	}
+
+	/**
+	 * 结束拖动
+	 *
+	 * @param _e 触摸事件
+	 */
+	function onDragEnd(_e: TouchEvent) {
+		eventLog.value = 'drag-end'
+	}
+
+	/**
+	 * 拖动结束值变化
+	 *
+	 * @param value 当前区间
+	 */
+	function onEventChange(value: number[]) {
+		eventLog.value = 'change → ' + value[0].toString() + ' - ' + value[1].toString()
+	}
+</script>
+
+<style lang="scss">
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+
+	.vertical-row {
+		flex-direction: row;
+		height: 180px;
+	}
+
+	.custom-button {
+		width: 26px;
+		height: 26px;
+		border-radius: 13px;
+		background-color: #1989fa;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.custom-button-text {
+		color: #ffffff;
+		font-size: 10px;
+	}
+</style>

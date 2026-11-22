@@ -240,6 +240,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '签名',
 				enName: 'Signature',
 				desc: 'Canvas 手写签名板，支持自定义笔触 / 线宽 / 背景、撤销与历史深度、清空确认、实例方法调用与全屏签名。'
+			},
+			{
+				name: 'slider',
+				zhName: '滑动条',
+				enName: 'Slider',
+				desc: '单值 / 双滑块滑动选择，支持垂直、反向、步长、自定义颜色尺寸、值气泡、刻度与自定义滑块插槽。'
 			}
 		]
 	},

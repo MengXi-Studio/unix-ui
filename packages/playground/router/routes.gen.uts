@@ -252,6 +252,11 @@ export const routes: RouteConfig[] = [
 		meta: { title: '签名 Signature' },
 	},
 	{
+		path: 'pages-sub/form/slider/slider',
+		name: 'slider',
+		meta: { title: '滑动条 Slider' },
+	},
+	{
 		path: 'pages-sub/layouts/compact/compact',
 		name: 'compact',
 		meta: { title: '紧凑布局 Compact' },

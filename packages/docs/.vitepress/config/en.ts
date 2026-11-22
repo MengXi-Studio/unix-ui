@@ -118,7 +118,8 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Rate', link: '/en/components/rate' },
 						{ text: 'Search', link: '/en/components/search' },
 						{ text: 'Segmented', link: '/en/components/segmented' },
-						{ text: 'Signature', link: '/en/components/signature' }
+						{ text: 'Signature', link: '/en/components/signature' },
+						{ text: 'Slider', link: '/en/components/slider' }
 					]
 				},
 				{

@@ -1038,3 +1038,43 @@ $m-signature-full-gap: 16px !default;
 $m-signature-hint-font-size: 14px !default;
 /** 全屏底部提示颜色 */
 $m-signature-hint-color: $m-text-color-tertiary !default;
+
+/* ========== Slider 滑动条 ========== */
+/** 轨道高度 */
+$m-slider-bar-height: 4px !default;
+/** 轨道圆角 */
+$m-slider-bar-radius: 2px !default;
+/** 滑块尺寸 */
+$m-slider-button-size: 24px !default;
+/** 滑块圆角 */
+$m-slider-button-radius: 50% !default;
+/** 滑块背景色 */
+$m-slider-button-background: #ffffff !default;
+/** 滑块阴影 */
+$m-slider-button-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !default;
+/** 激活色 */
+$m-slider-active-color: $m-color-primary !default;
+/** 轨道底色 */
+$m-slider-inactive-color: #ebedf0 !default;
+/** 禁用透明度 */
+$m-slider-disabled-opacity: $m-disabled-opacity !default;
+/** 垂直模式默认高度 */
+$m-slider-vertical-height: 150px !default;
+/** 值气泡字号 */
+$m-slider-value-font-size: 12px !default;
+/** 值气泡文字颜色 */
+$m-slider-value-color: #ffffff !default;
+/** 值气泡背景 */
+$m-slider-value-background: #323233 !default;
+/** 值气泡内边距 */
+$m-slider-value-padding: 2px 6px !default;
+/** 值气泡圆角 */
+$m-slider-value-radius: 4px !default;
+/** 值气泡与滑块间距 */
+$m-slider-value-offset: 8px !default;
+/** 刻度字号 */
+$m-slider-scale-font-size: 12px !default;
+/** 刻度文字颜色 */
+$m-slider-scale-color: $m-text-color-tertiary !default;
+/** 刻度与轨道间距 */
+$m-slider-scale-gap: 6px !default;

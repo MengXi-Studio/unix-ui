@@ -46,6 +46,7 @@
 			:custom-class="customClass"
 			:custom-style="customStyle"
 			:value="value"
+			:slot-presence="slotPresence"
 			@select="onCalSelect"
 			@update:value="onCalValueChange"
 			@confirm="onCalConfirm"
@@ -142,6 +143,27 @@
 	const hasTitleSlot = computed<boolean>(() => slotHasContent(slots['title']))
 	/** top-info 具名插槽是否有内容 */
 	const hasTopInfoSlot = computed<boolean>(() => slotHasContent(slots['top-info']))
+
+	/**
+	 * 已传入的具名插槽名（英文逗号分隔），随 props 下发给日历面板。
+	 * 小程序端面板上的插槽会被静态声明而恒为 true，面板无法自行探测真实存在性（issue #29）。
+	 */
+	const slotPresence = computed<string>(() => {
+		const names: string[] = []
+		if (hasTitleSlot.value) names.push('title')
+		if (hasSubtitleSlot.value) names.push('subtitle')
+		if (hasMonthTitleSlot.value) names.push('month-title')
+		if (hasTopInfoSlot.value) names.push('top-info')
+		if (hasBottomInfoSlot.value) names.push('bottom-info')
+		if (hasTextSlot.value) names.push('text')
+		if (hasFooterSlot.value) names.push('footer')
+		if (hasConfirmTextSlot.value) names.push('confirm-text')
+		if (hasPrevYearSlot.value) names.push('prev-year')
+		if (hasPrevMonthSlot.value) names.push('prev-month')
+		if (hasNextMonthSlot.value) names.push('next-month')
+		if (hasNextYearSlot.value) names.push('next-year')
+		return names.join(',')
+	})
 
 	type Props = {
 		/** 是否显示弹出层（v-model:show） */

@@ -4,6 +4,7 @@
 	<view :class="customClass" :style="customStyle">
 		<MCalendarPanel
 			:panel="panelConfig"
+			:slot-presence="props.slotPresence"
 			@day-click="onPanelDayClick"
 			@click-subtitle="onPanelSubtitleClick"
 			@nav="onPanelNav"
@@ -98,7 +99,7 @@
 	import { addDays, getDaysInMonth, getFirstDayWeekday, startOfMonth } from '../../utils/date.uts'
 	import MCalendarPanel from './m-calendar-panel.uvue'
 	import { showToast } from '../m-toast/toast.uts'
-	import { slotHasContent } from '../../utils/slot.uts'
+	import { slotActive } from '../../utils/slot.uts'
 
 	type Props = {
 		/** 选择类型 */
@@ -151,6 +152,8 @@
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */
 		customStyle?: string
+		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；null 表示未下发，由本组件自行探测（issue #29） */
+		slotPresence?: string | null
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
@@ -178,7 +181,8 @@
 		showRangePrompt: true,
 		allowSameDay: false,
 		customClass: '',
-		customStyle: ''
+		customStyle: '',
+		slotPresence: null
 	})
 
 	const emit = defineEmits<{
@@ -203,30 +207,30 @@
 	}>()
 
 	const slots = useSlots()
-	/** bottom-info 具名插槽是否有内容 */
-	const hasBottomInfoSlot = computed<boolean>(() => slotHasContent(slots['bottom-info']))
-	/** confirm-text 具名插槽是否有内容 */
-	const hasConfirmTextSlot = computed<boolean>(() => slotHasContent(slots['confirm-text']))
-	/** footer 具名插槽是否有内容 */
-	const hasFooterSlot = computed<boolean>(() => slotHasContent(slots['footer']))
-	/** month-title 具名插槽是否有内容 */
-	const hasMonthTitleSlot = computed<boolean>(() => slotHasContent(slots['month-title']))
-	/** next-month 具名插槽是否有内容 */
-	const hasNextMonthSlot = computed<boolean>(() => slotHasContent(slots['next-month']))
-	/** next-year 具名插槽是否有内容 */
-	const hasNextYearSlot = computed<boolean>(() => slotHasContent(slots['next-year']))
-	/** prev-month 具名插槽是否有内容 */
-	const hasPrevMonthSlot = computed<boolean>(() => slotHasContent(slots['prev-month']))
-	/** prev-year 具名插槽是否有内容 */
-	const hasPrevYearSlot = computed<boolean>(() => slotHasContent(slots['prev-year']))
-	/** subtitle 具名插槽是否有内容 */
-	const hasSubtitleSlot = computed<boolean>(() => slotHasContent(slots['subtitle']))
-	/** text 具名插槽是否有内容 */
-	const hasTextSlot = computed<boolean>(() => slotHasContent(slots['text']))
-	/** title 具名插槽是否有内容 */
-	const hasTitleSlot = computed<boolean>(() => slotHasContent(slots['title']))
-	/** top-info 具名插槽是否有内容 */
-	const hasTopInfoSlot = computed<boolean>(() => slotHasContent(slots['top-info']))
+	/** bottom-info 具名插槽是否生效（父级弹层下发的存在性标记优先，issue #29） */
+	const hasBottomInfoSlot = computed<boolean>(() => slotActive(slots['bottom-info'], props.slotPresence, 'bottom-info'))
+	/** confirm-text 具名插槽是否生效 */
+	const hasConfirmTextSlot = computed<boolean>(() => slotActive(slots['confirm-text'], props.slotPresence, 'confirm-text'))
+	/** footer 具名插槽是否生效 */
+	const hasFooterSlot = computed<boolean>(() => slotActive(slots['footer'], props.slotPresence, 'footer'))
+	/** month-title 具名插槽是否生效 */
+	const hasMonthTitleSlot = computed<boolean>(() => slotActive(slots['month-title'], props.slotPresence, 'month-title'))
+	/** next-month 具名插槽是否生效 */
+	const hasNextMonthSlot = computed<boolean>(() => slotActive(slots['next-month'], props.slotPresence, 'next-month'))
+	/** next-year 具名插槽是否生效 */
+	const hasNextYearSlot = computed<boolean>(() => slotActive(slots['next-year'], props.slotPresence, 'next-year'))
+	/** prev-month 具名插槽是否生效 */
+	const hasPrevMonthSlot = computed<boolean>(() => slotActive(slots['prev-month'], props.slotPresence, 'prev-month'))
+	/** prev-year 具名插槽是否生效 */
+	const hasPrevYearSlot = computed<boolean>(() => slotActive(slots['prev-year'], props.slotPresence, 'prev-year'))
+	/** subtitle 具名插槽是否生效 */
+	const hasSubtitleSlot = computed<boolean>(() => slotActive(slots['subtitle'], props.slotPresence, 'subtitle'))
+	/** text 具名插槽是否生效 */
+	const hasTextSlot = computed<boolean>(() => slotActive(slots['text'], props.slotPresence, 'text'))
+	/** title 具名插槽是否生效 */
+	const hasTitleSlot = computed<boolean>(() => slotActive(slots['title'], props.slotPresence, 'title'))
+	/** top-info 具名插槽是否生效 */
+	const hasTopInfoSlot = computed<boolean>(() => slotActive(slots['top-info'], props.slotPresence, 'top-info'))
 
 	// ========== 选择状态（时间戳口径，全部为当日零点） ==========
 	/** single 当前选中时间戳（null 未选） */
@@ -590,8 +594,8 @@
 			readonly: props.readonly,
 			switchMode: props.switchMode,
 			scrollAnchor: scrollAnchor.value,
-			hasTopInfoSlot: slotHasContent(slots['top-info']),
-			hasBottomInfoSlot: slotHasContent(slots['bottom-info'])
+			hasTopInfoSlot: hasTopInfoSlot.value,
+			hasBottomInfoSlot: hasBottomInfoSlot.value
 		} as CalendarPanelConfig
 	})
 

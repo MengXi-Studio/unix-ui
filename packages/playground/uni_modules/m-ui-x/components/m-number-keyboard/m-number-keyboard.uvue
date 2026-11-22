@@ -92,11 +92,9 @@
 		NumberKeyboardTheme
 	} from './keyboard.uts'
 	import MIcon from '../m-icon/m-icon.uvue'
-	import { slotHasContent } from '../../utils/slot.uts'
+	import { slotActive } from '../../utils/slot.uts'
 	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
 	const slots = useSlots()
-	/** extra-key 具名插槽是否有内容 */
-	const hasExtraKeySlot = computed<boolean>(() => slotHasContent(slots['extra-key']))
 
 	type Props = {
 		/** 键盘类型 */
@@ -117,6 +115,8 @@
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */
 		customStyle?: string
+		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；null 表示未下发，由本组件自行探测（issue #29） */
+		slotPresence?: string | null
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
@@ -127,8 +127,12 @@
 		deleteButtonText: '',
 		closeButtonText: '',
 		customClass: '',
-		customStyle: ''
+		customStyle: '',
+		slotPresence: null
 	})
+
+	/** extra-key 具名插槽是否生效（父级弹层下发的存在性标记优先，issue #29） */
+	const hasExtraKeySlot = computed<boolean>(() => slotActive(slots['extra-key'], props.slotPresence, 'extra-key'))
 
 	const emit = defineEmits<{
 		/** 点击可输入键 */

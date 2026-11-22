@@ -33,6 +33,7 @@
 			:swipe-duration="swipeDuration"
 			:custom-class="customClass"
 			:custom-style="customStyle"
+			:slot-presence="slotPresence"
 			@change="onPickerChange"
 			@confirm="onPickerConfirm"
 			@cancel="onPickerCancel"
@@ -93,6 +94,23 @@
 	const hasTitleSlot = computed<boolean>(() => slotHasContent(slots['title']))
 	/** toolbar 具名插槽是否有内容 */
 	const hasToolbarSlot = computed<boolean>(() => slotHasContent(slots['toolbar']))
+
+	/**
+	 * 已传入的具名插槽名（英文逗号分隔），随 props 下发给面板。
+	 * 小程序端面板上的插槽会被静态声明而恒为 true，面板无法自行探测真实存在性（issue #29）。
+	 */
+	const slotPresence = computed<string>(() => {
+		const names: string[] = []
+		if (hasToolbarSlot.value) names.push('toolbar')
+		if (hasTitleSlot.value) names.push('title')
+		if (hasConfirmSlot.value) names.push('confirm')
+		if (hasCancelSlot.value) names.push('cancel')
+		if (hasColumnsTopSlot.value) names.push('columns-top')
+		if (hasColumnsBottomSlot.value) names.push('columns-bottom')
+		// Web 端面板会继续把 option 转发给列组件，标记须一并下发，避免面板误判为未传
+		if (hasOptionSlot.value) names.push('option')
+		return names.join(',')
+	})
 
 	type Props = {
 		/** 是否显示弹出层（v-model:show） */

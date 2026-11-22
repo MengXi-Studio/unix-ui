@@ -1,3 +1,11 @@
+## 0.7.4 (2026-11-22)
+
+- 修复微信小程序（VDOM 模式）下弹层未传具名插槽时默认工具栏被静态插槽吞掉、无法确认选择（issue #29）：小程序编译会把弹层模板中的具名插槽静态声明到面板标签上（`u-s="{{['toolbar',...]}}"`），面板侧 `useSlots()` 的对应
+  key 恒为布尔 `true`，`v-if` 默认内容分支永不渲染，`m-picker-popup` 等弹层的取消 / 标题 / 确认工具栏空白。改为弹层按页面级真实探测结果拼出「已传插槽名」字符串，经内部 prop `slot-presence` 下发给面板，面板统一走新增的
+  `slotActive`（有标记按标记、无标记回退原探测），链式组合（弹层 → 日期 / 时间 / 农历面板 → m-picker、弹层 → m-calendar → m-calendar-panel）逐级原样下发；覆盖 picker / date-picker / time-picker / lunar-picker /
+  date-range-picker / time-range-picker / calendar / cascader / number-keyboard / password-input / select 的弹层与面板两侧。`slot-presence` 为内部使用，业务侧无需设置
+- 移除 0.7.3 中仅属推测的「渲染函数视为已传入」插槽分支，避免把假存在的插槽判为已传入（运行取证只观察到布尔 / `undefined` / 数组三种形态）
+
 ## 0.7.3 (2026-11-22)
 
 - 修复 VDOM 模式（uni-app x + 微信小程序）下具名插槽被误判为「未传入」、调用方传入的内容被整块隐藏（issue #27，0.7.2 回归）：VDOM 模式下小程序端具名插槽值是布尔 `true`（已传）或不存在该 key（未传），并非节点数组，原

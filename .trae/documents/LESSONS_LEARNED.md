@@ -768,3 +768,12 @@
 - **修法**（`packages/core/utils/slot.uts`，仅 `#ifdef MP` 段）：`null` → false；`typeof slot == 'function'` → true；`typeof slot == 'boolean'` → 返回该值；其余仍按数组长度判定（保住 issue #24 的「空数组视为未传」）
 - 验证：HBuilderX 编译 mp-weixin（日志确认「VDOM模式」）→ wechatide 打开产物、进 `pages-sub/nav/tabs/tabs`，插槽卡片渲染为「左 标签1 标签2 右」，console 无报错；`pnpm sync:uni-modules:check` 通过
 - **教训**：跨端插槽判定不要只覆盖「已见过的形态」，`slots[name]` 在 VDOM / 非 VDOM、Web / App / 各小程序里可能是函数、布尔、数组或空对象；新增分支必须用运行日志取证，issue 里的原因分析只能当线索
+- 后续（issue #29）：本地多轮取证始终只观察到 boolean / undefined / 数组，函数分支属于推测，已移除，避免把「假存在」的插槽判为已传入
+
+### #113 弹层组合组件会把具名插槽「静态声明」给面板，面板无法自行探测存在性（issue #29）
+- 现象：0.7.3 下小程序（VDOM）`m-picker-popup` 默认顶部工具栏空白，无法确认选择
+- **运行实证**：页面未传 `toolbar` 时，popup 页级 `slots['toolbar']` 为 `undefined`（探测是准的）；但 popup 编译出的 WXML 在 `<m-picker>` 上带静态 `u-s="{{['toolbar','title',...]}}"`，面板侧拿到的 6 个插槽全是布尔 `true`。`<template v-if="hasXSlot" #x>` 只控制内容、不阻止插槽注册，因此面板的 `v-if` 默认工具栏永远不会渲染
+- **修法（显式透传，不做内容猜测）**：popup 用自己准确的探测结果拼出「已传插槽名」英文字符串，经内部 prop `slot-presence` 下发给面板；面板统一走 `slotActive(slot, props.slotPresence, name)`——有标记按标记，无标记才回退自行探测。链式组合（popup → date/time/lunar-picker → m-picker、popup → calendar → calendar-panel）逐级原样下发
+- 覆盖范围：picker / date-picker / time-picker / lunar-picker / date-range / time-range / calendar / cascader / number-keyboard / password-input / select 的弹层与面板两侧
+- 验证：mp-weixin 编译通过；`picker-popup` 默认态显示「取消 / 选择产线 / 确认」且滚轮可滚动，传 `#confirm` + `#columns-top` 时分别显示「完成」与提示（两个方向都对）；`calendar-popup` 标题「日期选择」+ 副标题 + 网格 + 确认按钮正常；`tabs` 的 `nav-left/right` 仍正常（#27 未回归）；console 无报错
+- **教训**：小程序端「组合组件向下转发插槽」不能靠子组件再探测，必须在转发方把真实存在性显式带下去；任何新增弹层/面板组合都要同时接上这条标记链

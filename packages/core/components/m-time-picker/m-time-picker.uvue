@@ -16,6 +16,7 @@
 			:option-height="optionHeight"
 			:visible-option-num="visibleOptionNum"
 			:swipe-duration="swipeDuration"
+			:slot-presence="props.slotPresence"
 			@change="onPickerChange"
 			@confirm="onPickerConfirm"
 			@cancel="onPickerCancel"
@@ -71,19 +72,9 @@
 	} from './time-picker.uts'
 	import { PickerOption, PickerValue, valueToText } from '../m-picker/picker.uts'
 	import MPicker from '../m-picker/m-picker.uvue'
-	import { slotHasContent } from '../../utils/slot.uts'
+	import { slotActive } from '../../utils/slot.uts'
 	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
 	const slots = useSlots()
-	/** cancel 具名插槽是否有内容 */
-	const hasCancelSlot = computed<boolean>(() => slotHasContent(slots['cancel']))
-	/** confirm 具名插槽是否有内容 */
-	const hasConfirmSlot = computed<boolean>(() => slotHasContent(slots['confirm']))
-	/** option 具名插槽是否有内容 */
-	const hasOptionSlot = computed<boolean>(() => slotHasContent(slots['option']))
-	/** title 具名插槽是否有内容 */
-	const hasTitleSlot = computed<boolean>(() => slotHasContent(slots['title']))
-	/** toolbar 具名插槽是否有内容 */
-	const hasToolbarSlot = computed<boolean>(() => slotHasContent(slots['toolbar']))
 
 	type Props = {
 		/** 选项类型组合（hour / minute / second 任意顺序；null 用默认时-分） */
@@ -126,6 +117,8 @@
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */
 		customStyle?: string
+		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；null 表示未下发，由本组件自行探测（issue #29） */
+		slotPresence?: string | null
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
@@ -148,8 +141,20 @@
 		visibleOptionNum: 0,
 		swipeDuration: 200,
 		customClass: '',
-		customStyle: ''
+		customStyle: '',
+		slotPresence: null
 	})
+
+	/** cancel 具名插槽是否生效（父级弹层下发的存在性标记优先，issue #29） */
+	const hasCancelSlot = computed<boolean>(() => slotActive(slots['cancel'], props.slotPresence, 'cancel'))
+	/** confirm 具名插槽是否生效 */
+	const hasConfirmSlot = computed<boolean>(() => slotActive(slots['confirm'], props.slotPresence, 'confirm'))
+	/** option 具名插槽是否生效 */
+	const hasOptionSlot = computed<boolean>(() => slotActive(slots['option'], props.slotPresence, 'option'))
+	/** title 具名插槽是否生效 */
+	const hasTitleSlot = computed<boolean>(() => slotActive(slots['title'], props.slotPresence, 'title'))
+	/** toolbar 具名插槽是否生效 */
+	const hasToolbarSlot = computed<boolean>(() => slotActive(slots['toolbar'], props.slotPresence, 'toolbar'))
 
 	const emit = defineEmits<{
 		/** 确认后回写时间字符串 */

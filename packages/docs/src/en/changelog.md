@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.4] - 2026-11-22
+
+Fixes popup default toolbars being swallowed by statically declared slots on WeChat Mini Program (VDOM mode), which left no way to confirm a selection.
+
+### Fixed
+
+- **Popups and panels** (both sides of picker / date-picker / time-picker / lunar-picker / date-range-picker / time-range-picker / calendar / cascader / number-keyboard / password-input / select): the Mini Program compiler **statically declares** the popup's named slots through the panel tag's `u-s` attribute (an array of slot names such as `toolbar`), so the corresponding `useSlots()` keys on the panel are always boolean `true` and the `v-if` defaults never render — leaving a blank cancel / title / confirm toolbar with no way to submit. `<template v-if>` only controls slot content and does not prevent slot registration, so the panel no longer probes on its own: each popup encodes the slot names actually passed by the page into a string and passes it down through the internal `slot-presence` prop; panels resolve it through the new `slotActive` helper (use the marker when provided, otherwise fall back to the old probe). Chained compositions (popup → date / time / lunar panel → `m-picker`, popup → `m-calendar` → `m-calendar-panel`) forward the marker unchanged. `slot-presence` is internal and needs no setting from application code ([#29](https://github.com/MengXi-Studio/unix-ui/issues/29))
+- **utils/slot.uts**: removes the speculative "render function counts as passed" branch added in 0.7.3 — repeated runtime evidence only showed booleans, `undefined` and arrays, and keeping the branch would treat non-existent slots as passed
+
 ## [0.7.3] - 2026-11-22
 
 Fixes named slots being treated as empty on VDOM mode (uni-app x + WeChat Mini Program), which dropped caller-provided content entirely (a 0.7.2 regression).

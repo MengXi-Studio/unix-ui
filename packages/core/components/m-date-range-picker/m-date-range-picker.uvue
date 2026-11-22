@@ -94,17 +94,9 @@
 		DatePickerOption
 	} from '../m-date-picker/date-picker.uts'
 	import MDatePicker from '../m-date-picker/m-date-picker.uvue'
-	import { slotHasContent } from '../../utils/slot.uts'
+	import { slotActive } from '../../utils/slot.uts'
 	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
 	const slots = useSlots()
-	/** cancel 具名插槽是否有内容 */
-	const hasCancelSlot = computed<boolean>(() => slotHasContent(slots['cancel']))
-	/** confirm 具名插槽是否有内容 */
-	const hasConfirmSlot = computed<boolean>(() => slotHasContent(slots['confirm']))
-	/** footer 具名插槽是否有内容 */
-	const hasFooterSlot = computed<boolean>(() => slotHasContent(slots['footer']))
-	/** title 具名插槽是否有内容 */
-	const hasTitleSlot = computed<boolean>(() => slotHasContent(slots['title']))
 
 	type Props = {
 		/** 两端选中值（v-model:value；长度 0-2，按 起始、结束 顺序；null 未选） */
@@ -139,6 +131,8 @@
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */
 		customStyle?: string
+		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；null 表示未下发，由本组件自行探测（issue #29） */
+		slotPresence?: string | null
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
@@ -157,8 +151,18 @@
 		confirmButtonText: '确认',
 		cancelButtonText: '取消',
 		customClass: '',
-		customStyle: ''
+		customStyle: '',
+		slotPresence: null
 	})
+
+	/** cancel 具名插槽是否生效（父级弹层下发的存在性标记优先，issue #29） */
+	const hasCancelSlot = computed<boolean>(() => slotActive(slots['cancel'], props.slotPresence, 'cancel'))
+	/** confirm 具名插槽是否生效 */
+	const hasConfirmSlot = computed<boolean>(() => slotActive(slots['confirm'], props.slotPresence, 'confirm'))
+	/** footer 具名插槽是否生效 */
+	const hasFooterSlot = computed<boolean>(() => slotActive(slots['footer'], props.slotPresence, 'footer'))
+	/** title 具名插槽是否生效 */
+	const hasTitleSlot = computed<boolean>(() => slotActive(slots['title'], props.slotPresence, 'title'))
 
 	const emit = defineEmits<{
 		/** 确认后回写两端值（未选为 null；长度 1 表示只选了一端） */

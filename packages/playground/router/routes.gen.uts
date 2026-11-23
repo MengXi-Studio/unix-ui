@@ -257,6 +257,16 @@ export const routes: RouteConfig[] = [
 		meta: { title: '滑动条 Slider' },
 	},
 	{
+		path: 'pages-sub/form/stepper/stepper',
+		name: 'stepper',
+		meta: { title: '步进器 Stepper' },
+	},
+	{
+		path: 'pages-sub/form/switch/switch',
+		name: 'switch',
+		meta: { title: '开关 Switch' },
+	},
+	{
 		path: 'pages-sub/layouts/compact/compact',
 		name: 'compact',
 		meta: { title: '紧凑布局 Compact' },

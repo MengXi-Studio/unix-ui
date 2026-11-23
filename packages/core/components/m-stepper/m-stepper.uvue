@@ -1,0 +1,802 @@
+<template>
+	<!-- 步进器：减 / 输入框 / 加 三段结构，支持四种变体、两档尺寸、round 主题、长按连续增减与空值 -->
+	<view :class="rootClass" :style="rootStyle">
+		<view
+			v-if="props.showMinus"
+			:class="buttonClass(false)"
+			:style="buttonStyle"
+			@click="onMinusClick"
+			@touchstart="onMinusPressStart"
+			@touchend="onPressEnd"
+			@touchcancel="onPressEnd"
+			@mousedown="onMinusPressStart"
+			@mouseup="onPressEnd"
+			@mouseleave="onPressEnd"
+		>
+			<m-icon name="minus" :custom-class="iconClass(false)" />
+		</view>
+		<input
+			v-if="props.showInput"
+			:class="inputClass"
+			:style="inputStyle"
+			:value="inputText"
+			:type="inputType"
+			:placeholder="props.placeholder"
+			placeholder-class="m-stepper__placeholder"
+			:disabled="inputDisabled"
+			@input="onInput"
+			@focus="onFocus"
+			@blur="onBlur"
+		/>
+		<view
+			v-if="props.showPlus"
+			:class="buttonClass(true)"
+			:style="buttonStyle"
+			@click="onPlusClick"
+			@touchstart="onPlusPressStart"
+			@touchend="onPressEnd"
+			@touchcancel="onPressEnd"
+			@mousedown="onPlusPressStart"
+			@mouseup="onPressEnd"
+			@mouseleave="onPressEnd"
+		>
+			<m-icon name="plus" :custom-class="iconClass(true)" />
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-stepper 步进器：通过按钮或输入框调整数值。
+	 * 值类型 number | null（null 表示输入为空，对应 allow-empty / value-on-clear）；
+	 * 点击按钮遵循 auto-fixed，输入过程允许中间态、失焦时统一收敛。
+	 */
+	/** 对外值类型 */
+	type StepperValue = number | null
+	/** 外观变体 */
+	type StepperVariant = 'solid' | 'outlined' | 'accent' | 'ghost'
+	/** 尺寸 */
+	type StepperSize = 'medium' | 'small'
+	/** 主题风格 */
+	type StepperTheme = 'default' | 'round'
+
+	type Props = {
+		/** 当前值（v-model:value），运行时空值以 null 表达 */
+		value?: number
+		/** 最小值 */
+		min?: number
+		/** 最大值（默认不限制） */
+		max?: number
+		/** 步长 */
+		step?: number
+		/** 固定小数位数（-1 不固定） */
+		decimalLength?: number
+		/** 仅允许整数 */
+		integer?: boolean
+		/** 允许输入为空（值为 null） */
+		allowEmpty?: boolean
+		/** 清空后回写值：number / 'min' / 'max' / null */
+		valueOnClear?: number | string
+		/** 超出 [min, max] 时自动校正（按钮与失焦） */
+		autoFixed?: boolean
+		/** 禁用整个步进器 */
+		disabled?: boolean
+		/** 只读：外观正常、不可修改 */
+		readonly?: boolean
+		/** 禁用输入框（按钮仍可点） */
+		disableInput?: boolean
+		/** 禁用增加按钮 */
+		disablePlus?: boolean
+		/** 禁用减少按钮 */
+		disableMinus?: boolean
+		/** 显示增加按钮 */
+		showPlus?: boolean
+		/** 显示减少按钮 */
+		showMinus?: boolean
+		/** 显示输入框 */
+		showInput?: boolean
+		/** 长按按钮连续增减 */
+		longPress?: boolean
+		/** 长按触发时间 ms */
+		pressTime?: number
+		/** 长按后连续触发间隔 ms */
+		interval?: number
+		/** 变更前拦截：返回 false 阻止，支持 Promise */
+		beforeChange?: ((value: StepperValue) => boolean | Promise<boolean>)
+		/** 输入框宽度 px（0 用主题变量） */
+		inputWidth?: number
+		/** 按钮尺寸 / 输入框高度 px（0 用主题变量） */
+		buttonSize?: number
+		/** 主题风格 */
+		theme?: StepperTheme
+		/** 外观变体 */
+		variant?: StepperVariant
+		/** 尺寸 */
+		size?: StepperSize
+		/** 输入框占位文案 */
+		placeholder?: string
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: 1,
+		min: 1,
+		max: 999999999,
+		step: 1,
+		decimalLength: -1,
+		integer: false,
+		allowEmpty: false,
+		valueOnClear: null,
+		autoFixed: true,
+		disabled: false,
+		readonly: false,
+		disableInput: false,
+		disablePlus: false,
+		disableMinus: false,
+		showPlus: true,
+		showMinus: true,
+		showInput: true,
+		longPress: true,
+		pressTime: 350,
+		interval: 150,
+		beforeChange: null,
+		inputWidth: 0,
+		buttonSize: 0,
+		theme: 'default',
+		variant: 'solid',
+		size: 'medium',
+		placeholder: '',
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 值变化（v-model:value） */
+		'update:value': [value: StepperValue]
+		/** 值确认变化（点击按钮 / 失焦收敛） */
+		change: [value: StepperValue]
+		/** 点击增加按钮 */
+		plus: []
+		/** 点击减少按钮 */
+		minus: []
+		/** 点击到达边界或被禁用的按钮 */
+		overlimit: []
+		/** 输入框聚焦 */
+		focus: [event: UniEvent]
+		/** 输入框失焦 */
+		blur: [event: UniEvent]
+	}>()
+
+	/** 输入框文本（允许 "1."、"-" 等中间态） */
+	const inputText = ref<string>('')
+	/** 输入框是否聚焦中 */
+	const focused = ref<boolean>(false)
+	/** 聚焦快照（判断 change 是否触发） */
+	let focusSnapshot = ''
+	/** 长按触发定时器 */
+	let pressTimer = -1
+	/** 长按连续触发定时器 */
+	let repeatTimer = -1
+	/** 本次按压是否已触发长按 */
+	let longPressFired = false
+	/** 长按结束后抑制紧随的 click */
+	let suppressClick = false
+	/** 数字字符匹配 */
+	const digitPattern = new RegExp('^[0-9]$')
+
+	/**
+	 * 数值按 integer / decimalLength 取舍，并消除浮点误差
+	 *
+	 * @param value 原始数值
+	 * @returns 取舍后的数值
+	 */
+	function roundNumber(value: number): number {
+		if (props.integer) {
+			return Math.round(value)
+		}
+		if (props.decimalLength >= 0) {
+			return parseFloat(value.toFixed(props.decimalLength))
+		}
+		return Math.round(value * 1000000) / 1000000
+	}
+
+	/**
+	 * 自动校正时把数值收敛到 [min, max]
+	 *
+	 * @param value 原始数值
+	 * @returns 收敛后的数值
+	 */
+	function normalize(value: number): number {
+		let next = roundNumber(value)
+		if (props.autoFixed) {
+			if (next < props.min) {
+				next = props.min
+			}
+			if (next > props.max) {
+				next = props.max
+			}
+			next = roundNumber(next)
+		}
+		return next
+	}
+
+	/**
+	 * 值转输入框展示文本（decimalLength >= 0 时保留尾零）
+	 *
+	 * @param value 当前值
+	 * @returns 展示文本
+	 */
+	function displayText(value: StepperValue): string {
+		if (value == null) {
+			return ''
+		}
+		if (props.decimalLength >= 0) {
+			return value.toFixed(props.decimalLength)
+		}
+		return roundNumber(value).toString()
+	}
+
+	/**
+	 * 解析清空后的回写值（value-on-clear）
+	 *
+	 * @returns 回写值
+	 */
+	function resolveClearValue(): StepperValue {
+		const raw = props.valueOnClear as number | string | null
+		if (raw == null) {
+			return null
+		}
+		if (typeof raw == 'string') {
+			const text = raw as string
+			if (text == 'min') {
+				return normalize(props.min)
+			}
+			if (text == 'max') {
+				return normalize(props.max)
+			}
+			const parsed = parseFloat(text)
+			return isNaN(parsed) ? normalize(props.min) : normalize(parsed)
+		}
+		return normalize(raw as number)
+	}
+
+	/**
+	 * 过滤输入字符：保留数字、一个小数点、首字符负号（min < 0 时）
+	 *
+	 * @param raw 原生输入文本
+	 * @returns 过滤后的文本
+	 */
+	function sanitize(raw: string): string {
+		let result = ''
+		let hasDot = false
+		for (let i = 0; i < raw.length; i++) {
+			const ch = raw.substring(i, i + 1)
+			if (ch == '-') {
+				if (props.min < 0 && result == '') {
+					result = '-'
+				}
+			} else if (ch == '.') {
+				if (!props.integer && !hasDot) {
+					result += '.'
+					hasDot = true
+				}
+			} else if (digitPattern.test(ch)) {
+				result += ch
+			}
+		}
+		return result
+	}
+
+	/** 生效值：外部值按当前规则归一化（null 保持 null） */
+	const effectiveValue = computed<StepperValue>(() => {
+		const value = props.value as StepperValue
+		if (value == null) {
+			return null
+		}
+		return normalize(value)
+	})
+
+	/** 增加按钮是否不可用（含边界与 autoFixed） */
+	const plusDisabled = computed<boolean>(() => {
+		if (props.disabled || props.disablePlus) {
+			return true
+		}
+		if (!props.autoFixed) {
+			return false
+		}
+		const value = effectiveValue.value
+		return value != null && value >= props.max
+	})
+
+	/** 减少按钮是否不可用（含边界与 autoFixed） */
+	const minusDisabled = computed<boolean>(() => {
+		if (props.disabled || props.disableMinus) {
+			return true
+		}
+		if (!props.autoFixed) {
+			return false
+		}
+		const value = effectiveValue.value
+		return value != null && value <= props.min
+	})
+
+	/** 根类名：变体 + 尺寸 + 主题 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-stepper m-stepper--' + props.variant
+		if (props.size == 'small') {
+			cls += ' m-stepper--small'
+		}
+		if (props.theme == 'round') {
+			cls += ' m-stepper--round'
+		}
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 根内联样式：仅透传 customStyle */
+	const rootStyle = computed<string>(() => props.customStyle)
+
+	/** 按钮容器类名（尺寸 / round / accent / 禁用视觉） */
+	function buttonClass(plus: boolean): string {
+		let cls = 'm-stepper__button'
+		if (props.size == 'small') {
+			cls += ' m-stepper__button--small'
+		}
+		if (props.theme == 'round') {
+			cls += ' m-stepper__button--round'
+		}
+		if (props.variant == 'accent' && props.theme != 'round') {
+			cls += ' m-stepper__button--accent'
+		}
+		const blocked = plus ? plusDisabled.value : minusDisabled.value
+		if (blocked) {
+			cls += props.theme == 'round' ? ' m-stepper__button--round-disabled' : ' m-stepper__button--disabled'
+		}
+		return cls
+	}
+
+	/** 图标类名（颜色 / 字号落在 m-icon 根节点上） */
+	function iconClass(plus: boolean): string {
+		let cls = 'm-stepper__icon'
+		if (props.size == 'small') {
+			cls += ' m-stepper__icon--small'
+		}
+		if (props.theme == 'round') {
+			cls += ' m-stepper__icon--round'
+		}
+		if (props.variant == 'accent' && props.theme != 'round') {
+			cls += ' m-stepper__icon--accent'
+		}
+		const blocked = plus ? plusDisabled.value : minusDisabled.value
+		if (blocked) {
+			cls += props.theme == 'round' ? ' m-stepper__icon--round-disabled' : ' m-stepper__icon--disabled'
+		}
+		return cls
+	}
+
+	/** 输入框类名 */
+	const inputClass = computed<string>(() => {
+		let cls = 'm-stepper__input'
+		if (props.size == 'small') {
+			cls += ' m-stepper__input--small'
+		}
+		if (props.theme == 'round') {
+			cls += ' m-stepper__input--round'
+		}
+		if (props.variant == 'accent' && props.theme != 'round') {
+			cls += ' m-stepper__input--accent'
+		}
+		if (props.disabled || props.disableInput) {
+			cls += ' m-stepper__input--disabled'
+		}
+		return cls
+	})
+
+	/** 输入框是否原生禁用（readonly 同样禁用编辑，但视觉保持正常） */
+	const inputDisabled = computed<boolean>(() => {
+		return props.disabled || props.disableInput || props.readonly
+	})
+
+	/** 输入框类型：整数用 number，小数用 digit */
+	const inputType = computed<string>(() => props.integer ? 'number' : 'digit')
+
+	/** 输入框内联样式：自定义宽度 / 高度 + 居中 */
+	const inputStyle = computed<string>(() => {
+		let style = 'text-align: center;'
+		const width = props.inputWidth
+		if (width > 0) {
+			style += 'width: ' + width.toString() + 'px;'
+		}
+		const size = props.buttonSize
+		if (size > 0) {
+			style += 'height: ' + size.toString() + 'px;'
+		}
+		return style
+	})
+
+	/** 按钮内联尺寸：buttonSize > 0 时覆盖主题值 */
+	const buttonStyle = computed<string>(() => {
+		const size = props.buttonSize
+		if (size <= 0) {
+			return ''
+		}
+		return 'width: ' + size.toString() + 'px; height: ' + size.toString() + 'px;'
+	})
+
+	/**
+	 * 提交新值（更新 v-model 并派发 change）
+	 *
+	 * @param next 新值
+	 */
+	function commit(next: StepperValue) {
+		if (next == effectiveValue.value) {
+			return
+		}
+		emit('update:value', next)
+		emit('change', next)
+	}
+
+	/**
+	 * 请求变更：先经过 beforeChange（同步 / Promise），通过后再提交
+	 *
+	 * @param rawNext 候选值
+	 */
+	function requestChange(rawNext: number) {
+		const next = normalize(rawNext)
+		const callback = props.beforeChange as ((value: StepperValue) => boolean | Promise<boolean>) | null
+		if (callback == null) {
+			commit(next)
+			return
+		}
+		const result = callback(next)
+		if (typeof result == 'boolean') {
+			if (result) {
+				commit(next)
+			}
+		} else {
+			(result as Promise<boolean>).then((ok: boolean) => {
+				if (ok) {
+					commit(next)
+				}
+			})
+		}
+	}
+
+	/**
+	 * 减少一次
+	 */
+	function doMinus() {
+		if (props.disabled || props.readonly || minusDisabled.value) {
+			emit('overlimit')
+			return
+		}
+		emit('minus')
+		const current = effectiveValue.value
+		requestChange((current == null ? props.min : current) - props.step)
+	}
+
+	/**
+	 * 增加一次
+	 */
+	function doPlus() {
+		if (props.disabled || props.readonly || plusDisabled.value) {
+			emit('overlimit')
+			return
+		}
+		emit('plus')
+		const current = effectiveValue.value
+		requestChange((current == null ? props.min : current) + props.step)
+	}
+
+	/**
+	 * 输入事件：过滤字符、允许中间态；合法数字即时回写
+	 *
+	 * @param event 输入事件
+	 */
+	function onInput(event: UniInputEvent) {
+		if (props.disabled || props.readonly) {
+			return
+		}
+		const text = sanitize(event.detail.value)
+		inputText.value = text
+		if (text == '' || text == '-' || text == '.' || text == '-.') {
+			if (text == '' && props.allowEmpty) {
+				emit('update:value', null)
+			}
+			return
+		}
+		const parsed = parseFloat(text)
+		if (isNaN(parsed)) {
+			return
+		}
+		emit('update:value', roundNumber(parsed))
+	}
+
+	/**
+	 * 聚焦：记录快照
+	 *
+	 * @param event 聚焦事件
+	 */
+	function onFocus(event: UniEvent) {
+		focused.value = true
+		focusSnapshot = inputText.value
+		emit('focus', event)
+	}
+
+	/**
+	 * 失焦：空值回落 / 解析收敛 / 回写展示文本
+	 *
+	 * @param event 失焦事件
+	 */
+	function onBlur(event: UniEvent) {
+		focused.value = false
+		emit('blur', event)
+		const text = inputText.value.trim()
+		let next: StepperValue = null
+		if (text == '' || text == '-' || text == '.' || text == '-.') {
+			next = props.allowEmpty ? resolveClearValue() : props.min
+		} else {
+			const parsed = parseFloat(text)
+			if (isNaN(parsed)) {
+				next = props.min
+			} else {
+				next = normalize(parsed)
+			}
+		}
+		inputText.value = displayText(next)
+		if (next != effectiveValue.value) {
+			emit('update:value', next)
+		}
+		if (displayText(next) != focusSnapshot) {
+			emit('change', next)
+		}
+	}
+
+	/**
+	 * 停止长按定时器
+	 */
+	function stopPress() {
+		if (pressTimer != -1) {
+			clearTimeout(pressTimer)
+			pressTimer = -1
+		}
+		if (repeatTimer != -1) {
+			clearInterval(repeatTimer)
+			repeatTimer = -1
+		}
+	}
+
+	/**
+	 * 开始按压：长按触发一次后按间隔连续触发
+	 *
+	 * @param plus true 为增加，false 为减少
+	 */
+	function startPress(plus: boolean) {
+		stopPress()
+		longPressFired = false
+		if (props.disabled || props.readonly || !props.longPress) {
+			return
+		}
+		const delay = props.pressTime > 0 ? props.pressTime : 350
+		const gap = props.interval > 0 ? props.interval : 150
+		pressTimer = setTimeout(() => {
+			pressTimer = -1
+			longPressFired = true
+			if (plus) {
+				doPlus()
+			} else {
+				doMinus()
+			}
+			repeatTimer = setInterval(() => {
+				const blocked = plus ? plusDisabled.value : minusDisabled.value
+				if (blocked) {
+					stopPress()
+					return
+				}
+				if (plus) {
+					doPlus()
+				} else {
+					doMinus()
+				}
+			}, gap)
+		}, delay)
+	}
+
+	/**
+	 * 结束按压：清理定时器，并抑制长按结束后的 click
+	 */
+	function onPressEnd() {
+		stopPress()
+		if (longPressFired) {
+			suppressClick = true
+			longPressFired = false
+			setTimeout(() => {
+				suppressClick = false
+			}, 0)
+		}
+	}
+
+	/**
+	 * 减少按钮按下
+	 */
+	function onMinusPressStart() {
+		startPress(false)
+	}
+
+	/**
+	 * 增加按钮按下
+	 */
+	function onPlusPressStart() {
+		startPress(true)
+	}
+
+	/**
+	 * 减少按钮点击
+	 */
+	function onMinusClick() {
+		if (suppressClick) {
+			suppressClick = false
+			return
+		}
+		doMinus()
+	}
+
+	/**
+	 * 增加按钮点击
+	 */
+	function onPlusClick() {
+		if (suppressClick) {
+			suppressClick = false
+			return
+		}
+		doPlus()
+	}
+
+	// 外部值变化：非聚焦状态下同步展示文本
+	watch(
+		(): StepperValue => props.value as StepperValue,
+		(value: StepperValue) => {
+			if (focused.value) {
+				return
+			}
+			inputText.value = displayText(value == null ? null : normalize(value))
+		},
+		{ immediate: true }
+	)
+
+	// 卸载时清理长按定时器
+	onUnmounted(() => {
+		stopPress()
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明：组件内顶层引入 theme/vars.scss（全部 !default），
+	 * 覆盖方式为项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根 ========== */
+	.m-stepper {
+		height: $m-stepper-height;
+		flex-direction: row;
+		align-items: center;
+		border-radius: $m-stepper-radius;
+		background-color: $m-stepper-background;
+	}
+
+	.m-stepper--solid {
+		background-color: $m-stepper-background;
+	}
+
+	.m-stepper--outlined {
+		background-color: transparent;
+		border-width: 1px;
+		border-style: solid;
+		border-color: $m-stepper-border-color;
+	}
+
+	.m-stepper--accent {
+		background-color: $m-stepper-accent-background;
+	}
+
+	.m-stepper--ghost {
+		background-color: transparent;
+	}
+
+	.m-stepper--small {
+		height: $m-stepper-height-small;
+	}
+
+	.m-stepper--round {
+		background-color: transparent;
+		border-width: 0;
+		border-radius: $m-stepper-radius-round;
+	}
+
+	/* ========== 按钮 ========== */
+	.m-stepper__button {
+		width: $m-stepper-height;
+		height: $m-stepper-height;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.m-stepper__button--small {
+		width: $m-stepper-height-small;
+		height: $m-stepper-height-small;
+	}
+
+	.m-stepper__button--round {
+		background-color: $m-stepper-round-color;
+		border-radius: $m-stepper-radius-round;
+	}
+
+	.m-stepper__button--round-disabled {
+		background-color: $m-stepper-background;
+		border-radius: $m-stepper-radius-round;
+	}
+
+	/* ========== 图标（颜色 / 字号落在 m-icon 根节点） ========== */
+	.m-stepper__icon {
+		color: $m-stepper-button-icon-color;
+		font-size: $m-stepper-button-icon-size;
+	}
+
+	.m-stepper__icon--small {
+		font-size: $m-stepper-button-icon-size-small;
+	}
+
+	.m-stepper__icon--accent {
+		color: $m-stepper-accent-color;
+	}
+
+	.m-stepper__icon--round {
+		color: $m-stepper-round-icon-color;
+	}
+
+	.m-stepper__icon--disabled {
+		color: $m-stepper-button-disabled-icon-color;
+	}
+
+	.m-stepper__icon--round-disabled {
+		color: $m-stepper-button-disabled-icon-color;
+	}
+
+	/* ========== 输入框 ========== */
+	.m-stepper__input {
+		width: $m-stepper-input-width;
+		height: $m-stepper-height;
+		font-size: $m-stepper-input-font-size;
+		color: $m-stepper-input-text-color;
+		background-color: transparent;
+	}
+
+	.m-stepper__input--small {
+		width: $m-stepper-input-width-small;
+		height: $m-stepper-height-small;
+		font-size: $m-stepper-input-font-size-small;
+	}
+
+	.m-stepper__input--round {
+		background-color: transparent;
+	}
+
+	.m-stepper__input--accent {
+		color: $m-stepper-accent-color;
+	}
+
+	.m-stepper__input--disabled {
+		color: $m-stepper-input-disabled-text-color;
+	}
+
+	.m-stepper__placeholder {
+		color: $m-text-color-fourth;
+	}
+</style>

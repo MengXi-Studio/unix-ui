@@ -132,7 +132,9 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Search 搜索', link: '/components/search' },
 						{ text: 'Segmented 分段控制器', link: '/components/segmented' },
 						{ text: 'Signature 签名', link: '/components/signature' },
-						{ text: 'Slider 滑动条', link: '/components/slider' }
+						{ text: 'Slider 滑动条', link: '/components/slider' },
+						{ text: 'Stepper 步进器', link: '/components/stepper' },
+						{ text: 'Switch 开关', link: '/components/switch' }
 					]
 				},
 				{

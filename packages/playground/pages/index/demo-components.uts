@@ -246,6 +246,18 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '滑动条',
 				enName: 'Slider',
 				desc: '单值 / 双滑块滑动选择，支持垂直、反向、步长、自定义颜色尺寸、值气泡、刻度与自定义滑块插槽。'
+			},
+			{
+				name: 'stepper',
+				zhName: '步进器',
+				enName: 'Stepper',
+				desc: '按钮与输入框组合的数值调整控件，支持范围 / 步长 / 精度 / 空值、四种变体、两档尺寸、长按连续增减与变更拦截。'
+			},
+			{
+				name: 'switch',
+				zhName: '开关',
+				enName: 'Switch',
+				desc: '开 / 关状态切换，支持自定义值、颜色、尺寸、只读禁用、加载态、异步切换、轨道文字与滑块 / 背景插槽。'
 			}
 		]
 	},

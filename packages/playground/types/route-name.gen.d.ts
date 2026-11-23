@@ -106,6 +106,10 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		signature: 'pages-sub/form/signature/signature'
 		/** 滑动条 Slider */
 		slider: 'pages-sub/form/slider/slider'
+		/** 步进器 Stepper */
+		stepper: 'pages-sub/form/stepper/stepper'
+		/** 开关 Switch */
+		switch: 'pages-sub/form/switch/switch'
 		/** 紧凑布局 Compact */
 		compact: 'pages-sub/layouts/compact/compact'
 		/** 分割线 Divider */

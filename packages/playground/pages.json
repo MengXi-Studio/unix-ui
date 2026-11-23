@@ -324,6 +324,18 @@
 					"style": {
 						"navigationBarTitleText": "滑动条 Slider"
 					}
+				},
+				{
+					"path": "stepper/stepper",
+					"style": {
+						"navigationBarTitleText": "步进器 Stepper"
+					}
+				},
+				{
+					"path": "switch/switch",
+					"style": {
+						"navigationBarTitleText": "开关 Switch"
+					}
 				}
 			]
 		},

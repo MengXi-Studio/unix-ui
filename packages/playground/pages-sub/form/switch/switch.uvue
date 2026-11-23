@@ -1,0 +1,250 @@
+<template>
+	<view class="page">
+		<demo-navbar title="开关" subtitle="Switch" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<view class="row">
+						<m-switch v-model:value="basicChecked" @change="onBasicChange" @click="onClick" />
+						<text class="caption">当前：{{ basicChecked ? '开' : '关' }}</text>
+					</view>
+					<text class="caption">v-model:value 绑定选中状态，change 派发切换后的值</text>
+				</view>
+
+				<text class="section" id="status">禁用与只读</text>
+				<view class="card">
+					<view class="row">
+						<m-switch :value="false" disabled />
+						<m-switch :value="true" disabled />
+						<text class="caption">disabled：整体降低透明度且不可点击</text>
+					</view>
+					<view class="row">
+						<m-switch :value="false" readonly />
+						<m-switch :value="true" readonly />
+						<text class="caption">readonly：外观正常，但不可切换</text>
+					</view>
+				</view>
+
+				<text class="section" id="loading">加载状态</text>
+				<view class="card">
+					<view class="row">
+						<m-switch v-model:value="loadingChecked" :loading="true" />
+						<text class="caption">loading=true：滑块内显示加载图标且不可点击</text>
+					</view>
+					<view class="row">
+						<m-switch
+							v-model:value="asyncChecked"
+							:before-update="beforeUpdate"
+							@update:loading="onLoadingChange"
+						/>
+						<text class="caption">before-update 返回 Promise（800ms），pending 自动 loading；{{ loadingLog }}</text>
+					</view>
+				</view>
+
+				<text class="section" id="size">自定义尺寸</text>
+				<view class="card">
+					<view class="row">
+						<m-switch v-model:value="sizeChecked" :size="18" />
+						<m-switch v-model:value="sizeChecked" :size="26" />
+						<m-switch v-model:value="sizeChecked" :size="34" />
+						<text class="caption">size：18 / 26 / 34px</text>
+					</view>
+				</view>
+
+				<text class="section" id="color">自定义颜色</text>
+				<view class="card">
+					<view class="row">
+						<m-switch v-model:value="colorChecked" active-color="#ee0a24" inactive-color="#dcdee0" />
+						<m-switch v-model:value="colorChecked" active-color="#07c160" inactive-color="#f2f3f5" />
+						<text class="caption">active-color / inactive-color</text>
+					</view>
+				</view>
+
+				<text class="section" id="value">不同状态的值</text>
+				<view class="card">
+					<view class="row">
+						<m-switch v-model:value="statusValue" checked-value="run" unchecked-value="stop" />
+						<text class="caption">字符串：{{ statusValue }}</text>
+					</view>
+					<view class="row">
+						<m-switch v-model:value="numberValue" :checked-value="1" :unchecked-value="0" />
+						<text class="caption">数字：{{ numberValue }}</text>
+					</view>
+				</view>
+
+				<text class="section" id="text">带有文字</text>
+				<view class="card">
+					<view class="row">
+						<m-switch v-model:value="textChecked" checked-text="开" unchecked-text="关" />
+						<m-switch
+							v-model:value="textChecked"
+							checked-text="联锁使能（需班组长授权）"
+							unchecked-text="联锁禁用"
+							:size="30"
+						/>
+					</view>
+					<text class="caption">checked-text / unchecked-text：文案在滑块对侧居中，默认自适应轨道宽度并完整展示</text>
+					<view class="row">
+						<m-switch
+							v-model:value="textChecked"
+							checked-text="联锁使能（需班组长授权）"
+							unchecked-text="联锁禁用"
+							:size="30"
+							:text-auto-width="false"
+						/>
+					</view>
+					<text class="caption">text-auto-width=false：轨道保持默认宽度，超长文案按轨道裁剪</text>
+				</view>
+
+				<text class="section" id="slot">插槽自定义</text>
+				<view class="card">
+					<view class="row">
+						<m-switch v-model:value="slotChecked">
+							<template #checked-text>
+								<m-icon name="success" color="white" size="14" />
+							</template>
+							<template #unchecked-text>
+								<m-icon name="cross" color="white" size="14" />
+							</template>
+						</m-switch>
+						<text class="caption">checked-text / unchecked-text 插槽</text>
+					</view>
+					<view class="row">
+						<m-switch v-model:value="nodeChecked">
+							<template #node>
+								<m-icon
+									:name="nodeChecked ? 'success' : 'cross'"
+									:color="nodeChecked ? 'primary' : 'default'"
+									size="14"
+								/>
+							</template>
+						</m-switch>
+						<text class="caption">node 插槽：自定义滑块内容</text>
+					</view>
+					<view class="row">
+						<m-switch v-model:value="bgChecked">
+							<template #background>
+								<view :class="bgChecked ? 'custom-background custom-background--start' : 'custom-background custom-background--end'">
+									<text class="custom-background-text">{{ bgChecked ? 'ON' : 'OFF' }}</text>
+								</view>
+							</template>
+						</m-switch>
+						<text class="caption">background 插槽：自定义轨道内容</text>
+					</view>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '开关 Switch', name: 'switch' })
+
+	/** 基础用法 */
+	const basicChecked = ref<boolean>(true)
+	/** 外部 loading 演示 */
+	const loadingChecked = ref<boolean>(true)
+	/** 异步切换演示 */
+	const asyncChecked = ref<boolean>(false)
+	/** async 演示日志 */
+	const loadingLog = ref<string>('等待操作')
+	/** 尺寸演示 */
+	const sizeChecked = ref<boolean>(true)
+	/** 颜色演示 */
+	const colorChecked = ref<boolean>(true)
+	/** 字符串值演示 */
+	const statusValue = ref<string>('run')
+	/** 数字值演示 */
+	const numberValue = ref<number>(1)
+	/** 文字演示 */
+	const textChecked = ref<boolean>(true)
+	/** 文字插槽演示 */
+	const slotChecked = ref<boolean>(true)
+	/** 滑块插槽演示 */
+	const nodeChecked = ref<boolean>(true)
+	/** 背景插槽演示 */
+	const bgChecked = ref<boolean>(true)
+
+	/**
+	 * 异步切换：800ms 后 resolve，期间组件自动 loading
+	 *
+	 * @param value 目标值
+	 * @returns 完成 Promise
+	 */
+	const beforeUpdate = (value: boolean | string | number): Promise<any> => {
+		return new Promise<any>((resolve: (result: any) => void) => {
+			setTimeout(() => {
+				resolve(null)
+			}, 800)
+		})
+	}
+
+	/**
+	 * 基础用法切换
+	 *
+	 * @param value 切换后的值
+	 */
+	function onBasicChange(value: boolean | string | number) {
+		console.log('switch basic change: ' + value.toString())
+	}
+
+	/**
+	 * 点击开关
+	 */
+	function onClick() {
+		console.log('switch click')
+	}
+
+	/**
+	 * 异步 loading 变化
+	 *
+	 * @param loading 是否加载中
+	 */
+	function onLoadingChange(loading: boolean) {
+		loadingLog.value = loading ? 'loading...' : '切换完成'
+		console.log('switch async loading: ' + loading.toString())
+	}
+</script>
+
+<style lang="scss">
+	.row {
+		flex-direction: row;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+		margin-bottom: 8px;
+	}
+
+	/* uni-app x 所有 view 默认 flex column，轨道内文案必须显式 row 才能做水平对齐 */
+	.custom-background {
+		width: 100%;
+		height: 100%;
+		flex-direction: row;
+		align-items: center;
+		padding-left: 8px;
+		padding-right: 8px;
+	}
+
+	/* 打开态滑块在右，文案靠左 */
+	.custom-background--start {
+		justify-content: flex-start;
+	}
+
+	/* 关闭态滑块在左，文案靠右 */
+	.custom-background--end {
+		justify-content: flex-end;
+	}
+
+	.custom-background-text {
+		font-size: 11px;
+		color: #ffffff;
+	}
+</style>

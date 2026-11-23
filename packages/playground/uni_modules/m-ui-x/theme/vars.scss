@@ -1078,3 +1078,69 @@ $m-slider-scale-font-size: 12px !default;
 $m-slider-scale-color: $m-text-color-tertiary !default;
 /** 刻度与轨道间距 */
 $m-slider-scale-gap: 6px !default;
+
+/* ========== Stepper 步进器 ========== */
+/** 默认高度 / 按钮尺寸 */
+$m-stepper-height: 28px !default;
+/** 输入框宽度 */
+$m-stepper-input-width: 32px !default;
+/** 输入框字号 */
+$m-stepper-input-font-size: 14px !default;
+/** 输入框文字颜色 */
+$m-stepper-input-text-color: $m-text-color !default;
+/** 输入框禁用文字颜色 */
+$m-stepper-input-disabled-text-color: $m-text-color-tertiary !default;
+/** 默认底色（solid） */
+$m-stepper-background: #f2f3f5 !default;
+/** 默认圆角 */
+$m-stepper-radius: $m-radius-md !default;
+/** round 主题圆角 */
+$m-stepper-radius-round: $m-radius-max !default;
+/** 按钮图标颜色 */
+$m-stepper-button-icon-color: $m-text-color !default;
+/** 按钮图标字号 */
+$m-stepper-button-icon-size: 16px !default;
+/** 按钮禁用图标颜色 */
+$m-stepper-button-disabled-icon-color: $m-text-color-fourth !default;
+/** outlined 描边颜色 */
+$m-stepper-border-color: #ebedf0 !default;
+/** accent 变体底色 */
+$m-stepper-accent-background: rgba($m-color-primary, 0.1) !default;
+/** accent 变体文字 / 图标颜色 */
+$m-stepper-accent-color: $m-color-primary !default;
+/** round 主题按钮底色 */
+$m-stepper-round-color: $m-color-primary !default;
+/** round 主题图标颜色 */
+$m-stepper-round-icon-color: $m-white !default;
+/** small 尺寸高度 / 按钮尺寸 */
+$m-stepper-height-small: 24px !default;
+/** small 尺寸输入框宽度 */
+$m-stepper-input-width-small: 28px !default;
+/** small 尺寸输入框字号 */
+$m-stepper-input-font-size-small: 12px !default;
+/** small 尺寸按钮图标字号 */
+$m-stepper-button-icon-size-small: 14px !default;
+
+/* ========== Switch 开关 ========== */
+/** 轨道宽度 */
+$m-switch-width: 51px !default;
+/** 轨道高度 */
+$m-switch-height: 30px !default;
+/** 滑块尺寸（位移按轨道宽度 80% 计算，改尺寸时同步调整宽度 / 高度） */
+$m-switch-node-size: 26px !default;
+/** 滑块底色 */
+$m-switch-node-background: $m-white !default;
+/** 滑块阴影 */
+$m-switch-node-shadow: 0 3px 1px rgba(0, 0, 0, 0.05) !default;
+/** 关闭时轨道底色 */
+$m-switch-background: rgba(120, 120, 128, 0.16) !default;
+/** 打开时轨道底色 */
+$m-switch-on-background: $m-color-primary !default;
+/** 禁用透明度 */
+$m-switch-disabled-opacity: $m-disabled-opacity !default;
+/** 加载态透明度 */
+$m-switch-loading-opacity: 0.6 !default;
+/** 轨道文字颜色 */
+$m-switch-text-color: $m-white !default;
+/** 轨道文字字号 */
+$m-switch-text-font-size: 12px !default;

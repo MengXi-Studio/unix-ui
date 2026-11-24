@@ -127,6 +127,11 @@ export const routes: RouteConfig[] = [
 		meta: { title: '时间范围选择 TimeRangePicker' },
 	},
 	{
+		path: 'pages-sub/display/accordion/accordion',
+		name: 'accordion',
+		meta: { title: '手风琴 Accordion' },
+	},
+	{
 		path: 'pages-sub/display/badge/badge',
 		name: 'badge',
 		meta: { title: '徽标 Badge' },

@@ -490,6 +490,12 @@ export const demoGroups: DemoGroup[] = [
 		title: '数据展示',
 		components: [
 			{
+				name: 'accordion',
+				zhName: '手风琴',
+				enName: 'Accordion',
+				desc: '折叠收纳内容，支持单选 / 多选展开、单项与全局禁用、隐藏分隔线、圆角卡片形态、高度过渡动画与实例方法控制。'
+			},
+			{
 				name: 'badge',
 				zhName: '徽标',
 				enName: 'Badge',

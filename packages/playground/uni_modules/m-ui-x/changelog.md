@@ -1,3 +1,9 @@
+## 0.9.0 (2026-11-24)
+
+- 新增 `m-accordion` 手风琴容器：`v-model:value` 绑定展开标识数组（`multiple=false` 时最多一项），支持 `multiple` / `disabled` / `hide-border` / `inset`（圆角卡片）/ `duration`（展开收起高度过渡，0 直接显隐）/ `lazy-render`（默认首次展开才渲染）；未传 `value` 时容器自持状态（受控 + 非受控双支持）；实例方法 `open(name)` / `close(name)` / `toggle(name)` / `closeAll()`
+- 新增 `m-accordion-item` 手风琴面板：`title` / `extra` / `name`（缺省以注册序兜底）/ `disabled`（与容器 disabled 取或）；头部点击恒派发 `click`；插槽 `default` / `title` / `extra` / `arrow`（作用域参数 `visible`）；组内末项分隔线自动隐藏
+- 新增 `$m-accordion-*` 主题变量段（底色 / 分隔线 / 头部与内容内边距 / 标题与扩展文本 / 箭头 / 禁用透明度 / 圆角卡片等 17 项）
+
 ## 0.8.0 (2026-11-23)
 
 - 新增 `m-uploader` 文件上传组件：选择区 + 预览格列表，`v-model:value` 绑定普通对象数组（`url` / `path` / `name` / `size` / `type` / `status` / `message` / `progress` / `deletable`）；`media-type` 支持图片 / 视频（数组混合时选择器按图片打开），`multiple` / `max-count` / `max-size` + `oversize`、`accept`（仅 Web 透传 extension）、`capture="camera"` 拍照、`disabled` / `readonly` / `deletable` / `show-upload`、`preview-size` / `preview-full-image` / `image-fit`；`upload-url` 非空时内置 `uni.uploadFile` 自动上传并回填状态与进度（按 5% 步长节流），为空时只派发 `after-read` 由业务上传；业务通过 `setItemStatus(index, status, message, progress)` 回写状态；失败项点击自动重传；`sortable` 开启长按 300ms 拖拽排序并派发 `sort`；`before-choose` / `before-read` / `before-delete` 三段钩子支持同步或 Promise；`choose` / `clear` / `abort` / `reupload` / `setItemStatus` 实例方法；插槽 `default` / `preview-cover` / `preview-delete`

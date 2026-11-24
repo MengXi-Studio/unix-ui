@@ -54,6 +54,8 @@ declare module '@/uni_modules/ux-router/utssdk/index.uts' {
 		'time-range-picker-popup': 'pages-sub/datetime/time-range-picker-popup/time-range-picker-popup'
 		/** 时间范围选择 TimeRangePicker */
 		'time-range-picker': 'pages-sub/datetime/time-range-picker/time-range-picker'
+		/** 手风琴 Accordion */
+		accordion: 'pages-sub/display/accordion/accordion'
 		/** 徽标 Badge */
 		badge: 'pages-sub/display/badge/badge'
 		/** 单元格 Cell */

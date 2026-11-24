@@ -1,0 +1,408 @@
+<template>
+	<!-- 手风琴面板：头部（标题 / 扩展内容 / 箭头）+ 可折叠内容区 + 0.5px 分隔线 -->
+	<view :class="itemClass" :style="rootStyle">
+		<view :class="headerClass" :hover-class="hoverClass" :hover-stay-time="60" @click="onHeaderClick">
+			<view class="m-accordion-item__title">
+				<slot name="title">
+					<text v-if="props.title != ''" class="m-accordion-item__title-text">{{ props.title }}</text>
+				</slot>
+			</view>
+			<slot name="extra">
+				<text v-if="props.extra != ''" class="m-accordion-item__extra-text">{{ props.extra }}</text>
+			</slot>
+			<view class="m-accordion-item__arrow">
+				<slot name="arrow" :visible="expanded">
+					<view :class="arrowIconClass">
+						<m-icon name="arrow" />
+					</view>
+				</slot>
+			</view>
+		</view>
+		<view v-if="rendered" ref="bodyRef" class="m-accordion-item__body" :style="bodyStyle">
+			<view class="m-accordion-item__body-inner">
+				<slot></slot>
+			</view>
+		</view>
+		<view v-if="showLine" class="m-accordion-item__line"></view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-accordion-item 手风琴面板：配合 m-accordion 使用。
+	 * 展开态由容器上下文下发（独立使用时自持状态）；点击头部恒派发 click 事件，禁用时不再切换。
+	 * 展开 / 收起走高度过渡动画（measure + UniElement.animate），
+	 * 小程序端与测量失败 / duration<=0 时降级为直接显隐。
+	 */
+	import {
+		ACCORDION_KEY,
+		AccordionContext,
+		AccordionValue
+	} from '../m-accordion/accordion.uts'
+	import MIcon from '../m-icon/m-icon.uvue'
+
+	type Props = {
+		/** 面板标题 */
+		title?: string
+		/** 标题右侧扩展文本 */
+		extra?: string
+		/** 面板唯一标识（null 时以注册序兜底） */
+		name?: string | number
+		/** 是否禁用本面板 */
+		disabled?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		title: '',
+		extra: '',
+		name: null,
+		disabled: false,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 头部点击（含禁用态，恒派发） */
+		click: [event: MouseEvent]
+	}>()
+
+	/** 容器上下文（独立使用时为 null，面板自持展开态） */
+	const ctx = inject<AccordionContext | null>(ACCORDION_KEY, null)
+
+	/** 自身标识（注册后回填） */
+	const ownName = ref<AccordionValue>('')
+	/** 注册 key（注销与末线判定用） */
+	let regKey = 0
+	if (ctx != null) {
+		const rawName: AccordionValue | null = props.name == null ? null : props.name!
+		const result = ctx.register(rawName)
+		ownName.value = result.name
+		regKey = result.key
+	} else {
+		ownName.value = props.name == null ? '' : props.name!
+	}
+
+	onUnmounted(() => {
+		if (ctx != null) {
+			ctx.unregister(regKey)
+		}
+	})
+
+	/** 独立使用时的展开态（组内以容器为准） */
+	const standaloneExpanded = ref<boolean>(false)
+
+	/** 当前是否展开 */
+	const expanded = computed<boolean>(() => {
+		if (ctx == null) {
+			return standaloneExpanded.value
+		}
+		return ctx.isExpanded(ownName.value)
+	})
+
+	/** 是否曾展开过（lazy-render 协议：首次展开后永久保留渲染，收起仅高度归零） */
+	const everOpened = ref<boolean>(expanded.value)
+
+	/** 内容是否渲染（非懒渲染 / 曾展开过 / 独立使用） */
+	const rendered = computed<boolean>(() => {
+		if (ctx == null) {
+			return true
+		}
+		if (!ctx.lazyRender.value) {
+			return true
+		}
+		return everOpened.value
+	})
+
+	/** 实际禁用态：面板自身 disabled 与容器 disabled 取或 */
+	const actualDisabled = computed<boolean>(() => {
+		if (props.disabled) {
+			return true
+		}
+		if (ctx != null) {
+			return ctx.disabled.value
+		}
+		return false
+	})
+
+	/** 分隔线显隐：容器隐藏分隔线时不渲染；组内末项自动隐藏；独立使用默认显示 */
+	const showLine = computed<boolean>(() => {
+		if (ctx == null) {
+			return true
+		}
+		if (ctx.hideBorder.value) {
+			return false
+		}
+		return !ctx.isLast(regKey)
+	})
+
+	/** 内容区根节点（高度测量与动画目标） */
+	const bodyRef = ref<UniElement | null>(null)
+
+	/** 内容区内联样式（折叠态显式高度 0 + 裁剪；展开结束清空回到自动高度） */
+	const bodyStyle = ref<string>('height: 0px; overflow: hidden;')
+
+	/** 动画令牌：连续切换时旧定时器不再改写样式 */
+	let animToken = 0
+
+	/**
+	 * 测量元素高度（Web 同步；App 走异步接口；小程序不进入动画路径）
+	 *
+	 * @param el 内容区根节点
+	 * @param cb 高度回调（测量失败时为 0）
+	 */
+	function measureHeight(el: UniElement, cb: (h: number) => void) {
+		// #ifdef WEB
+		cb(el.getBoundingClientRect().height)
+		// #endif
+		// #ifndef WEB
+		el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+			cb(rect.height)
+		})
+		// #endif
+	}
+
+	/** 展开动画：0 → 内容实测高度，结束后清空内联高度 */
+	function playOpen() {
+		const c = ctx
+		if (c == null) {
+			bodyStyle.value = ''
+			return
+		}
+		const ms = Math.round(c.duration.value * 1000)
+		if (ms <= 0) {
+			bodyStyle.value = ''
+			return
+		}
+		bodyStyle.value = 'height: 0px; overflow: hidden;'
+		nextTick(() => {
+			const el = bodyRef.value
+			if (el == null) {
+				bodyStyle.value = ''
+				return
+			}
+			// 先恢复自动高度完成布局，再测量真实内容高度
+			bodyStyle.value = 'height: auto; overflow: hidden;'
+			nextTick(() => {
+				const token = ++animToken
+				measureHeight(el, (h: number) => {
+					if (token != animToken) {
+						return
+					}
+					if (h <= 0) {
+						bodyStyle.value = ''
+						return
+					}
+					const keyframes: UniAnimationKeyframe[] = [
+						{ height: '0px', offset: 0 },
+						{ height: h.toString() + 'px', offset: 1 }
+					]
+					el.animate(keyframes, { duration: ms, easing: 'ease' })
+					setTimeout(() => {
+						if (token != animToken) {
+							return
+						}
+						bodyStyle.value = ''
+					}, ms)
+				})
+			})
+		})
+	}
+
+	/** 收起动画：内容实测高度 → 0，结束后保持高度 0 裁剪 */
+	function playClose() {
+		const el = bodyRef.value
+		const c = ctx
+		if (el == null || c == null) {
+			bodyStyle.value = 'height: 0px; overflow: hidden;'
+			return
+		}
+		const ms = Math.round(c.duration.value * 1000)
+		if (ms <= 0) {
+			bodyStyle.value = 'height: 0px; overflow: hidden;'
+			return
+		}
+		const token = ++animToken
+		measureHeight(el, (h: number) => {
+			if (token != animToken) {
+				return
+			}
+			if (h <= 0) {
+				bodyStyle.value = 'height: 0px; overflow: hidden;'
+				return
+			}
+			const keyframes: UniAnimationKeyframe[] = [
+				{ height: h.toString() + 'px', offset: 0 },
+				{ height: '0px', offset: 1 }
+			]
+			el.animate(keyframes, { duration: ms, easing: 'ease' })
+			setTimeout(() => {
+				if (token != animToken) {
+					return
+				}
+				bodyStyle.value = 'height: 0px; overflow: hidden;'
+			}, ms)
+		})
+	}
+
+	// 展开态变化编排：首帧直接落位（不播放动画），其后按端能力走动画或直接显隐
+	let inited = false
+	watch(expanded, (v: boolean) => {
+		if (!inited) {
+			inited = true
+			bodyStyle.value = v ? '' : 'height: 0px; overflow: hidden;'
+			return
+		}
+		if (v) {
+			everOpened.value = true
+		}
+		// #ifdef MP
+		bodyStyle.value = v ? '' : 'height: 0px; overflow: hidden;'
+		// #endif
+		// #ifndef MP
+		if (v) {
+			playOpen()
+		} else {
+			playClose()
+		}
+		// #endif
+	}, { immediate: true })
+
+	/**
+	 * 头部点击：恒派发 click；禁用时不切换；组内走上下文，独立使用时自持切换
+	 *
+	 * @param event 原生点击事件
+	 */
+	function onHeaderClick(event: MouseEvent) {
+		emit('click', event)
+		if (actualDisabled.value) {
+			return
+		}
+		if (ctx == null) {
+			standaloneExpanded.value = !standaloneExpanded.value
+			return
+		}
+		ctx.toggle(ownName.value)
+	}
+
+	/** 根节点类名：自定义类拼接 */
+	const itemClass = computed<string>(() => {
+		let cls = 'm-accordion-item'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 头部类名：禁用态变体 */
+	const headerClass = computed<string>(() => {
+		let cls = 'm-accordion-item__header'
+		if (actualDisabled.value) cls += ' m-accordion-item__header--disabled'
+		return cls
+	})
+
+	/** 头部按压态类名（禁用时为官方约定的 none） */
+	const hoverClass = computed<string>(() => {
+		return actualDisabled.value ? 'none' : 'm-accordion-item__header--active'
+	})
+
+	/** 默认箭头类名：展开态旋转 90 度（仅作用于内置图标，插槽内容保持原方向） */
+	const arrowIconClass = computed<string>(() => {
+		let cls = 'm-accordion-item__arrow-icon'
+		if (expanded.value) cls += ' m-accordion-item__arrow-icon--expanded'
+		return cls
+	})
+
+	/** 根节点内联样式：customStyle 补分号 */
+	const rootStyle = computed<string>(() => {
+		let style = props.customStyle
+		if (style != '' && !style.endsWith(';')) style += ';'
+		return style
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），用户零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根节点 ========== */
+	.m-accordion-item {
+		position: relative;
+		flex-direction: column;
+		background-color: $m-accordion-background;
+	}
+
+	/* ========== 头部（标题 / 扩展文本 / 箭头横排） ========== */
+	.m-accordion-item__header {
+		flex-direction: row;
+		align-items: center;
+		padding: $m-accordion-header-padding-y $m-accordion-header-padding-x;
+	}
+	.m-accordion-item__header--active {
+		background-color: $m-accordion-header-active-color;
+	}
+	.m-accordion-item__header--disabled {
+		opacity: $m-accordion-disabled-opacity;
+	}
+	.m-accordion-item__title {
+		flex: 1;
+		flex-direction: row;
+		align-items: center;
+		overflow: hidden;
+	}
+	.m-accordion-item__title-text {
+		font-size: $m-accordion-title-font-size;
+		color: $m-accordion-title-color;
+		lines: 1;
+		text-overflow: ellipsis;
+	}
+	.m-accordion-item__extra-text {
+		margin-right: $m-accordion-extra-margin;
+		font-size: $m-accordion-extra-font-size;
+		color: $m-accordion-extra-color;
+		lines: 1;
+		text-overflow: ellipsis;
+	}
+
+	/* ========== 箭头（颜色 / 字号落在容器上，经继承穿透 m-icon，小程序样式隔离安全） ========== */
+	.m-accordion-item__arrow {
+		justify-content: center;
+		align-items: center;
+		color: $m-accordion-arrow-color;
+		font-size: $m-accordion-arrow-size;
+	}
+	/* 旋转只作用于内置图标；arrow 插槽内容由用户按 visible 自行渲染方向 */
+	.m-accordion-item__arrow-icon {
+		justify-content: center;
+		align-items: center;
+	}
+	.m-accordion-item__arrow-icon--expanded {
+		transform: rotate(90deg);
+	}
+
+	/* ========== 内容区（外层高度动画裁剪，内层承载内边距） ========== */
+	.m-accordion-item__body {
+		overflow: hidden;
+	}
+	.m-accordion-item__body-inner {
+		padding: $m-accordion-body-padding-y $m-accordion-body-padding-x;
+	}
+
+	/* ========== 0.5px 分隔线（绝对定位单线，scaleY 减半、左下角原点保持贴底） ========== */
+	.m-accordion-item__line {
+		position: absolute;
+		bottom: 0;
+		left: $m-accordion-header-padding-x;
+		right: 0;
+		height: 1px;
+		background-color: $m-accordion-border-color;
+		transform: scaleY(0.5);
+		transform-origin: 0 100%;
+	}
+</style>

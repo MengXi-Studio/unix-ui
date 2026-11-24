@@ -1186,3 +1186,39 @@ $m-uploader-video-background: #000000 !default;
 $m-uploader-cover-background: rgba(0, 0, 0, 0.3) !default;
 /** 禁用态透明度 */
 $m-uploader-disabled-opacity: $m-disabled-opacity !default;
+
+/* ========== Accordion 手风琴 ========== */
+/** 面板底色 */
+$m-accordion-background: $m-white !default;
+/** 分隔线颜色 */
+$m-accordion-border-color: #ebedf0 !default;
+/** 头部水平内边距 */
+$m-accordion-header-padding-x: 16px !default;
+/** 头部垂直内边距 */
+$m-accordion-header-padding-y: 10px !default;
+/** 头部按压态底色 */
+$m-accordion-header-active-color: #f2f3f5 !default;
+/** 标题字号 */
+$m-accordion-title-font-size: 14px !default;
+/** 标题颜色 */
+$m-accordion-title-color: $m-text-color !default;
+/** 扩展文本字号 */
+$m-accordion-extra-font-size: 12px !default;
+/** 扩展文本颜色 */
+$m-accordion-extra-color: #969799 !default;
+/** 扩展文本与箭头的间距 */
+$m-accordion-extra-margin: 8px !default;
+/** 箭头颜色 */
+$m-accordion-arrow-color: #c8c9cc !default;
+/** 箭头尺寸 */
+$m-accordion-arrow-size: 16px !default;
+/** 内容区垂直内边距 */
+$m-accordion-body-padding-y: 16px !default;
+/** 内容区水平内边距 */
+$m-accordion-body-padding-x: 16px !default;
+/** 禁用态透明度 */
+$m-accordion-disabled-opacity: $m-disabled-opacity !default;
+/** 圆角卡片形态外边距 */
+$m-accordion-inset-margin: 12px !default;
+/** 圆角卡片形态圆角 */
+$m-accordion-inset-radius: $m-radius-md !default;

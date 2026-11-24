@@ -194,6 +194,7 @@ export const zhConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					text: '数据展示',
 					collapsed: false,
 					items: [
+						{ text: 'Accordion 手风琴', link: '/components/accordion' },
 						{ text: 'Badge 徽标', link: '/components/badge' },
 						{ text: 'Cell 单元格', link: '/components/cell' }
 					]

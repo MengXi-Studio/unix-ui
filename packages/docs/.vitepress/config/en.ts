@@ -181,6 +181,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					text: 'Data Display',
 					collapsed: false,
 					items: [
+						{ text: 'Accordion', link: '/en/components/accordion' },
 						{ text: 'Badge', link: '/en/components/badge' },
 						{ text: 'Cell', link: '/en/components/cell' }
 					]

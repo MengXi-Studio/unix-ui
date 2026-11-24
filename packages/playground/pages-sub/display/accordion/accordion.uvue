@@ -1,0 +1,321 @@
+<template>
+	<view class="page">
+		<demo-navbar title="手风琴" subtitle="Accordion" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-accordion v-model:value="basicValue" @change="onBasicChange">
+						<m-accordion-item title="面板 1" name="1">
+							<text class="body-text">面板 1 的内容：折叠收纳后释放纵向空间，同一时间仅展开一个面板。</text>
+						</m-accordion-item>
+						<m-accordion-item title="面板 2" name="2">
+							<text class="body-text">面板 2 的内容：点击头部展开 / 收起，带高度过渡动画。</text>
+						</m-accordion-item>
+						<m-accordion-item title="面板 3" name="3">
+							<text class="body-text">面板 3 的内容：单选模式下展开新面板会自动收起旧面板。</text>
+						</m-accordion-item>
+					</m-accordion>
+					<text class="caption">当前展开：{{ joinValues(basicValue) }}；最近变更：{{ eventLog }}</text>
+				</view>
+
+				<text class="section" id="multiple">展开多个</text>
+				<view class="card">
+					<m-accordion v-model:value="multipleValue" multiple>
+						<m-accordion-item title="面板 A" name="a">
+							<text class="body-text">multiple 开启后，多个面板可同时展开。</text>
+						</m-accordion-item>
+						<m-accordion-item title="面板 B" name="b">
+							<text class="body-text">展开集合按点击顺序追加。</text>
+						</m-accordion-item>
+						<m-accordion-item title="面板 C" name="c">
+							<text class="body-text">再次点击已展开面板则从集合中移除。</text>
+						</m-accordion-item>
+					</m-accordion>
+					<text class="caption">当前展开：{{ joinValues(multipleValue) }}</text>
+				</view>
+
+				<text class="section" id="uncontrolled">非受控用法</text>
+				<view class="card">
+					<m-accordion @change="onUncontrolledChange">
+						<m-accordion-item title="未绑定 value" name="1">
+							<text class="body-text">不传 v-model 时由容器自持展开状态，change 事件仍照常派发。</text>
+						</m-accordion-item>
+						<m-accordion-item title="面板名可省略" extra="注册序兜底">
+							<text class="body-text">未设置 name 时以注册序作为标识，仅影响外部受控定位。</text>
+						</m-accordion-item>
+					</m-accordion>
+					<text class="caption">{{ uncontrolledLog }}</text>
+				</view>
+
+				<text class="section" id="default">默认展开</text>
+				<view class="card">
+					<m-accordion v-model:value="defaultValue">
+						<m-accordion-item title="默认收起" name="1">
+							<text class="body-text">初始 value 不含本项标识，保持收起。</text>
+						</m-accordion-item>
+						<m-accordion-item title="默认展开" name="2">
+							<text class="body-text">初始 value 含本项标识，挂载即展开且不播放动画。</text>
+						</m-accordion-item>
+					</m-accordion>
+					<text class="caption">当前展开：{{ joinValues(defaultValue) }}</text>
+				</view>
+
+				<text class="section" id="disabled">禁用状态</text>
+				<view class="card">
+					<m-accordion v-model:value="itemDisabledValue">
+						<m-accordion-item title="可点击面板" name="1">
+							<text class="body-text">正常响应点击与按压反馈。</text>
+						</m-accordion-item>
+						<m-accordion-item title="单项禁用面板" name="2" disabled extra="不可展开" @click="onDisabledClick">
+							<text class="body-text">面板 disabled 时灰显且不切换，click 事件照常派发。</text>
+						</m-accordion-item>
+					</m-accordion>
+					<m-accordion v-model:value="groupDisabledValue" disabled custom-style="margin-top: 12px;">
+						<m-accordion-item title="全局禁用面板 1" name="1">
+							<text class="body-text">容器 disabled 对全部面板生效。</text>
+						</m-accordion-item>
+						<m-accordion-item title="全局禁用面板 2" name="2">
+							<text class="body-text">面板自身 disabled 与容器 disabled 取或。</text>
+						</m-accordion-item>
+					</m-accordion>
+					<text class="caption">{{ disabledLog }}</text>
+				</view>
+
+				<text class="section" id="hide-border">隐藏分隔线</text>
+				<view class="card no-padding">
+					<m-accordion hide-border>
+						<m-accordion-item title="无分隔线面板 1">
+							<text class="body-text">hide-border 关闭所有面板分隔线。</text>
+						</m-accordion-item>
+						<m-accordion-item title="无分隔线面板 2">
+							<text class="body-text">适合与自定义背景 / 卡片组合使用。</text>
+						</m-accordion-item>
+					</m-accordion>
+				</view>
+
+				<text class="section" id="inset">圆角卡片</text>
+				<view class="card no-padding">
+					<m-accordion inset>
+						<m-accordion-item title="卡片面板 1" extra="inset">
+							<text class="body-text">inset 形态带外边距与圆角，最后一项自动隐藏分隔线。</text>
+						</m-accordion-item>
+						<m-accordion-item title="卡片面板 2">
+							<text class="body-text">适合单独成块的折叠内容。</text>
+						</m-accordion-item>
+					</m-accordion>
+				</view>
+
+				<text class="section" id="slot">插槽自定义</text>
+				<view class="card no-padding">
+					<m-accordion v-model:value="slotValue">
+						<m-accordion-item name="1">
+							<template #title>
+								<text class="slot-title">自定义标题插槽</text>
+								<m-badge content="新" />
+							</template>
+							<template #extra>
+								<text class="slot-extra">扩展区</text>
+							</template>
+							<text class="body-text">title / extra 插槽可放置任意内容。</text>
+						</m-accordion-item>
+						<m-accordion-item title="作用域箭头插槽" name="2">
+							<template #arrow="{ visible }">
+								<text class="slot-arrow">{{ visible ? '−' : '+' }}</text>
+							</template>
+							<text class="body-text">arrow 插槽作用域参数 visible 表示当前展开态。</text>
+						</m-accordion-item>
+					</m-accordion>
+				</view>
+
+				<text class="section" id="method">实例方法</text>
+				<view class="card">
+					<m-accordion ref="methodRef" v-model:value="methodValue" multiple @change="onMethodChange">
+						<m-accordion-item title="面板 1" name="1">
+							<text class="body-text">通过 open / close 精确控制。</text>
+						</m-accordion-item>
+						<m-accordion-item title="面板 2" name="2">
+							<text class="body-text">通过 toggle 切换；closeAll 收起全部。</text>
+						</m-accordion-item>
+					</m-accordion>
+					<text class="caption">当前展开：{{ joinValues(methodValue) }}；{{ methodLog }}</text>
+					<view class="action-row">
+						<m-button size="small" type="primary" @click="callOpen">open('1')</m-button>
+						<m-button size="small" @click="callClose">close('1')</m-button>
+						<m-button size="small" @click="callToggle">toggle('2')</m-button>
+						<m-button size="small" @click="callCloseAll">closeAll()</m-button>
+					</view>
+				</view>
+
+				<text class="section" id="lazy">关闭懒渲染</text>
+				<view class="card no-padding">
+					<m-accordion :lazy-render="false">
+						<m-accordion-item title="面板 1">
+							<text class="body-text">lazy-render 默认 true（首次展开才渲染内容）；此处关闭，内容随组件挂载即渲染。</text>
+						</m-accordion-item>
+					</m-accordion>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '手风琴 Accordion', name: 'accordion' })
+
+	import {
+		AccordionValue,
+		AccordionValueArray,
+		emptyAccordionValues,
+		accordionValueText
+	} from '@/uni_modules/m-ui-x/components/m-accordion/accordion.uts'
+
+	/** 基础用法 */
+	const basicValue = ref<AccordionValueArray>(emptyAccordionValues())
+	const eventLog = ref<string>('尚未变更')
+	/** 展开多个 */
+	const multipleValue = ref<AccordionValueArray>(emptyAccordionValues())
+	/** 非受控 */
+	const uncontrolledLog = ref<string>('尚未操作')
+	/** 默认展开 */
+	const defaultValue = ref<AccordionValueArray>(['2'] as AccordionValueArray)
+	/** 禁用示例 */
+	const itemDisabledValue = ref<AccordionValueArray>(emptyAccordionValues())
+	const groupDisabledValue = ref<AccordionValueArray>(emptyAccordionValues())
+	const disabledLog = ref<string>('尚未操作')
+	/** 插槽示例 */
+	const slotValue = ref<AccordionValueArray>(emptyAccordionValues())
+	/** 实例方法 */
+	const methodRef = ref<ComponentPublicInstance | null>(null)
+	const methodValue = ref<AccordionValueArray>(emptyAccordionValues())
+	const methodLog = ref<string>('等待调用')
+
+	/**
+	 * 展开集合展示文本
+	 *
+	 * @param v 展开集合
+	 * @returns 逗号分隔文本（空集合显示「无」）
+	 */
+	function joinValues(v: AccordionValueArray | null): string {
+		if (v == null || v.length == 0) {
+			return '无'
+		}
+		let text = ''
+		for (let i = 0; i < v.length; i++) {
+			if (i > 0) {
+				text += ', '
+			}
+			text += accordionValueText(v[i])
+		}
+		return text
+	}
+
+	/**
+	 * 基础用法变更回调
+	 *
+	 * @param value 展开集合
+	 * @param name 本次操作的面板标识
+	 */
+	function onBasicChange(value: AccordionValueArray, name: AccordionValue) {
+		eventLog.value = accordionValueText(name) + ' → ' + joinValues(value)
+	}
+
+	/**
+	 * 非受控变更回调
+	 *
+	 * @param value 展开集合
+	 * @param name 本次操作的面板标识
+	 */
+	function onUncontrolledChange(value: AccordionValueArray, name: AccordionValue) {
+		uncontrolledLog.value = '容器自持状态：' + joinValues(value)
+	}
+
+	/**
+	 * 禁用示例点击回调（验证禁用态不切换但仍可感知点击）
+	 */
+	function onDisabledClick() {
+		disabledLog.value = '禁用面板收到 click（不切换）'
+	}
+
+	/** 展开面板 1 */
+	function callOpen() {
+		const inst = methodRef.value
+		if (inst != null) inst.$callMethod('open', '1')
+		methodLog.value = '调用 open(\'1\')'
+	}
+
+	/** 收起面板 1 */
+	function callClose() {
+		const inst = methodRef.value
+		if (inst != null) inst.$callMethod('close', '1')
+		methodLog.value = '调用 close(\'1\')'
+	}
+
+	/** 切换面板 2 */
+	function callToggle() {
+		const inst = methodRef.value
+		if (inst != null) inst.$callMethod('toggle', '2')
+		methodLog.value = '调用 toggle(\'2\')'
+	}
+
+	/** 收起全部 */
+	function callCloseAll() {
+		const inst = methodRef.value
+		if (inst != null) inst.$callMethod('closeAll')
+		methodLog.value = '调用 closeAll()'
+	}
+
+	/**
+	 * 实例方法示例变更回调
+	 *
+	 * @param value 展开集合
+	 * @param name 本次操作的面板标识
+	 */
+	function onMethodChange(value: AccordionValueArray, name: AccordionValue) {
+		methodLog.value = '变更 ' + accordionValueText(name) + ' → ' + joinValues(value)
+	}
+</script>
+
+<style>
+	.caption {
+		margin-top: 8px;
+		font-size: 12px;
+		color: #969799;
+	}
+
+	.body-text {
+		font-size: 14px;
+		line-height: 22px;
+		color: #646566;
+	}
+
+	.no-padding {
+		padding: 0;
+		overflow: hidden;
+	}
+
+	.slot-title {
+		margin-right: 8px;
+		font-size: 14px;
+		color: #1989fa;
+	}
+
+	.slot-extra {
+		font-size: 12px;
+		color: #07c160;
+	}
+
+	.slot-arrow {
+		font-size: 18px;
+		color: #969799;
+	}
+
+	.action-row {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		margin-top: 8px;
+	}
+</style>

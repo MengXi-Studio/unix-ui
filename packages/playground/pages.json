@@ -160,6 +160,12 @@
 			"root": "pages-sub/display",
 			"pages": [
 				{
+					"path": "accordion/accordion",
+					"style": {
+						"navigationBarTitleText": "手风琴 Accordion"
+					}
+				},
+				{
 					"path": "badge/badge",
 					"style": {
 						"navigationBarTitleText": "徽标 Badge"

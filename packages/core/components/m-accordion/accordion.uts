@@ -1,0 +1,234 @@
+/**
+ * m-accordion 与 m-accordion-item 的容器上下文与共享类型（跨组件共享，独立 .uts）
+ *
+ * 容器负责持有展开集合与统一交互规格，面板只做只读判定与点击回写；
+ * 面板标识 name 缺省时以注册 key 兜底（注册 key 同时用于末项分隔线判定）。
+ * 状态变更经 changeEpoch 自增驱动容器 emit（不依赖 watch 数组的异步守卫），
+ * 受控 / 非受控两种用法统一由容器同步 value prop 到上下文。
+ * class 实现：非蒸汽（Kotlin/Swift）端不支持「含方法的对象字面量 type」。
+ */
+import { ref, reactive, type Ref } from 'vue'
+
+/** provide / inject 配对 key（字符串 key，App 原生端无需 Symbol 支持） */
+export const ACCORDION_KEY: string = '__mxi_accordion__'
+
+/** 单个面板标识（string / number，对齐 m-checkbox 的宽松标识语义） */
+export type AccordionValue = string | number
+
+/** 展开项标识集合（v-model:value 的值形态；multiple=false 时最多一项） */
+export type AccordionValueArray = Array<string | number>
+
+/** 面板注册结果（name 缺省时回填注册 key，key 用于注销与末线判定） */
+export type AccordionRegisterResult = {
+	/** 实际生效的面板标识 */
+	name: AccordionValue
+	/** 注册唯一标识（自增不复用） */
+	key: number
+}
+
+/** 面板注册信息（容器按注册序判定末位） */
+export type AccordionItemInfo = {
+	/** 面板标识 */
+	name: AccordionValue
+	/** 注册唯一标识 */
+	key: number
+}
+
+/**
+ * 创建空展开集合
+ *
+ * 空数组字面量直接断言为联合类型别名时，Kotlin 侧生成无类型参数的 `_uA()`，
+ * 触发 `Cannot infer type argument for 'E'`；改用具体元素类型的 ref 泛型构造，
+ * 生成带类型参数的数组后再断言为联合数组（泛型擦除，运行时安全）。
+ *
+ * @returns 空集合
+ */
+export function emptyAccordionValues(): AccordionValueArray {
+	const box = ref<string[]>([])
+	return box.value as AccordionValueArray
+}
+
+/**
+ * 值相等判定（字符串化比较：string 与 number 的同字面量视为同一项，'1' 与 1 等价）
+ *
+ * @param a 值 A
+ * @param b 值 B
+ * @returns 是否相等
+ */
+export function accordionValuesEqual(a: AccordionValue, b: AccordionValue): boolean {
+	return a.toString() == b.toString()
+}
+
+/**
+ * 判定集合中是否包含某值
+ *
+ * @param list 值集合
+ * @param v 目标值
+ * @returns 是否包含
+ */
+export function containsAccordionValue(list: AccordionValueArray, v: AccordionValue): boolean {
+	for (let i = 0; i < list.length; i++) {
+		if (accordionValuesEqual(list[i], v)) {
+			return true
+		}
+	}
+	return false
+}
+
+/**
+ * 值的展示文本（string / number 统一 toString）
+ *
+ * @param v 值
+ * @returns 展示文本
+ */
+export function accordionValueText(v: AccordionValue): string {
+	return v.toString()
+}
+
+/** 手风琴容器上下文：展开集合 + 交互规格 + 面板注册表 */
+export class AccordionContext {
+	/** 展开项标识集合（容器唯一真值，面板只读判定） */
+	value: Ref<AccordionValueArray> = ref<AccordionValueArray>(emptyAccordionValues())
+	/** 是否可同时展开多个 */
+	multiple: Ref<boolean> = ref<boolean>(false)
+	/** 是否禁用全部面板 */
+	disabled: Ref<boolean> = ref<boolean>(false)
+	/** 是否隐藏分隔线 */
+	hideBorder: Ref<boolean> = ref<boolean>(false)
+	/** 圆角卡片形态 */
+	inset: Ref<boolean> = ref<boolean>(false)
+	/** 展开 / 收起动画时长（秒，0 直接显隐） */
+	duration: Ref<number> = ref<number>(0.3)
+	/** 是否首次展开才渲染内容 */
+	lazyRender: Ref<boolean> = ref<boolean>(true)
+	/** 已注册面板（reactive 数组，注册 / 注销自动触发末线重算） */
+	items: AccordionItemInfo[] = reactive<AccordionItemInfo[]>([])
+	/** 状态变更纪元（仅用户交互递增，容器据此 emit，避免 prop 回灌触发二次派发） */
+	changeEpoch: Ref<number> = ref<number>(0)
+	/** 最近一次交互的面板标识（change 事件第二参数；closeAll 时为空串） */
+	lastName: AccordionValue = ''
+	/** 注册 key 自增序列 */
+	seq: number = 0
+
+	/**
+	 * 注册面板（setup 中同步调用，注册序即渲染序）
+	 *
+	 * @param name 面板标识（null 时以注册 key 兜底）
+	 * @returns 生效标识与注册 key
+	 */
+	register(name: AccordionValue | null): AccordionRegisterResult {
+		this.seq += 1
+		const key = this.seq
+		const actual: AccordionValue = name == null ? key : name
+		const item: AccordionItemInfo = { name: actual, key: key }
+		this.items.push(item)
+		return { name: actual, key: key }
+	}
+
+	/**
+	 * 注销面板（onUnmounted 调用）
+	 *
+	 * @param key 注册时分配的 key
+	 */
+	unregister(key: number): void {
+		let i = 0
+		while (i < this.items.length) {
+			if (this.items[i].key == key) {
+				this.items.splice(i, 1)
+				break
+			}
+			i++
+		}
+	}
+
+	/**
+	 * 判定面板是否为注册序末位（末项不渲染分隔线）
+	 *
+	 * @param key 注册时分配的 key
+	 * @returns 是否末位
+	 */
+	isLast(key: number): boolean {
+		if (this.items.length == 0) {
+			return false
+		}
+		return this.items[this.items.length - 1].key == key
+	}
+
+	/**
+	 * 判定面板是否展开（分类型全等匹配）
+	 *
+	 * @param name 面板标识
+	 * @returns 是否展开
+	 */
+	isExpanded(name: AccordionValue): boolean {
+		return containsAccordionValue(this.value.value, name)
+	}
+
+	/**
+	 * 切换面板展开态（multiple=false 时展开本项会收起其余项）
+	 *
+	 * @param name 面板标识
+	 */
+	toggle(name: AccordionValue): void {
+		if (this.disabled.value) {
+			return
+		}
+		if (this.isExpanded(name)) {
+			this.setExpanded(name, false)
+			return
+		}
+		this.setExpanded(name, true)
+	}
+
+	/**
+	 * 设置面板展开态（实例方法 open / close 与点击路径共用）
+	 *
+	 * @param name 面板标识
+	 * @param expanded 目标展开态
+	 */
+	setExpanded(name: AccordionValue, expanded: boolean): void {
+		if (this.disabled.value) {
+			return
+		}
+		const current = this.value.value
+		if (expanded) {
+			if (containsAccordionValue(current, name)) {
+				return
+			}
+			const next: AccordionValueArray = []
+			if (this.multiple.value) {
+				for (let i = 0; i < current.length; i++) {
+					next.push(current[i])
+				}
+			}
+			next.push(name)
+			this.lastName = name
+			this.value.value = next
+		} else {
+			if (!containsAccordionValue(current, name)) {
+				return
+			}
+			const next: AccordionValueArray = []
+			for (let i = 0; i < current.length; i++) {
+				if (!accordionValuesEqual(current[i], name)) {
+					next.push(current[i])
+				}
+			}
+			this.lastName = name
+			this.value.value = next
+		}
+		this.changeEpoch.value += 1
+	}
+
+	/**
+	 * 收起全部面板（已全收起时不派发变更）
+	 */
+	closeAll(): void {
+		if (this.value.value.length == 0) {
+			return
+		}
+		this.lastName = ''
+		this.value.value = emptyAccordionValues()
+		this.changeEpoch.value += 1
+	}
+}

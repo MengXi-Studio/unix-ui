@@ -36,7 +36,7 @@
 		buildDisabledFlags
 	} from '../m-picker/picker.uts'
 	import { DatePickerOption } from '../m-date-picker/date-picker.uts'
-	import MDatePickerColumn from '../m-date-picker/m-date-picker-column.uvue'
+	import MDatePickerColumn from '../m-date-picker-column/m-date-picker-column.uvue'
 	import { slotHasContent } from '../../utils/slot.uts'
 	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
 	const slots = useSlots()

@@ -1,5 +1,5 @@
 <template>
-	<!-- 滚轮列（不注册 easycom，仅供 m-date-picker.uvue 相对路径导入）：
+	<!-- 滚轮列（独立目录避免 m-date-picker ↔ m-picker 目录级循环依赖，见 #31）：
 	     原生 scroll-view 承载滚动，顶部 / 底部占位使选中项停在视口中心；
 	     滚动停止后吸附到最近选项并上抛 change，自身不持有选中值（受控于 model-value 下标）。
 	     渐隐靠每个选项的透明度类实现——uvue 无 pointer-events，覆盖式渐变遮罩会拦截滚动手势。 -->
@@ -39,7 +39,7 @@
 	 * 交互约定：用户滚动 / 点击非选中项 → 吸附后派发 change(columnIndex, index)；
 	 * readonly 时任何滚动都会回弹到 model-value 对应位置且不上抛。
 	 */
-	import { DatePickerOption } from './date-picker.uts'
+	import { DatePickerOption } from '../m-date-picker/date-picker.uts'
 
 	type Props = {
 		/** 列选项（已由面板应用 filter / formatter；null 按空列渲染） */

@@ -95,7 +95,7 @@
 		clampIndex
 	} from './picker.uts'
 	import { DatePickerOption } from '../m-date-picker/date-picker.uts'
-	import MDatePickerColumn from '../m-date-picker/m-date-picker-column.uvue'
+	import MDatePickerColumn from '../m-date-picker-column/m-date-picker-column.uvue'
 	import MLoading from '../m-loading/m-loading.uvue'
 	import { slotActive } from '../../utils/slot.uts'
 	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */

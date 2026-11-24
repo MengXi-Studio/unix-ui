@@ -49,7 +49,7 @@ added: 0.7.0
 
 ### Props
 
-透传 `m-radio-popup` 全部 props（除 show），另加：
+组件仅提供下表 props；弹层显隐（`show`）与弹层头部 / 遮罩配置（`show-header`、`closeable`、`close-icon`、`close-on-click-overlay`、`safe-area-inset-bottom`、`z-index`、`duration`）不对外暴露，内部固定。
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
@@ -61,6 +61,16 @@ added: 0.7.0
 | clearable | 是否显示清空按钮（有值且非禁用时可见） | boolean | `true` |
 | border | 触发器是否显示边框容器（透传 m-input） | boolean | `true` |
 | inlaid | 触发器嵌入式形态（透传 m-input） | boolean | `false` |
+| title | 弹层标题 | string | `''` |
+| direction | 选项排列方向，可选 `vertical` `horizontal` | RadioDirection | `vertical` |
+| shape | 选项形状，可选 `round` `square` | RadioShape | `round` |
+| icon-size | 图标尺寸（number 自动补 px / string 原样） | string \| number | `''` |
+| checked-color | 选中态颜色 | string | `''` |
+| label-position | 文本位置，可选 `right` `left` | RadioLabelPosition | `right` |
+| field-names | 自定义选项字段名（null 用默认 label / value / disabled） | RadioFieldNames \| null | `null` |
+| options-height | 选项区高度 px（0 用主题变量） | number | `0` |
+| position | 弹出方位，可选 `top` `bottom` `left` `right` `center` | RadioInputPosition | `bottom` |
+| round | 弹层圆角 | boolean | `true` |
 | custom-class / custom-style | 根节点样式直达 | - | - |
 
 ### Events

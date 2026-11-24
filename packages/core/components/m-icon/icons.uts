@@ -570,7 +570,7 @@ export const iconOutlineNames: IconName[] = [
   'link-o', 'miniprogram-o', 'list-switch', 'list-switching',
 ]
 
-/** 填充图标（108 个） */
+/** 填充图标（109 个） */
 export const iconFilledNames: IconName[] = [
   'location', 'like', 'star', 'phone', 'setting',
   'fire', 'coupon', 'cart', 'shopping-cart', 'cart-circle',

@@ -126,7 +126,7 @@ const beforeChange = (value: number | null): boolean | Promise<boolean> => {
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| value | 当前值（v-model:value），null 表示空输入 | number \| null | `1` |
+| value | 当前值（v-model:value），不传为初始值 | number | `1` |
 | min | 最小值 | number | `1` |
 | max | 最大值 | number | 不限制 |
 | step | 步长 | number | `1` |

@@ -104,7 +104,7 @@ added: 0.3.0
 | options-top | 选项区上方扩展（作用域：`tabIndex`） |
 | options-bottom | 选项区下方扩展（作用域：`tabIndex`） |
 
-> **注意**：微信小程序端不转发 `option` / `options-top` / `options-bottom`——级联面板在 `v-for` 内重复声明同名插槽只会生效第一个，且会触发重复插槽告警。选项文案请通过 `field-names` 的 `labelKey` 定制；Web 与 App 端不受影响。
+> **注意**：微信小程序端不转发 `option` / `options-top` / `options-bottom`——级联面板在 `v-for` 内重复声明同名插槽只会生效第一个，且会触发重复插槽告警。选项文案请通过 `field-names` 的 `text` 定制；Web 与 App 端不受影响。
 
 ## 主题定制
 

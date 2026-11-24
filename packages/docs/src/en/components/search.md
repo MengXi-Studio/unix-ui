@@ -133,8 +133,8 @@ searchRef.value?.$callMethod('focus')
 | value | Input value (v-model:value) | string | `''` |
 | label | Left text inside the box | string | `''` |
 | shape | Box shape, one of `square` `round` | string | `square` |
-| background | Outer background color | string | theme `#f2f2f2` |
-| input-background | Input area background color | string | theme (white) |
+| background | Outer background color | string | `''` (empty uses theme `#f2f2f2`) |
+| input-background | Input area background color | string | `''` (empty uses theme (white)) |
 | placeholder | Placeholder text | string | `请输入搜索关键词` |
 | maxlength | Maximum length, -1 for unlimited | number | `-1` |
 | clearable | Whether the clear icon is enabled | boolean | `true` |

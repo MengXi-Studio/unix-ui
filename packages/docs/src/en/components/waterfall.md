@@ -137,7 +137,7 @@ function onAllLoaded() {
 | Event | Description | Arguments |
 | --- | --- | --- |
 | loadstart | Emitted when an item is not loaded yet (a new loading round starts) | - |
-| load | Emitted when all items are loaded (first layout pass finished) | - |
+| load | Emitted when all items of the current round are loaded (fires after every round, not just the first) | - |
 
 ### Slots
 

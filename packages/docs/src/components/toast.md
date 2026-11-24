@@ -73,7 +73,7 @@ showToast({ message: 'the quick brown fox jumps over the lazy dog', wordBreak: '
 showToast({ message: 'thisisaverylongwordwithoutspaces', wordBreak: 'break-word' })
 ```
 
-> 平台差异：App 端 `word-break` 仅 Vapor 模式（HBuilderX 5.31+）生效，VDOM 模式不支持；Web 端全支持。
+> 平台差异：`normal` / `break-all` 全端生效；`break-word` 仅 Web / 小程序生效，App 端（Vapor 与 VDOM）统一回退为 `normal`。
 
 ### 成功 / 失败提示
 
@@ -171,7 +171,7 @@ showToast({
 | closeOnClickOverlay | 是否点击遮罩层后关闭 | `boolean` | `false` |
 | loadingType | 加载图标类型，可选值 `circular` `spinner`（type=loading 时生效） | `LoadingType` | `circular` |
 | duration | 展示时长 (ms)，`0` 表示不自动关闭；loading 型默认 `0`，其余默认 `2000` | `number` | - |
-| wordBreak | message 换行方式，可选值 `normal` `break-all` `break-word`；App 端仅 Vapor 模式生效 | `ToastWordBreak` | `normal` |
+| wordBreak | message 换行方式，可选值 `normal` `break-all` `break-word`；App 端 `break-word` 回退为 `normal` | `ToastWordBreak` | `normal` |
 | zIndex | z-index 层级 | `number \| string` | `2000` |
 | customClass | 气泡自定义类名 | `string.ClassString` | - |
 | customStyle | 气泡自定义内联样式 | `string` | - |
@@ -180,13 +180,13 @@ showToast({
 
 ### 与 Vant 的差异
 
-以下选项因 uvue 能力限制暂不支持：`html` 类型（无 v-html 能力）、`transition` 动画类名（内置淡入淡出）、`teleport`（无渲染树外宿主）；`icon` 仅支持 m-icon 字体图标名，不支持图片链接。多实例（`allowMultipleToast`）暂未支持，为单例语义。`wordBreak` 已支持，取值与 Vant 一致（`normal` / `break-all` / `break-word`），但 App 端仅 Vapor 模式（HBuilderX 5.31+）生效，VDOM 模式不支持。
+以下选项因 uvue 能力限制暂不支持：`html` 类型（无 v-html 能力）、`transition` 动画类名（内置淡入淡出）、`teleport`（无渲染树外宿主）；`icon` 仅支持 m-icon 字体图标名，不支持图片链接。多实例（`allowMultipleToast`）暂未支持，为单例语义。`wordBreak` 已支持，取值与 Vant 一致（`normal` / `break-all` / `break-word`），其中 `normal` / `break-all` 全端生效，`break-word` 仅 Web / 小程序生效，App 端（Vapor 与 VDOM）统一回退为 `normal`。
 
 ## 组件式 API
 
 ### Props
 
-与 [ToastOptions](#toastoptions-api) 一致，另增：
+与 [ToastOptions](#toastoptions-api) 基本一致，差异如下：`onOpened` / `onClose` 不作为 props，改由 `opened` / `close` 事件提供；`iconSize` / `zIndex` 仅接受 `string`。此外新增：
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |

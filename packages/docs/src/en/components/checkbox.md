@@ -148,7 +148,7 @@ Toggle on the whole row: put m-checkbox into m-cell's `value` slot and call `tog
 
 | Method | Description | Parameters |
 | --- | --- | --- |
-| toggleAll | Toggle all (true check / false uncheck / null invert; bounded by max) | checked?: boolean \| null |
+| toggleAll | Toggle all (true check / false uncheck / null invert; all three modes are bounded by max) | checked: boolean \| null |
 
 ### CheckboxProps (m-checkbox)
 
@@ -212,11 +212,11 @@ See [Theming](/en/guide/theming) for the full variable list and override rules.
 
 - **Value type**: Vant uses `any[]`; this library uses `Array<string | number>` (no any in UTS), and `'1'` equals `1` via stringified comparison
 - **Component split**: on top of Vant's CheckboxGroup + Checkbox, the library's three-piece precedent adds `m-checkbox-popup` / `m-checkbox-input` forms
-- **toggleAll parameter**: `null` inverts (matching Vant's no-arg invert); invert mode is not bounded by max
+- **toggleAll parameter**: `null` inverts (matching Vant's no-arg invert); invert mode is also bounded by max (new items are rejected)
 - **indeterminate**: when true the icon always shows a dash (independent of checked state); check-all toggling is driven by the consumer via `@click` / set operations
 - **slot syntax**: uvue has no v-slot shorthand; declare slots as `<template #icon="{ checked }">`
 
 ## Notes
 
 - `name` is required in a group (null degrades to a standalone checkbox with its own state)
-- Disabled items are excluded from toggleAll inversion (check-all / uncheck-all still include them, matching Vant)
+- `toggleAll` ignores the disabled state: check-all / uncheck-all / invert all affect disabled items (disabled blocking only applies to item taps)

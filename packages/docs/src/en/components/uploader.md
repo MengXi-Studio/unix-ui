@@ -176,9 +176,9 @@ function callChoose() {
 | show-upload | Show the select area | boolean | `true` |
 | preview-size | Cell size px, or `[width, height]` | number \| number[] | `0` |
 | preview-full-image | Full-screen preview on tap | boolean | `true` |
-| image-fit | Preview crop mode | string | `'aspectFill'` |
+| image-fit | Preview crop mode (an image component `mode` value) | UploaderImageMode | `'aspectFill'` |
 | upload-text | Select area text | string | `''` |
-| upload-icon | Select area icon name | string | `'plus'` |
+| upload-icon | Select area icon name | IconName | `'plus'` |
 | upload-url | Server URL (non-empty enables built-in upload) | string | `''` |
 | upload-name | Upload field name | string | `'file'` |
 | form-data | Extra form data | UTSJSONObject \| null | `null` |

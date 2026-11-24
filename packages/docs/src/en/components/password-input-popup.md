@@ -110,6 +110,20 @@ Inherits [PasswordInput Props](/en/components/password-input#props) plus popup-s
 | closed | Popup fully closed | — |
 | click-overlay | Overlay clicked | `event: MouseEvent` |
 
+### Slots
+
+| Name | Description |
+| --- | --- |
+| cancel | Replace the toolbar cancel button content |
+| confirm | Replace the toolbar confirm button content |
+| extra-key | Custom content for the bottom-left extra key |
+
+### Methods
+
+| Name | Description |
+| --- | --- |
+| shuffle | Proxies the panel's `shuffle()` to re-randomize digits |
+
 ## Theme Customization
 
 Reuses `$m-number-keyboard-*` (keyboard + toolbar) and `$m-password-input-*` (grid) theme variables.

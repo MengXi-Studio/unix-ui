@@ -134,7 +134,7 @@ added: 0.6.0
 | option-height | 选项行高 px（0 用默认 44） | `number` | `0` |
 | visible-option-num | 可见选项个数（0 用默认 6） | `number` | `0` |
 | swipe-duration | 滚动停止判定时长 ms | `number` | `200` |
-| custom-class | 自定义根节点类名 | `string` | `''` |
+| custom-class | 自定义根节点类名 | `string.ClassString` | `''` |
 | custom-style | 自定义根节点内联样式 | `string` | `''` |
 
 ### Events

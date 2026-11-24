@@ -97,7 +97,7 @@ const limitSix = (key: string): boolean => value.value.length >= 6
 | --- | --- | --- | --- |
 | type | Keyboard type | `'number' \| 'digit' \| 'idcard' \| 'random'` | `'number'` |
 | theme | Theme, `custom` adds the side column | `'default' \| 'custom'` | `'default'` |
-| extraKeys | Extra key texts, the first item becomes the bottom-left key | `string[]` | `[]` |
+| extraKeys | Extra key texts, the first item becomes the bottom-left key | `string[] \| null` | `null` |
 | showDeleteKey | Whether to show the delete key | `boolean` | `true` |
 | deleteButtonText | Delete key text; falls back to an icon when empty | `string` | `''` |
 | closeButtonText | Side-column close text; hidden when empty (`custom` only) | `string` | `''` |

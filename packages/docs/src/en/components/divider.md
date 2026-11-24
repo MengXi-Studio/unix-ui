@@ -82,7 +82,7 @@ Add the `dashed` attribute to render the divider as a dashed line.
 | --- | --- | --- | --- |
 | dashed | Whether to use dashed line | boolean | `false` |
 | hairline | Whether to use 0.5px hairline | boolean | `true` |
-| content-position | Content position, optional values `left` `right` | DividerContentPosition | `center` |
+| content-position | Content position, optional values `left` `center` `right` | DividerContentPosition | `center` |
 | vertical | Whether to use vertical divider | boolean | `false` |
 
 ### Slots

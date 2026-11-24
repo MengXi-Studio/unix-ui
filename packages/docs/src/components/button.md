@@ -100,7 +100,7 @@ added: 0.1.0
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| type | 类型，可选值为 `primary` `success` `warning` `danger` | ButtonType | `default` |
+| type | 类型，可选值为 `default` `primary` `success` `warning` `danger` | ButtonType | `default` |
 | size | 尺寸，可选值为 `large` `normal` `small` `mini` | ButtonSize | `normal` |
 | plain | 是否为朴素按钮 | boolean | `false` |
 | round | 是否为圆形按钮 | boolean | `false` |

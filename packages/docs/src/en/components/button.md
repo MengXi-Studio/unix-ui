@@ -99,7 +99,7 @@ Customize the button color with the `color` attribute; `linear-gradient` is supp
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
-| type | Type, can be set to `primary` `success` `warning` `danger` | ButtonType | `default` |
+| type | Type, can be set to `default` `primary` `success` `warning` `danger` | ButtonType | `default` |
 | size | Size, can be set to `large` `normal` `small` `mini` | ButtonSize | `normal` |
 | plain | Whether to be a plain button | boolean | `false` |
 | round | Whether to be a round button | boolean | `false` |

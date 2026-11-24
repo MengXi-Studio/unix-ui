@@ -110,11 +110,11 @@ The `icon` / `void-icon` slots expose `{ index, active }`, and their content is 
 | --- | --- | --- | --- |
 | value | Current score (v-model:value), 0 means not rated | number | `0` |
 | count | Total number of icons | number | `5` |
-| size | Icon size (numbers get a px unit) | string \| number | theme `20px` |
-| gap | Icon spacing (numbers get a px unit; equivalent to Vant's gutter) | string \| number | theme `4px` |
-| color | Active color | string | theme `#ee0a24` |
-| void-color | Void color | string | theme `#c8c9cc` |
-| disabled-color | Disabled color (applies to both active and void icons) | string | theme `#c8c9cc` |
+| size | Icon size (numbers get a px unit) | string \| number | `''` (empty uses theme `20px`) |
+| gap | Icon spacing (numbers get a px unit; equivalent to Vant's gutter) | string \| number | `''` (empty uses theme `4px`) |
+| color | Active color | string | `''` (empty uses theme `#ee0a24`) |
+| void-color | Void color | string | `''` (empty uses theme `#c8c9cc`) |
+| disabled-color | Disabled color (applies to both active and void icons) | string | `''` (empty uses theme `#c8c9cc`) |
 | icon | Active glyph (m-icon name) | string | `star` |
 | void-icon | Void glyph | string | `star-o` |
 | allow-half | Whether half stars are allowed | boolean | `false` |

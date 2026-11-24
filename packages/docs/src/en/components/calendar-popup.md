@@ -124,7 +124,7 @@ All calendar panel slots are supported (title / subtitle / footer / nav icons), 
 | z-index | Popup z-index | number | `1` |
 | duration | Popup animation duration in seconds (`0` disables animation) | number | `0.3` |
 
-**Calendar props** (forwarded to [m-calendar](/en/components/calendar), all identical except `height` — the panel height is taken over by `popup-height`): `type` / `title` / `color` / `min-date` / `max-date` / `default-date` / `value` (v-model:value) / `row-height` / `formatter` / `show-mark` / `show-title` / `show-subtitle` / `show-confirm` / `confirm-text` / `confirm-disabled-text` / `readonly` / `first-day-of-week` / `switch-mode` / `max-range` / `range-prompt` / `show-range-prompt` / `allow-same-day` / `custom-class` / `custom-style`. See [Calendar Props](/en/components/calendar#props) for types and defaults.
+**Calendar props** (forwarded to [m-calendar](/en/components/calendar), all identical except `height` — the panel height is taken over by `popup-height`; note that `show-confirm` defaults to `true` here while Calendar defaults to `false`): `type` / `title` / `color` / `min-date` / `max-date` / `default-date` / `value` (v-model:value) / `row-height` / `formatter` / `show-mark` / `show-title` / `show-subtitle` / `show-confirm` / `confirm-text` / `confirm-disabled-text` / `readonly` / `first-day-of-week` / `switch-mode` / `max-range` / `range-prompt` / `show-range-prompt` / `allow-same-day` / `custom-class` / `custom-style`. See [Calendar Props](/en/components/calendar#props) for the other types and defaults.
 
 ### Events
 

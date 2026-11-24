@@ -176,9 +176,9 @@ function callChoose() {
 | show-upload | 是否展示选择区 | boolean | `true` |
 | preview-size | 预览格尺寸 px，可传 `[宽, 高]` | number \| number[] | `0` |
 | preview-full-image | 点击预览图是否全屏预览 | boolean | `true` |
-| image-fit | 预览图裁剪模式 | string | `'aspectFill'` |
+| image-fit | 预览图裁剪模式（image 组件的 mode 取值） | UploaderImageMode | `'aspectFill'` |
 | upload-text | 选择区文字 | string | `''` |
-| upload-icon | 选择区图标名 | string | `'plus'` |
+| upload-icon | 选择区图标名 | IconName | `'plus'` |
 | upload-url | 服务端地址（非空则内置上传） | string | `''` |
 | upload-name | 上传文件字段名 | string | `'file'` |
 | form-data | 附加表单数据 | UTSJSONObject \| null | `null` |

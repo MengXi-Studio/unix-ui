@@ -126,7 +126,7 @@ const beforeChange = (value: number | null): boolean | Promise<boolean> => {
 
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |
-| value | Current value (v-model:value); null means empty | number \| null | `1` |
+| value | Current value (v-model:value); omitted means the initial value | number | `1` |
 | min | Minimum value | number | `1` |
 | max | Maximum value | number | Unlimited |
 | step | Step size | number | `1` |

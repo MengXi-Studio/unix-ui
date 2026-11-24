@@ -105,7 +105,7 @@ added: 0.1.0
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
 | span | 列元素宽度份数，取值 1~24，0 或未设置时宽度由内容决定 | number \| string | `0` |
-| offset | 列左侧偏移份数，计算方式同 span | number \| string \| null | `0` |
+| offset | 列左侧偏移份数，计算方式同 span | number \| string \| null | `null` |
 | custom-class | 自定义根节点类名 | string.ClassString | - |
 | custom-style | 自定义根节点内联样式 | string | - |
 

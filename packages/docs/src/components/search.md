@@ -133,8 +133,8 @@ searchRef.value?.$callMethod('focus')
 | value | 输入值（v-model:value） | string | `''` |
 | label | 框内左侧文本 | string | `''` |
 | shape | 输入框形状，可选 `square` `round` | string | `square` |
-| background | 搜索框外部背景色 | string | 主题值 `#f2f2f2` |
-| input-background | 输入区背景色 | string | 主题值（白色） |
+| background | 搜索框外部背景色 | string | `''`（空串用主题值 `#f2f2f2`） |
+| input-background | 输入区背景色 | string | `''`（空串用主题值（白色）） |
 | placeholder | 占位提示文字 | string | `请输入搜索关键词` |
 | maxlength | 最大输入长度，-1 不限制 | number | `-1` |
 | clearable | 是否启用清除图标 | boolean | `true` |

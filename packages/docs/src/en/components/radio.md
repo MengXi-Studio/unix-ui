@@ -144,6 +144,12 @@ Whole-row toggling: place m-radio in the m-cell `value` slot and write the group
 | default | Custom label | `{ checked, disabled }` |
 | icon | Custom icon | `{ checked, disabled }` |
 
+#### Slots (m-radio-group)
+
+| Name | Description |
+| --- | --- |
+| default | List of radio items (`m-radio`) |
+
 ### Events (m-radio)
 
 | Event | Description | Arguments |

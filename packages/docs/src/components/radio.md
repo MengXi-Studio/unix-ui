@@ -144,6 +144,12 @@ added: 0.7.0
 | default | 自定义文本 | `{ checked, disabled }` |
 | icon | 自定义图标 | `{ checked, disabled }` |
 
+#### Slots（m-radio-group）
+
+| 名称 | 说明 |
+| --- | --- |
+| default | 单选项列表（`m-radio`） |
+
 ### Events（m-radio）
 
 | 事件名 | 说明 | 回调参数 |

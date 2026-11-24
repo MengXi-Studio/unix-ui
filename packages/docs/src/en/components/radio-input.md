@@ -49,7 +49,7 @@ Radio input: a form component combining `m-input` (readonly trigger) + `m-radio-
 
 ### Props
 
-Passes through all `m-radio-popup` props (except show), plus:
+Only the props below are exposed; popup visibility (`show`) and popup header / overlay options (`show-header`, `closeable`, `close-icon`, `close-on-click-overlay`, `safe-area-inset-bottom`, `z-index`, `duration`) are fixed internally.
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
@@ -61,6 +61,16 @@ Passes through all `m-radio-popup` props (except show), plus:
 | clearable | Show clear button (visible when a value exists and not disabled) | boolean | `true` |
 | border | Trigger shows bordered container (passes to m-input) | boolean | `true` |
 | inlaid | Trigger inlaid form (passes to m-input) | boolean | `false` |
+| title | Popup title | string | `''` |
+| direction | Option layout, `vertical` or `horizontal` | RadioDirection | `vertical` |
+| shape | Option shape, `round` or `square` | RadioShape | `round` |
+| icon-size | Icon size (number gets px / string as-is) | string \| number | `''` |
+| checked-color | Checked color | string | `''` |
+| label-position | Label position, `right` or `left` | RadioLabelPosition | `right` |
+| field-names | Custom option field names (null = label / value / disabled) | RadioFieldNames \| null | `null` |
+| options-height | Options area height in px (0 uses theme variable) | number | `0` |
+| position | Popup position: `top` `bottom` `left` `right` `center` | RadioInputPosition | `bottom` |
+| round | Popup rounded corners | boolean | `true` |
 | custom-class / custom-style | Root node styling | - | - |
 
 ### Events

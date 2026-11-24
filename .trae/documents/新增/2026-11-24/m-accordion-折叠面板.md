@@ -266,7 +266,7 @@ $m-accordion-duration: 0.3 !default;
 | 演示页 | `packages/playground/pages-sub/display/accordion/accordion.uvue`（10 组变体） |
 | 首页登记 | `pages/index/demo-components.uts` 数据展示组首位 |
 | 文档 | `packages/docs/src/components/accordion.md` + `src/en/components/accordion.md`，zh/en 侧栏同位置 |
-| changelog | `playground/uni_modules/m-ui-x/changelog.md` 新增 0.9.0 段 |
+| changelog | `playground/uni_modules/m-ui-x/changelog.md` 并入未发布的 0.8.0 段 |
 
 ### 与方案的关键实现差异 / 细节
 

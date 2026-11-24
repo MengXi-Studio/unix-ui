@@ -2,7 +2,7 @@
 title: Accordion
 subtitle: Accordion
 demo: pages-sub/display/accordion/accordion
-added: 0.9.0
+added: 0.8.0
 ---
 
 ## Introduction

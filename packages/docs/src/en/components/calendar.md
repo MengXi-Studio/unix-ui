@@ -196,7 +196,7 @@ Call via a template ref (uvue components use `$callMethod`).
 
 | Method | Description | Arguments |
 | --- | --- | --- |
-| reset | Clears the selection and returns to the focused month | - |
+| reset | Resets the selection to the value / default-date source, writes back update:value and scrolls to the focused month | - |
 | resetSelection | Silently resets the selection to the value / default-date source (no update:value write-back, no scrolling) | - |
 | scrollToDate | Scrolls to the month of the given date (instant, no animation) | date: Date |
 | getSelectedDate | Reads the current selection (single value for single, array for multiple / range) | - |

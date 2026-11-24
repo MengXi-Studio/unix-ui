@@ -104,7 +104,7 @@ The `wrap` attribute is enabled by default, so columns wrap naturally when the s
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
 | span | Column width share, ranging from 1 to 24; width is determined by content when 0 or not set | number \| string | `0` |
-| offset | Number of offset columns to the left, calculated the same way as span | number \| string \| null | `0` |
+| offset | Number of offset columns to the left, calculated the same way as span | number \| string \| null | `null` |
 | custom-class | Custom root node class name | string.ClassString | - |
 | custom-style | Custom root node inline style | string | - |
 

@@ -143,7 +143,7 @@ label / 必填星号 / 校验与错误提示属表单体系，留待未来 `m-fo
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| v-model | 输入框内容，统一 string 类型 | string | `''` |
+| model-value | 输入框内容（`v-model`），统一 string 类型 | string | `''` |
 | type | 输入框类型，可选值 `text` `tel` `digit` `number` `password` `textarea` | InputType | `text` |
 | placeholder | 占位符 | string | `''` |
 | placeholder-style | 占位符内联样式（直通原生） | string | `''` |
@@ -165,8 +165,8 @@ label / 必填星号 / 校验与错误提示属表单体系，留待未来 `m-fo
 | min | 数值下限：`number` / `digit` 失焦时收敛 | number | `null` |
 | max | 数值上限：`number` / `digit` 失焦时收敛 | number | `null` |
 | show-eye | 内置明文切换图标，仅 `type=password` 生效（位于 append 插槽之前） | boolean | `false` |
-| custom-class | 自定义输入框容器（边框层）类名 | string | `''` |
-| custom-style | 自定义输入框容器（边框层）内联样式 | string | `''` |
+| custom-class | 自定义根节点与输入框容器（边框层）类名 | string | `''` |
+| custom-style | 自定义根节点与输入框容器（边框层）内联样式 | string | `''` |
 
 ### Events
 

@@ -336,6 +336,12 @@
 					"style": {
 						"navigationBarTitleText": "开关 Switch"
 					}
+				},
+				{
+					"path": "uploader/uploader",
+					"style": {
+						"navigationBarTitleText": "文件上传 Uploader"
+					}
 				}
 			]
 		},

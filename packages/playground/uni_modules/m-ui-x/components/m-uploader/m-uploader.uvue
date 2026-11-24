@@ -1,0 +1,1253 @@
+<template>
+	<!-- 文件上传：选择区 + 预览格列表，支持图片 / 视频、数量与大小限制、状态回写、内置上传、全屏预览、长按拖拽排序与插槽定制 -->
+	<view
+		:class="rootClass"
+		:style="rootStyle"
+		ref="rootRef"
+		@touchmove="onRootTouchMove"
+		@touchend="onRootTouchEnd"
+		@touchcancel="onRootTouchEnd"
+	>
+		<view
+			v-for="(item, index) in items"
+			:key="item.path != '' ? item.path : 'item-' + index.toString()"
+			:class="itemClass(item, index)"
+			:style="itemStyle"
+			@click="onItemClick(index)"
+			@touchstart="onItemTouchStart(index, $event)"
+		>
+			<!-- 视频项：无缩略图能力，统一渲染播放角标占位 -->
+			<view v-if="item.type == 'video'" class="m-uploader__video">
+				<m-icon name="play" size="24" color="white" />
+			</view>
+			<m-image
+				v-else
+				class="m-uploader__thumb"
+				:src="item.url"
+				:mode="imageFit"
+				width="100%"
+				height="100%"
+				:show-loading="false"
+				:show-error="false"
+				:fade="false"
+			/>
+			<!-- 上传中遮罩：加载圈 + 进度百分比 -->
+			<view v-if="item.status == 'uploading'" class="m-uploader__mask">
+				<m-loading type="circular" color="white" size="18" />
+				<text class="m-uploader__mask-text">{{ item.progress.toString() + '%' }}</text>
+			</view>
+			<!-- 失败遮罩：状态文案（为空回退「上传失败」） -->
+			<view v-else-if="item.status == 'failed'" class="m-uploader__mask m-uploader__mask--failed">
+				<text class="m-uploader__mask-text m-uploader__mask-text--failed">{{ item.message != '' ? item.message : '上传失败' }}</text>
+			</view>
+			<!-- 预览覆盖插槽：位于遮罩之上、删除按钮之下 -->
+			<view v-if="hasPreviewCoverSlot" class="m-uploader__cover">
+				<slot name="preview-cover" :item="toJson(item)" :index="index"></slot>
+			</view>
+			<!-- 删除按钮 -->
+			<view v-if="showItemDelete(item)" class="m-uploader__delete" @click.stop="onDelete(index)">
+				<slot v-if="hasPreviewDeleteSlot" name="preview-delete" :item="toJson(item)" :index="index"></slot>
+				<m-icon v-else name="cross" custom-class="m-uploader__delete-icon" />
+			</view>
+		</view>
+		<!-- 选择区：只读 / 禁用 / 达到上限时自动隐藏 -->
+		<view v-if="showSelect" class="m-uploader__select" :style="itemStyle" hover-class="m-uploader__select--active" @click="onSelectClick">
+			<slot v-if="hasDefaultSlot"></slot>
+			<template v-else>
+				<m-icon :name="uploadIcon" custom-class="m-uploader__select-icon" />
+				<text v-if="uploadText != ''" class="m-uploader__select-text">{{ uploadText }}</text>
+			</template>
+		</view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-uploader 文件上传：本地选择 + 预览列表 + 状态展示。
+	 *
+	 * 上传职责（Q1）：uploadUrl 非空时内置 uni.uploadFile 自动上传并回填 status / progress；
+	 * 为空时仅在选择完成后派发 afterRead，由业务自行上传。
+	 * 状态写回（Q4）：业务在 afterRead 中调用 setItemStatus(index, status, message, progress)。
+	 */
+	import { slotHasContent } from '../../utils/slot.uts'
+	import { IconName } from '../m-icon/icons.uts'
+
+	/** 单项上传状态 */
+	type UploadStatus = 'ready' | 'uploading' | 'done' | 'failed'
+
+	/** 内部文件项（对外以 UTSJSONObject 形态收发，便于跨组件传递） */
+	type UploadFileItem = {
+		/** 预览地址：本地临时路径或业务回写后的服务端地址 */
+		url: string
+		/** 上传用本地路径（uni.uploadFile 的 filePath） */
+		path: string
+		/** 文件名 */
+		name: string
+		/** 文件大小（字节） */
+		size: number
+		/** 媒体类型：image / video */
+		type: string
+		/** 上传状态 */
+		status: UploadStatus
+		/** 状态文案（上传中 / 失败原因） */
+		message: string
+		/** 上传进度 0-100 */
+		progress: number
+		/** 单项删除开关 */
+		deletable: boolean
+	}
+
+	/** 预览裁剪模式（与 m-image 的 mode 词表一致） */
+	type UploaderImageMode = 'scaleToFill' | 'aspectFit' | 'aspectFill' | 'widthFix' | 'heightFix' | 'top' | 'bottom' | 'center' | 'left' | 'right' | 'top left' | 'top right' | 'bottom left' | 'bottom right'
+
+	/** 主题默认格子边长（与 $m-uploader-size 保持一致，仅用于计算） */
+	const DEFAULT_SIZE = 80
+	/** 主题默认间距（与 $m-uploader-gap 保持一致，仅用于排序几何计算） */
+	const DEFAULT_GAP = 8
+	/** 长按进入拖拽的判定时长（毫秒） */
+	const LONG_PRESS_DELAY = 300
+
+	type Props = {
+		/** 文件列表（v-model:value，元素字段见 UploadFileItem） */
+		value?: UTSJSONObject[]
+		/** 可选媒体类型：'image' / 'video' / 数组（混合时选择器按图片打开） */
+		mediaType?: string | string[]
+		/** 是否多选 */
+		multiple?: boolean
+		/** 最大数量（0 不限） */
+		maxCount?: number
+		/** 单文件大小上限，字节（0 不限） */
+		maxSize?: number
+		/** 文件类型过滤（透传 extension，仅 Web 生效） */
+		accept?: string
+		/** 直接调起摄像头（传 'camera'） */
+		capture?: string
+		/** 禁用：不可选择、不可删除 */
+		disabled?: boolean
+		/** 只读：隐藏选择区，仅展示列表 */
+		readonly?: boolean
+		/** 是否展示删除按钮 */
+		deletable?: boolean
+		/** 是否展示选择区 */
+		showUpload?: boolean
+		/** 预览格尺寸 px，可传 [宽, 高]（0 用主题变量） */
+		previewSize?: number | number[]
+		/** 点击预览图是否全屏预览 */
+		previewFullImage?: boolean
+		/** 预览图裁剪模式 */
+		imageFit?: UploaderImageMode
+		/** 选择区文字 */
+		uploadText?: string
+		/** 选择区图标名 */
+		uploadIcon?: IconName
+		/** 服务端地址（非空则内置上传） */
+		uploadUrl?: string
+		/** 上传文件字段名 */
+		uploadName?: string
+		/** 附加表单数据 */
+		formData?: UTSJSONObject | null
+		/** 请求头 */
+		header?: UTSJSONObject | null
+		/** 选择前钩子：调用 next(true) 继续，next(false) 取消 */
+		beforeChoose?: ((fileList: UTSJSONObject[], next: (allow: boolean) => void) => void)
+		/** 读取前校验：返回 boolean 或 Promise<boolean>，false 丢弃该文件 */
+		beforeRead?: ((file: UTSJSONObject) => boolean | Promise<boolean>)
+		/** 删除前校验：返回 boolean 或 Promise<boolean>，false 取消删除 */
+		beforeDelete?: ((file: UTSJSONObject) => boolean | Promise<boolean>)
+		/** 是否开启长按拖拽排序 */
+		sortable?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: () => [] as UTSJSONObject[],
+		mediaType: 'image',
+		multiple: false,
+		maxCount: 0,
+		maxSize: 0,
+		accept: '',
+		capture: '',
+		disabled: false,
+		readonly: false,
+		deletable: true,
+		showUpload: true,
+		previewSize: 0,
+		previewFullImage: true,
+		imageFit: 'aspectFill',
+		uploadText: '',
+		uploadIcon: 'plus',
+		uploadUrl: '',
+		uploadName: 'file',
+		formData: null,
+		header: null,
+		beforeChoose: null,
+		beforeRead: null,
+		beforeDelete: null,
+		sortable: false,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 列表变化（v-model:value） */
+		'update:value': [value: UTSJSONObject[]]
+		/** 列表变化（增 / 删 / 状态更新） */
+		change: [value: UTSJSONObject[]]
+		/** 选择完成（未配置 uploadUrl 时由业务上传） */
+		afterRead: [item: UTSJSONObject, index: number]
+		/** 文件超过 maxSize 被过滤 */
+		oversize: [files: UTSJSONObject[]]
+		/** 点击选择区 */
+		clickUpload: [event: MouseEvent]
+		/** 点击预览图（全屏预览前派发） */
+		clickPreview: [index: number, item: UTSJSONObject]
+		/** 点击单项（失败重传入口） */
+		itemClick: [index: number, item: UTSJSONObject]
+		/** 删除单项 */
+		delete: [index: number, item: UTSJSONObject]
+		/** 内置上传进度变化 */
+		progress: [index: number, progress: number, item: UTSJSONObject]
+		/** 内置上传成功 */
+		success: [index: number, item: UTSJSONObject, response: string]
+		/** 内置上传失败 */
+		error: [index: number, item: UTSJSONObject, errMsg: string]
+		/** 拖拽排序完成 */
+		sort: [fromIndex: number, toIndex: number, value: UTSJSONObject[]]
+	}>()
+
+	const slots = useSlots()
+
+	/** 根节点引用（排序几何测量） */
+	const rootRef = ref<UniElement | null>(null)
+	/** 根节点矩形（排序几何测量） */
+	const rootRect = ref<DOMRect | null>(null)
+	/** 内部文件列表（渲染与状态真源，初始化在 fromJsonList 声明之后） */
+	const items = ref<UploadFileItem[]>([])
+	/** 当前拖拽中的下标（-1 未拖拽） */
+	const draggingIndex = ref<number>(-1)
+	/** 拖拽起始下标 */
+	let dragStartIndex = -1
+	/** 触摸起点 X */
+	let dragStartX = 0
+	/** 触摸起点 Y */
+	let dragStartY = 0
+	/** 长按计时器（-1 未启动） */
+	let longPressTimer = -1
+	/** 拖拽后抑制本次点击（避免误触预览） */
+	let suppressItemClick = false
+	/** 内置上传任务表（按文件路径索引） */
+	const tasks = new Map<string, UploadTask>()
+
+	// #ifdef MP
+	/** 小程序端选择器查询实例（setup 期一次性捕获，避免回调中取不到） */
+	const mpInstance = getCurrentInstance()
+	// #endif
+
+	/**
+	 * 读取显式预览格宽度
+	 *
+	 * @returns px 宽度（未配置或非法值返回 0，交由主题变量控制）
+	 */
+	function rawWidth(): number {
+		const size = props.previewSize
+		if (Array.isArray(size)) {
+			const arr = size as number[]
+			if (arr.length > 0 && arr[0] > 0) return arr[0]
+			return 0
+		}
+		const single = size as number
+		return single > 0 ? single : 0
+	}
+
+	/**
+	 * 读取显式预览格高度
+	 *
+	 * @returns px 高度（未配置或非法值返回 0，交由主题变量控制）
+	 */
+	function rawHeight(): number {
+		const size = props.previewSize
+		if (Array.isArray(size)) {
+			const arr = size as number[]
+			if (arr.length > 1 && arr[1] > 0) return arr[1]
+			return 0
+		}
+		return 0
+	}
+
+	/** 生效预览格宽度（排序几何计算用，未配置回退主题默认值） */
+	const itemWidth = computed<number>(() => {
+		const width = rawWidth()
+		return width > 0 ? width : DEFAULT_SIZE
+	})
+
+	/** 生效预览格高度（排序几何计算用，未配置回退主题默认值） */
+	const itemHeight = computed<number>(() => {
+		const height = rawHeight()
+		if (height > 0) return height
+		const width = rawWidth()
+		return width > 0 ? width : DEFAULT_SIZE
+	})
+
+	/** 预览格内联尺寸（未传 previewSize 时留空，由主题变量 $m-uploader-size 控制） */
+	const itemStyle = computed<string>(() => {
+		let style = ''
+		const width = rawWidth()
+		const height = rawHeight()
+		if (width > 0) style += 'width: ' + width.toString() + 'px;'
+		if (height > 0) style += 'height: ' + height.toString() + 'px;'
+		return style
+	})
+
+	/** 根节点类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-uploader'
+		if (props.disabled) cls += ' m-uploader--disabled'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 根节点内联样式 */
+	const rootStyle = computed<string>(() => {
+		return props.customStyle
+	})
+
+	/** 默认插槽（匿名插槽按项目约定用 slots['default'] != null 判定） */
+	const hasDefaultSlot = computed<boolean>(() => slots['default'] != null)
+	/** 预览覆盖插槽 */
+	const hasPreviewCoverSlot = computed<boolean>(() => slotHasContent(slots['preview-cover']))
+	/** 自定义删除插槽 */
+	const hasPreviewDeleteSlot = computed<boolean>(() => slotHasContent(slots['preview-delete']))
+
+	/** 是否仍可新增（maxCount 为 0 时不限） */
+	const canAdd = computed<boolean>(() => props.maxCount <= 0 || items.value.length < props.maxCount)
+
+	/** 是否展示选择区 */
+	const showSelect = computed<boolean>(() => props.showUpload && !props.readonly && canAdd.value)
+
+	/**
+	 * 从路径中截取文件名（App 端 chooseImage 不返回 name）
+	 *
+	 * @param path 本地路径
+	 * @returns 文件名（无斜杠时原样返回）
+	 */
+	function fileNameFromPath(path: string): string {
+		let i = path.length - 1
+		while (i >= 0) {
+			if (path.substring(i, i + 1) == '/') break
+			i--
+		}
+		return path.substring(i + 1)
+	}
+
+	/**
+	 * 读取对象上的字符串字段
+	 *
+	 * @param obj 数据对象
+	 * @param key 字段名
+	 * @param fallback 缺失或类型不符时的回退值
+	 * @returns 字符串值
+	 */
+	function jsonString(obj: UTSJSONObject, key: string, fallback: string): string {
+		const v = obj[key]
+		if (v == null) return fallback
+		if (typeof v == 'string') return v as string
+		return fallback
+	}
+
+	/**
+	 * 读取对象上的数字字段
+	 *
+	 * @param obj 数据对象
+	 * @param key 字段名
+	 * @param fallback 缺失或类型不符时的回退值
+	 * @returns 数字值
+	 */
+	function jsonNumber(obj: UTSJSONObject, key: string, fallback: number): number {
+		const v = obj[key]
+		if (v == null) return fallback
+		if (typeof v == 'number') return v as number
+		return fallback
+	}
+
+	/**
+	 * 读取对象上的布尔字段
+	 *
+	 * @param obj 数据对象
+	 * @param key 字段名
+	 * @param fallback 缺失或类型不符时的回退值
+	 * @returns 布尔值
+	 */
+	function jsonBoolean(obj: UTSJSONObject, key: string, fallback: boolean): boolean {
+		const v = obj[key]
+		if (v == null) return fallback
+		if (typeof v == 'boolean') return v as boolean
+		return fallback
+	}
+
+	/**
+	 * 读取并校验状态字段
+	 *
+	 * @param obj 数据对象
+	 * @returns 合法状态（非法值回退 ready）
+	 */
+	function jsonStatus(obj: UTSJSONObject): UploadStatus {
+		const raw = jsonString(obj, 'status', 'ready')
+		if (raw == 'uploading') return 'uploading'
+		if (raw == 'done') return 'done'
+		if (raw == 'failed') return 'failed'
+		return 'ready'
+	}
+
+	/**
+	 * 内部文件项转对外数据对象
+	 *
+	 * @param item 文件项
+	 * @returns UTSJSONObject
+	 */
+	function toJson(item: UploadFileItem): UTSJSONObject {
+		return {
+			url: item.url,
+			path: item.path,
+			name: item.name,
+			size: item.size,
+			type: item.type,
+			status: item.status,
+			message: item.message,
+			progress: item.progress,
+			deletable: item.deletable
+		} as UTSJSONObject
+	}
+
+	/**
+	 * 内部文件列表转对外数据数组
+	 *
+	 * @param list 文件项列表
+	 * @returns UTSJSONObject[]
+	 */
+	function toJsonList(list: UploadFileItem[]): UTSJSONObject[] {
+		const result: UTSJSONObject[] = []
+		for (let i = 0; i < list.length; i++) {
+			result.push(toJson(list[i]))
+		}
+		return result
+	}
+
+	/**
+	 * 对外数据数组转内部文件列表（缺失字段按默认值补全）
+	 *
+	 * @param list 对外数据数组
+	 * @returns 内部文件列表
+	 */
+	function fromJsonList(list: UTSJSONObject[]): UploadFileItem[] {
+		const result: UploadFileItem[] = []
+		for (let i = 0; i < list.length; i++) {
+			const obj = list[i]
+			const path = jsonString(obj, 'path', jsonString(obj, 'url', ''))
+			const type = jsonString(obj, 'type', 'image')
+			result.push({
+				url: jsonString(obj, 'url', path),
+				path: path,
+				name: jsonString(obj, 'name', fileNameFromPath(path)),
+				size: jsonNumber(obj, 'size', 0),
+				type: type,
+				status: jsonStatus(obj),
+				message: jsonString(obj, 'message', ''),
+				progress: jsonNumber(obj, 'progress', 0),
+				deletable: jsonBoolean(obj, 'deletable', props.deletable)
+			} as UploadFileItem)
+		}
+		return result
+	}
+
+	// 初始值同步（函数声明之后才能调用，UTS 无声明提升）
+	items.value = fromJsonList(props.value)
+
+	/**
+	 * 按路径查找当前下标（上传回调期间列表可能已增删 / 排序）
+	 *
+	 * @param path 文件路径
+	 * @returns 下标（找不到返回 -1）
+	 */
+	function indexOfPath(path: string): number {
+		for (let i = 0; i < items.value.length; i++) {
+			if (items.value[i].path == path) return i
+		}
+		return -1
+	}
+
+	/**
+	 * 同步列表到外部并派发事件
+	 *
+	 * @param withChange 是否同时派发 change
+	 */
+	function syncValue(withChange: boolean) {
+		items.value = items.value.slice()
+		const data = toJsonList(items.value)
+		emit('update:value', data)
+		if (withChange) emit('change', data)
+	}
+
+	/**
+	 * 用新列表替换内部列表并同步
+	 *
+	 * @param next 新列表
+	 * @param withChange 是否同时派发 change
+	 */
+	function commit(next: UploadFileItem[], withChange: boolean) {
+		items.value = next
+		syncValue(withChange)
+	}
+
+	/**
+	 * 测量根节点矩形（Web 同步 / 小程序选择器查询 / App 异步）
+	 */
+	function measureRoot() {
+		// #ifdef WEB
+		if (rootRef.value != null) rootRect.value = rootRef.value!.getBoundingClientRect()
+		// #endif
+		// #ifdef MP
+		uni.createSelectorQuery().in(mpInstance!.proxy!)
+			.select('.m-uploader')
+			.boundingClientRect()
+			.exec((ret: Array<any>) => {
+				const first = ret.length > 0 ? ret[0] : null
+				rootRect.value = first as DOMRect | null
+			})
+		// #endif
+		// #ifdef APP
+		if (rootRef.value != null) {
+			rootRef.value!.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+				rootRect.value = rect
+			})
+		}
+		// #endif
+	}
+
+	/** 每行列数（按根节点宽度与格子尺寸推导，未测量时按 3 列兜底） */
+	const columns = computed<number>(() => {
+		const rect = rootRect.value
+		if (rect == null || rect.width <= 0) return 3
+		const step = itemWidth.value + DEFAULT_GAP
+		if (step <= 0) return 1
+		const count = Math.floor((rect.width + DEFAULT_GAP) / step)
+		return count > 0 ? count : 1
+	})
+
+	/**
+	 * 移动内部列表元素（拖拽实时换位，不派发事件）
+	 *
+	 * @param from 原下标
+	 * @param to 目标下标
+	 */
+	function moveItem(from: number, to: number) {
+		if (from == to) return
+		const list = items.value.slice()
+		const moving = list[from]
+		list.splice(from, 1)
+		list.splice(to, 0, moving)
+		items.value = list
+	}
+
+	/**
+	 * 开始内置上传（uploadUrl 非空时由组件调用 uni.uploadFile）
+	 *
+	 * @param path 本地文件路径
+	 */
+	function startUpload(path: string) {
+		const index = indexOfPath(path)
+		if (index < 0) return
+		items.value[index].status = 'uploading'
+		items.value[index].message = ''
+		items.value[index].progress = 0
+		syncValue(false)
+
+		const task = uni.uploadFile({
+			url: props.uploadUrl,
+			filePath: path,
+			name: props.uploadName,
+			formData: props.formData,
+			header: props.header,
+			success: (res) => {
+				const at = indexOfPath(path)
+				if (at >= 0) {
+					items.value[at].status = 'done'
+					items.value[at].progress = 100
+					syncValue(true)
+					emit('success', at, toJson(items.value[at]), res.data)
+				}
+				tasks.delete(path)
+			},
+			fail: (err) => {
+				const at = indexOfPath(path)
+				if (at >= 0) {
+					items.value[at].status = 'failed'
+					items.value[at].message = err.errMsg
+					syncValue(true)
+					emit('error', at, toJson(items.value[at]), err.errMsg)
+				}
+				tasks.delete(path)
+			}
+		})
+
+		tasks.set(path, task)
+		task.onProgressUpdate((res) => {
+			const at = indexOfPath(path)
+			if (at < 0) return
+			const progress = Math.round(res.progress)
+			const current = items.value[at].progress
+			// 进度按 5% 步长节流，避免高频重渲染
+			if (progress < 100 && progress - current < 5) return
+			items.value[at].progress = progress
+			syncValue(false)
+			emit('progress', at, progress, toJson(items.value[at]))
+		})
+	}
+
+	/**
+	 * 逐项执行 beforeRead（同步 / Promise 混用），返回通过的文件列表
+	 *
+	 * @param list 候选文件列表
+	 * @returns 通过校验的文件列表
+	 */
+	function filterBeforeRead(list: UploadFileItem[]): Promise<UploadFileItem[]> {
+		const passed: UploadFileItem[] = []
+		const callback = props.beforeRead as ((file: UTSJSONObject) => boolean | Promise<boolean>) | null
+		if (callback == null) {
+			for (let i = 0; i < list.length; i++) {
+				passed.push(list[i])
+			}
+			return new Promise<UploadFileItem[]>((resolve: (value: UploadFileItem[]) => void) => {
+				resolve(passed)
+			})
+		}
+		let chain: Promise<any> = new Promise<any>((resolve: (value: any) => void) => {
+			resolve(null)
+		})
+		for (let i = 0; i < list.length; i++) {
+			const item = list[i]
+			chain = chain.then((_: any): Promise<any> => {
+				return new Promise<any>((resolve: (value: any) => void) => {
+					const result = callback(toJson(item))
+					if (typeof result == 'boolean') {
+						if (result) passed.push(item)
+						resolve(null)
+						return
+					}
+					const pending = result as Promise<boolean>
+					pending.then((ok: boolean) => {
+						if (ok) passed.push(item)
+						resolve(null)
+					}).catch((_: any) => {
+						resolve(null)
+					})
+				})
+			})
+		}
+		return chain.then((_: any): UploadFileItem[] => passed)
+	}
+
+	/**
+	 * 处理选择结果：大小过滤 → 数量裁剪 → beforeRead → 入列（按需自动上传）
+	 *
+	 * @param picked 本次选择的文件
+	 */
+	function applyPicked(picked: UploadFileItem[]) {
+		const remaining = props.maxCount > 0 ? props.maxCount - items.value.length : picked.length
+		const accepted: UploadFileItem[] = []
+		const oversized: UploadFileItem[] = []
+		for (let i = 0; i < picked.length; i++) {
+			if (accepted.length >= remaining) break
+			const file = picked[i]
+			if (props.maxSize > 0 && file.size > props.maxSize) {
+				oversized.push(file)
+				continue
+			}
+			accepted.push(file)
+		}
+		if (oversized.length > 0) emit('oversize', toJsonList(oversized))
+		if (accepted.length == 0) return
+
+		const base = items.value.length
+		filterBeforeRead(accepted).then((passed: UploadFileItem[]) => {
+			if (passed.length == 0) return
+			const next = items.value.slice()
+			for (let i = 0; i < passed.length; i++) {
+				next.push(passed[i])
+			}
+			commit(next, true)
+			if (props.uploadUrl != '') {
+				for (let i = 0; i < passed.length; i++) {
+					startUpload(passed[i].path)
+				}
+			} else {
+				for (let i = 0; i < passed.length; i++) {
+					emit('afterRead', toJson(passed[i]), base + i)
+				}
+			}
+		})
+	}
+
+	/**
+	 * 媒体类型归一化
+	 *
+	 * @returns 非空媒体类型数组（为空回退 image）
+	 */
+	function mediaTypes(): string[] {
+		const media = props.mediaType
+		const list: string[] = []
+		if (Array.isArray(media)) {
+			const arr = media as string[]
+			for (let i = 0; i < arr.length; i++) {
+				if (arr[i] != '') list.push(arr[i])
+			}
+		} else {
+			const single = media as string
+			if (single != '') list.push(single)
+		}
+		if (list.length == 0) list.push('image')
+		return list
+	}
+
+	/**
+	 * 解析 accept 为扩展名数组（透传 chooseImage / chooseVideo 的 extension）
+	 *
+	 * @returns 扩展名数组（未配置时为空数组）
+	 */
+	function acceptExtensions(): string[] {
+		const list: string[] = []
+		if (props.accept == '') return list
+		const parts = props.accept.split(',')
+		for (let i = 0; i < parts.length; i++) {
+			const item = parts[i].trim()
+			if (item != '') list.push(item)
+		}
+		return list
+	}
+
+	/**
+	 * 打开系统选择器（根据媒体类型选择 chooseImage / chooseVideo）
+	 */
+	function openPicker() {
+		const types = mediaTypes()
+		const videoOnly = types.indexOf('video') >= 0 && types.indexOf('image') < 0
+		const sources: string[] = props.capture == 'camera' ? ['camera'] : ['album', 'camera']
+		const remaining = props.maxCount > 0 ? props.maxCount - items.value.length : 9
+		const count = props.multiple ? (remaining > 0 ? remaining : 1) : 1
+		const extensions = acceptExtensions()
+
+		if (videoOnly) {
+			uni.chooseVideo({
+				sourceType: sources,
+				maxDuration: 60,
+				extension: extensions,
+				success: (res) => {
+					const path = res.tempFilePath
+					const picked: UploadFileItem[] = []
+					picked.push({
+						url: path,
+						path: path,
+						name: fileNameFromPath(path),
+						size: res.size,
+						type: 'video',
+						status: 'ready',
+						message: '',
+						progress: 0,
+						deletable: props.deletable
+					} as UploadFileItem)
+					applyPicked(picked)
+				},
+				fail: (_err) => {}
+			})
+			return
+		}
+
+		uni.chooseImage({
+			count: count,
+			sourceType: sources,
+			extension: extensions,
+			success: (res) => {
+				const picked: UploadFileItem[] = []
+				for (let i = 0; i < res.tempFiles.length; i++) {
+					const file = res.tempFiles[i]
+					picked.push({
+						url: file.path,
+						path: file.path,
+						name: file.name != null ? file.name! : fileNameFromPath(file.path),
+						size: file.size,
+						type: 'image',
+						status: 'ready',
+						message: '',
+						progress: 0,
+						deletable: props.deletable
+					} as UploadFileItem)
+				}
+				if (picked.length == 0) {
+					for (let i = 0; i < res.tempFilePaths.length; i++) {
+						const path = res.tempFilePaths[i]
+						picked.push({
+							url: path,
+							path: path,
+							name: fileNameFromPath(path),
+							size: 0,
+							type: 'image',
+							status: 'ready',
+							message: '',
+							progress: 0,
+							deletable: props.deletable
+						} as UploadFileItem)
+					}
+				}
+				applyPicked(picked)
+			},
+			fail: (_err) => {}
+		})
+	}
+
+	/**
+	 * 主动调起选择（受禁用 / 只读 / 数量上限约束，先经过 beforeChoose）
+	 */
+	function choose() {
+		if (props.disabled || props.readonly) return
+		if (props.maxCount > 0 && items.value.length >= props.maxCount) return
+		const callback = props.beforeChoose as ((fileList: UTSJSONObject[], next: (allow: boolean) => void) => void) | null
+		if (callback == null) {
+			openPicker()
+			return
+		}
+		callback(toJsonList(items.value), (allow: boolean) => {
+			if (allow) openPicker()
+		})
+	}
+
+	/**
+	 * 中止指定项的内置上传
+	 *
+	 * @param index 下标
+	 */
+	function abort(index: number) {
+		if (index < 0 || index >= items.value.length) return
+		const item = items.value[index]
+		const task = tasks.get(item.path)
+		if (task != null) {
+			task.abort()
+			tasks.delete(item.path)
+		}
+		items.value[index].status = 'failed'
+		items.value[index].message = '已取消上传'
+		items.value[index].progress = 0
+		syncValue(true)
+	}
+
+	/**
+	 * 重传指定项：内置上传直接重发；业务托管则重置状态并再次派发 afterRead
+	 *
+	 * @param index 下标
+	 */
+	function reupload(index: number) {
+		if (index < 0 || index >= items.value.length) return
+		const item = items.value[index]
+		if (props.uploadUrl != '' && item.path != '') {
+			startUpload(item.path)
+			return
+		}
+		items.value[index].status = 'ready'
+		items.value[index].message = ''
+		items.value[index].progress = 0
+		syncValue(true)
+		emit('afterRead', toJson(items.value[index]), index)
+	}
+
+	/**
+	 * 清空列表并中止所有未完成上传
+	 */
+	function clear() {
+		for (let i = 0; i < items.value.length; i++) {
+			const task = tasks.get(items.value[i].path)
+			if (task != null) task.abort()
+		}
+		tasks.clear()
+		items.value = []
+		syncValue(true)
+	}
+
+	/**
+	 * 业务回写单项状态（在 afterRead 中调用）
+	 *
+	 * @param index 下标
+	 * @param status 目标状态：ready / uploading / done / failed
+	 * @param message 状态文案（失败原因等）
+	 * @param progress 上传进度 0-100
+	 */
+	function setItemStatus(index: number, status: string, message: string, progress: number) {
+		if (index < 0 || index >= items.value.length) return
+		let next: UploadStatus = 'ready'
+		if (status == 'uploading') next = 'uploading'
+		if (status == 'done') next = 'done'
+		if (status == 'failed') next = 'failed'
+		let value = progress
+		if (value < 0) value = 0
+		if (value > 100) value = 100
+		if (next == 'done') value = 100
+		items.value[index].status = next
+		items.value[index].message = message
+		items.value[index].progress = value
+		syncValue(true)
+	}
+
+	/**
+	 * 取消长按计时器
+	 */
+	function cancelLongPress() {
+		if (longPressTimer >= 0) {
+			clearTimeout(longPressTimer)
+			longPressTimer = -1
+		}
+	}
+
+	/**
+	 * 触摸开始：sortable 时长按进入拖拽
+	 *
+	 * @param index 单项下标
+	 * @param e 触摸事件
+	 */
+	function onItemTouchStart(index: number, e: TouchEvent) {
+		if (!props.sortable || props.disabled) return
+		if (e.touches.length == 0) return
+		dragStartIndex = index
+		dragStartX = e.touches[0].clientX
+		dragStartY = e.touches[0].clientY
+		cancelLongPress()
+		longPressTimer = setTimeout(() => {
+			longPressTimer = -1
+			if (props.disabled) return
+			draggingIndex.value = dragStartIndex
+			suppressItemClick = true
+			measureRoot()
+		}, LONG_PRESS_DELAY)
+	}
+
+	/**
+	 * 触摸移动：未进入拖拽时移动超过 6px 取消长按；拖拽中按格子几何换位
+	 *
+	 * @param e 触摸事件
+	 */
+	function onRootTouchMove(e: TouchEvent) {
+		if (e.touches.length == 0) return
+		const x = e.touches[0].clientX
+		const y = e.touches[0].clientY
+		if (draggingIndex.value < 0) {
+			const dx = x - dragStartX
+			const dy = y - dragStartY
+			if (dx * dx + dy * dy > 36) cancelLongPress()
+			return
+		}
+		const rect = rootRect.value
+		if (rect == null) return
+		const stepX = itemWidth.value + DEFAULT_GAP
+		const stepY = itemHeight.value + DEFAULT_GAP
+		if (stepX <= 0 || stepY <= 0) return
+		let col = Math.floor((x - rect.left) / stepX)
+		const row = Math.floor((y - rect.top) / stepY)
+		if (col < 0) col = 0
+		if (col > columns.value - 1) col = columns.value - 1
+		let target = row * columns.value + col
+		if (target < 0) target = 0
+		if (target > items.value.length - 1) target = items.value.length - 1
+		if (target != draggingIndex.value) {
+			moveItem(draggingIndex.value, target)
+			draggingIndex.value = target
+		}
+	}
+
+	/**
+	 * 触摸结束：拖拽换位后统一同步列表并派发 sort
+	 *
+	 * @param _e 触摸事件
+	 */
+	function onRootTouchEnd(_e: TouchEvent) {
+		cancelLongPress()
+		if (draggingIndex.value < 0) return
+		const from = dragStartIndex
+		const to = draggingIndex.value
+		draggingIndex.value = -1
+		dragStartIndex = -1
+		if (from != to && from >= 0) {
+			syncValue(true)
+			emit('sort', from, to, toJsonList(items.value))
+		}
+	}
+
+	/**
+	 * 执行删除（已通过 beforeDelete）
+	 *
+	 * @param index 下标
+	 * @param path 文件路径（用于中止上传）
+	 */
+	function doDelete(index: number, path: string) {
+		const at = indexOfPath(path)
+		if (at < 0) return
+		const task = tasks.get(path)
+		if (task != null) {
+			task.abort()
+			tasks.delete(path)
+		}
+		const removed = items.value[at]
+		const next = items.value.slice()
+		next.splice(at, 1)
+		commit(next, true)
+		emit('delete', at, toJson(removed))
+	}
+
+	/**
+	 * 请求删除：先经过 beforeDelete（同步 / Promise），通过后删除
+	 *
+	 * @param index 下标
+	 */
+	function requestDelete(index: number) {
+		if (index < 0 || index >= items.value.length) return
+		const item = items.value[index]
+		const path = item.path
+		const callback = props.beforeDelete as ((file: UTSJSONObject) => boolean | Promise<boolean>) | null
+		if (callback == null) {
+			doDelete(index, path)
+			return
+		}
+		const result = callback(toJson(item))
+		if (typeof result == 'boolean') {
+			if (result) doDelete(index, path)
+			return
+		}
+		const pending = result as Promise<boolean>
+		pending.then((ok: boolean) => {
+			if (ok) doDelete(index, path)
+		}).catch((_: any) => {})
+	}
+
+	/**
+	 * 删除按钮点击（禁用时忽略）
+	 *
+	 * @param index 下标
+	 */
+	function onDelete(index: number) {
+		if (props.disabled) return
+		requestDelete(index)
+	}
+
+	/**
+	 * 单项点击：失败项重传，其余按 previewFullImage 打开全屏预览
+	 *
+	 * @param index 下标
+	 */
+	function onItemClick(index: number) {
+		if (suppressItemClick) {
+			suppressItemClick = false
+			return
+		}
+		if (index < 0 || index >= items.value.length) return
+		const item = items.value[index]
+		emit('itemClick', index, toJson(item))
+		if (item.status == 'failed') {
+			reupload(index)
+			return
+		}
+		if (!props.previewFullImage) return
+		if (item.type == 'video') return
+		const urls: string[] = []
+		let current = 0
+		for (let i = 0; i < items.value.length; i++) {
+			const file = items.value[i]
+			if (file.type == 'video' || file.url == '') continue
+			if (i == index) current = urls.length
+			urls.push(file.url)
+		}
+		if (urls.length == 0) return
+		emit('clickPreview', index, toJson(item))
+		uni.previewImage({ urls: urls, current: current })
+	}
+
+	/**
+	 * 选择区点击
+	 *
+	 * @param event 点击事件
+	 */
+	function onSelectClick(event: MouseEvent) {
+		if (props.disabled || props.readonly) return
+		emit('clickUpload', event)
+		choose()
+	}
+
+	/**
+	 * 单项类名
+	 *
+	 * @param item 文件项
+	 * @param index 下标
+	 * @returns 类名
+	 */
+	function itemClass(item: UploadFileItem, index: number): string {
+		let cls = 'm-uploader__item'
+		if (item.status == 'failed') cls += ' m-uploader__item--failed'
+		if (draggingIndex.value == index) cls += ' m-uploader__item--dragging'
+		return cls
+	}
+
+	/**
+	 * 是否展示单项删除按钮
+	 *
+	 * @param item 文件项
+	 * @returns 是否展示
+	 */
+	function showItemDelete(item: UploadFileItem): boolean {
+		return item.deletable && !props.disabled && item.status != 'uploading'
+	}
+
+	// 外部值变化时同步内部列表（v-model 回写 / 业务整体替换）
+	watch((): UTSJSONObject[] => props.value, (value: UTSJSONObject[]) => {
+		items.value = fromJsonList(value)
+	})
+
+	// 卸载时清理长按计时器与未完成上传，避免回调写入已销毁实例
+	onUnmounted(() => {
+		cancelLongPress()
+		for (let i = 0; i < items.value.length; i++) {
+			const task = tasks.get(items.value[i].path)
+			if (task != null) task.abort()
+		}
+		tasks.clear()
+	})
+
+	defineExpose({
+		choose,
+		clear,
+		abort,
+		reupload,
+		setItemStatus
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明：组件内顶层引入 theme/vars.scss（全部 !default），
+	 * 覆盖方式为项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根节点 ========== */
+	.m-uploader {
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.m-uploader--disabled {
+		opacity: $m-uploader-disabled-opacity;
+	}
+
+	/* ========== 预览格 ========== */
+	.m-uploader__item {
+		position: relative;
+		overflow: hidden;
+		width: $m-uploader-size;
+		height: $m-uploader-size;
+		border-radius: $m-uploader-radius;
+		background-color: $m-image-background;
+		margin-right: $m-uploader-gap;
+		margin-bottom: $m-uploader-gap;
+	}
+
+	.m-uploader__item--dragging {
+		opacity: 0.5;
+	}
+
+	.m-uploader__thumb {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* ========== 视频占位 ========== */
+	.m-uploader__video {
+		width: 100%;
+		height: 100%;
+		align-items: center;
+		justify-content: center;
+		background-color: $m-uploader-video-background;
+	}
+
+	/* ========== 状态遮罩 ========== */
+	.m-uploader__mask {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		align-items: center;
+		justify-content: center;
+		background-color: $m-uploader-mask-background;
+	}
+
+	.m-uploader__mask-text {
+		margin-top: 4px;
+		color: $m-uploader-mask-color;
+		font-size: $m-uploader-mask-font-size;
+	}
+
+	.m-uploader__mask-text--failed {
+		color: $m-uploader-failed-color;
+	}
+
+	/* ========== 预览覆盖插槽层 ========== */
+	.m-uploader__cover {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-color: $m-uploader-cover-background;
+	}
+
+	/* ========== 删除按钮 ========== */
+	.m-uploader__delete {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: $m-uploader-delete-size;
+		height: $m-uploader-delete-size;
+		align-items: center;
+		justify-content: center;
+		background-color: $m-uploader-delete-background;
+		border-bottom-left-radius: $m-uploader-radius;
+	}
+
+	.m-uploader__delete-icon {
+		color: $m-uploader-delete-color;
+		font-size: $m-uploader-delete-icon-size;
+	}
+
+	/* ========== 选择区 ========== */
+	.m-uploader__select {
+		align-items: center;
+		justify-content: center;
+		width: $m-uploader-size;
+		height: $m-uploader-size;
+		border-radius: $m-uploader-radius;
+		background-color: $m-uploader-select-background;
+		margin-right: $m-uploader-gap;
+		margin-bottom: $m-uploader-gap;
+	}
+
+	.m-uploader__select--active {
+		opacity: $m-uploader-select-active-opacity;
+	}
+
+	.m-uploader__select-icon {
+		color: $m-uploader-icon-color;
+		font-size: $m-uploader-icon-size;
+	}
+
+	.m-uploader__select-text {
+		margin-top: 4px;
+		color: $m-uploader-text-color;
+		font-size: $m-uploader-text-font-size;
+	}
+</style>

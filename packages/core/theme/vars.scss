@@ -1144,3 +1144,45 @@ $m-switch-loading-opacity: 0.6 !default;
 $m-switch-text-color: $m-white !default;
 /** 轨道文字字号 */
 $m-switch-text-font-size: 12px !default;
+
+/* ========== Uploader 文件上传 ========== */
+/** 预览格默认边长（组件内 DEFAULT_SIZE 与之一致） */
+$m-uploader-size: 80px !default;
+/** 格子间距（组件内 DEFAULT_GAP 与之一致，用于排序几何计算） */
+$m-uploader-gap: 8px !default;
+/** 预览格圆角 */
+$m-uploader-radius: $m-radius-md !default;
+/** 选择区底色 */
+$m-uploader-select-background: #f7f8fa !default;
+/** 选择区按压态透明度 */
+$m-uploader-select-active-opacity: 0.7 !default;
+/** 选择区图标尺寸 */
+$m-uploader-icon-size: 24px !default;
+/** 选择区图标颜色 */
+$m-uploader-icon-color: #dcdee0 !default;
+/** 选择区文字字号 */
+$m-uploader-text-font-size: 12px !default;
+/** 选择区文字颜色 */
+$m-uploader-text-color: $m-text-color-tertiary !default;
+/** 删除按钮直径 */
+$m-uploader-delete-size: 18px !default;
+/** 删除图标字号 */
+$m-uploader-delete-icon-size: 10px !default;
+/** 删除按钮底色 */
+$m-uploader-delete-background: rgba(0, 0, 0, 0.7) !default;
+/** 删除图标颜色 */
+$m-uploader-delete-color: $m-white !default;
+/** 上传中 / 失败遮罩底色 */
+$m-uploader-mask-background: rgba(0, 0, 0, 0.6) !default;
+/** 上传进度文字颜色 */
+$m-uploader-mask-color: $m-white !default;
+/** 上传进度 / 失败文字字号 */
+$m-uploader-mask-font-size: 12px !default;
+/** 失败状态文字颜色 */
+$m-uploader-failed-color: $m-color-danger !default;
+/** 视频占位底色 */
+$m-uploader-video-background: #000000 !default;
+/** 预览覆盖插槽层底色 */
+$m-uploader-cover-background: rgba(0, 0, 0, 0.3) !default;
+/** 禁用态透明度 */
+$m-uploader-disabled-opacity: $m-disabled-opacity !default;

@@ -121,7 +121,8 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'Signature', link: '/en/components/signature' },
 						{ text: 'Slider', link: '/en/components/slider' },
 						{ text: 'Stepper', link: '/en/components/stepper' },
-						{ text: 'Switch', link: '/en/components/switch' }
+						{ text: 'Switch', link: '/en/components/switch' },
+						{ text: 'Uploader', link: '/en/components/uploader' }
 					]
 				},
 				{

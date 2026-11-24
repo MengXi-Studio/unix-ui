@@ -1,3 +1,8 @@
+## 0.8.0 (2026-11-23)
+
+- 新增 `m-uploader` 文件上传组件：选择区 + 预览格列表，`v-model:value` 绑定普通对象数组（`url` / `path` / `name` / `size` / `type` / `status` / `message` / `progress` / `deletable`）；`media-type` 支持图片 / 视频（数组混合时选择器按图片打开），`multiple` / `max-count` / `max-size` + `oversize`、`accept`（仅 Web 透传 extension）、`capture="camera"` 拍照、`disabled` / `readonly` / `deletable` / `show-upload`、`preview-size` / `preview-full-image` / `image-fit`；`upload-url` 非空时内置 `uni.uploadFile` 自动上传并回填状态与进度（按 5% 步长节流），为空时只派发 `after-read` 由业务上传；业务通过 `setItemStatus(index, status, message, progress)` 回写状态；失败项点击自动重传；`sortable` 开启长按 300ms 拖拽排序并派发 `sort`；`before-choose` / `before-read` / `before-delete` 三段钩子支持同步或 Promise；`choose` / `clear` / `abort` / `reupload` / `setItemStatus` 实例方法；插槽 `default` / `preview-cover` / `preview-delete`
+- 新增 `$m-uploader-*` 主题变量段（格子尺寸 / 间距 / 圆角 / 选择区 / 删除按钮 / 状态遮罩 / 视频占位 / 覆盖层等 20 项）
+
 ## 0.7.4 (2026-11-22)
 
 - 修复微信小程序（VDOM 模式）下弹层未传具名插槽时默认工具栏被静态插槽吞掉、无法确认选择（issue #29）：小程序编译会把弹层模板中的具名插槽静态声明到面板标签上（`u-s="{{['toolbar',...]}}"`），面板侧 `useSlots()` 的对应

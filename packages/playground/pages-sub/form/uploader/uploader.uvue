@@ -1,0 +1,486 @@
+<template>
+	<view class="page">
+		<demo-navbar title="文件上传" subtitle="Uploader" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-uploader
+						ref="basicRef"
+						v-model:value="basicFiles"
+						multiple
+						upload-text="上传图片"
+						@change="onBasicChange"
+						@after-read="onBasicAfterRead"
+						@click-preview="onClickPreview"
+					/>
+					<text class="caption">{{ basicLog }}（点击图片可全屏预览）</text>
+					<view class="action-row">
+						<m-button size="small" type="primary" @click="callBasicChoose">选择文件</m-button>
+						<m-button size="small" @click="callBasicClear">清空</m-button>
+					</view>
+				</view>
+
+				<text class="section" id="status">上传状态模拟</text>
+				<view class="card">
+					<m-uploader ref="simRef" v-model:value="simFiles" multiple upload-text="模拟上传" @after-read="onSimAfterRead" />
+					<text class="caption">{{ simLog }}（after-read 中调用 setItemStatus 回写进度）</text>
+				</view>
+				<view class="card">
+					<m-uploader ref="failRef" v-model:value="failFiles" multiple upload-text="模拟失败" @after-read="onFailAfterRead" />
+					<text class="caption">{{ failLog }}（点击失败项可重传）</text>
+				</view>
+
+				<text class="section" id="matrix">状态矩阵</text>
+				<view class="card">
+					<m-uploader v-model:value="statusFiles" multiple @change="onStatusChange" />
+					<text class="caption">ready / uploading 45% / done / failed 四种状态</text>
+				</view>
+
+				<text class="section" id="limit">数量与大小限制</text>
+				<view class="card">
+					<m-uploader
+						v-model:value="limitFiles"
+						multiple
+						:max-count="2"
+						:max-size="102400"
+						@oversize="onOversize"
+					/>
+					<text class="caption">最多 2 个，单文件上限 100KB；{{ oversizeLog }}</text>
+				</view>
+
+				<text class="section" id="media">媒体类型</text>
+				<view class="card">
+					<m-uploader v-model:value="imageFiles" multiple :max-count="3" />
+					<text class="caption">media-type 默认 image</text>
+					<m-uploader v-model:value="videoFiles" media-type="video" :max-count="1" upload-text="上传视频" />
+					<text class="caption">media-type="video"：视频项显示播放角标占位</text>
+				</view>
+
+				<text class="section" id="capture">直接拍照</text>
+				<view class="card">
+					<m-uploader v-model:value="cameraFiles" capture="camera" :max-count="1" upload-text="拍照" />
+					<text class="caption">capture="camera"：只调起摄像头</text>
+				</view>
+
+				<text class="section" id="status-prop">禁用与只读</text>
+				<view class="card">
+					<m-uploader :value="disabledFiles" disabled />
+					<text class="caption">disabled：整体置灰，不可选择 / 删除</text>
+					<m-uploader :value="readonlyFiles" readonly :deletable="false" />
+					<text class="caption">readonly：隐藏选择区，仅展示列表</text>
+				</view>
+
+				<text class="section" id="slot">预览与插槽</text>
+				<view class="card">
+					<m-uploader v-model:value="slotFiles" multiple>
+						<template #preview-cover="{ index }">
+							<view class="custom-cover">
+								<text class="custom-cover-text">第 {{ index + 1 }} 张</text>
+							</view>
+						</template>
+						<template #preview-delete>
+							<text class="custom-delete">×</text>
+						</template>
+						<view class="custom-select">
+							<text class="custom-select-text">+ 上传</text>
+						</view>
+					</m-uploader>
+					<text class="caption">preview-cover / preview-delete / 默认插槽</text>
+				</view>
+
+				<text class="section" id="sort">拖拽排序与实例方法</text>
+				<view class="card">
+					<m-uploader ref="sortRef" v-model:value="sortFiles" multiple sortable :max-count="6" @sort="onSort" />
+					<text class="caption">{{ sortLog }}（长按图片 300ms 后拖动）</text>
+					<view class="action-row">
+						<m-button size="small" type="primary" @click="callSortChoose">选择文件</m-button>
+						<m-button size="small" @click="callSortClear">清空</m-button>
+					</view>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '文件上传 Uploader', name: 'uploader' })
+
+	/**
+	 * 演示图基址：仓库 packages/playground/static/demo 目录的 GitHub raw 地址
+	 */
+	const demoBase = 'https://raw.githubusercontent.com/MengXi-Studio/unix-ui/master/packages/playground/static/demo/'
+
+	/** 基础用法 */
+	const basicRef = ref<ComponentPublicInstance | null>(null)
+	const basicFiles = ref<UTSJSONObject[]>([])
+	const basicLog = ref<string>('尚未选择')
+	/** 上传状态模拟 */
+	const simRef = ref<ComponentPublicInstance | null>(null)
+	const simFiles = ref<UTSJSONObject[]>([])
+	const simLog = ref<string>('等待选择')
+	const failRef = ref<ComponentPublicInstance | null>(null)
+	const failFiles = ref<UTSJSONObject[]>([])
+	const failLog = ref<string>('等待选择')
+	/** 模拟上传定时器 */
+	let simTimer = -1
+	/** 状态矩阵示例 */
+	const statusFiles = ref<UTSJSONObject[]>([
+		{
+			url: demoBase + 'demo-cat.jpg',
+			path: demoBase + 'demo-cat.jpg',
+			name: 'demo-cat.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'ready',
+			message: '',
+			progress: 0,
+			deletable: true
+		} as UTSJSONObject,
+		{
+			url: demoBase + 'demo-fruit.jpg',
+			path: demoBase + 'demo-fruit.jpg',
+			name: 'demo-fruit.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'uploading',
+			message: '上传中',
+			progress: 45,
+			deletable: true
+		} as UTSJSONObject,
+		{
+			url: demoBase + 'demo-mountain.jpg',
+			path: demoBase + 'demo-mountain.jpg',
+			name: 'demo-mountain.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'done',
+			message: '',
+			progress: 100,
+			deletable: true
+		} as UTSJSONObject,
+		{
+			url: demoBase + 'demo-forest.jpg',
+			path: demoBase + 'demo-forest.jpg',
+			name: 'demo-forest.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'failed',
+			message: '网络异常',
+			progress: 0,
+			deletable: true
+		} as UTSJSONObject
+	])
+	/** 数量与大小限制 */
+	const limitFiles = ref<UTSJSONObject[]>([])
+	const oversizeLog = ref<string>('未触发超限')
+	/** 媒体类型 */
+	const imageFiles = ref<UTSJSONObject[]>([])
+	const videoFiles = ref<UTSJSONObject[]>([])
+	/** 拍照 */
+	const cameraFiles = ref<UTSJSONObject[]>([])
+	/** 禁用 / 只读示例数据 */
+	const disabledFiles = ref<UTSJSONObject[]>([
+		{
+			url: demoBase + 'demo-cat.jpg',
+			path: demoBase + 'demo-cat.jpg',
+			name: 'demo-cat.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'done',
+			message: '',
+			progress: 100,
+			deletable: true
+		} as UTSJSONObject
+	])
+	const readonlyFiles = ref<UTSJSONObject[]>([
+		{
+			url: demoBase + 'demo-fruit.jpg',
+			path: demoBase + 'demo-fruit.jpg',
+			name: 'demo-fruit.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'done',
+			message: '',
+			progress: 100,
+			deletable: false
+		} as UTSJSONObject,
+		{
+			url: demoBase + 'demo-mountain.jpg',
+			path: demoBase + 'demo-mountain.jpg',
+			name: 'demo-mountain.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'done',
+			message: '',
+			progress: 100,
+			deletable: false
+		} as UTSJSONObject
+	])
+	/** 插槽（预置一项便于观察覆盖层 / 删除插槽） */
+	const slotFiles = ref<UTSJSONObject[]>([
+		{
+			url: demoBase + 'demo-cat.jpg',
+			path: demoBase + 'demo-cat.jpg',
+			name: 'demo-cat.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'done',
+			message: '',
+			progress: 100,
+			deletable: true
+		} as UTSJSONObject
+	])
+	/** 排序 */
+	const sortRef = ref<ComponentPublicInstance | null>(null)
+	const sortFiles = ref<UTSJSONObject[]>([
+		{
+			url: demoBase + 'demo-cat.jpg',
+			path: demoBase + 'demo-cat.jpg',
+			name: 'demo-cat.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'done',
+			message: '',
+			progress: 100,
+			deletable: true
+		} as UTSJSONObject,
+		{
+			url: demoBase + 'demo-fruit.jpg',
+			path: demoBase + 'demo-fruit.jpg',
+			name: 'demo-fruit.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'done',
+			message: '',
+			progress: 100,
+			deletable: true
+		} as UTSJSONObject,
+		{
+			url: demoBase + 'demo-mountain.jpg',
+			path: demoBase + 'demo-mountain.jpg',
+			name: 'demo-mountain.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'done',
+			message: '',
+			progress: 100,
+			deletable: true
+		} as UTSJSONObject,
+		{
+			url: demoBase + 'demo-forest.jpg',
+			path: demoBase + 'demo-forest.jpg',
+			name: 'demo-forest.jpg',
+			size: 1024,
+			type: 'image',
+			status: 'done',
+			message: '',
+			progress: 100,
+			deletable: true
+		} as UTSJSONObject
+	])
+	const sortLog = ref<string>('长按图片拖动排序')
+
+	/**
+	 * 基础用法列表变化
+	 *
+	 * @param value 文件列表
+	 */
+	function onBasicChange(value: any | null) {
+		const list = value as UTSJSONObject[]
+		basicLog.value = '共 ' + list.length.toString() + ' 个文件'
+	}
+
+	/**
+	 * 基础用法选择完成
+	 *
+	 * @param item 文件项
+	 * @param index 下标
+	 */
+	function onBasicAfterRead(item: any | null, index: any | null) {
+		basicLog.value = 'afterRead：第 ' + ((index as number) + 1).toString() + ' 项'
+	}
+
+	/**
+	 * 点击预览图
+	 *
+	 * @param index 下标
+	 */
+	function onClickPreview(index: any | null, _item: any | null) {
+		basicLog.value = '预览第 ' + ((index as number) + 1).toString() + ' 项'
+	}
+
+	/**
+	 * 调起基础用法选择
+	 */
+	function callBasicChoose() {
+		const inst = basicRef.value
+		if (inst != null) inst.$callMethod('choose')
+	}
+
+	/**
+	 * 清空基础用法
+	 */
+	function callBasicClear() {
+		const inst = basicRef.value
+		if (inst != null) inst.$callMethod('clear')
+	}
+
+	/**
+	 * 上传状态模拟：afterRead 后回写 uploading，按 20% 递增至 done
+	 *
+	 * @param item 文件项
+	 * @param index 下标
+	 */
+	function onSimAfterRead(item: any | null, index: any | null) {
+		const i = index as number
+		const inst = simRef.value
+		if (inst == null) return
+		if (simTimer >= 0) {
+			clearInterval(simTimer)
+			simTimer = -1
+		}
+		let progress = 0
+		inst.$callMethod('setItemStatus', i, 'uploading', '上传中', 0)
+		simLog.value = '第 ' + (i + 1).toString() + ' 项上传中 0%'
+		simTimer = setInterval(() => {
+			const target = simRef.value
+			if (target == null) {
+				clearInterval(simTimer)
+				simTimer = -1
+				return
+			}
+			progress += 20
+			if (progress >= 100) {
+				clearInterval(simTimer)
+				simTimer = -1
+				target.$callMethod('setItemStatus', i, 'done', '', 100)
+				simLog.value = '第 ' + (i + 1).toString() + ' 项上传完成'
+				return
+			}
+			target.$callMethod('setItemStatus', i, 'uploading', '上传中', progress)
+			simLog.value = '第 ' + (i + 1).toString() + ' 项上传中 ' + progress.toString() + '%'
+		}, 300)
+	}
+
+	/**
+	 * 失败状态模拟：800ms 后标记 failed
+	 *
+	 * @param item 文件项
+	 * @param index 下标
+	 */
+	function onFailAfterRead(item: any | null, index: any | null) {
+		const i = index as number
+		failLog.value = '第 ' + (i + 1).toString() + ' 项上传中'
+		setTimeout(() => {
+			const inst = failRef.value
+			if (inst != null) inst.$callMethod('setItemStatus', i, 'failed', '网络异常', 0)
+			failLog.value = '第 ' + (i + 1).toString() + ' 项上传失败'
+		}, 800)
+	}
+
+	/**
+	 * 状态矩阵列表变化
+	 *
+	 * @param value 文件列表
+	 */
+	function onStatusChange(value: any | null) {
+		const list = value as UTSJSONObject[]
+		console.log('uploader status matrix: ' + list.length.toString())
+	}
+
+	/**
+	 * 文件超限
+	 *
+	 * @param files 被过滤的文件
+	 */
+	function onOversize(files: any | null) {
+		const list = files as UTSJSONObject[]
+		oversizeLog.value = '已过滤 ' + list.length.toString() + ' 个超限文件'
+	}
+
+	/**
+	 * 排序完成
+	 *
+	 * @param fromIndex 原下标
+	 * @param toIndex 目标下标
+	 * @param value 排序后的列表
+	 */
+	function onSort(fromIndex: any | null, toIndex: any | null, value: any | null) {
+		const list = value as UTSJSONObject[]
+		sortLog.value = '第 ' + ((fromIndex as number) + 1).toString() + ' 项移动到第 ' + ((toIndex as number) + 1).toString() + ' 项'
+		console.log('uploader sort: ' + list.length.toString())
+	}
+
+	/**
+	 * 调起排序示例选择
+	 */
+	function callSortChoose() {
+		const inst = sortRef.value
+		if (inst != null) inst.$callMethod('choose')
+	}
+
+	/**
+	 * 清空排序示例
+	 */
+	function callSortClear() {
+		const inst = sortRef.value
+		if (inst != null) inst.$callMethod('clear')
+	}
+</script>
+
+<style lang="scss">
+	.row {
+		flex-direction: row;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+		margin-bottom: 8px;
+	}
+
+	.action-row {
+		flex-direction: row;
+		align-items: center;
+		margin-top: 8px;
+	}
+
+	/* 自定义选择区：铺满选择格 */
+	.custom-select {
+		width: 100%;
+		height: 100%;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.custom-select-text {
+		font-size: 12px;
+		color: #1989fa;
+	}
+
+	/* 预览覆盖层内容 */
+	.custom-cover {
+		width: 100%;
+		height: 100%;
+		align-items: flex-start;
+		justify-content: flex-end;
+		padding: 4px;
+	}
+
+	.custom-cover-text {
+		font-size: 10px;
+		color: #ffffff;
+	}
+
+	/* 自定义删除按钮文字 */
+	.custom-delete {
+		font-size: 14px;
+		color: #ffffff;
+	}
+</style>

@@ -258,6 +258,12 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '开关',
 				enName: 'Switch',
 				desc: '开 / 关状态切换，支持自定义值、颜色、尺寸、只读禁用、加载态、异步切换、轨道文字与滑块 / 背景插槽。'
+			},
+			{
+				name: 'uploader',
+				zhName: '文件上传',
+				enName: 'Uploader',
+				desc: '本地选择图片 / 视频并预览，支持数量与大小限制、上传状态与进度、内置上传、全屏预览、拖拽排序与插槽定制。'
 			}
 		]
 	},

@@ -1,0 +1,937 @@
+<template>
+	<!-- 签名板：Canvas 手写签名（对标 Vant Signature，并吸收 sard 的全屏形态）。
+	     内联模式常驻画布 + 撤销 / 清空 / 确认；全屏模式为固定覆盖层，多一个取消。
+	     根节点常驻静态（LESSONS #32），全屏层在同一根节点内按 visible 切换 -->
+	<view :class="rootClass" :style="customStyle">
+		<!-- 内联模式 -->
+		<template v-if="!props.fullScreen">
+			<view class="m-signature__content">
+				<canvas
+					:id="inlineCanvasId"
+					ref="canvasRef"
+					class="m-signature__canvas"
+					:width="canvasWidth"
+					:height="canvasHeight"
+					:disable-scroll="true"
+					@ready="onCanvasReady"
+					@touchstart="onTouchStart"
+					@touchmove="onTouchMove"
+					@touchend="onTouchEnd"
+					@touchcancel="onTouchEnd"
+				></canvas>
+				<!-- 初始化失败兜底：未就绪时显示提示（不拦截按压，就绪后自动隐藏） -->
+				<view v-if="!canvasReady" class="m-signature__tips">
+					<slot name="tips">
+						<text class="m-signature__tips-text">{{ tipsText }}</text>
+					</slot>
+				</view>
+			</view>
+			<view class="m-signature__actions">
+				<view class="m-signature__action" @click="onUndoClick">
+					<text :class="undoTextClass">{{ undoButtonText }}</text>
+				</view>
+				<view class="m-signature__action" @click="onClearClick">
+					<text class="m-signature__action-text">{{ clearButtonText }}</text>
+				</view>
+				<view class="m-signature__action" @click="onConfirmClick">
+					<text class="m-signature__action-text m-signature__action-text--confirm">{{ confirmButtonText }}</text>
+				</view>
+			</view>
+		</template>
+		<!-- 全屏模式：固定覆盖层，画布铺满，底部提示 + 取消 / 撤销 / 清空 / 确认 -->
+		<template v-else-if="props.visible">
+			<view class="m-signature-full">
+				<view class="m-signature-full__content">
+					<canvas
+						:id="fullCanvasId"
+						ref="canvasRef"
+						class="m-signature-full__canvas"
+						:width="canvasWidth"
+						:height="canvasHeight"
+						:disable-scroll="true"
+						@ready="onCanvasReady"
+						@touchstart="onTouchStart"
+						@touchmove="onTouchMove"
+						@touchend="onTouchEnd"
+						@touchcancel="onTouchEnd"
+					></canvas>
+					<view v-if="!canvasReady" class="m-signature-full__tips">
+						<slot name="tips">
+							<text class="m-signature-full__tips-text">{{ tipsText }}</text>
+						</slot>
+					</view>
+				</view>
+				<view class="m-signature-full__hint">
+					<slot name="tips">
+						<text class="m-signature-full__hint-text">{{ tipsText }}</text>
+					</slot>
+				</view>
+				<view class="m-signature-full__actions">
+					<view class="m-signature__action" @click="onCancelClick">
+						<text class="m-signature__action-text">{{ cancelButtonText }}</text>
+					</view>
+					<view class="m-signature__action" @click="onUndoClick">
+						<text :class="undoTextClass">{{ undoButtonText }}</text>
+					</view>
+					<view class="m-signature__action" @click="onClearClick">
+						<text class="m-signature__action-text">{{ clearButtonText }}</text>
+					</view>
+					<view class="m-signature__action" @click="onConfirmClick">
+						<text class="m-signature__action-text m-signature__action-text--confirm">{{ confirmButtonText }}</text>
+					</view>
+				</view>
+			</view>
+		</template>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-signature 手写签名板：Canvas 2d 自由绘制，支持撤销 / 清空 / 确认、自定义笔触与背景、全屏签名。
+	 *
+	 * 平台实现：统一走 uni.createCanvasContextAsync（微信小程序只能异步取上下文），
+	 * 尺寸测量按平台分流（Web 同步 / 小程序选择器查询 / App 异步），
+	 * 导出统一使用 CanvasContext.toDataURL()（全端可用，方法本身不接收参数）。
+	 */
+	/** 已就绪的 2d 绘制上下文 */
+	let ctx: CanvasRenderingContext2D | null = null
+	/** CanvasContext 实例（toDataURL 用） */
+	let canvasContext: CanvasContext | null = null
+
+	/** 笔画控制点 */
+	type SignaturePoint = {
+		x: number
+		y: number
+	}
+
+	/** 一笔（按下到抬起之间的点序列 + 二次曲线增量绘制游标） */
+	type SignatureStroke = {
+		points: SignaturePoint[]
+		/** 已作为曲线控制点消费到的下标（增量绘制游标） */
+		drawnIndex: number
+		/** 上一个曲线段结束点（相邻两点的中点；起笔时为起点） */
+		lastMidX: number
+		lastMidY: number
+	}
+
+	/** 触摸原始坐标（视口坐标系，等待画布偏移刷新后换算） */
+	type RawTouchPoint = {
+		x: number
+		y: number
+	}
+
+	type Props = {
+		/** 笔触颜色 */
+		penColor?: string
+		/** 线宽 px */
+		lineWidth?: number
+		/** 撤销历史最大笔画数（<=0 表示不限制） */
+		historySize?: number
+		/** 导出图片背景色（'' 表示透明） */
+		backgroundColor?: string
+		/** Canvas 不可用时显示的提示文案 */
+		tips?: string
+		/** 清空按钮文案 */
+		clearButtonText?: string
+		/** 撤销按钮文案 */
+		undoButtonText?: string
+		/** 确认按钮文案 */
+		confirmButtonText?: string
+		/** 是否全屏签名 */
+		fullScreen?: boolean
+		/** 全屏显隐（v-model:visible，仅 full-screen 生效） */
+		visible?: boolean
+		/** 取消按钮文案（仅全屏） */
+		cancelButtonText?: string
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		penColor: '#000',
+		lineWidth: 3,
+		historySize: 20,
+		backgroundColor: '',
+		tips: '',
+		clearButtonText: '清空',
+		undoButtonText: '撤销',
+		confirmButtonText: '确认',
+		fullScreen: false,
+		visible: false,
+		cancelButtonText: '取消',
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 开始一笔 */
+		start: []
+		/** 书写过程中 */
+		signing: [event: TouchEvent]
+		/** 一笔结束 */
+		end: []
+		/** 点击确认（载荷为 UTSJSONObject：{ image: string }，image 为空字符串表示未书写） */
+		submit: [data: UTSJSONObject]
+		/** 点击清空 */
+		clear: []
+		/** 点击取消（仅全屏） */
+		cancel: []
+		/** 全屏显隐回写 */
+		'update:visible': [visible: boolean]
+	}>()
+
+	/** 画布尺寸测量与控制上下文所需的组件实例（setup 期一次性获取，处理器内不再调用） */
+	const componentInstance = getCurrentInstance()
+
+	/** 内联画布 id（createCanvasContextAsync / 小程序选择器查询使用） */
+	const inlineCanvasId = 'm-signature-canvas'
+	/** 全屏画布 id */
+	const fullCanvasId = 'm-signature-full-canvas'
+
+	/** 画布元素引用（任一模式当前挂载的 canvas） */
+	const canvasRef = ref<UniElement | null>(null)
+
+	/** 画布缓冲宽度（px，已乘设备像素比；绑定 canvas width 属性） */
+	const canvasWidth = ref<number>(1)
+	/** 画布缓冲高度 */
+	const canvasHeight = ref<number>(1)
+	/** 绘制上下文是否就绪 */
+	const canvasReady = ref<boolean>(false)
+	/** 是否存在笔画（按钮禁用态依据；strokes 非响应式，单独镜像） */
+	const hasStrokes = ref<boolean>(false)
+
+	/** 全部笔画（顺序即绘制顺序） */
+	let strokes: SignatureStroke[] = []
+	/** 是否处于书写中（按下到抬起） */
+	let drawing = false
+	/** 当前笔画是否已建立（画布偏移刷新完成、点已换算） */
+	let strokeActive = false
+	/** 等待换算的触摸原始坐标（偏移刷新为异步的平台在按下初期先缓存） */
+	let pendingPoints: RawTouchPoint[] = []
+	/** 是否已排入帧合并任务（同一帧内多个 touchmove 只绘制一次） */
+	let flushScheduled = false
+	/** 帧合并定时器 id（-1 表示无） */
+	let flushTimer = -1
+	/** 画布 CSS 宽度（逻辑坐标，绘制与触摸换算使用） */
+	let cssWidth = 0
+	/** 画布 CSS 高度 */
+	let cssHeight = 0
+	/** 画布左上角（视口坐标） */
+	let canvasLeft = 0
+	/** 画布顶部（视口坐标） */
+	let canvasTop = 0
+
+	/** 生效提示文案（props.tips 为空时用内置兜底） */
+	const tipsText = computed<string>(() => {
+		return props.tips != '' ? props.tips : '当前环境暂不支持手写签名'
+	})
+
+	/** 根类名 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-signature'
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 撤销按钮文字类名（无笔画时置灰） */
+	const undoTextClass = computed<string>(() => {
+		let cls = 'm-signature__action-text'
+		if (!hasStrokes.value) {
+			cls += ' m-signature__action-text--disabled'
+		}
+		return cls
+	})
+
+	/**
+	 * 当前模式的画布 id
+	 */
+	function currentCanvasId(): string {
+		return props.fullScreen ? fullCanvasId : inlineCanvasId
+	}
+
+	/**
+	 * 应用笔触样式到 2d 上下文
+	 *
+	 * @param context 2d 上下文
+	 */
+	function applyStrokeStyle(context: CanvasRenderingContext2D) {
+		context.strokeStyle = props.penColor
+		context.lineWidth = props.lineWidth
+		context.lineCap = 'round'
+		context.lineJoin = 'round'
+	}
+
+	/**
+	 * 刷新笔画存在状态（驱动撤销按钮禁用态）
+	 */
+	function refreshStrokeState() {
+		hasStrokes.value = strokes.length > 0
+	}
+
+	/**
+	 * 画一个圆点（单点笔画，配合 round lineCap）
+	 *
+	 * @param context 2d 上下文
+	 * @param x 横坐标
+	 * @param y 纵坐标
+	 */
+	function paintDot(context: CanvasRenderingContext2D, x: number, y: number) {
+		context.beginPath()
+		context.moveTo(x, y)
+		context.lineTo(x + 0.1, y)
+		context.stroke()
+	}
+
+	/**
+	 * 用二次贝塞尔曲线画完整笔画（相邻点中点作为段端点、原始点作为控制点）
+	 *
+	 * @param context 2d 上下文
+	 * @param stroke 笔画
+	 */
+	function paintStrokePath(context: CanvasRenderingContext2D, stroke: SignatureStroke) {
+		const points = stroke.points
+		const count = points.length
+		if (count == 0) {
+			return
+		}
+		if (count == 1) {
+			paintDot(context, points[0].x, points[0].y)
+			return
+		}
+		context.beginPath()
+		context.moveTo(points[0].x, points[0].y)
+		for (let i = 1; i < count - 1; i++) {
+			const control = points[i]
+			const next = points[i + 1]
+			context.quadraticCurveTo(control.x, control.y, (control.x + next.x) / 2, (control.y + next.y) / 2)
+		}
+		context.lineTo(points[count - 1].x, points[count - 1].y)
+		context.stroke()
+	}
+
+	/**
+	 * 增量绘制笔画新段：从上一个中点曲线连到 current 与 next 的中点
+	 *
+	 * @param stroke 笔画
+	 */
+	function drawStrokeTail(stroke: SignatureStroke) {
+		const context = ctx
+		if (context == null) {
+			return
+		}
+		const points = stroke.points
+		let i = stroke.drawnIndex + 1
+		// 保留最后一个点：它需要等下一个点到来才能确定控制段，收笔时再补直线
+		while (i < points.length - 1) {
+			const control = points[i]
+			const next = points[i + 1]
+			const midX = (control.x + next.x) / 2
+			const midY = (control.y + next.y) / 2
+			context.beginPath()
+			context.moveTo(stroke.lastMidX, stroke.lastMidY)
+			context.quadraticCurveTo(control.x, control.y, midX, midY)
+			context.stroke()
+			stroke.lastMidX = midX
+			stroke.lastMidY = midY
+			stroke.drawnIndex = i
+			i++
+		}
+		// 末点预览：从当前中点直线连到最新点，避免笔画末端落后手指半个线段
+		if (points.length >= 2 && stroke.drawnIndex < points.length - 1) {
+			const tail = points[points.length - 1]
+			context.beginPath()
+			context.moveTo(stroke.lastMidX, stroke.lastMidY)
+			context.lineTo(tail.x, tail.y)
+			context.stroke()
+		}
+	}
+
+	/**
+	 * 收笔：补画剩余曲线段，并把最后一个点直线连上
+	 *
+	 * @param stroke 笔画
+	 */
+	function finishStrokeTail(stroke: SignatureStroke) {
+		const points = stroke.points
+		const count = points.length
+		if (count == 0) {
+			return
+		}
+		if (count == 1) {
+			const context = ctx
+			if (context != null) {
+				paintDot(context, points[0].x, points[0].y)
+			}
+			stroke.drawnIndex = 0
+			return
+		}
+		drawStrokeTail(stroke)
+		const last = points[count - 1]
+		const context = ctx
+		if (context != null && stroke.drawnIndex < count - 1) {
+			context.beginPath()
+			context.moveTo(stroke.lastMidX, stroke.lastMidY)
+			context.lineTo(last.x, last.y)
+			context.stroke()
+		}
+		stroke.drawnIndex = count - 1
+		stroke.lastMidX = last.x
+		stroke.lastMidY = last.y
+	}
+
+	/**
+	 * 帧合并：用 CanvasContext.requestAnimationFrame 在下一次重绘前统一绘制
+	 * 同一帧内的多个触摸点只触发一次增量绘制
+	 */
+	function scheduleFlush() {
+		if (flushScheduled || strokes.length == 0) {
+			return
+		}
+		const context = canvasContext
+		if (context == null) {
+			return
+		}
+		flushScheduled = true
+		flushTimer = context.requestAnimationFrame((_time: number) => {
+			flushScheduled = false
+			flushTimer = -1
+			if (strokes.length == 0) {
+				return
+			}
+			drawStrokeTail(strokes[strokes.length - 1])
+		})
+	}
+
+	/**
+	 * 取消尚未执行的帧回调
+	 */
+	function cancelScheduledFlush() {
+		if (flushTimer >= 0) {
+			const context = canvasContext
+			if (context != null) {
+				context.cancelAnimationFrame(flushTimer)
+			}
+			flushTimer = -1
+		}
+		flushScheduled = false
+	}
+
+	/**
+	 * 重绘全部笔画：清屏 → 背景色 → 逐笔二次曲线描边，并复位各笔画的增量游标
+	 */
+	function redraw() {
+		const context = ctx
+		if (context == null) {
+			return
+		}
+		context.clearRect(0, 0, cssWidth, cssHeight)
+		if (props.backgroundColor != '') {
+			context.fillStyle = props.backgroundColor
+			context.fillRect(0, 0, cssWidth, cssHeight)
+		}
+		applyStrokeStyle(context)
+		for (let i = 0; i < strokes.length; i++) {
+			const stroke = strokes[i]
+			paintStrokePath(context, stroke)
+			const points = stroke.points
+			const count = points.length
+			if (count > 0) {
+				stroke.drawnIndex = count - 1
+				stroke.lastMidX = points[count - 1].x
+				stroke.lastMidY = points[count - 1].y
+			}
+		}
+	}
+
+	/**
+	 * 获取 2d 上下文并按设备像素比缩放（每次画布尺寸变化后重新执行）
+	 *
+	 * @param dpr 设备像素比
+	 */
+	function openContext(dpr: number) {
+		canvasReady.value = false
+		uni.createCanvasContextAsync({
+			id: currentCanvasId(),
+			component: componentInstance!.proxy,
+			success: (context: CanvasContext) => {
+				canvasContext = context
+				const rendering = context.getContext('2d')
+				ctx = rendering
+				if (rendering != null) {
+					rendering.scale(dpr, dpr)
+					applyStrokeStyle(rendering)
+				}
+				canvasReady.value = true
+				redraw()
+			}
+		})
+	}
+
+	/**
+	 * 应用测量结果：记录逻辑尺寸与偏移，按 dpr 设置画布缓冲尺寸，随后初始化上下文
+	 *
+	 * @param width 画布 CSS 宽度
+	 * @param height 画布 CSS 高度
+	 * @param left 画布左上角横坐标（视口坐标）
+	 * @param top 画布左上角纵坐标（视口坐标）
+	 */
+	function applyRect(width: number, height: number, left: number, top: number) {
+		if (width <= 0 || height <= 0) {
+			return
+		}
+		cssWidth = width
+		cssHeight = height
+		canvasLeft = left
+		canvasTop = top
+		const dpr = uni.getDeviceInfo().devicePixelRatio ?? 1
+		canvasWidth.value = Math.round(width * dpr)
+		canvasHeight.value = Math.round(height * dpr)
+		// 缓冲尺寸写入 DOM 后再取上下文，避免拿到旧尺寸的上下文
+		nextTick(() => {
+			openContext(dpr)
+		})
+	}
+
+	/**
+	 * 测量当前画布：Web 同步矩形 / 小程序选择器查询 / App 异步矩形
+	 */
+	function measureCanvas() {
+		// #ifdef WEB
+		if (canvasRef.value != null) {
+			const webRect = canvasRef.value!.getBoundingClientRect()
+			applyRect(webRect.width, webRect.height, webRect.left, webRect.top)
+		}
+		// #endif
+		// #ifdef APP
+		if (canvasRef.value != null) {
+			canvasRef.value!.getBoundingClientRectAsync()!.then((appRect: DOMRect) => {
+				applyRect(appRect.width, appRect.height, appRect.left, appRect.top)
+			})
+		}
+		// #endif
+		// #ifdef MP
+		uni.createSelectorQuery().in(componentInstance!.proxy!)
+			.select('#' + currentCanvasId())
+			.boundingClientRect()
+			.exec((ret: Array<any>) => {
+				const first = ret.length > 0 ? ret[0] : null
+				if (first == null) {
+					return
+				}
+				const rect = first as DOMRect
+				applyRect(rect.width, rect.height, rect.left, rect.top)
+			})
+		// #endif
+	}
+
+	/**
+	 * Canvas 就绪：测量并初始化
+	 */
+	function onCanvasReady() {
+		measureCanvas()
+	}
+
+	/**
+	 * 视口坐标转画布内逻辑坐标
+	 *
+	 * @param clientX 触摸点横坐标
+	 * @param clientY 触摸点纵坐标
+	 * @returns 画布内坐标
+	 */
+	function toCanvasPoint(clientX: number, clientY: number): SignaturePoint {
+		return { x: clientX - canvasLeft, y: clientY - canvasTop } as SignaturePoint
+	}
+
+	/**
+	 * 用最新测量结果建立当前笔画：缓存点统一换算后按二次曲线增量绘制
+	 *
+	 * 每次按下都会重新测量偏移（页面滚动后 rect 会变化），异步平台的按下初期点
+	 * 先缓存在 pendingPoints 中，测量回来后一次性补画，避免线条与手指错位。
+	 */
+	function beginPendingStroke() {
+		if (pendingPoints.length == 0) {
+			return
+		}
+		const points: SignaturePoint[] = []
+		for (let i = 0; i < pendingPoints.length; i++) {
+			points.push(toCanvasPoint(pendingPoints[i].x, pendingPoints[i].y))
+		}
+		pendingPoints = []
+		const stroke: SignatureStroke = {
+			points: points,
+			drawnIndex: 0,
+			lastMidX: points[0].x,
+			lastMidY: points[0].y
+		}
+		strokes.push(stroke)
+		if (props.historySize > 0) {
+			while (strokes.length > props.historySize) {
+				strokes.shift()
+			}
+		}
+		const context = ctx
+		if (context != null) {
+			paintDot(context, points[0].x, points[0].y)
+		}
+		// 缓存期间可能已经积累多个点：先画出能确定的曲线段
+		drawStrokeTail(stroke)
+		strokeActive = true
+		refreshStrokeState()
+		// 偏移回调晚于抬手（异步平台快速点按）：直接收笔，避免尾段丢失
+		if (!drawing) {
+			finishStrokeTail(stroke)
+			strokeActive = false
+		}
+	}
+
+	/**
+	 * 刷新画布视口偏移后建立当前笔画（Web 同步 / App 异步 / 小程序选择器查询）
+	 */
+	function refreshOffsetThenBegin() {
+		// #ifdef WEB
+		if (canvasRef.value != null) {
+			const webRect = canvasRef.value!.getBoundingClientRect()
+			canvasLeft = webRect.left
+			canvasTop = webRect.top
+			beginPendingStroke()
+		}
+		// #endif
+		// #ifdef APP
+		if (canvasRef.value != null) {
+			canvasRef.value!.getBoundingClientRectAsync()!.then((appRect: DOMRect) => {
+				canvasLeft = appRect.left
+				canvasTop = appRect.top
+				beginPendingStroke()
+			})
+		}
+		// #endif
+		// #ifdef MP
+		uni.createSelectorQuery().in(componentInstance!.proxy!)
+			.select('#' + currentCanvasId())
+			.boundingClientRect()
+			.exec((ret: Array<any>) => {
+				const first = ret.length > 0 ? ret[0] : null
+				if (first == null) {
+					return
+				}
+				const rect = first as DOMRect
+				canvasLeft = rect.left
+				canvasTop = rect.top
+				beginPendingStroke()
+			})
+		// #endif
+	}
+
+	/**
+	 * 触摸开始：缓存首个点，刷新偏移后建笔画
+	 *
+	 * @param e 触摸事件
+	 */
+	function onTouchStart(e: TouchEvent) {
+		if (!canvasReady.value || e.touches.length == 0) {
+			return
+		}
+		const touch = e.touches[0]
+		drawing = true
+		strokeActive = false
+		pendingPoints = [{ x: touch.clientX, y: touch.clientY } as RawTouchPoint]
+		refreshOffsetThenBegin()
+		emit('start')
+	}
+
+	/**
+	 * 触摸移动：追加点并按帧合并绘制（二次曲线平滑）
+	 *
+	 * @param e 触摸事件
+	 */
+	function onTouchMove(e: TouchEvent) {
+		if (!drawing || !canvasReady.value || e.touches.length == 0) {
+			return
+		}
+		const touch = e.touches[0]
+		emit('signing', e)
+		// 偏移尚未刷新完成：先缓存原始坐标，测量回调里统一补画
+		if (!strokeActive) {
+			pendingPoints.push({ x: touch.clientX, y: touch.clientY } as RawTouchPoint)
+			return
+		}
+		if (strokes.length == 0) {
+			return
+		}
+		const point = toCanvasPoint(touch.clientX, touch.clientY)
+		const stroke = strokes[strokes.length - 1]
+		stroke.points.push(point)
+		scheduleFlush()
+	}
+
+	/**
+	 * 触摸结束 / 取消：立即冲刷剩余点并收笔
+	 *
+	 * @param _e 触摸事件（未使用）
+	 */
+	function onTouchEnd(_e: TouchEvent) {
+		if (!drawing) {
+			return
+		}
+		drawing = false
+		// 偏移回调未返回时保留缓存点，让回调仍能把这一笔补画出来
+		if (strokeActive) {
+			cancelScheduledFlush()
+			if (strokes.length > 0) {
+				finishStrokeTail(strokes[strokes.length - 1])
+			}
+			pendingPoints = []
+			strokeActive = false
+		}
+		emit('end')
+	}
+
+	/**
+	 * 撤销上一笔并整幅重绘
+	 */
+	function undo() {
+		if (strokes.length == 0) {
+			return
+		}
+		cancelScheduledFlush()
+		strokes.pop()
+		refreshStrokeState()
+		redraw()
+	}
+
+	/**
+	 * 清空签名与历史
+	 */
+	function clear() {
+		cancelScheduledFlush()
+		strokes = []
+		refreshStrokeState()
+		redraw()
+		emit('clear')
+	}
+
+	/**
+	 * 提交：空签名返回空字符串，否则返回 dataURL；全屏模式提交后关闭
+	 */
+	function submit() {
+		const context = canvasContext
+		let image = ''
+		if (strokes.length > 0 && context != null) {
+			image = context.toDataURL()
+		}
+		const data = { image: image } as UTSJSONObject
+		emit('submit', data)
+		if (props.fullScreen) {
+			emit('update:visible', false)
+		}
+	}
+
+	/**
+	 * 重新测量并重绘（外层尺寸或显隐状态变化后由调用方触发）
+	 */
+	function resize() {
+		measureCanvas()
+	}
+
+	/**
+	 * 撤销按钮点击：无笔画时不响应
+	 */
+	function onUndoClick() {
+		undo()
+	}
+
+	/**
+	 * 清空按钮点击
+	 */
+	function onClearClick() {
+		clear()
+	}
+
+	/**
+	 * 确认按钮点击
+	 */
+	function onConfirmClick() {
+		submit()
+	}
+
+	/**
+	 * 取消按钮点击（仅全屏）：派发 cancel 并关闭
+	 */
+	function onCancelClick() {
+		emit('cancel')
+		emit('update:visible', false)
+	}
+
+	defineExpose({
+		resize: resize,
+		clear: clear,
+		submit: submit,
+		undo: undo
+	})
+
+	// 首次挂载：Web / App 的 canvas @ready 触发时机不稳定，挂载后主动测量一次
+	onMounted(() => {
+		nextTick(() => {
+			if (!props.fullScreen) {
+				measureCanvas()
+			}
+		})
+	})
+
+	// 全屏显隐变化：v-if 重新挂载画布，等渲染完成后重新测量
+	watch((): boolean => props.visible, (_: boolean) => {
+		if (!props.fullScreen || !props.visible) {
+			return
+		}
+		nextTick(() => {
+			measureCanvas()
+		})
+	})
+
+	// 模式切换：画布 id 与布局都变化，重新测量
+	watch((): boolean => props.fullScreen, (_: boolean) => {
+		nextTick(() => {
+			if (!props.fullScreen || props.visible) {
+				measureCanvas()
+			}
+		})
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根 ========== */
+	.m-signature {
+		padding: $m-signature-padding;
+		background-color: $m-signature-background;
+	}
+
+	/* ========== 内联画布区 ========== */
+	.m-signature__content {
+		position: relative;
+		height: $m-signature-content-height;
+		border-width: $m-signature-content-border-width;
+		border-style: dotted;
+		border-color: $m-signature-content-border-color;
+		background-color: $m-signature-content-background;
+	}
+
+	.m-signature__canvas {
+		width: 100%;
+		height: 100%;
+		/* #ifdef WEB */
+		/* 书写过程中禁止页面滚动，否则画布随页面位移会表现为“线条发飘” */
+		touch-action: none;
+		/* #endif */
+	}
+
+	.m-signature__tips {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.m-signature__tips-text {
+		font-size: $m-signature-tips-font-size;
+		color: $m-signature-tips-color;
+	}
+
+	/* ========== 操作栏 ========== */
+	.m-signature__actions {
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		height: $m-signature-action-height;
+	}
+
+	.m-signature__action {
+		height: 100%;
+		padding: 0 $m-signature-action-gap;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.m-signature__action-text {
+		font-size: $m-signature-action-font-size;
+		color: $m-signature-action-color;
+	}
+
+	.m-signature__action-text--confirm {
+		color: $m-signature-action-confirm-color;
+	}
+
+	.m-signature__action-text--disabled {
+		color: $m-signature-action-disabled-color;
+	}
+
+	/* ========== 全屏模式 ========== */
+	.m-signature-full {
+		position: fixed;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: $m-signature-full-z-index;
+		background-color: $m-signature-full-background;
+	}
+
+	.m-signature-full__content {
+		position: relative;
+		flex: 1;
+		padding: $m-signature-full-gap;
+	}
+
+	.m-signature-full__canvas {
+		width: 100%;
+		height: 100%;
+		/* #ifdef WEB */
+		touch-action: none;
+		/* #endif */
+	}
+
+	.m-signature-full__tips {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.m-signature-full__tips-text {
+		font-size: $m-signature-tips-font-size;
+		color: $m-signature-tips-color;
+	}
+
+	.m-signature-full__hint {
+		padding: 0 $m-signature-full-gap;
+		align-items: center;
+	}
+
+	.m-signature-full__hint-text {
+		font-size: $m-signature-hint-font-size;
+		color: $m-signature-hint-color;
+	}
+
+	.m-signature-full__actions {
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		height: $m-signature-action-height;
+	}
+</style>

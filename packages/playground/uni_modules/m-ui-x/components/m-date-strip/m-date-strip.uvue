@@ -69,8 +69,11 @@
 	} from '../../utils/date.uts'
 	import { slotHasContent } from '../../utils/slot.uts'
 
-	/** 对外值形态：valueFormat 为空时为 Date 口径，非空时为字符串口径 */
+	/** 对外值形态（含未选 null，内部换算与事件回传使用） */
 	type DateStripValue = Date | Date[] | string | string[] | null
+
+	/** prop 声明形态：不能带 null，否则编译器生成 [X, null] 构造器数组触发 TS2769（LESSONS #115） */
+	type DateStripPropValue = Date | Date[] | string | string[]
 
 	/** 日期项（day 复用 CalendarDayItem，保证 formatter 契约与 m-calendar 一致） */
 	type DateStripItem = {
@@ -88,7 +91,7 @@
 		/** 选择类型：single 单选 / multiple 多选 / range 范围 */
 		type?: CalendarType
 		/** 选中值（v-model:value）；valueFormat 为空时 Date 口径，非空时字符串口径 */
-		value?: DateStripValue
+		value?: DateStripPropValue
 		/** 值格式（如 YYYY-MM-DD）；非空时 v-model 使用字符串 */
 		valueFormat?: string
 		/** 最小可选日（null 取 currentDate - 7 天） */

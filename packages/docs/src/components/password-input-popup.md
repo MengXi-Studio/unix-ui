@@ -133,6 +133,20 @@ const value = ref('')
 | closed | 弹层已关闭 | — |
 | click-overlay | 点击遮罩 | `event: MouseEvent` |
 
+### Slots
+
+| 名称 | 说明 |
+| --- | --- |
+| cancel | 替换工具条取消按钮内容 |
+| confirm | 替换工具条完成按钮内容 |
+| extra-key | 自定义左下角额外键内容 |
+
+### Methods
+
+| 方法名 | 说明 |
+| --- | --- |
+| shuffle | 透传面板的 `shuffle()`，重新打乱数字键序 |
+
 ## 主题定制
 
 弹层复用 `$m-number-keyboard-*`（键盘 + 工具条）与 `$m-password-input-*`（格子）两套主题变量，无需额外配置。

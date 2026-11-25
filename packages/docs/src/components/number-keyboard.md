@@ -98,7 +98,7 @@ const limitSix = (key: string): boolean => value.value.length >= 6
 | --- | --- | --- | --- |
 | type | 键盘类型 | `'number' \| 'digit' \| 'idcard' \| 'random'` | `'number'` |
 | theme | 主题，`custom` 带右侧栏 | `'default' \| 'custom'` | `'default'` |
-| extraKeys | 额外键文本，取首项作为左下角按键 | `string[]` | `[]` |
+| extraKeys | 额外键文本，取首项作为左下角按键 | `string[] \| null` | `null` |
 | showDeleteKey | 是否显示删除键 | `boolean` | `true` |
 | deleteButtonText | 删除键文字，为空时显示图标 | `string` | `''` |
 | closeButtonText | 右侧栏关闭键文字，为空时不渲染（仅 `custom`） | `string` | `''` |

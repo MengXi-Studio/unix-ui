@@ -146,8 +146,10 @@ added: 0.2.0
 | center | 是否将格子内容居中显示 | boolean | `true` |
 | square | 是否将格子固定为正方形 | boolean | `false` |
 | clickable | 是否开启格子点击反馈 | boolean | `false` |
-| direction | 格子内容排列的方向，可选值为 `horizontal` | GridDirection | `vertical` |
+| direction | 格子内容排列的方向，可选值为 `vertical` `horizontal` | GridDirection | `vertical` |
 | reverse | 是否调换图标和文本的位置 | boolean | `false` |
+| custom-class | 根节点自定义类名 | string.ClassString | - |
+| custom-style | 根节点自定义内联样式 | string | - |
 
 ### Props（m-grid-item）
 
@@ -176,6 +178,12 @@ added: 0.2.0
 | default | 自定义宫格的所有内容 |
 | icon | 自定义图标 |
 | text | 自定义文字 |
+
+### Slots（m-grid）
+
+| 名称 | 说明 |
+| --- | --- |
+| default | 宫格内容（`m-grid-item` 列表） |
 
 ## 主题定制
 

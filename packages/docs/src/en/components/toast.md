@@ -73,7 +73,7 @@ showToast({ message: 'the quick brown fox jumps over the lazy dog', wordBreak: '
 showToast({ message: 'thisisaverylongwordwithoutspaces', wordBreak: 'break-word' })
 ```
 
-> Platform note: on App platforms `word-break` only works in Vapor mode (HBuilderX 5.31+), VDOM mode is not supported; fully supported on Web.
+> Platform note: `normal` / `break-all` work on all platforms; `break-word` only works on Web / Mini Program — on App platforms (both Vapor and VDOM) it falls back to `normal`.
 
 ### Success / Fail
 
@@ -171,7 +171,7 @@ Besides the imperative API, `m-toast` can be used as a component: control visibi
 | closeOnClickOverlay | Whether to close on overlay click | `boolean` | `false` |
 | loadingType | Loading icon type, one of `circular` `spinner` (effective when type=loading) | `LoadingType` | `circular` |
 | duration | Display duration (ms), `0` means no auto close; defaults to `0` for loading, `2000` otherwise | `number` | - |
-| wordBreak | How the message wraps, one of `normal` `break-all` `break-word`; App platforms require Vapor mode | `ToastWordBreak` | `normal` |
+| wordBreak | How the message wraps, one of `normal` `break-all` `break-word`; `break-word` falls back to `normal` on App platforms | `ToastWordBreak` | `normal` |
 | zIndex | z-index level | `number \| string` | `2000` |
 | customClass | Custom bubble class name | `string.ClassString` | - |
 | customStyle | Custom bubble inline style | `string` | - |
@@ -180,13 +180,13 @@ Besides the imperative API, `m-toast` can be used as a component: control visibi
 
 ### Differences from Vant
 
-The following options are not supported due to uvue limitations: `html` type (no v-html), `transition` animation class names (built-in fade in/out), `teleport` (no host outside the render tree); `icon` only accepts m-icon font names, image URLs are not supported. Multiple instances (`allowMultipleToast`) are not supported yet — singleton semantics only. `wordBreak` is supported with the same values as Vant (`normal` / `break-all` / `break-word`), but on App platforms it only works in Vapor mode (HBuilderX 5.31+), VDOM mode is not supported.
+The following options are not supported due to uvue limitations: `html` type (no v-html), `transition` animation class names (built-in fade in/out), `teleport` (no host outside the render tree); `icon` only accepts m-icon font names, image URLs are not supported. Multiple instances (`allowMultipleToast`) are not supported yet — singleton semantics only. `wordBreak` is supported with the same values as Vant (`normal` / `break-all` / `break-word`); `normal` / `break-all` work on all platforms, while `break-word` only works on Web / Mini Program and falls back to `normal` on App platforms (both Vapor and VDOM).
 
 ## Component API
 
 ### Props
 
-Same as [ToastOptions](#toastoptions-api), plus:
+Mostly the same as [ToastOptions](#toastoptions-api), with these differences: `onOpened` / `onClose` are provided as the `opened` / `close` events instead of props, and `iconSize` / `zIndex` only accept `string`. It additionally adds:
 
 | Attribute | Description | Type | Default |
 | --- | --- | --- | --- |

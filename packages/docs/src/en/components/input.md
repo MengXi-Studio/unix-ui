@@ -143,7 +143,7 @@ Note: the `value` area of `m-cell` is right-aligned by default; add `text-align:
 
 | Prop | Description | Type | Default |
 | --- | --- | --- | --- |
-| v-model | Input value, always string | string | `''` |
+| model-value | Input value (`v-model`), always string | string | `''` |
 | type | Input type, one of `text` `tel` `digit` `number` `password` `textarea` | InputType | `text` |
 | placeholder | Placeholder text | string | `''` |
 | placeholder-style | Inline style of placeholder (native passthrough) | string | `''` |
@@ -165,8 +165,8 @@ Note: the `value` area of `m-cell` is right-aligned by default; add `text-align:
 | min | Numeric lower bound: clamps on blur | number | `null` |
 | max | Numeric upper bound: clamps on blur | number | `null` |
 | show-eye | Built-in visibility toggle icon, only for `type=password` (before the append slot) | boolean | `false` |
-| custom-class | Custom class of the input container (border layer) | string | `''` |
-| custom-style | Custom inline style of the input container (border layer) | string | `''` |
+| custom-class | Custom class of the root node and input container (border layer) | string | `''` |
+| custom-style | Custom inline style of the root node and input container (border layer) | string | `''` |
 
 ### Events
 

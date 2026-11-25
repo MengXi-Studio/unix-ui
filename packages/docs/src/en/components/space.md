@@ -127,6 +127,12 @@ The `fill` attribute makes the component fill the parent element's width as a bl
 | custom-class | Custom root node class name | string.ClassString | - |
 | custom-style | Custom root node inline style | string | - |
 
+### Slots (m-space-item)
+
+| Name | Description |
+| --- | --- |
+| default | Child element content |
+
 ## Theming
 
 Space styles can be customized with the following SCSS variables (define them directly in the project root `uni.scss` to override the defaults):

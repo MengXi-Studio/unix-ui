@@ -110,11 +110,11 @@ const value = ref<number>(3)
 | --- | --- | --- | --- |
 | value | 当前分值（v-model:value），0 表示未评分 | number | `0` |
 | count | 图标总数 | number | `5` |
-| size | 图标尺寸（number 补 px） | string \| number | 主题值 `20px` |
-| gap | 图标间距（number 补 px，等价 Vant 的 gutter） | string \| number | 主题值 `4px` |
-| color | 选中态颜色 | string | 主题值 `#ee0a24` |
-| void-color | 未选中态颜色 | string | 主题值 `#c8c9cc` |
-| disabled-color | 禁用态颜色（选中与未选同时生效） | string | 主题值 `#c8c9cc` |
+| size | 图标尺寸（number 补 px） | string \| number | `''`（空串用主题值 `20px`） |
+| gap | 图标间距（number 补 px，等价 Vant 的 gutter） | string \| number | `''`（空串用主题值 `4px`） |
+| color | 选中态颜色 | string | `''`（空串用主题值 `#ee0a24`） |
+| void-color | 未选中态颜色 | string | `''`（空串用主题值 `#c8c9cc`） |
+| disabled-color | 禁用态颜色（选中与未选同时生效） | string | `''`（空串用主题值 `#c8c9cc`） |
 | icon | 选中态字形（m-icon 字形名） | string | `star` |
 | void-icon | 未选中态字形 | string | `star-o` |
 | allow-half | 是否允许半星 | boolean | `false` |

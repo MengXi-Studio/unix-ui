@@ -146,8 +146,10 @@ Set the `clickable` prop to enable press feedback on cells (background color cha
 | center | Whether to center the cell content | boolean | `true` |
 | square | Whether to fix the cell as a square | boolean | `false` |
 | clickable | Whether to enable click feedback on cells | boolean | `false` |
-| direction | Direction of cell content, optional value is `horizontal` | GridDirection | `vertical` |
+| direction | Direction of cell content, `vertical` or `horizontal` | GridDirection | `vertical` |
 | reverse | Whether to swap the positions of the icon and text | boolean | `false` |
+| custom-class | Custom class name for the root node | string.ClassString | - |
+| custom-style | Custom inline style for the root node | string | - |
 
 ### Props（m-grid-item）
 
@@ -176,6 +178,12 @@ Set the `clickable` prop to enable press feedback on cells (background color cha
 | default | Customize all content of the grid |
 | icon | Custom icon |
 | text | Custom text |
+
+### Slots (m-grid)
+
+| Name | Description |
+| --- | --- |
+| default | Grid content (a list of `m-grid-item`) |
 
 ## Theming
 

@@ -234,6 +234,36 @@ export const demoGroups: DemoGroup[] = [
 				zhName: '分段控制器',
 				enName: 'Segmented',
 				desc: '等分选项的单选控件，支持三档尺寸、胶囊形状、纵向排列、滑块动画、自定义内容插槽、溢出省略与禁用只读。'
+			},
+			{
+				name: 'signature',
+				zhName: '签名',
+				enName: 'Signature',
+				desc: 'Canvas 手写签名板，支持自定义笔触 / 线宽 / 背景、撤销与历史深度、清空确认、实例方法调用与全屏签名。'
+			},
+			{
+				name: 'slider',
+				zhName: '滑动条',
+				enName: 'Slider',
+				desc: '单值 / 双滑块滑动选择，支持垂直、反向、步长、自定义颜色尺寸、值气泡、刻度与自定义滑块插槽。'
+			},
+			{
+				name: 'stepper',
+				zhName: '步进器',
+				enName: 'Stepper',
+				desc: '按钮与输入框组合的数值调整控件，支持范围 / 步长 / 精度 / 空值、四种变体、两档尺寸、长按连续增减与变更拦截。'
+			},
+			{
+				name: 'switch',
+				zhName: '开关',
+				enName: 'Switch',
+				desc: '开 / 关状态切换，支持自定义值、颜色、尺寸、只读禁用、加载态、异步切换、轨道文字与滑块 / 背景插槽。'
+			},
+			{
+				name: 'uploader',
+				zhName: '文件上传',
+				enName: 'Uploader',
+				desc: '本地选择图片 / 视频并预览，支持数量与大小限制、上传状态与进度、内置上传、全屏预览、拖拽排序与插槽定制。'
 			}
 		]
 	},
@@ -459,6 +489,12 @@ export const demoGroups: DemoGroup[] = [
 	{
 		title: '数据展示',
 		components: [
+			{
+				name: 'accordion',
+				zhName: '手风琴',
+				enName: 'Accordion',
+				desc: '折叠收纳内容，支持单选 / 多选展开、单项与全局禁用、隐藏分隔线、圆角卡片形态、高度过渡动画与实例方法控制。'
+			},
 			{
 				name: 'badge',
 				zhName: '徽标',

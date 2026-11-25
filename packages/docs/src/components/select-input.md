@@ -130,7 +130,7 @@ const show = ref<boolean>(false)
 | filterable | 是否显示筛选框 | boolean | `false` |
 | filter-placeholder | 筛选框占位文案 | string | `请输入关键词` |
 | filter-value | 筛选值（`v-model:filter-value`） | string | `''` |
-| filter-method | 远程筛选回调；存在时关闭本地过滤 | (query: string) => void \| null | `null` |
+| filter-method | 远程筛选回调；存在时关闭本地过滤 | (query: string) => void | - |
 | empty-text | 空列表文案 | string | `暂无选项` |
 | confirm-on-select | 选中后是否自动关闭弹层 | boolean | `true` |
 | map-label | 标签映射表（`值 → 文案`，远程场景兜底） | UTSJSONObject \| null | `null` |

@@ -83,7 +83,7 @@ added: 0.2.0
 | --- | --- | --- | --- |
 | dashed | 是否使用虚线 | boolean | `false` |
 | hairline | 是否使用 0.5px 细线 | boolean | `true` |
-| content-position | 内容位置，可选值为 `left` `right` | DividerContentPosition | `center` |
+| content-position | 内容位置，可选值为 `left` `center` `right` | DividerContentPosition | `center` |
 | vertical | 是否使用垂直分割线 | boolean | `false` |
 
 ### Slots

@@ -106,7 +106,7 @@
 		/** 筛选值（v-model:filter-value） */
 		filterValue?: string
 		/** 远程筛选回调；存在时不做本地过滤 */
-		filterMethod?: ((query: string) => void) | null
+		filterMethod?: ((query: string) => void)
 		/** 是否禁用面板 */
 		disabled?: boolean
 		/** 空列表文案 */
@@ -115,8 +115,8 @@
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */
 		customStyle?: string
-		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；null 表示未下发，由本组件自行探测（issue #29） */
-		slotPresence?: string | null
+		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；'*' 表示未下发，由本组件自行探测（issue #29） */
+		slotPresence?: string
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
@@ -129,12 +129,11 @@
 		filterable: false,
 		filterPlaceholder: '请输入关键词',
 		filterValue: '',
-		filterMethod: null,
 		disabled: false,
 		emptyText: '暂无选项',
 		customClass: '',
 		customStyle: '',
-		slotPresence: null
+		slotPresence: '*'
 	})
 
 	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
@@ -194,7 +193,7 @@
 		const ck = childrenKey.value
 		const opts = props.options
 		for (let i = 0; i < opts.length; i++) {
-			const opt = opts[i]
+			const opt = opts[i] as UTSJSONObject
 			const children = opt.getArray<UTSJSONObject>(ck)
 			if (children != null && children.length > 0) {
 				const items: SelectItem[] = []

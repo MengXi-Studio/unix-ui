@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.8.0] - 2026-11-23
+
+Adds the accordion, slider, signature, stepper, switch and uploader components.
+
+### Added
+
+- **m-accordion**: the container binds an array of expanded identifiers through `v-model:value` (at most one when `multiple` is `false`); supports `multiple`, `disabled`, `hide-border`, `inset` card style, `duration` (height transition, 0 disables it) and `lazy-render` (render content on first expansion); without `value` the container holds its own state (controlled and uncontrolled); exposes `open()` / `close()` / `toggle()` / `closeAll()` (see [Accordion](/en/components/accordion))
+- **m-accordion-item**: `title` / `extra` / `name` (falls back to registration order) / `disabled` (OR-ed with the container); header click always emits `click`; `title` / `extra` / `arrow` (scoped `visible`) slots; the last item hides its divider automatically (see [Accordion](/en/components/accordion))
+- New `$m-accordion-*` theme variable block (17 keys covering background, divider, paddings, title/extra text, arrow, disabled opacity and inset card)
+- **m-signature**: canvas handwriting with `pen-color` / `line-width` / `history-size` / `background-color`; `full-screen` + `v-model:visible` for full-screen signing (cancel emits `cancel`); `tips` slot and `start` / `signing` / `end` / `submit` / `clear` / `cancel` events; exposes `resize()` / `clear()` / `undo()` / `submit()` (see [Signature](/en/components/signature))
+- New `$m-signature-*` theme variable block (19 keys)
+- **m-slider**: `v-model:value` (`number` / `number[]`) with `range`, `vertical` / `reverse` and `min` / `max` / `step`; `show-value` bubble and `show-scale` ticks (position adjustable on all four sides); `bar-height` / `button-size` / `active-color` / `inactive-color`; `button` / `left-button` / `right-button` scoped slots; emits `change` / `drag-start` / `drag-end` (see [Slider](/en/components/slider))
+- New `$m-slider-*` theme variable block (19 keys)
+- **m-stepper**: `v-model:value` (`number | null`) with `min` / `max` / `step` / `decimal-length` / `integer`; `allow-empty` + `value-on-clear` and `auto-fixed`; `disable-plus` / `disable-minus` / `disable-input` and `show-*`; long-press continuous stepping (`press-time` / `interval`); `before-change` supports sync or Promise; `theme="round"` plus `variant` / `size` (see [Stepper](/en/components/stepper))
+- New `$m-stepper-*` theme variable block (20 keys)
+- **m-switch**: `v-model:value` (`boolean` / `string` / `number`) with `checked-value` / `unchecked-value`; `active-color` / `inactive-color` / `size`; `disabled` / `readonly` / `loading`; `before-update` async switching (automatic loading + `update:loading`); `checked-text` / `unchecked-text` and matching slots; `node` / `background` slots (see [Switch](/en/components/switch))
+- New `$m-switch-*` theme variable block (11 keys)
+- **m-uploader**: choose area plus preview grid, `v-model:value` binds an array of image / video objects; `media-type` / `multiple` / `max-count` / `max-size` + `oversize`, `accept` (Web only) and `capture`; when `upload-url` is set the built-in `uni.uploadFile` uploads and fills status and progress, otherwise only `after-read` is emitted; `setItemStatus()` writes status back; tapping a failed item retries; `sortable` enables long-press drag sorting; `before-choose` / `before-read` / `before-delete` accept sync or Promise; exposes `choose()` / `clear()` / `abort()` / `reupload()` / `setItemStatus()`; `default` / `preview-cover` / `preview-delete` slots (see [Uploader](/en/components/uploader))
+- New `$m-uploader-*` theme variable block (20 keys)
+
 ## [0.7.4] - 2026-11-22
 
 Fixes popup default toolbars being swallowed by statically declared slots on WeChat Mini Program (VDOM mode), which left no way to confirm a selection.
@@ -140,7 +160,7 @@ Fixes `m-calendar` flooding the WeChat Mini Program console with duplicate-slot 
 
 - **Duplicate slot warnings in m-calendar on Mini Program** ([#17](https://github.com/MengXi-Studio/unix-ui/issues/17)): `m-calendar-panel` declared `month-title` / `text` / `top-info` / `bottom-info` inside the day-cell `v-for`, producing 42 identically named slots in a single month-panel instance; WeChat only accepts the first slot of a given name per instance, so opening the popup emitted about 2,000 `More than one slot named "top-info"` warnings and custom content rendered only in the first cell. These four slots are no longer declared on Mini Program — the panel renders the `text` / `topInfo` / `bottomInfo` values returned by `formatter` instead, and `m-calendar` / `m-calendar-popup` stop forwarding them there. Slot behavior on Web and App is unchanged
 - **Same duplicate-slot issue in m-date-strip**: `item` / `top-info` / `bottom-info` were likewise declared inside the date-item `v-for`; these three slots are no longer rendered on Mini Program — use the `text` / `topInfo` / `bottomInfo` values returned by `formatter` instead (`show-lunar` is unaffected). Slot behavior on Web and App is unchanged
-- **Same duplicate-slot issue in m-cascader**: `option` / `options-top` / `options-bottom` were declared inside the level / option `v-for`; these three slots are no longer rendered on Mini Program — customize option text via `field-names` `labelKey` instead, and `m-cascader-popup` stops forwarding them there. Slot behavior on Web and App is unchanged
+- **Same duplicate-slot issue in m-cascader**: `option` / `options-top` / `options-bottom` were declared inside the level / option `v-for`; these three slots are no longer rendered on Mini Program — customize option text via `field-names` `text` instead, and `m-cascader-popup` stops forwarding them there. Slot behavior on Web and App is unchanged
 
 ## [0.5.2] - 2026-11-15
 

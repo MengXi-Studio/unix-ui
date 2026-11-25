@@ -117,7 +117,12 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 						{ text: 'RadioPopup', link: '/en/components/radio-popup' },
 						{ text: 'Rate', link: '/en/components/rate' },
 						{ text: 'Search', link: '/en/components/search' },
-						{ text: 'Segmented', link: '/en/components/segmented' }
+						{ text: 'Segmented', link: '/en/components/segmented' },
+						{ text: 'Signature', link: '/en/components/signature' },
+						{ text: 'Slider', link: '/en/components/slider' },
+						{ text: 'Stepper', link: '/en/components/stepper' },
+						{ text: 'Switch', link: '/en/components/switch' },
+						{ text: 'Uploader', link: '/en/components/uploader' }
 					]
 				},
 				{
@@ -176,6 +181,7 @@ export const enConfig: LocaleSpecificConfig<DefaultTheme.Config> = {
 					text: 'Data Display',
 					collapsed: false,
 					items: [
+						{ text: 'Accordion', link: '/en/components/accordion' },
 						{ text: 'Badge', link: '/en/components/badge' },
 						{ text: 'Cell', link: '/en/components/cell' }
 					]

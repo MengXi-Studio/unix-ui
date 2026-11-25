@@ -128,6 +128,12 @@ added: 0.1.0
 | custom-class | 自定义根节点类名 | string.ClassString | - |
 | custom-style | 自定义根节点内联样式 | string | - |
 
+### Slots（m-space-item）
+
+| 名称 | 说明 |
+| --- | --- |
+| default | 子元素内容 |
+
 ## 主题定制
 
 间距样式可通过以下 SCSS 变量定制（在项目根 `uni.scss` 中直接定义即可覆盖默认值）：

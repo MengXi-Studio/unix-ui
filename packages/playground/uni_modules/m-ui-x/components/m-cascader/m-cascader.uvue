@@ -133,8 +133,8 @@
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */
 		customStyle?: string
-		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；null 表示未下发，由本组件自行探测（issue #29） */
-		slotPresence?: string | null
+		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；'*' 表示未下发，由本组件自行探测（issue #29） */
+		slotPresence?: string
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
@@ -151,7 +151,7 @@
 		swipeable: true,
 		customClass: '',
 		customStyle: '',
-		slotPresence: null
+		slotPresence: '*'
 	})
 
 	/** options-bottom 具名插槽是否生效（父级弹层下发的存在性标记优先，issue #29） */

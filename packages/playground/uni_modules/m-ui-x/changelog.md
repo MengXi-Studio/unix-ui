@@ -1,3 +1,15 @@
+## 0.8.0 (2026-11-23)
+
+- 新增 `m-accordion` 手风琴容器：`v-model:value` 绑定展开标识数组（`multiple=false` 时最多一项），支持 `multiple` / `disabled` / `hide-border` / `inset`（圆角卡片）/ `duration`（展开收起高度过渡，0 直接显隐）/ `lazy-render`（默认首次展开才渲染）；未传 `value` 时容器自持状态（受控 + 非受控双支持）；实例方法 `open(name)` / `close(name)` / `toggle(name)` / `closeAll()`
+- 新增 `m-accordion-item` 手风琴面板：`title` / `extra` / `name`（缺省以注册序兜底）/ `disabled`（与容器 disabled 取或）；头部点击恒派发 `click`；插槽 `default` / `title` / `extra` / `arrow`（作用域参数 `visible`）；组内末项分隔线自动隐藏
+- 新增 `$m-accordion-*` 主题变量段（底色 / 分隔线 / 头部与内容内边距 / 标题与扩展文本 / 箭头 / 禁用透明度 / 圆角卡片等 17 项）
+- 新增 `m-signature` 签名组件：Canvas 手写签名，`pen-color` / `line-width` / `history-size` / `background-color`；`full-screen` + `v-model:visible` 全屏签名（取消派发 `cancel`）；`tips` 插槽与 `start` / `signing` / `end` / `submit` / `clear` / `cancel` 事件；实例方法 `resize()` / `clear()` / `undo()` / `submit()`；新增 `$m-signature-*` 主题变量段 19 项
+- 新增 `m-slider` 滑动条组件：`v-model:value`（number / number[]），`range` 双滑块、`vertical` / `reverse`、`min` / `max` / `step`；`show-value` 值气泡与 `show-scale` 刻度（位置四向可调）；`bar-height` / `button-size` / `active-color` / `inactive-color` 定制；`button` / `left-button` / `right-button` 作用域插槽；派发 `change` / `drag-start` / `drag-end`；新增 `$m-slider-*` 主题变量段 19 项
+- 新增 `m-stepper` 步进器组件：`v-model:value`（number | null），`min` / `max` / `step` / `decimal-length` / `integer`；`allow-empty` + `value-on-clear`、`auto-fixed`；`disable-plus` / `disable-minus` / `disable-input`、`show-*`；长按连续增减（`press-time` / `interval`）；`before-change` 支持同步或 Promise；`theme="round"` 与 `variant` / `size`；新增 `$m-stepper-*` 主题变量段 20 项
+- 新增 `m-switch` 开关组件：`v-model:value`（boolean / string / number），`checked-value` / `unchecked-value`；`active-color` / `inactive-color` / `size`；`disabled` / `readonly` / `loading`；`before-update` 异步切换（自动 loading + `update:loading`）；`checked-text` / `unchecked-text` 与同名插槽；`node` / `background` 插槽；新增 `$m-switch-*` 主题变量段 11 项
+- 新增 `m-uploader` 文件上传组件：选择区 + 预览格列表，`v-model:value` 绑定普通对象数组（`url` / `path` / `name` / `size` / `type` / `status` / `message` / `progress` / `deletable`）；`media-type` 支持图片 / 视频（数组混合时选择器按图片打开），`multiple` / `max-count` / `max-size` + `oversize`、`accept`（仅 Web 透传 extension）、`capture="camera"` 拍照、`disabled` / `readonly` / `deletable` / `show-upload`、`preview-size` / `preview-full-image` / `image-fit`；`upload-url` 非空时内置 `uni.uploadFile` 自动上传并回填状态与进度（按 5% 步长节流），为空时只派发 `after-read` 由业务上传；业务通过 `setItemStatus(index, status, message, progress)` 回写状态；失败项点击自动重传；`sortable` 开启长按 300ms 拖拽排序并派发 `sort`；`before-choose` / `before-read` / `before-delete` 三段钩子支持同步或 Promise；`choose` / `clear` / `abort` / `reupload` / `setItemStatus` 实例方法；插槽 `default` / `preview-cover` / `preview-delete`
+- 新增 `$m-uploader-*` 主题变量段（格子尺寸 / 间距 / 圆角 / 选择区 / 删除按钮 / 状态遮罩 / 视频占位 / 覆盖层等 20 项）
+
 ## 0.7.4 (2026-11-22)
 
 - 修复微信小程序（VDOM 模式）下弹层未传具名插槽时默认工具栏被静态插槽吞掉、无法确认选择（issue #29）：小程序编译会把弹层模板中的具名插槽静态声明到面板标签上（`u-s="{{['toolbar',...]}}"`），面板侧 `useSlots()` 的对应

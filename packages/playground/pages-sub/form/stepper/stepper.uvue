@@ -1,0 +1,247 @@
+<template>
+	<view class="page">
+		<demo-navbar title="步进器" subtitle="Stepper" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-stepper v-model:value="basicValue" @change="onBasicChange" @plus="onPlus" @minus="onMinus" />
+					<text class="caption">当前值：{{ basicText }}（点击按钮或直接输入）</text>
+				</view>
+
+				<text class="section" id="range">最大最小值与自动校正</text>
+				<view class="card">
+					<m-stepper v-model:value="rangeValue" :min="0" :max="5" />
+					<text class="caption">auto-fixed=true（默认）：当前值 {{ rangeValue }}，超出 0~5 自动收敛</text>
+					<m-stepper v-model:value="looseValue" :min="0" :max="5" :auto-fixed="false" />
+					<text class="caption">auto-fixed=false：允许超出 0~5，当前值 {{ looseValue }}</text>
+				</view>
+
+				<text class="section" id="step">步长与精度</text>
+				<view class="card">
+					<m-stepper v-model:value="stepValue" :step="5" />
+					<text class="caption">step=5，当前值：{{ stepValue }}</text>
+					<m-stepper v-model:value="decimalValue" :step="0.1" :decimal-length="2" :min="0" @change="onDecimalChange" />
+					<text class="caption">step=0.1 / decimal-length=2，当前值：{{ decimalText }}</text>
+					<m-stepper v-model:value="integerValue" integer :min="0" />
+					<text class="caption">integer：输入框仅接受整数，当前值：{{ integerValue }}</text>
+				</view>
+
+				<text class="section" id="empty">空值与清空回写</text>
+				<view class="card">
+					<m-stepper v-model:value="emptyValue" allow-empty :min="0" :max="10" @change="onEmptyChange" />
+					<text class="caption">allow-empty：清空后回写 null，当前值 {{ emptyText }}</text>
+					<m-stepper v-model:value="clearMinValue" allow-empty value-on-clear="min" :min="3" :max="10" />
+					<text class="caption">value-on-clear="min"：清空回写最小值，当前值 {{ clearMinValue == null ? 'null' : clearMinValue }}</text>
+				</view>
+
+				<text class="section" id="status">只读与禁用</text>
+				<view class="card">
+					<m-stepper :value="4" readonly />
+					<text class="caption">readonly：外观正常，按钮与输入框均不可修改</text>
+					<m-stepper :value="4" disabled />
+					<text class="caption">disabled：整体禁用，图标与文字置灰</text>
+					<m-stepper v-model:value="disablePartValue" disable-plus />
+					<text class="caption">disable-plus：只能减不能加，当前值 {{ disablePartValue }}</text>
+					<m-stepper v-model:value="disableInputValue" disable-input />
+					<text class="caption">disable-input：按钮可用、输入框禁用，当前值 {{ disableInputValue }}</text>
+				</view>
+
+				<text class="section" id="variant">变体</text>
+				<view class="card">
+					<m-stepper v-model:value="variantValue" variant="solid" />
+					<m-stepper v-model:value="variantValue" variant="outlined" />
+					<m-stepper v-model:value="variantValue" variant="accent" />
+					<m-stepper v-model:value="variantValue" variant="ghost" />
+					<text class="caption">variant：solid / outlined / accent / ghost，共用值 {{ variantValue }}</text>
+				</view>
+
+				<text class="section" id="size">尺寸与 round 主题</text>
+				<view class="card">
+					<m-stepper v-model:value="sizeValue" size="small" />
+					<m-stepper v-model:value="sizeValue" variant="outlined" size="small" />
+					<m-stepper v-model:value="sizeValue" theme="round" :button-size="24" :disable-input="true" />
+					<text class="caption">size=small / theme=round（按钮主色胶囊），当前值 {{ sizeValue }}</text>
+					<m-stepper v-model:value="customSizeValue" :input-width="56" :button-size="34" />
+					<text class="caption">input-width=56 / button-size=34，当前值 {{ customSizeValue }}</text>
+				</view>
+
+				<text class="section" id="press">长按连续增减</text>
+				<view class="card">
+					<m-stepper v-model:value="pressValue" :min="0" :max="50" />
+					<text class="caption">long-press 默认开启：长按 +/- 连续变化，当前值 {{ pressValue }}</text>
+					<m-stepper v-model:value="pressSlowValue" :min="0" :max="50" :press-time="600" :interval="300" />
+					<text class="caption">press-time=600 / interval=300，当前值 {{ pressSlowValue }}</text>
+					<m-stepper v-model:value="noPressValue" :long-press="false" />
+					<text class="caption">long-press=false：仅单次点击生效，当前值 {{ noPressValue }}</text>
+				</view>
+
+				<text class="section" id="before">变更拦截与事件</text>
+				<view class="card">
+					<m-stepper
+						v-model:value="guardValue"
+						:min="0"
+						:max="10"
+						:before-change="beforeChange"
+						@change="onGuardChange"
+						@overlimit="onOverlimit"
+						@focus="onFocus"
+						@blur="onBlur"
+					/>
+					<text class="caption">before-change：超过 8 时拦截；{{ eventLog }}</text>
+					<m-stepper v-model:value="showValue" :show-plus="false" />
+					<text class="caption">show-plus=false：只保留减少按钮与输入框，当前值 {{ showValue }}</text>
+				</view>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '步进器 Stepper', name: 'stepper' })
+
+	/** 基础用法值 */
+	const basicValue = ref<number | null>(1)
+	/** 基础用法文案 */
+	const basicText = computed<string>(() => basicValue.value == null ? '空' : basicValue.value.toString())
+	/** 范围值 */
+	const rangeValue = ref<number | null>(2)
+	/** 关闭自动校正的值 */
+	const looseValue = ref<number | null>(2)
+	/** 步长值 */
+	const stepValue = ref<number | null>(3)
+	/** 精度值 */
+	const decimalValue = ref<number | null>(0.3)
+	/** 精度文案 */
+	const decimalText = computed<string>(() => decimalValue.value == null ? '空' : decimalValue.value.toString())
+	/** 整数值 */
+	const integerValue = ref<number | null>(2)
+	/** 空值演示 */
+	const emptyValue = ref<number | null>(5)
+	/** 空值文案 */
+	const emptyText = computed<string>(() => emptyValue.value == null ? 'null' : emptyValue.value.toString())
+	/** 清空回写最小值 */
+	const clearMinValue = ref<number | null>(5)
+	/** 部分禁用值 */
+	const disablePartValue = ref<number | null>(2)
+	/** 输入框禁用值 */
+	const disableInputValue = ref<number | null>(2)
+	/** 变体共用值 */
+	const variantValue = ref<number | null>(3)
+	/** 尺寸共用值 */
+	const sizeValue = ref<number | null>(3)
+	/** 自定义尺寸值 */
+	const customSizeValue = ref<number | null>(3)
+	/** 长按值 */
+	const pressValue = ref<number | null>(5)
+	/** 慢速长按值 */
+	const pressSlowValue = ref<number | null>(5)
+	/** 关闭长按值 */
+	const noPressValue = ref<number | null>(5)
+	/** 拦截演示值 */
+	const guardValue = ref<number | null>(3)
+	/** 隐藏增加按钮演示值 */
+	const showValue = ref<number | null>(5)
+	/** 事件日志 */
+	const eventLog = ref<string>('拖动或输入查看事件')
+
+	/**
+	 * before-change 拦截：候选值超过 8 时拒绝
+	 *
+	 * @param value 候选值
+	 * @returns 是否允许变更
+	 */
+	const beforeChange = (value: number | null): boolean | Promise<boolean> => {
+		if (value != null && value > 8) {
+			eventLog.value = 'before-change 拦截 ' + value.toString()
+			return false
+		}
+		return true
+	}
+
+	/**
+	 * 基础用法变更
+	 *
+	 * @param value 当前值
+	 */
+	function onBasicChange(value: number | null) {
+		console.log('stepper basic change: ' + (value == null ? 'null' : value.toString()))
+	}
+
+	/**
+	 * 精度变更
+	 *
+	 * @param value 当前值
+	 */
+	function onDecimalChange(value: number | null) {
+		console.log('stepper decimal change: ' + (value == null ? 'null' : value.toString()))
+	}
+
+	/**
+	 * 空值变更
+	 *
+	 * @param value 当前值
+	 */
+	function onEmptyChange(value: number | null) {
+		console.log('stepper empty change: ' + (value == null ? 'null' : value.toString()))
+	}
+
+	/**
+	 * 增加按钮点击
+	 */
+	function onPlus() {
+		eventLog.value = 'plus'
+	}
+
+	/**
+	 * 减少按钮点击
+	 */
+	function onMinus() {
+		eventLog.value = 'minus'
+	}
+
+	/**
+	 * 拦截演示变更
+	 *
+	 * @param value 当前值
+	 */
+	function onGuardChange(value: number | null) {
+		eventLog.value = 'change → ' + (value == null ? 'null' : value.toString())
+	}
+
+	/**
+	 * 到达边界 / 按钮禁用
+	 */
+	function onOverlimit() {
+		eventLog.value = 'overlimit'
+	}
+
+	/**
+	 * 输入框聚焦
+	 *
+	 * @param _e 聚焦事件
+	 */
+	function onFocus(_e: UniEvent) {
+		eventLog.value = 'focus'
+	}
+
+	/**
+	 * 输入框失焦
+	 *
+	 * @param _e 失焦事件
+	 */
+	function onBlur(_e: UniEvent) {
+		eventLog.value = 'blur'
+	}
+</script>
+
+<style lang="scss">
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+		margin-bottom: 8px;
+	}
+</style>

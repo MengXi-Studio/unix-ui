@@ -1,0 +1,207 @@
+<template>
+	<!-- 手风琴容器：持有展开集合与交互规格，经上下文下发给 m-accordion-item（面板只读判定） -->
+	<view :class="rootClass" :style="rootStyle">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-accordion 手风琴容器：折叠收纳内容，支持单选 / 多选展开、全局禁用、隐藏分隔线、
+	 * 圆角卡片形态与展开 / 收起高度过渡动画。
+	 * 值形态统一为数组（v-model:value）：multiple=false 时容器保证最多一项。
+	 * 受控 + 非受控双支持：value 未传（null）时容器自持状态，传入后以外部值为准。
+	 * 状态变更经上下文 changeEpoch 驱动 emit（不监听数组本身，避免 prop 回灌误派发）。
+	 */
+	import {
+		ACCORDION_KEY,
+		AccordionContext,
+		AccordionValue,
+		AccordionValueArray,
+		emptyAccordionValues
+	} from './accordion.uts'
+
+	type Props = {
+		/** 展开面板标识集合（v-model:value；null 表示非受控，由容器自持状态） */
+		value?: AccordionValueArray
+		/** 是否可同时展开多个面板 */
+		multiple?: boolean
+		/** 是否禁用全部面板（与面板自身 disabled 取或） */
+		disabled?: boolean
+		/** 是否隐藏分隔线 */
+		hideBorder?: boolean
+		/** 是否为圆角卡片形态 */
+		inset?: boolean
+		/** 展开 / 收起动画时长（秒，0 直接显隐） */
+		duration?: number
+		/** 是否首次展开才渲染面板内容 */
+		lazyRender?: boolean
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: null,
+		multiple: false,
+		disabled: false,
+		hideBorder: false,
+		inset: false,
+		duration: 0.3,
+		lazyRender: true,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 展开集合变化（v-model:value） */
+		'update:value': [value: AccordionValueArray]
+		/** 展开集合变化（交互路径派发；第二参数为本次操作的面板标识，closeAll 时为空串） */
+		change: [value: AccordionValueArray, name: AccordionValue]
+	}>()
+
+	/** 容器上下文（provide 给 m-accordion-item 注册与判定） */
+	const ctx = new AccordionContext()
+	provide(ACCORDION_KEY, ctx)
+
+	/**
+	 * 值归一：复制为新数组；单选模式下仅保留最后一项（最近一次展开语义）
+	 *
+	 * @param v 外部传入的展开集合
+	 * @returns 归一后的新集合
+	 */
+	function normalizeValue(v: AccordionValueArray): AccordionValueArray {
+		const next: AccordionValueArray = []
+		if (props.multiple) {
+			for (let i = 0; i < v.length; i++) {
+				next.push(v[i])
+			}
+			return next
+		}
+		if (v.length > 0) {
+			next.push(v[v.length - 1])
+		}
+		return next
+	}
+
+	// 受控值下发：非 null 时覆盖上下文状态（null 保持非受控自持）
+	watch((): AccordionValueArray | null => props.value, (v: AccordionValueArray | null) => {
+		if (v == null) {
+			return
+		}
+		ctx.value.value = normalizeValue(v)
+	}, { immediate: true })
+
+	// 单选 / 多选切换：同步规格并在切到单选时收敛为一项
+	watch((): boolean => props.multiple, (v: boolean) => {
+		ctx.multiple.value = v
+		if (!v && ctx.value.value.length > 1) {
+			const last: AccordionValue = ctx.value.value[ctx.value.value.length - 1]
+			const one: AccordionValueArray = []
+			one.push(last)
+			ctx.value.value = one
+		}
+	}, { immediate: true })
+
+	watch((): boolean => props.disabled, (v: boolean) => {
+		ctx.disabled.value = v
+	}, { immediate: true })
+
+	watch((): boolean => props.hideBorder, (v: boolean) => {
+		ctx.hideBorder.value = v
+	}, { immediate: true })
+
+	watch((): boolean => props.inset, (v: boolean) => {
+		ctx.inset.value = v
+	}, { immediate: true })
+
+	watch((): number => props.duration, (v: number) => {
+		ctx.duration.value = v
+	}, { immediate: true })
+
+	watch((): boolean => props.lazyRender, (v: boolean) => {
+		ctx.lazyRender.value = v
+	}, { immediate: true })
+
+	// 交互变更统一出口：仅 changeEpoch 递增时派发（prop 回灌不递增）
+	watch((): number => ctx.changeEpoch.value, (_: number) => {
+		emit('update:value', ctx.value.value)
+		emit('change', ctx.value.value, ctx.lastName)
+	})
+
+	/**
+	 * 展开指定面板
+	 *
+	 * @param name 面板标识
+	 */
+	function open(name: AccordionValue) {
+		ctx.setExpanded(name, true)
+	}
+
+	/**
+	 * 收起指定面板
+	 *
+	 * @param name 面板标识
+	 */
+	function close(name: AccordionValue) {
+		ctx.setExpanded(name, false)
+	}
+
+	/**
+	 * 切换指定面板展开态
+	 *
+	 * @param name 面板标识
+	 */
+	function toggle(name: AccordionValue) {
+		ctx.toggle(name)
+	}
+
+	/** 收起全部面板 */
+	function closeAll() {
+		ctx.closeAll()
+	}
+
+	defineExpose({
+		open,
+		close,
+		toggle,
+		closeAll
+	})
+
+	/** 根节点类名：BEM 变体类按 props 状态组合 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-accordion'
+		if (props.inset) cls += ' m-accordion--inset'
+		if (props.customClass != '') cls += ' ' + props.customClass
+		return cls
+	})
+
+	/** 根节点内联样式：customStyle 补分号 */
+	const rootStyle = computed<string>(() => {
+		let style = props.customStyle
+		if (style != '' && !style.endsWith(';')) style += ';'
+		return style
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明（默认主题内置 + 变量覆盖）：
+	 * 组件内顶层引入 theme/vars.scss（全部 !default），用户零配置即有默认主题；
+	 * 覆盖方式：项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss，
+	 * uni.scss 注入机制与组件内引入同一文件会触发循环导入）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 根节点 ========== */
+	.m-accordion {
+		flex-direction: column;
+		background-color: $m-accordion-background;
+	}
+	.m-accordion--inset {
+		margin: $m-accordion-inset-margin;
+		border-radius: $m-accordion-inset-radius;
+		overflow: hidden;
+	}
+</style>

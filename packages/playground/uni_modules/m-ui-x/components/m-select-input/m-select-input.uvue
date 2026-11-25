@@ -110,7 +110,7 @@
 		/** 筛选值（v-model:filter-value） */
 		filterValue?: string
 		/** 远程筛选回调 */
-		filterMethod?: ((query: string) => void) | null
+		filterMethod?: ((query: string) => void)
 		/** 空列表文案 */
 		emptyText?: string
 		/** 选中后是否自动关闭弹层 */
@@ -155,7 +155,6 @@
 		filterable: false,
 		filterPlaceholder: '请输入关键词',
 		filterValue: '',
-		filterMethod: null,
 		emptyText: '暂无选项',
 		confirmOnSelect: true,
 		mapLabel: null,

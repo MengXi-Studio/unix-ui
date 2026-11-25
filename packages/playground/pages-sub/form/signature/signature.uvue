@@ -1,0 +1,231 @@
+<template>
+	<view class="page">
+		<demo-navbar title="签名" subtitle="Signature" />
+		<demo-bridge />
+		<scroll-view class="page-body" :scroll-y="true">
+			<view class="container">
+				<text class="section" id="basic">基础用法</text>
+				<view class="card">
+					<m-signature @submit="onBasicSubmit" @clear="onBasicClear" />
+					<image v-if="basicImage != ''" :src="basicImage" mode="widthFix" class="preview" />
+					<text class="caption">手写后点确认触发 submit，image 为 dataURL；未书写或清空后为空字符串</text>
+				</view>
+
+				<text class="section" id="pen">自定义笔触与背景</text>
+				<view class="card">
+					<m-signature pen-color="#ee0a24" :line-width="6" background-color="#f7f8fa" @submit="onPenSubmit" />
+					<text class="caption">pen-color / line-width / background-color（背景色会绘制进导出图片）</text>
+				</view>
+
+				<text class="section" id="history">撤销与历史</text>
+				<view class="card">
+					<m-signature :history-size="3" @submit="onHistorySubmit" />
+					<text class="caption">history-size=3：最多保留 3 笔撤销历史；操作栏内可直接撤销 / 清空</text>
+				</view>
+
+				<text class="section" id="methods">实例方法</text>
+				<view class="card">
+					<m-signature ref="methodRef" @submit="onMethodSubmit" />
+					<view class="row">
+						<m-button size="small" type="primary" plain @click="callSubmit">submit()</m-button>
+						<m-button size="small" plain @click="callUndo">undo()</m-button>
+						<m-button size="small" plain @click="callClear">clear()</m-button>
+						<m-button size="small" plain @click="callResize">resize()</m-button>
+					</view>
+					<text class="caption">通过 ref.$callMethod 调用 submit / undo / clear / resize</text>
+				</view>
+
+				<text class="section" id="full">全屏签名</text>
+				<view class="card">
+					<m-button type="primary" @click="openFull">打开全屏签名</m-button>
+					<image v-if="fullImage != ''" :src="fullImage" mode="widthFix" class="preview" />
+					<text class="caption">full-screen + v-model:visible，底部展示 tips 插槽，取消 / 确认后自动关闭</text>
+				</view>
+
+				<m-signature
+					full-screen
+					v-model:visible="fullVisible"
+					@submit="onFullSubmit"
+					@cancel="onFullCancel"
+					@clear="onFullClear"
+				>
+					<template #tips>
+						<text class="full-tips">请在上方空白处手写您的签名</text>
+					</template>
+				</m-signature>
+			</view>
+		</scroll-view>
+	</view>
+</template>
+
+<script setup lang="uts">
+	// 页面声明宏：构建期由 routeGen 插件剥离，是 pages.json 条目与路由表的事实源
+	defineUniPage({ title: '签名 Signature', name: 'signature' })
+
+	/** 基础用法回显图片 */
+	const basicImage = ref<string>('')
+	/** 实例方法演示组件实例 */
+	const methodRef = ref<ComponentPublicInstance | null>(null)
+	/** 全屏签名显隐 */
+	const fullVisible = ref<boolean>(false)
+	/** 全屏签名回显图片 */
+	const fullImage = ref<string>('')
+
+	/**
+	 * 从 submit 事件数据中读取 image（事件载荷跨组件类型不可见，按 UTSJSONObject 读取）
+	 *
+	 * @param data submit 事件数据
+	 * @returns 签名图片 dataURL
+	 */
+	function readImage(data: any | null): string {
+		if (data == null) {
+			return ''
+		}
+		const image = (data as UTSJSONObject).getString('image')
+		return image == null ? '' : image
+	}
+
+	/**
+	 * 基础用法提交
+	 *
+	 * @param data submit 事件数据
+	 */
+	function onBasicSubmit(data: any | null) {
+		basicImage.value = readImage(data)
+		console.log('signature basic submit: image length = ' + basicImage.value.length.toString())
+	}
+
+	/**
+	 * 基础用法清空
+	 */
+	function onBasicClear() {
+		basicImage.value = ''
+		console.log('signature basic clear')
+	}
+
+	/**
+	 * 自定义笔触提交
+	 *
+	 * @param data submit 事件数据
+	 */
+	function onPenSubmit(data: any | null) {
+		console.log('signature pen submit: image length = ' + readImage(data).length.toString())
+	}
+
+	/**
+	 * 撤销历史提交
+	 *
+	 * @param data submit 事件数据
+	 */
+	function onHistorySubmit(data: any | null) {
+		console.log('signature history submit: image length = ' + readImage(data).length.toString())
+	}
+
+	/**
+	 * 实例方法演示提交
+	 *
+	 * @param data submit 事件数据
+	 */
+	function onMethodSubmit(data: any | null) {
+		console.log('signature method submit: image length = ' + readImage(data).length.toString())
+	}
+
+	/**
+	 * 调用组件 submit()
+	 */
+	function callSubmit() {
+		const inst = methodRef.value
+		if (inst != null) {
+			inst.$callMethod('submit')
+		}
+	}
+
+	/**
+	 * 调用组件 undo()
+	 */
+	function callUndo() {
+		const inst = methodRef.value
+		if (inst != null) {
+			inst.$callMethod('undo')
+		}
+	}
+
+	/**
+	 * 调用组件 clear()
+	 */
+	function callClear() {
+		const inst = methodRef.value
+		if (inst != null) {
+			inst.$callMethod('clear')
+		}
+	}
+
+	/**
+	 * 调用组件 resize()
+	 */
+	function callResize() {
+		const inst = methodRef.value
+		if (inst != null) {
+			inst.$callMethod('resize')
+		}
+	}
+
+	/**
+	 * 打开全屏签名
+	 */
+	function openFull() {
+		fullVisible.value = true
+	}
+
+	/**
+	 * 全屏签名提交
+	 *
+	 * @param data submit 事件数据
+	 */
+	function onFullSubmit(data: any | null) {
+		fullImage.value = readImage(data)
+		console.log('signature full submit: image length = ' + fullImage.value.length.toString())
+	}
+
+	/**
+	 * 全屏签名取消
+	 */
+	function onFullCancel() {
+		console.log('signature full cancel')
+	}
+
+	/**
+	 * 全屏签名清空
+	 */
+	function onFullClear() {
+		fullImage.value = ''
+		console.log('signature full clear')
+	}
+</script>
+
+<style lang="scss">
+	.preview {
+		margin-top: 12px;
+		border-width: 1px;
+		border-style: dashed;
+		border-color: #ebedf0;
+	}
+
+	.row {
+		flex-direction: row;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-top: 12px;
+	}
+
+	.caption {
+		font-size: 12px;
+		color: #969799;
+		margin-top: 8px;
+	}
+
+	.full-tips {
+		font-size: 14px;
+		color: #969799;
+	}
+</style>

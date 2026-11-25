@@ -1,0 +1,412 @@
+<template>
+	<!-- 开关：轨道 + 滑块两段结构，支持自定义值 / 颜色 / 尺寸、只读禁用、加载态、异步切换与轨道文字插槽 -->
+	<view :class="rootClass" :style="rootStyle" @click="onClick">
+		<view v-if="hasBackgroundSlot" class="m-switch__background">
+			<slot name="background"></slot>
+		</view>
+		<view v-if="checked && showCheckedText" :class="checkedTextWrapClass" :style="checkedTextWrapStyle">
+			<view v-if="hasCheckedTextSlot" ref="checkedSlotBoxRef" class="m-switch__text-box">
+				<slot name="checked-text"></slot>
+			</view>
+			<text v-else class="m-switch__text">{{ props.checkedText }}</text>
+		</view>
+		<view v-if="!checked && showUncheckedText" :class="uncheckedTextWrapClass" :style="uncheckedTextWrapStyle">
+			<view v-if="hasUncheckedTextSlot" ref="uncheckedSlotBoxRef" class="m-switch__text-box">
+				<slot name="unchecked-text"></slot>
+			</view>
+			<text v-else class="m-switch__text">{{ props.uncheckedText }}</text>
+		</view>
+		<view class="m-switch__node" :style="nodeStyle">
+			<slot v-if="hasNodeSlot" name="node"></slot>
+			<m-loading v-else-if="isLoading" type="circular" color="primary" :size="loadingSize" custom-style="align-self: center;" />
+		</view>
+		<!-- 隐藏测量节点：脱离文档流 + nowrap，取文案固有宽度 -->
+		<text v-if="props.textAutoWidth && measureText != ''" ref="measureTextRef" class="m-switch__measure-text">{{ measureText }}</text>
+	</view>
+</template>
+
+<script setup lang="uts">
+	/**
+	 * m-switch 开关：在打开 / 关闭两种状态间切换。
+	 * 值类型支持 boolean | string | number（通过 checked-value / unchecked-value 指定）；
+	 * before-update 返回 Promise 时进入异步切换，pending 期间不可点击并派发 update:loading。
+	 */
+	import { slotHasContent } from '../../utils/slot.uts'
+
+	/** 对外值类型 */
+	type SwitchValue = boolean | string | number
+
+	type Props = {
+		/** 当前值（v-model:value） */
+		value?: SwitchValue
+		/** 打开时对应的值 */
+		checkedValue?: SwitchValue
+		/** 关闭时对应的值 */
+		uncheckedValue?: SwitchValue
+		/** 打开时轨道背景色（'' 用主题变量） */
+		activeColor?: string
+		/** 关闭时轨道背景色（'' 用主题变量） */
+		inactiveColor?: string
+		/** 滑块尺寸 px（0 用主题变量） */
+		size?: number
+		/** 加载状态（不可点击） */
+		loading?: boolean
+		/** 禁用 */
+		disabled?: boolean
+		/** 只读（外观正常、不可切换） */
+		readonly?: boolean
+		/** 打开时轨道内文字 */
+		checkedText?: string
+		/** 关闭时轨道内文字 */
+		uncheckedText?: string
+		/** 文案自适应轨道宽度（有文案 / 文字插槽时生效） */
+		textAutoWidth?: boolean
+		/** 异步切换：返回 Promise，resolve 后切换；pending 期间显示 loading */
+		beforeUpdate?: ((value: SwitchValue) => Promise<any>)
+		/** 自定义根节点类名 */
+		customClass?: string.ClassString
+		/** 自定义根节点内联样式 */
+		customStyle?: string
+	}
+
+	const props = withDefaults(defineProps<Props>(), {
+		value: false,
+		checkedValue: true,
+		uncheckedValue: false,
+		activeColor: '',
+		inactiveColor: '',
+		size: 0,
+		loading: false,
+		disabled: false,
+		readonly: false,
+		checkedText: '',
+		uncheckedText: '',
+		textAutoWidth: true,
+		beforeUpdate: null,
+		customClass: '',
+		customStyle: ''
+	})
+
+	const emit = defineEmits<{
+		/** 值变化（v-model:value） */
+		'update:value': [value: SwitchValue]
+		/** 开关切换完成 */
+		change: [value: SwitchValue]
+		/** 点击开关（禁用 / 只读 / 加载中不触发） */
+		click: [event: MouseEvent]
+		/** 异步切换的 loading 变化 */
+		'update:loading': [loading: boolean]
+	}>()
+
+	const slots = useSlots()
+
+	/** 打开文字插槽容器引用（自适应宽度测量） */
+	const checkedSlotBoxRef = ref<UniElement | null>(null)
+	/** 关闭文字插槽容器引用（自适应宽度测量） */
+	const uncheckedSlotBoxRef = ref<UniElement | null>(null)
+	/** 隐藏测量节点引用 */
+	const measureTextRef = ref<UniElement | null>(null)
+	/** 文案自适应后的轨道宽度（0 表示使用默认宽度） */
+	const autoTrackWidth = ref<number>(0)
+	/** 测量序号：异步回调只采纳最后一次结果 */
+	let measureToken = 0
+	/** 默认滑块尺寸（与主题变量保持一致，仅用于计算） */
+	const DEFAULT_NODE_SIZE = 26
+	/** 默认轨道宽度（与主题变量保持一致，仅用于计算） */
+	const DEFAULT_TRACK_WIDTH = 51
+	/** 异步切换 pending 标记 */
+	const pending = ref<boolean>(false)
+
+	/**
+	 * 值比较：统一转字符串，兼容 boolean / string / number 混合配置
+	 *
+	 * @param a 值 A
+	 * @param b 值 B
+	 * @returns 是否相等
+	 */
+	function valuesEqual(a: SwitchValue, b: SwitchValue): boolean {
+		return a.toString() == b.toString()
+	}
+
+	/** 是否处于打开状态 */
+	const checked = computed<boolean>(() => valuesEqual(props.value, props.checkedValue))
+
+	/** 生效滑块尺寸（自定义 size 或主题默认值） */
+	const nodeSizeValue = computed<number>(() => props.size > 0 ? props.size : DEFAULT_NODE_SIZE)
+
+	/** 当前可见文案（用于隐藏测量节点） */
+	const measureText = computed<string>(() => checked.value ? props.checkedText : props.uncheckedText)
+
+	/** 是否加载中（外部 loading 或异步 pending） */
+	const isLoading = computed<boolean>(() => props.loading || pending.value)
+
+	/** 根类名：选中 / 禁用 / 加载 */
+	const rootClass = computed<string>(() => {
+		let cls = 'm-switch'
+		if (checked.value) {
+			cls += ' m-switch--checked'
+		}
+		if (props.disabled) {
+			cls += ' m-switch--disabled'
+		}
+		if (isLoading.value) {
+			cls += ' m-switch--loading'
+		}
+		if (props.customClass != '') {
+			cls += ' ' + props.customClass
+		}
+		return cls
+	})
+
+	/** 生效轨道宽度（默认 / 自定义尺寸 / 文案自适应取最大） */
+	const trackWidthValue = computed<number>(() => {
+		const base = props.size > 0 ? Math.round(props.size * 1.8 + 4) : DEFAULT_TRACK_WIDTH
+		return autoTrackWidth.value > base ? autoTrackWidth.value : base
+	})
+
+	/** 根内联样式：自定义尺寸 / 文案自适应宽度 + 选中 / 关闭颜色 + customStyle */
+	const rootStyle = computed<string>(() => {
+		let style = ''
+		if (props.size > 0 || autoTrackWidth.value > 0) {
+			style += 'width: ' + trackWidthValue.value.toString() + 'px;'
+		}
+		if (props.size > 0) {
+			style += 'height: ' + (props.size + 4).toString() + 'px;'
+		}
+		const color = checked.value ? props.activeColor : props.inactiveColor
+		if (color != '') {
+			style += 'background-color: ' + color + ';'
+		}
+		if (props.customStyle != '') {
+			style += props.customStyle
+		}
+		return style
+	})
+
+	/** 滑块内联样式：自定义尺寸 + 按轨道宽度计算的 px 位移（不依赖百分比） */
+	const nodeStyle = computed<string>(() => {
+		let style = ''
+		const size = props.size
+		if (size > 0) {
+			style += 'width: ' + size.toString() + 'px; height: ' + size.toString() + 'px;'
+		}
+		const offset = checked.value ? trackWidthValue.value - nodeSizeValue.value - 4 : 0
+		style += 'transform: translateX(' + offset.toString() + 'px);'
+		return style
+	})
+
+	/** 加载图标尺寸：滑块尺寸的 55% */
+	const loadingSize = computed<string>(() => {
+		const size = props.size > 0 ? props.size : DEFAULT_NODE_SIZE
+		return Math.round(size * 0.55).toString() + 'px'
+	})
+
+	/** 打开文字容器类名 */
+	const checkedTextWrapClass = 'm-switch__text-wrap m-switch__text-wrap--left'
+	/** 关闭文字容器类名 */
+	const uncheckedTextWrapClass = 'm-switch__text-wrap m-switch__text-wrap--right'
+
+	/** 打开文字容器内边距：预留滑块宽度 + 2px 间距，文字在剩余区域内居中 */
+	const checkedTextWrapStyle = computed<string>(() => {
+		return 'width: ' + trackWidthValue.value.toString() + 'px; padding-left: 0; padding-right: ' + (nodeSizeValue.value + 2).toString() + 'px;'
+	})
+
+	/** 关闭文字容器内边距：预留滑块宽度 + 2px 间距，文字在剩余区域内居中 */
+	const uncheckedTextWrapStyle = computed<string>(() => {
+		return 'width: ' + trackWidthValue.value.toString() + 'px; padding-left: ' + (nodeSizeValue.value + 2).toString() + 'px; padding-right: 0;'
+	})
+
+	/** 轨道背景插槽 */
+	const hasBackgroundSlot = computed<boolean>(() => slotHasContent(slots['background']))
+	/** 滑块插槽 */
+	const hasNodeSlot = computed<boolean>(() => slotHasContent(slots['node']))
+	/** 打开文字插槽 */
+	const hasCheckedTextSlot = computed<boolean>(() => slotHasContent(slots['checked-text']))
+	/** 关闭文字插槽 */
+	const hasUncheckedTextSlot = computed<boolean>(() => slotHasContent(slots['unchecked-text']))
+
+	/** 打开文字是否存在 */
+	const showCheckedText = computed<boolean>(() => props.checkedText != '' || hasCheckedTextSlot.value)
+	/** 关闭文字是否存在 */
+	const showUncheckedText = computed<boolean>(() => props.uncheckedText != '' || hasUncheckedTextSlot.value)
+
+	/**
+	 * 应用新值：与当前值不同才派发
+	 *
+	 * @param next 新值
+	 */
+	function applyValue(next: SwitchValue) {
+		if (valuesEqual(next, props.value)) {
+			return
+		}
+		emit('update:value', next)
+		emit('change', next)
+	}
+
+	/**
+	 * 点击开关：禁用 / 只读 / 加载中直接返回；有 beforeUpdate 时异步切换
+	 *
+	 * @param event 点击事件
+	 */
+	function onClick(event: MouseEvent) {
+		if (props.disabled || props.readonly || isLoading.value) {
+			return
+		}
+		emit('click', event)
+		const next: SwitchValue = checked.value ? props.uncheckedValue : props.checkedValue
+		const callback = props.beforeUpdate as ((value: SwitchValue) => Promise<any>) | null
+		if (callback == null) {
+			applyValue(next)
+			return
+		}
+		pending.value = true
+		emit('update:loading', true)
+		callback(next).then((_: any) => {
+			pending.value = false
+			emit('update:loading', false)
+			applyValue(next)
+		}).catch(() => {
+			pending.value = false
+			emit('update:loading', false)
+		})
+	}
+
+	/**
+	 * 测量当前可见文案的固有宽度，按需扩展轨道宽度（仅 text-auto-width 开启时生效）
+	 */
+	function scheduleTextMeasure() {
+		const token = ++measureToken
+		nextTick(() => {
+			const slotMode = checked.value ? hasCheckedTextSlot.value : hasUncheckedTextSlot.value
+			let el: UniElement | null = null
+			if (slotMode) {
+				el = checked.value ? checkedSlotBoxRef.value : uncheckedSlotBoxRef.value
+			} else {
+				el = measureTextRef.value
+			}
+			if (!props.textAutoWidth || el == null) {
+				autoTrackWidth.value = 0
+				return
+			}
+			el.getBoundingClientRectAsync()!.then((rect: DOMRect) => {
+				if (token != measureToken) {
+					return
+				}
+				const base = props.size > 0 ? Math.round(props.size * 1.8 + 4) : DEFAULT_TRACK_WIDTH
+				// 轨道 = 文案固有宽度 + 滑块宽度 + 两侧留白（4px × 2 + 间距 8px）
+				const desired = Math.round(rect.width + nodeSizeValue.value + 16)
+				autoTrackWidth.value = desired > base ? desired : 0
+			})
+		})
+	}
+
+	/** 文案测量触发键：选中态 / 文案 / 尺寸 / 自适应开关变化时重新测量 */
+	const textMeasureKey = computed<string>(() => {
+		const state = checked.value ? '1' : '0'
+		const auto = props.textAutoWidth ? '1' : '0'
+		return state + '|' + props.checkedText + '|' + props.uncheckedText + '|' + props.size.toString() + '|' + auto
+	})
+
+	// 文案或状态变化后重新测量轨道宽度
+	watch(textMeasureKey, () => {
+		scheduleTextMeasure()
+	}, { flush: 'post' })
+
+	// 首次挂载后测量（此时文字节点已完成布局）
+	onMounted(() => {
+		scheduleTextMeasure()
+	})
+</script>
+
+<style lang="scss">
+	/*
+	 * 主题变量说明：组件内顶层引入 theme/vars.scss（全部 !default），
+	 * 覆盖方式为项目根 uni.scss 直接定义 $m-* 变量（禁止 @import vars.scss）。
+	 */
+	@import '../../theme/vars.scss';
+
+	/* ========== 轨道 ========== */
+	.m-switch {
+		position: relative;
+		width: $m-switch-width;
+		height: $m-switch-height;
+		background-color: $m-switch-background;
+		border-radius: $m-radius-max;
+	}
+
+	.m-switch--checked {
+		background-color: $m-switch-on-background;
+	}
+
+	.m-switch--disabled {
+		opacity: $m-switch-disabled-opacity;
+	}
+
+	.m-switch--loading {
+		opacity: $m-switch-loading-opacity;
+	}
+
+	/* ========== 轨道背景插槽 ========== */
+	.m-switch__background {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		border-radius: $m-radius-max;
+		overflow: hidden;
+	}
+
+	/* ========== 轨道文字 ========== */
+	.m-switch__text-wrap {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+	}
+
+	.m-switch__text-wrap--left {
+		left: 0;
+	}
+
+	.m-switch__text-wrap--right {
+		right: 0;
+	}
+
+	.m-switch__text-box {
+		flex-direction: row;
+		flex-shrink: 0;
+	}
+
+	.m-switch__text {
+		color: $m-switch-text-color;
+		font-size: $m-switch-text-font-size;
+		white-space: nowrap;
+	}
+
+	/* 隐藏测量节点：绝对定位 + nowrap，宽度为文案固有宽度 */
+	.m-switch__measure-text {
+		position: absolute;
+		left: 0;
+		top: 0;
+		opacity: 0;
+		font-size: $m-switch-text-font-size;
+		white-space: nowrap;
+	}
+
+	/* ========== 滑块 ========== */
+	.m-switch__node {
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		width: $m-switch-node-size;
+		height: $m-switch-node-size;
+		align-items: center;
+		justify-content: center;
+		background-color: $m-switch-node-background;
+		border-radius: 50%;
+		box-shadow: $m-switch-node-shadow;
+	}
+</style>

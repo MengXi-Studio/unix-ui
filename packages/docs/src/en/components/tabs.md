@@ -237,10 +237,12 @@ const tabOptions: UTSJSONObject[] = [
 
 ### Events
 
+> The table below is the event contract of `m-tabs`; `m-tab` emits no events.
+
 | Event | Description | Arguments |
 | --- | --- | --- |
 | update:active | Active tab changed (`v-model:active`; tab name, or index when name unset) | name: string \| number |
-| change | Active tab changed (interaction paths only; not emitted by scrollspy scroll linkage or external binding) | name: string \| number \| null, index: number |
+| change | Active tab changed (emitted for interactions and scrollspy linkage; not emitted when the parent sets active directly) | name: string \| number \| null, index: number |
 | click-tab | Tab clicked (including disabled) | event: TabsClickEvent |
 | sticky-change | Sticky state changed (sticky mode, relayed from m-sticky) | isFixed: boolean |
 
@@ -268,6 +270,12 @@ Call via component [ref](https://vuejs.org/guide/essentials/template-refs.html):
 | default | List of `m-tab` children (ignored in options form) |
 | nav-left | Left extension of tab bar |
 | nav-right | Right extension of tab bar |
+
+#### Slots (m-tab)
+
+| Name | Description |
+| --- | --- |
+| default | Tab panel content |
 
 ## Theming
 

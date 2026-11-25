@@ -133,8 +133,8 @@ searchRef.value?.$callMethod('focus')
 | value | 输入值（v-model:value） | string | `''` |
 | label | 框内左侧文本 | string | `''` |
 | shape | 输入框形状，可选 `square` `round` | string | `square` |
-| background | 搜索框外部背景色 | string | 主题值 `#f2f2f2` |
-| input-background | 输入区背景色 | string | 主题值（白色） |
+| background | 搜索框外部背景色 | string | `''`（空串用主题值 `#f2f2f2`） |
+| input-background | 输入区背景色 | string | `''`（空串用主题值（白色）） |
 | placeholder | 占位提示文字 | string | `请输入搜索关键词` |
 | maxlength | 最大输入长度，-1 不限制 | number | `-1` |
 | clearable | 是否启用清除图标 | boolean | `true` |
@@ -144,13 +144,13 @@ searchRef.value?.$callMethod('focus')
 | action-text | 右侧按钮文案 | string | `取消` |
 | action-type | 右侧按钮语义，可选 `cancel` `search` | string | `cancel` |
 | left-icon | 框内左侧图标（m-icon 字形名） | string | `search` |
-| right-icon | 框内右侧图标，`null` 不显示 | string \| null | `null` |
+| right-icon | 框内右侧图标，空字符串不显示 | string | `''` |
 | input-align | 输入文字对齐方式，可选 `left` `center` `right` | string | `left` |
 | disabled | 是否禁用 | boolean | `false` |
 | readonly | 是否只读 | boolean | `false` |
 | error | 是否错误态（输入区边框标红） | boolean | `false` |
 | error-message | 错误提示文案，为空不展示 | string | `''` |
-| formatter | 输入内容格式化函数（透传 m-input） | (value: string) => string | `null` |
+| formatter | 输入内容格式化函数（透传 m-input） | (value: string) => string | - |
 | custom-class / custom-style | 根节点样式直达 | - | - |
 
 ### Events

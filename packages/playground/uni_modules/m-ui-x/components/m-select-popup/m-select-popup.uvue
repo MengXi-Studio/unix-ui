@@ -109,7 +109,7 @@
 		/** 筛选值（v-model:filter-value） */
 		filterValue?: string
 		/** 远程筛选回调 */
-		filterMethod?: ((query: string) => void) | null
+		filterMethod?: ((query: string) => void)
 		/** 是否禁用列表 */
 		disabled?: boolean
 		/** 空列表文案 */
@@ -148,7 +148,6 @@
 		filterable: false,
 		filterPlaceholder: '请输入关键词',
 		filterValue: '',
-		filterMethod: null,
 		disabled: false,
 		emptyText: '暂无选项',
 		confirmOnSelect: true,

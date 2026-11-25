@@ -237,10 +237,12 @@ const tabOptions: UTSJSONObject[] = [
 
 ### Events
 
+> 下表为 `m-tabs` 的事件契约；`m-tab` 不派发事件。
+
 | 事件名 | 说明 | 回调参数 |
 | --- | --- | --- |
 | update:active | 激活标签变化（`v-model:active`；值为标签 name，未指定 name 时为索引） | name: string \| number |
-| change | 激活标签变化（交互路径派发；scrollspy 滚动联动与外部回灌不派发） | name: string \| number \| null, index: number |
+| change | 激活标签变化（交互切换与 scrollspy 滚动联动均派发；父级直接改 active 不派发） | name: string \| number \| null, index: number |
 | click-tab | 点击标签（含禁用标签） | event: TabsClickEvent |
 | sticky-change | 吸顶状态变化（sticky 模式透传 m-sticky） | isFixed: boolean |
 
@@ -268,6 +270,12 @@ const tabOptions: UTSJSONObject[] = [
 | 默认 | `m-tab` 子组件列表（options 模式忽略） |
 | nav-left | 标签栏左侧扩展 |
 | nav-right | 标签栏右侧扩展 |
+
+#### Slots（m-tab）
+
+| 名称 | 说明 |
+| --- | --- |
+| 默认 | 标签面板内容 |
 
 ## 主题定制
 

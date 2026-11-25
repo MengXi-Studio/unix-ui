@@ -104,7 +104,7 @@ The four cascader slots are conditionally forwarded (only override the panel def
 | options-top | Above options area (scope: `tabIndex`) |
 | options-bottom | Below options area (scope: `tabIndex`) |
 
-> **Note**: On WeChat Mini Program, `option` / `options-top` / `options-bottom` are not forwarded — the cascader declares them inside a `v-for`, where only the first slot of a name takes effect and the rest trigger duplicate-slot warnings. Customize option text via `field-names` `labelKey` instead; Web and App are unaffected.
+> **Note**: On WeChat Mini Program, `option` / `options-top` / `options-bottom` are not forwarded — the cascader declares them inside a `v-for`, where only the first slot of a name takes effect and the rest trigger duplicate-slot warnings. Customize option text via `field-names` `text` instead; Web and App are unaffected.
 
 ## Theming
 

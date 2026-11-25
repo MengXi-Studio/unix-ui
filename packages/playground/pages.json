@@ -160,6 +160,12 @@
 			"root": "pages-sub/display",
 			"pages": [
 				{
+					"path": "accordion/accordion",
+					"style": {
+						"navigationBarTitleText": "手风琴 Accordion"
+					}
+				},
+				{
 					"path": "badge/badge",
 					"style": {
 						"navigationBarTitleText": "徽标 Badge"
@@ -311,6 +317,36 @@
 					"path": "segmented/segmented",
 					"style": {
 						"navigationBarTitleText": "分段控制器 Segmented"
+					}
+				},
+				{
+					"path": "signature/signature",
+					"style": {
+						"navigationBarTitleText": "签名 Signature"
+					}
+				},
+				{
+					"path": "slider/slider",
+					"style": {
+						"navigationBarTitleText": "滑动条 Slider"
+					}
+				},
+				{
+					"path": "stepper/stepper",
+					"style": {
+						"navigationBarTitleText": "步进器 Stepper"
+					}
+				},
+				{
+					"path": "switch/switch",
+					"style": {
+						"navigationBarTitleText": "开关 Switch"
+					}
+				},
+				{
+					"path": "uploader/uploader",
+					"style": {
+						"navigationBarTitleText": "文件上传 Uploader"
 					}
 				}
 			]

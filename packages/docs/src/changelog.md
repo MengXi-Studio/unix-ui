@@ -1,5 +1,25 @@
 # 更新日志
 
+## [0.8.0] - 2026-11-23
+
+新增手风琴、滑动条、签名、步进器、开关与文件上传组件。
+
+### 新增
+
+- **m-accordion 手风琴容器**：`v-model:value` 绑定展开标识数组（`multiple=false` 时最多一项）；`multiple` 多开、`disabled` 全局禁用、`hide-border` 隐藏分隔线、`inset` 圆角卡片、`duration` 展开收起高度过渡（0 直接显隐）、`lazy-render` 首次展开才渲染；未传 `value` 时容器自持状态（受控 / 非受控双支持）；expose `open()` / `close()` / `toggle()` / `closeAll()`（详见 [Accordion](/components/accordion)）
+- **m-accordion-item 手风琴面板**：`title` / `extra` / `name`（缺省以注册序兜底）/ `disabled`（与容器取或）；头部点击恒派发 `click`；`title` / `extra` / `arrow`（作用域参数 `visible`）插槽；组内末项自动隐藏分隔线（详见 [Accordion](/components/accordion)）
+- 新增 `$m-accordion-*` 主题变量段（底色 / 分隔线 / 头部与内容内边距 / 标题与扩展文本 / 箭头 / 禁用透明度 / 圆角卡片等 17 项）
+- **m-signature 签名**：Canvas 手写签名，`pen-color` / `line-width` / `history-size` / `background-color`；`full-screen` + `v-model:visible` 全屏签名（取消派发 `cancel`）；`tips` 插槽与 `start` / `signing` / `end` / `submit` / `clear` / `cancel` 事件；expose `resize()` / `clear()` / `undo()` / `submit()`（详见 [Signature](/components/signature)）
+- 新增 `$m-signature-*` 主题变量段（19 项）
+- **m-slider 滑动条**：`v-model:value`（number / number[]），`range` 双滑块、`vertical` / `reverse`、`min` / `max` / `step`；`show-value` 值气泡与 `show-scale` 刻度（位置四向可调）；`bar-height` / `button-size` / `active-color` / `inactive-color` 定制；`button` / `left-button` / `right-button` 作用域插槽；派发 `change` / `drag-start` / `drag-end`（详见 [Slider](/components/slider)）
+- 新增 `$m-slider-*` 主题变量段（19 项）
+- **m-stepper 步进器**：`v-model:value`（number \| null），`min` / `max` / `step` / `decimal-length` / `integer`；`allow-empty` + `value-on-clear`、`auto-fixed`；`disable-plus` / `disable-minus` / `disable-input`、`show-*`；长按连续增减（`press-time` / `interval`）；`before-change` 支持同步或 Promise；`theme="round"` 与 `variant` / `size`（详见 [Stepper](/components/stepper)）
+- 新增 `$m-stepper-*` 主题变量段（20 项）
+- **m-switch 开关**：`v-model:value`（boolean / string / number），`checked-value` / `unchecked-value`；`active-color` / `inactive-color` / `size`；`disabled` / `readonly` / `loading`；`before-update` 异步切换（自动 loading + `update:loading`）；`checked-text` / `unchecked-text` 与同名插槽；`node` / `background` 插槽（详见 [Switch](/components/switch)）
+- 新增 `$m-switch-*` 主题变量段（11 项）
+- **m-uploader 文件上传**：选择区 + 预览格列表，`v-model:value` 绑定图片 / 视频对象数组；`media-type` / `multiple` / `max-count` / `max-size` + `oversize`、`accept`（仅 Web）、`capture`；`upload-url` 非空时内置 `uni.uploadFile` 并回填状态与进度，为空只派发 `after-read`；`setItemStatus()` 回写状态；失败项点击重传；`sortable` 长按拖拽排序；`before-choose` / `before-read` / `before-delete` 支持同步或 Promise；expose `choose()` / `clear()` / `abort()` / `reupload()` / `setItemStatus()`；`default` / `preview-cover` / `preview-delete` 插槽（详见 [Uploader](/components/uploader)）
+- 新增 `$m-uploader-*` 主题变量段（20 项）
+
 ## [0.7.4] - 2026-11-22
 
 修复微信小程序（VDOM 模式）下弹层未传具名插槽时默认工具栏被静态插槽吞掉、无法确认选择的问题。
@@ -140,7 +160,7 @@
 
 - **m-calendar 小程序端重复插槽告警**（[#17](https://github.com/MengXi-Studio/unix-ui/issues/17)）：`m-calendar-panel` 在日格 `v-for` 内声明 `month-title` / `text` / `top-info` / `bottom-info` 四个具名插槽，单个月面板实例中存在 42 个同名插槽；微信要求同一实例内插槽名唯一、只接受第一个，一次打开刷约 2000 行 `More than one slot named "top-info"` 告警，且自定义内容只有首个日格生效。小程序端不再声明这四个插槽，改用 `formatter` 返回的 `text` / `topInfo` / `bottomInfo` 文本渲染；`m-calendar` 与 `m-calendar-popup` 同步取消小程序端的插槽转发。Web / App 端插槽行为不变
 - **m-date-strip 小程序端同类重复插槽**：`item` / `top-info` / `bottom-info` 同样在日期项 `v-for` 内声明；小程序端不渲染这三个插槽，改用 `formatter` 返回的 `text` / `topInfo` / `bottomInfo` 文案（`show-lunar` 不受影响），Web / App 端插槽行为不变
-- **m-cascader 小程序端同类重复插槽**：`option` / `options-top` / `options-bottom` 在层级与选项 `v-for` 内声明；小程序端不渲染这三个插槽，选项文案改用 `field-names` 的 `labelKey`，`m-cascader-popup` 同步取消转发，Web / App 端插槽行为不变
+- **m-cascader 小程序端同类重复插槽**：`option` / `options-top` / `options-bottom` 在层级与选项 `v-for` 内声明；小程序端不渲染这三个插槽，选项文案改用 `field-names` 的 `text`，`m-cascader-popup` 同步取消转发，Web / App 端插槽行为不变
 
 ## [0.5.2] - 2026-11-15
 

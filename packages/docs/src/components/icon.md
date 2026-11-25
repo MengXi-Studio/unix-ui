@@ -7,7 +7,7 @@ added: 0.1.0
 
 ## 介绍
 
-基于字体图标的图标集，内置 257 个图标，支持颜色与大小自定义、点击事件。
+基于字体图标的图标集，内置 260 个图标，支持颜色与大小自定义、点击事件。
 
 Web 与 App 端通过 `<style>` 内的本地 ttf `@font-face` 加载；微信小程序端 wxss 不支持本地字体文件，改由 `uni.loadFontFace` 以 `url("data:font/ttf;base64,...")` 内联形式加载（`global: true` 全端生效，模块级标记保证只加载一次），无需额外配置。若首屏图标出现短暂默认字形，属字体异步加载的固有表现。
 
@@ -85,7 +85,7 @@ Web 与 App 端通过 `<style>` 内的本地 ttf `@font-face` 加载；微信小
 
 ### 图标集合
 
-共 259 个图标，按基础（12）、线性（139）、填充（108）三组组织，完整名单如下：
+共 260 个图标，按基础（12）、线性（139）、填充（109）三组组织，完整名单如下：
 
 <details>
 <summary>基础图标（12）</summary>
@@ -102,9 +102,9 @@ Web 与 App 端通过 `<style>` 内的本地 ttf `@font-face` 加载；微信小
 </details>
 
 <details>
-<summary>填充图标（108）</summary>
+<summary>填充图标（109）</summary>
 
-`location`、`like`、`star`、`phone`、`setting`、`fire`、`coupon`、`cart`、`shopping-cart`、`cart-circle`、`friends`、`comment`、`gem`、`gift`、`point-gift`、`send-gift`、`service`、`bag`、`todo-list`、`balance-list`、`clear`、`clock`、`question`、`checked`、`add`、`gold-coin`、`info`、`play-circle`、`pause-circle`、`stop-circle`、`warning`、`phone-circle`、`music`、`smile`、`thumb-circle`、`comment-circle`、`browsing-history`、`underway`、`more`、`video`、`shop`、`shop-collect`、`share`、`chat`、`smile-comment`、`vip-card`、`award`、`diamond`、`volume`、`cluster`、`wap-home`、`photo`、`gift-card`、`expand`、`medal`、`good-job`、`manager`、`label`、`bookmark`、`bill`、`hot`、`hot-sale`、`new`、`new-arrival`、`goods-collect`、`eye`、`delete`、`font`、`contact`、`notes`、`records`、`cash-back-record`、`newspaper`、`discount`、`completed`、`user`、`description`、`wechat`、`wechat-pay`、`wechat-moments`、`qq`、`alipay`、`weibo`、`photograph`、`youzan-shield`、`umbrella-circle`、`bell`、`printer`、`map-marked`、`card`、`add-square`、`live`、`lock`、`audio`、`graphic`、`column`、`invitation`、`play`、`pause`、`stop`、`weapp-nav`、`ascending`、`descending`、`bars`、`wap-nav`、`enlarge`、`photo-fail`、`sort`
+`location`、`like`、`star`、`phone`、`setting`、`fire`、`coupon`、`cart`、`shopping-cart`、`cart-circle`、`friends`、`comment`、`gem`、`gift`、`point-gift`、`send-gift`、`service`、`bag`、`todo-list`、`balance-list`、`clear`、`clock`、`question`、`checked`、`add`、`gold-coin`、`info`、`play-circle`、`pause-circle`、`stop-circle`、`warning`、`phone-circle`、`music`、`smile`、`thumb-circle`、`comment-circle`、`browsing-history`、`underway`、`more`、`video`、`shop`、`shop-collect`、`share`、`chat`、`smile-comment`、`vip-card`、`award`、`diamond`、`volume`、`cluster`、`wap-home`、`photo`、`gift-card`、`expand`、`medal`、`good-job`、`manager`、`label`、`bookmark`、`bill`、`hot`、`hot-sale`、`new`、`new-arrival`、`goods-collect`、`eye`、`delete`、`backspace`、`font`、`contact`、`notes`、`records`、`cash-back-record`、`newspaper`、`discount`、`completed`、`user`、`description`、`wechat`、`wechat-pay`、`wechat-moments`、`qq`、`alipay`、`weibo`、`photograph`、`youzan-shield`、`umbrella-circle`、`bell`、`printer`、`map-marked`、`card`、`add-square`、`live`、`lock`、`audio`、`graphic`、`column`、`invitation`、`play`、`pause`、`stop`、`weapp-nav`、`ascending`、`descending`、`bars`、`wap-nav`、`enlarge`、`photo-fail`、`sort`
 
 </details>
 

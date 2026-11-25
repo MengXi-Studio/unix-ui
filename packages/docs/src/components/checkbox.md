@@ -148,7 +148,7 @@ added: 0.5.0
 
 | 方法名 | 说明 | 参数 |
 | --- | --- | --- |
-| toggleAll | 切换全部（true 全选 / false 全不选 / null 取反；受 max 约束） | checked?: boolean \| null |
+| toggleAll | 切换全部（true 全选 / false 全不选 / null 取反；三种模式均受 max 上限约束） | checked: boolean \| null |
 
 ### Props（m-checkbox）
 
@@ -212,11 +212,11 @@ added: 0.5.0
 
 - **值类型**：Vant 为 `any[]`；本项目为 `Array<string | number>`（UTS 无 any），且 `'1'` 与 `1` 经字符串化比较视为同一项
 - **组件拆分**：Vant 的 CheckboxGroup + Checkbox 之上，对齐库内三件套先例扩展 `m-checkbox-popup` / `m-checkbox-input` 弹层与输入框形态
-- **toggleAll 参数**：`null` 表示取反，取反模式不受 max 约束
+- **toggleAll 参数**：`null` 表示取反，取反模式同样受 max 上限约束（新增项被拒绝）
 - **indeterminate**：为 true 时图标固定显示横杠（不依赖勾选态），全选切换由使用者经 `@click` / 集合操作驱动
 - **slot 语法**：uvue 无 v-slot 简写，icon / default 插槽经 `<template #icon="{ checked }">` 声明
 
 ## 注意事项
 
 - 组内 `name` 为必填（null 时退化为独立复选框自持状态）
-- 禁用子项不参与 `toggleAll` 的取反（全选 / 全不选仍包含，与 Vant 行为一致）
+- `toggleAll` 不区分禁用态：全选 / 全不选 / 取反均会作用于禁用子项（禁用拦截仅在子项点击层）

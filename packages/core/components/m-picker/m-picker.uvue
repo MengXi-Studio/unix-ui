@@ -95,7 +95,7 @@
 		clampIndex
 	} from './picker.uts'
 	import { DatePickerOption } from '../m-date-picker/date-picker.uts'
-	import MDatePickerColumn from '../m-date-picker/m-date-picker-column.uvue'
+	import MDatePickerColumn from '../m-date-picker-column/m-date-picker-column.uvue'
 	import MLoading from '../m-loading/m-loading.uvue'
 	import { slotActive } from '../../utils/slot.uts'
 	/** 具名插槽内容判定统一在脚本层求值（模板内直接调用工具函数在 Android 端编译异常） */
@@ -136,8 +136,8 @@
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式 */
 		customStyle?: string
-		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；null 表示未下发，由本组件自行探测（issue #29） */
-		slotPresence?: string | null
+		/** 内部使用：父级组合组件已确认传入的具名插槽名（英文逗号分隔）；'*' 表示未下发，由本组件自行探测（issue #29） */
+		slotPresence?: string
 	}
 
 	const props = withDefaults(defineProps<Props>(), {
@@ -154,7 +154,7 @@
 		swipeDuration: 200,
 		customClass: '',
 		customStyle: '',
-		slotPresence: null
+		slotPresence: '*'
 	})
 
 	/** cancel 具名插槽是否生效（父级弹层下发的存在性标记优先，issue #29） */

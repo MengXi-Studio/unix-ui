@@ -128,7 +128,7 @@ A wheel picker for the Chinese lunar calendar (year / month including leap month
 | option-height | Option row height in px (0 uses 44) | `number` | `0` |
 | visible-option-num | Visible option count (0 uses 6) | `number` | `0` |
 | swipe-duration | Scroll stop threshold in ms | `number` | `200` |
-| custom-class | Custom root class | `string` | `''` |
+| custom-class | Custom root class | `string.ClassString` | `''` |
 | custom-style | Custom root inline style | `string` | `''` |
 
 ### Events

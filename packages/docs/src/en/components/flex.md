@@ -154,6 +154,12 @@ With `wrap` enabled, child elements wrap automatically when they exceed the widt
 | custom-class | Custom root class name | string.ClassString | - |
 | custom-style | Custom root inline style | string | - |
 
+### Slots (m-flex-item)
+
+| Name | Description |
+| --- | --- |
+| default | Child element content |
+
 ## Theming
 
 Spacing can be customized with the following SCSS variables (define them directly in the project root `uni.scss` to override the defaults):

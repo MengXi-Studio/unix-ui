@@ -124,7 +124,7 @@ added: 0.2.0
 | z-index | 弹层层级 | number | `1` |
 | duration | 弹层动画时长秒（`0` 禁用动画） | number | `0.3` |
 
-**日历 Props**（透传 [m-calendar](/components/calendar)，除 `height` 外全部一致——面板高度由 `popup-height` 接管）：`type` / `title` / `color` / `min-date` / `max-date` / `default-date` / `value`（v-model:value） / `row-height` / `formatter` / `show-mark` / `show-title` / `show-subtitle` / `show-confirm` / `confirm-text` / `confirm-disabled-text` / `readonly` / `first-day-of-week` / `switch-mode` / `max-range` / `range-prompt` / `show-range-prompt` / `allow-same-day` / `custom-class` / `custom-style`，类型与默认值见 [Calendar Props](/components/calendar#props)。
+**日历 Props**（透传 [m-calendar](/components/calendar)，除 `height` 外全部一致——面板高度由 `popup-height` 接管；但 `show-confirm` 默认值为 `true`，Calendar 为 `false`）：`type` / `title` / `color` / `min-date` / `max-date` / `default-date` / `value`（v-model:value） / `row-height` / `formatter` / `show-mark` / `show-title` / `show-subtitle` / `show-confirm` / `confirm-text` / `confirm-disabled-text` / `readonly` / `first-day-of-week` / `switch-mode` / `max-range` / `range-prompt` / `show-range-prompt` / `allow-same-day` / `custom-class` / `custom-style`，其余类型与默认值见 [Calendar Props](/components/calendar#props)。
 
 ### Events
 

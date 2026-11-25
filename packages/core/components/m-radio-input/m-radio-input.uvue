@@ -72,7 +72,7 @@
 
 	type Props = {
 		/** 当前选中项标识（v-model:value；null 未选） */
-		value?: RadioValue | null
+		value?: RadioValue
 		/** 选项数组（label / value / disabled 字段） */
 		options?: UTSJSONObject[]
 		/** 占位符 */

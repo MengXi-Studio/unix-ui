@@ -264,7 +264,7 @@ Full details (HBuilderX version requirements, vapor mode configuration, platform
 ## Try it on a device or in the browser
 
 - **In the browser**: the [live demo](https://mengxi-studio.github.io/unix-ui/playground/) on the documentation site — one page per component, exhaustively covering all props / variants / events.
-- **On an Android device**: [download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1795255930231-__UNI__F1AA560_1795255914654.apk) — a cloud-packaged build showing every component with native rendering. The package is rebuilt with each release; use the link in the latest release notes.
+- **On an Android device**: [download the demo app (APK)](https://mp-b8b8347a-48e9-434d-8302-3e9d99c2cb01.cdn.bspapp.com/cloudstorage/app-build-pkg/1795586984213-__UNI__F1AA560_1795586972273.apk) — a cloud-packaged build showing every component with native rendering. The package is rebuilt with each release; use the link in the latest release notes.
 - **Source as documentation**: every demo page in [packages/playground](https://github.com/MengXi-Studio/unix-ui/tree/master/packages/playground) is a runnable best practice.
 
 ## Project & contributing

@@ -127,6 +127,11 @@ export const routes: RouteConfig[] = [
 		meta: { title: '时间范围选择 TimeRangePicker' },
 	},
 	{
+		path: 'pages-sub/display/accordion/accordion',
+		name: 'accordion',
+		meta: { title: '手风琴 Accordion' },
+	},
+	{
 		path: 'pages-sub/display/badge/badge',
 		name: 'badge',
 		meta: { title: '徽标 Badge' },
@@ -245,6 +250,31 @@ export const routes: RouteConfig[] = [
 		path: 'pages-sub/form/segmented/segmented',
 		name: 'segmented',
 		meta: { title: '分段控制器 Segmented' },
+	},
+	{
+		path: 'pages-sub/form/signature/signature',
+		name: 'signature',
+		meta: { title: '签名 Signature' },
+	},
+	{
+		path: 'pages-sub/form/slider/slider',
+		name: 'slider',
+		meta: { title: '滑动条 Slider' },
+	},
+	{
+		path: 'pages-sub/form/stepper/stepper',
+		name: 'stepper',
+		meta: { title: '步进器 Stepper' },
+	},
+	{
+		path: 'pages-sub/form/switch/switch',
+		name: 'switch',
+		meta: { title: '开关 Switch' },
+	},
+	{
+		path: 'pages-sub/form/uploader/uploader',
+		name: 'uploader',
+		meta: { title: '文件上传 Uploader' },
 	},
 	{
 		path: 'pages-sub/layouts/compact/compact',

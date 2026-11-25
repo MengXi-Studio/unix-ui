@@ -6,7 +6,7 @@ added: 0.1.0
 
 ## Introduction
 
-A font-based icon set with 257 built-in icons, supporting custom color & size and click events.
+A font-based icon set with 260 built-in icons, supporting custom color & size and click events.
 
 Web and App load the bundled ttf through a local `@font-face` inside `<style>`. WeChat Mini Program does not support local font files in wxss, so the icon font is loaded at runtime via `uni.loadFontFace` with an inline `url("data:font/ttf;base64,...")` source (`global: true` applies app-wide, and a module-level flag guarantees a single load) — no extra configuration needed. A brief fallback glyph on the first frame is inherent to asynchronous font loading.
 
@@ -84,7 +84,7 @@ Two ways to plug in your own icon font:
 
 ### Icon Set
 
-259 icons in total, organized into three groups: basic (12), outline (139) and filled (108). Full list:
+260 icons in total, organized into three groups: basic (12), outline (139) and filled (109). Full list:
 
 <details>
 <summary>Basic（12）</summary>
@@ -101,9 +101,9 @@ Two ways to plug in your own icon font:
 </details>
 
 <details>
-<summary>Filled（108）</summary>
+<summary>Filled（109）</summary>
 
-`location`, `like`, `star`, `phone`, `setting`, `fire`, `coupon`, `cart`, `shopping-cart`, `cart-circle`, `friends`, `comment`, `gem`, `gift`, `point-gift`, `send-gift`, `service`, `bag`, `todo-list`, `balance-list`, `clear`, `clock`, `question`, `checked`, `add`, `gold-coin`, `info`, `play-circle`, `pause-circle`, `stop-circle`, `warning`, `phone-circle`, `music`, `smile`, `thumb-circle`, `comment-circle`, `browsing-history`, `underway`, `more`, `video`, `shop`, `shop-collect`, `share`, `chat`, `smile-comment`, `vip-card`, `award`, `diamond`, `volume`, `cluster`, `wap-home`, `photo`, `gift-card`, `expand`, `medal`, `good-job`, `manager`, `label`, `bookmark`, `bill`, `hot`, `hot-sale`, `new`, `new-arrival`, `goods-collect`, `eye`, `delete`, `font`, `contact`, `notes`, `records`, `cash-back-record`, `newspaper`, `discount`, `completed`, `user`, `description`, `wechat`, `wechat-pay`, `wechat-moments`, `qq`, `alipay`, `weibo`, `photograph`, `youzan-shield`, `umbrella-circle`, `bell`, `printer`, `map-marked`, `card`, `add-square`, `live`, `lock`, `audio`, `graphic`, `column`, `invitation`, `play`, `pause`, `stop`, `weapp-nav`, `ascending`, `descending`, `bars`, `wap-nav`, `enlarge`, `photo-fail`, `sort`
+`location`, `like`, `star`, `phone`, `setting`, `fire`, `coupon`, `cart`, `shopping-cart`, `cart-circle`, `friends`, `comment`, `gem`, `gift`, `point-gift`, `send-gift`, `service`, `bag`, `todo-list`, `balance-list`, `clear`, `clock`, `question`, `checked`, `add`, `gold-coin`, `info`, `play-circle`, `pause-circle`, `stop-circle`, `warning`, `phone-circle`, `music`, `smile`, `thumb-circle`, `comment-circle`, `browsing-history`, `underway`, `more`, `video`, `shop`, `shop-collect`, `share`, `chat`, `smile-comment`, `vip-card`, `award`, `diamond`, `volume`, `cluster`, `wap-home`, `photo`, `gift-card`, `expand`, `medal`, `good-job`, `manager`, `label`, `bookmark`, `bill`, `hot`, `hot-sale`, `new`, `new-arrival`, `goods-collect`, `eye`, `delete`, `backspace`, `font`, `contact`, `notes`, `records`, `cash-back-record`, `newspaper`, `discount`, `completed`, `user`, `description`, `wechat`, `wechat-pay`, `wechat-moments`, `qq`, `alipay`, `weibo`, `photograph`, `youzan-shield`, `umbrella-circle`, `bell`, `printer`, `map-marked`, `card`, `add-square`, `live`, `lock`, `audio`, `graphic`, `column`, `invitation`, `play`, `pause`, `stop`, `weapp-nav`, `ascending`, `descending`, `bars`, `wap-nav`, `enlarge`, `photo-fail`, `sort`
 
 </details>
 

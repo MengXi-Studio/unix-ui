@@ -623,30 +623,30 @@
 				resolve(passed)
 			})
 		}
-		let chain: Promise<any> = new Promise<any>((resolve: (value: any) => void) => {
-			resolve(null)
+		let chain: Promise<boolean> = new Promise<boolean>((resolve: (value: boolean) => void) => {
+			resolve(true)
 		})
 		for (let i = 0; i < list.length; i++) {
 			const item = list[i]
-			chain = chain.then((_: any): Promise<any> => {
-				return new Promise<any>((resolve: (value: any) => void) => {
+			chain = chain.then((_: boolean): Promise<boolean> => {
+				return new Promise<boolean>((resolve: (value: boolean) => void) => {
 					const result = callback(toJson(item))
 					if (typeof result == 'boolean') {
 						if (result) passed.push(item)
-						resolve(null)
+						resolve(true)
 						return
 					}
 					const pending = result as Promise<boolean>
 					pending.then((ok: boolean) => {
 						if (ok) passed.push(item)
-						resolve(null)
-					}).catch((_: any) => {
-						resolve(null)
+						resolve(true)
+					}).catch(() => {
+						resolve(true)
 					})
 				})
 			})
 		}
-		return chain.then((_: any): UploadFileItem[] => passed)
+		return chain.then((_: boolean): UploadFileItem[] => passed)
 	}
 
 	/**
@@ -911,14 +911,15 @@
 	 * 触摸开始：sortable 时长按进入拖拽
 	 *
 	 * @param index 单项下标
-	 * @param e 触摸事件
+	 * @param e 触摸事件（模板内联调用传入 Any，需显式收窄）
 	 */
-	function onItemTouchStart(index: number, e: TouchEvent) {
+	function onItemTouchStart(index: number, e: any) {
 		if (!props.sortable || props.disabled) return
-		if (e.touches.length == 0) return
+		const touchEvent = e as TouchEvent
+		if (touchEvent.touches.length == 0) return
 		dragStartIndex = index
-		dragStartX = e.touches[0].clientX
-		dragStartY = e.touches[0].clientY
+		dragStartX = touchEvent.touches[0].clientX
+		dragStartY = touchEvent.touches[0].clientY
 		cancelLongPress()
 		longPressTimer = setTimeout(() => {
 			longPressTimer = -1
@@ -1023,7 +1024,7 @@
 		const pending = result as Promise<boolean>
 		pending.then((ok: boolean) => {
 			if (ok) doDelete(index, path)
-		}).catch((_: any) => {})
+		}).catch(() => {})
 	}
 
 	/**

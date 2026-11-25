@@ -218,7 +218,7 @@
 	 * @param value 展开集合
 	 * @param name 本次操作的面板标识
 	 */
-	function onBasicChange(value: AccordionValueArray, name: AccordionValue) {
+	const onBasicChange = (value: AccordionValueArray, name: AccordionValue) => {
 		eventLog.value = accordionValueText(name) + ' → ' + joinValues(value)
 	}
 
@@ -228,7 +228,7 @@
 	 * @param value 展开集合
 	 * @param name 本次操作的面板标识
 	 */
-	function onUncontrolledChange(value: AccordionValueArray, name: AccordionValue) {
+	const onUncontrolledChange = (value: AccordionValueArray, name: AccordionValue) => {
 		uncontrolledLog.value = '容器自持状态：' + joinValues(value)
 	}
 
@@ -273,7 +273,7 @@
 	 * @param value 展开集合
 	 * @param name 本次操作的面板标识
 	 */
-	function onMethodChange(value: AccordionValueArray, name: AccordionValue) {
+	const onMethodChange = (value: AccordionValueArray, name: AccordionValue) => {
 		methodLog.value = '变更 ' + accordionValueText(name) + ' → ' + joinValues(value)
 	}
 </script>

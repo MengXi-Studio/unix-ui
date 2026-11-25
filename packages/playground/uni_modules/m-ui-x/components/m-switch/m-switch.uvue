@@ -265,7 +265,7 @@
 			pending.value = false
 			emit('update:loading', false)
 			applyValue(next)
-		}).catch((_: any) => {
+		}).catch(() => {
 			pending.value = false
 			emit('update:loading', false)
 		})

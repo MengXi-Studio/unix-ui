@@ -177,7 +177,7 @@
 	const beforeUpdate = (value: boolean | string | number): Promise<any> => {
 		return new Promise<any>((resolve: (result: any) => void) => {
 			setTimeout(() => {
-				resolve(null)
+				resolve(true)
 			}, 800)
 		})
 	}
@@ -187,7 +187,7 @@
 	 *
 	 * @param value 切换后的值
 	 */
-	function onBasicChange(value: boolean | string | number) {
+	const onBasicChange = (value: boolean | string | number) => {
 		console.log('switch basic change: ' + value.toString())
 	}
 

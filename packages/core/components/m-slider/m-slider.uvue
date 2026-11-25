@@ -321,6 +321,34 @@
 		return 'm-slider__scale-text m-slider__scale-text--' + effectiveScalePosition.value
 	})
 
+	/** 刻度集合（最多 51 个，避免密集时渲染过多） */
+	const scales = computed<SliderScale[]>(() => {
+		const result: SliderScale[] = []
+		if (!props.showScale) {
+			return result
+		}
+		const min = props.min
+		const max = props.max > min ? props.max : min
+		const step = props.step > 0 ? props.step : 1
+		const total = Math.floor((max - min) / step)
+		if (total < 0) {
+			return result
+		}
+		const stride = total > 50 ? Math.ceil(total / 50) : 1
+		for (let i = 0; i <= total; i += stride) {
+			const value = min + i * step
+			const raw = max > min ? ((value - min) / (max - min)) * 100 : 0
+			let pos = raw
+			if (props.vertical) {
+				pos = props.reverse ? raw : 100 - raw
+			} else {
+				pos = props.reverse ? 100 - raw : raw
+			}
+			result.push({ position: pos, text: value.toString() } as SliderScale)
+		}
+		return result
+	})
+
 	/** 刻度文字是否展示（数量过多时只留刻度线） */
 	const showScaleText = computed<boolean>(() => scales.value.length <= 11)
 
@@ -455,36 +483,7 @@
 		return style
 	})
 
-	/** 刻度集合（最多 51 个，避免密集时渲染过多） */
-	const scales = computed<SliderScale[]>(() => {
-		const result: SliderScale[] = []
-		if (!props.showScale) {
-			return result
-		}
-		const min = props.min
-		const max = props.max > min ? props.max : min
-		const step = props.step > 0 ? props.step : 1
-		const total = Math.floor((max - min) / step)
-		if (total < 0) {
-			return result
-		}
-		const stride = total > 50 ? Math.ceil(total / 50) : 1
-		for (let i = 0; i <= total; i += stride) {
-			const value = min + i * step
-			const raw = max > min ? ((value - min) / (max - min)) * 100 : 0
-			let pos = raw
-			if (props.vertical) {
-				pos = props.reverse ? raw : 100 - raw
-			} else {
-				pos = props.reverse ? 100 - raw : raw
-			}
-			result.push({ position: pos, text: value.toString() } as SliderScale)
-		}
-		return result
-	})
-
-	/**
-	 * 测量轨道矩形（Web 同步 / 小程序 SelectorQuery / App 异步）
+	/** 测量轨道矩形（Web 同步 / 小程序 SelectorQuery / App 异步）
 	 *
 	 * @param done 测量完成后的回调（可为 null）
 	 */

@@ -77,7 +77,7 @@
 					<m-uploader v-model:value="slotFiles" multiple>
 						<template #preview-cover="{ index }">
 							<view class="custom-cover">
-								<text class="custom-cover-text">第 {{ index + 1 }} 张</text>
+								<text class="custom-cover-text">第 {{ coverIndex(index) }} 张</text>
 							</view>
 						</template>
 						<template #preview-delete>
@@ -288,6 +288,9 @@
 	 *
 	 * @param value 文件列表
 	 */
+	/** 预览角标序号（插槽 index 为 Any，需显式收窄） */
+	const coverIndex = (index: any | null): number => (index as number) + 1
+
 	function onBasicChange(value: any | null) {
 		const list = value as UTSJSONObject[]
 		basicLog.value = '共 ' + list.length.toString() + ' 个文件'

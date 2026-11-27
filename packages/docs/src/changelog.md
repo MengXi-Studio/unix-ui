@@ -1,5 +1,13 @@
 # 更新日志
 
+## [0.8.1] - 2026-11-27
+
+修复 `m-status-bar` 在微信小程序端无法自动占位的问题，并补上背景能力。
+
+### 修复
+
+- **m-status-bar 跨端高度与背景能力**：系统状态栏高度改为在 `#ifndef WEB` 下读取 `uni.getWindowInfo().statusBarHeight`，微信小程序等平台不再恒为 0（此前仅 `#ifdef APP`，小程序自定义导航无法占位）；新增默认插槽（内容绝对铺满状态栏区域、不参与高度计算）与 `background` prop，状态栏与业务头部可共享同一背景（[#33](https://github.com/MengXi-Studio/unix-ui/issues/33)）
+
 ## [0.8.0] - 2026-11-23
 
 新增手风琴、滑动条、签名、步进器、开关与文件上传组件。

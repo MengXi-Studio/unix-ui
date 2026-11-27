@@ -1,3 +1,7 @@
+## 0.8.1 (2026-11-27)
+
+- 修复 `m-status-bar` 微信小程序端状态栏高度恒为 0：系统高度改在 `#ifndef WEB` 下读取（原仅 `#ifdef APP`），小程序自定义导航恢复占位；新增默认插槽（绝对铺满状态栏区域）与 `background` prop，可与业务头部共享背景（#33）
+
 ## 0.8.0 (2026-11-23)
 
 - 新增 `m-accordion` 手风琴容器：`v-model:value` 绑定展开标识数组（`multiple=false` 时最多一项），支持 `multiple` / `disabled` / `hide-border` / `inset`（圆角卡片）/ `duration`（展开收起高度过渡，0 直接显隐）/ `lazy-render`（默认首次展开才渲染）；未传 `value` 时容器自持状态（受控 + 非受控双支持）；实例方法 `open(name)` / `close(name)` / `toggle(name)` / `closeAll()`

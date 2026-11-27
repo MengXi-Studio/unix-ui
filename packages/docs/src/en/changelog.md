@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.1] - 2026-11-27
+
+Fixes `m-status-bar` not reserving space automatically on WeChat Mini Program and adds background capabilities.
+
+### Fixed
+
+- **m-status-bar cross-platform height and background**: the system status bar height is now read from `uni.getWindowInfo().statusBarHeight` under `#ifndef WEB`, so WeChat Mini Program and other mini programs no longer report 0 (previously `#ifdef APP` only, leaving custom navigation without a placeholder); adds a default slot (content fills the status bar area absolutely without affecting the height) and a `background` prop so the status bar and the header can share one background ([#33](https://github.com/MengXi-Studio/unix-ui/issues/33))
+
 ## [0.8.0] - 2026-11-23
 
 Adds the accordion, slider, signature, stepper, switch and uploader components.

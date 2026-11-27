@@ -7,7 +7,7 @@
 			<text class="section" id="basic">基础用法</text>
 			<view class="card">
 				<m-status-bar custom-style="background-color: #f2f3f5" />
-				<text class="caption">height 默认 0：App 端取系统状态栏高度（真机可见），Web / 小程序为 0 不占位</text>
+				<text class="caption">height 默认 0：App / 微信小程序自动读取系统状态栏高度，H5 为 0 不占位</text>
 			</view>
 
 			<text class="section" id="height">自定义高度</text>
@@ -22,10 +22,25 @@
 
 			<text class="section" id="style">背景与自定义样式</text>
 			<view class="card">
+				<m-status-bar :height="32" background="#1989fa" />
+				<text class="caption">background prop 直接指定背景色</text>
 				<m-status-bar :height="32" custom-style="background: linear-gradient(90deg, #1989fa, #39b54a);" />
 				<text class="caption">custom-style 渐变背景（高度经 height 显式指定）</text>
 				<m-status-bar :height="32" custom-class="demo-status-bar--dark" />
 				<text class="caption">custom-class 挂载类样式（深色背景 + 圆角）</text>
+			</view>
+
+			<text class="section" id="slot">默认插槽</text>
+			<view class="card">
+				<view class="demo-hero">
+					<m-status-bar :height="24">
+						<view class="demo-hero__bg"></view>
+					</m-status-bar>
+					<view class="demo-hero__body">
+						<text class="demo-hero__title">沉浸式头图</text>
+					</view>
+				</view>
+				<text class="caption">插槽内容绝对铺满状态栏区域，可与下方头部共享同一渐变背景</text>
 			</view>
 
 			<text class="section" id="navbar">模拟导航栏</text>
@@ -73,6 +88,24 @@
 		font-size: 16px;
 		font-weight: bold;
 		color: #323233;
+	}
+	/* 沉浸式头图：状态栏与头部共享同一渐变背景 */
+	.demo-hero__bg {
+		width: 100%;
+		height: 100%;
+		background-image: linear-gradient(90deg, #1989fa, #39b54a);
+	}
+	.demo-hero__body {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		height: 44px;
+		background-image: linear-gradient(90deg, #1989fa, #39b54a);
+	}
+	.demo-hero__title {
+		font-size: 16px;
+		font-weight: bold;
+		color: #ffffff;
 	}
 	.caption {
 		font-size: 12px;

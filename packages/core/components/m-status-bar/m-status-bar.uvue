@@ -1,19 +1,26 @@
 <template>
-	<!-- 状态栏占位：高度由 height prop 或系统状态栏高度（App）决定；Web / 小程序无系统状态栏，恒为 0 -->
-	<view :class="rootClass" :style="rootStyle"></view>
+	<!-- 状态栏占位：高度由 height prop 或系统状态栏高度（App / 小程序）决定；H5 无系统状态栏，恒为 0 -->
+	<view :class="rootClass" :style="rootStyle">
+		<!-- 默认插槽：内容绝对铺满状态栏区域（背景层 / 沉浸式内容），不参与高度占位计算 -->
+		<view class="m-status-bar__content">
+			<slot></slot>
+		</view>
+	</view>
 </template>
 
 <script setup lang="uts">
 	/**
 	 * m-status-bar 状态栏占位组件：为 Navbar / Notify 等贴顶元素预留系统状态栏高度。
-	 * 高度取值优先级：height prop（> 0 时直用）→ App 端 uni.getWindowInfo().statusBarHeight；
-	 * Web / 小程序取不到系统值，保持 0（不占位），需要占位时显式传 height。
+	 * 高度取值优先级：height prop（> 0 时直用）→ uni.getWindowInfo().statusBarHeight；
+	 * App 与各小程序平台该值有效，H5 恒为 0（无系统状态栏），需要占位时显式传 height。
 	 * uni-app x 无「JS 写 CSS 变量」链路，故高度走内联 style 而非 CSS 变量。
 	 */
 
 	type Props = {
-		/** 状态栏高度（px）；0 表示自动读取系统状态栏高度（仅 App 端有值，Web / 小程序为 0） */
+		/** 状态栏高度（px）；0 表示自动读取系统状态栏高度（App / 小程序有效，H5 为 0） */
 		height?: number
+		/** 根节点背景色（'' 表示不设置，也可用 customStyle 传渐变等任意背景） */
+		background?: string
 		/** 自定义根节点类名 */
 		customClass?: string.ClassString
 		/** 自定义根节点内联样式（如背景色） */
@@ -22,13 +29,14 @@
 
 	const props = withDefaults(defineProps<Props>(), {
 		height: 0,
+		background: '',
 		customClass: '',
 		customStyle: ''
 	})
 
-	/** 系统状态栏高度：仅 App 端有真实值，其余平台保持 0（#ifdef 编译期裁剪） */
+	/** 系统状态栏高度：App 与小程序为真实值，H5 取不到（保持 0，#ifndef WEB 编译期裁剪） */
 	const systemHeight = ref(0)
-	// #ifdef APP
+	// #ifndef WEB
 	systemHeight.value = uni.getWindowInfo().statusBarHeight
 	// #endif
 
@@ -44,10 +52,13 @@
 		return cls
 	})
 
-	/** 根节点内联样式：customStyle 补分号 + 生效高度（为 0 时不输出 height，保持不占位） */
+	/** 根节点内联样式：customStyle 补分号 + 背景色 + 生效高度（为 0 时不输出 height，保持不占位） */
 	const rootStyle = computed<string>(() => {
 		let style = props.customStyle
 		if (style != '' && !style.endsWith(';')) style += ';'
+		if (props.background != '') {
+			style += ' background-color: ' + props.background + ';'
+		}
 		if (resolvedHeight.value > 0) {
 			style += ' height: ' + resolvedHeight.value.toString() + 'px;'
 		}
@@ -57,7 +68,7 @@
 
 <style lang="scss">
 	/*
-	 * 主题说明：本组件无专属 $m-* 变量（纯高度占位，颜色由使用者经 custom-style / custom-class 指定）。
+	 * 主题说明：本组件无专属 $m-* 变量（纯高度占位，颜色由使用者经 background / custom-style / custom-class 指定）。
 	 * 组件内顶层无条件引入 theme/vars.scss 保持本库统一契约（全部 !default，零配置即有默认主题）。
 	 */
 	@import '../../theme/vars.scss';
@@ -66,5 +77,15 @@
 	.m-status-bar {
 		flex: none;
 		width: 100%;
+		position: relative;
+	}
+
+	/* ========== 插槽内容层：绝对铺满占位区，不参与高度计算 ========== */
+	.m-status-bar__content {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
 	}
 </style>

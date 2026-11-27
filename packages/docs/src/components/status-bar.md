@@ -9,13 +9,15 @@ added: 0.3.0
 
 状态栏占位组件，为 `Navbar`、`Notify` 等定位在页面顶部的元素预留系统状态栏高度，避免内容进入状态栏区域。
 
-高度取值优先级：`height` prop（大于 0 时直接使用）→ App 端 `uni.getWindowInfo().statusBarHeight`；Web / 小程序没有系统状态栏，取值为 0（不占位），需要占位时显式传入 `height`。
+高度取值优先级：`height` prop（大于 0 时直接使用）→ `uni.getWindowInfo().statusBarHeight`；App 与微信小程序等平台该值有效，H5 没有系统状态栏、取值为 0（不占位），需要占位时显式传入 `height`。微信小程序端的系统高度读取自 `0.8.1` 起修复。
+
+默认插槽内的内容会绝对铺满状态栏区域，可用于放置背景层或沉浸式头图，与下方头部共享同一渐变背景。
 
 ## 代码演示
 
 ### 基础用法 {#demo-basic}
 
-不传 `height` 时自动读取系统状态栏高度（仅 App 端有效，Web / 小程序为 0）。
+不传 `height` 时自动读取系统状态栏高度（App / 微信小程序等有效，H5 为 0）。
 
 ```vue
 <m-status-bar />
@@ -32,11 +34,27 @@ added: 0.3.0
 
 ### 背景与自定义样式 {#demo-style}
 
-通过 `custom-style` 或 `custom-class` 指定背景色，与导航栏底色保持一致。
+通过 `background` 指定背景色，或经 `custom-style` / `custom-class` 设置渐变与类样式，与导航栏底色保持一致。
 
 ```vue
+<m-status-bar :height="32" background="#1989fa" />
 <m-status-bar :height="32" custom-style="background: linear-gradient(90deg, #1989fa, #39b54a);" />
 <m-status-bar :height="32" custom-class="my-status-bar" />
+```
+
+### 默认插槽 {#demo-slot}
+
+插槽内容绝对铺满状态栏区域、不参与高度计算，适合放置背景层或沉浸式头图；状态栏与下方头部使用同一渐变时不再需要重复拼接样式字符串。
+
+```vue
+<view class="hero">
+	<m-status-bar :height="24">
+		<view class="hero-bg"></view>
+	</m-status-bar>
+	<view class="hero-body">
+		<text class="hero-title">沉浸式头图</text>
+	</view>
+</view>
 ```
 
 ### 与导航栏组合 {#demo-navbar}
@@ -58,7 +76,8 @@ added: 0.3.0
 
 | 参数 | 说明 | 类型 | 默认值 |
 | --- | --- | --- | --- |
-| height | 状态栏高度（px）；0 表示自动读取系统状态栏高度（仅 App 端有值，Web / 小程序为 0） | number | `0` |
+| height | 状态栏高度（px）；0 表示自动读取系统状态栏高度（App / 小程序有效，H5 为 0） | number | `0` |
+| background <VersionBadge version="0.8.1" /> | 根节点背景色（'' 表示不设置；渐变请用 custom-style） | string | - |
 | custom-class | 自定义根节点类名 | string.ClassString | - |
 | custom-style | 自定义根节点内联样式（如背景色） | string | - |
 
@@ -68,7 +87,9 @@ added: 0.3.0
 
 ### Slots
 
-无。
+| 名称 | 说明 |
+| --- | --- |
+| default <VersionBadge version="0.8.1" /> | 状态栏区域内容，绝对铺满该区域（背景层 / 沉浸式内容），不参与高度计算 |
 
 ## 主题定制
 
